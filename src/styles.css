@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer base {
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    background-color: #f3f2ee;
+  }
+}
+
 /*
  * Design system definition.
  *
