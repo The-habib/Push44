@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, SectionCard } from "@/components/AppShell";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Github,
   Moon,
@@ -13,17 +13,12 @@ import {
   Loader2,
   User,
   ExternalLink,
-  Copy,
-  CheckCheck,
-  RefreshCw,
   AlertCircle,
+  Mail,
+  Lock,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
-import {
-  initiateBase44DeviceAuth,
-  pollBase44DeviceAuth,
-  validateBase44Token,
-} from "@/lib/base44-api";
+import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
 import { Toaster, toast } from "sonner";
 
@@ -37,89 +32,54 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-// ─── Base44 Device Code Modal ─────────────────────────────────────────────────
+// ─── Base44 Login Modal ───────────────────────────────────────────────────────
 
-type DeviceFlowState =
-  | { phase: "idle" }
-  | { phase: "loading" }
-  | { phase: "waiting"; device_code: string; user_code: string; verification_uri: string; interval: number }
-  | { phase: "confirming" }
-  | { phase: "error"; message: string };
-
-function Base44DeviceModal({
+function Base44LoginModal({
   onSuccess,
   onClose,
 }: {
   onSuccess: (token: string, email: string, name: string) => void;
   onClose: () => void;
 }) {
-  const [state, setState] = useState<DeviceFlowState>({ phase: "idle" });
-  const [copied, setCopied] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [tab, setTab] = useState<"login" | "token">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [rawToken, setRawToken] = useState("");
+  const [showRaw, setShowRaw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
 
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => () => stopPolling(), [stopPolling]);
-
-  const startDeviceFlow = async () => {
-    setState({ phase: "loading" });
-    stopPolling();
+  const handleLogin = async () => {
+    if (!email.trim()) { setError("Enter your Base44 email"); return; }
+    if (!password) { setError("Enter your password"); return; }
+    setError("");
+    setLoading(true);
     try {
-      const result = await initiateBase44DeviceAuth({ data: undefined });
-      if (!result.device_code || !result.user_code) {
-        throw new Error("Invalid response from Base44 — missing device code.");
-      }
-      setState({
-        phase: "waiting",
-        device_code: result.device_code,
-        user_code: result.user_code,
-        verification_uri: result.verification_uri,
-        interval: result.interval ?? 5,
-      });
-      beginPolling(result.device_code, result.interval ?? 5, result.expires_in ?? 900);
+      const res = await base44Login({ data: { email: email.trim(), password } });
+      setDone(true);
+      setTimeout(() => onSuccess(res.token, res.email, res.name), 700);
     } catch (e: any) {
-      setState({ phase: "error", message: e.message ?? "Could not connect to Base44." });
+      setError(e.message ?? "Login failed. Check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const beginPolling = (device_code: string, intervalSec: number, expiresSec: number) => {
-    const expiresAt = Date.now() + expiresSec * 1000;
-    pollRef.current = setInterval(async () => {
-      if (Date.now() > expiresAt) {
-        stopPolling();
-        setState({ phase: "error", message: "Code expired. Please try again." });
-        return;
-      }
-      try {
-        const result = await pollBase44DeviceAuth({ data: { device_code } });
-        if (result.status === "authorized") {
-          stopPolling();
-          setState({ phase: "confirming" });
-          onSuccess(result.token!, result.email!, result.name!);
-        } else if (result.status === "expired") {
-          stopPolling();
-          setState({ phase: "error", message: "Code expired. Please try again." });
-        } else if (result.status === "denied") {
-          stopPolling();
-          setState({ phase: "error", message: "Access denied. Please try again." });
-        }
-        // "pending" — keep polling
-      } catch {
-        // Network hiccup — keep polling
-      }
-    }, intervalSec * 1000);
-  };
-
-  const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleToken = async () => {
+    if (!rawToken.trim()) { setError("Paste your Base44 auth token"); return; }
+    setError("");
+    setLoading(true);
+    try {
+      const info = await validateBase44Token({ data: { token: rawToken.trim() } });
+      setDone(true);
+      setTimeout(() => onSuccess(rawToken.trim(), info.email, info.name), 700);
+    } catch (e: any) {
+      setError("Invalid or expired token.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,16 +87,16 @@ function Base44DeviceModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={() => { stopPolling(); onClose(); }}
+        onClick={onClose}
       />
 
-      {/* Modal card */}
+      {/* Card */}
       <div className="relative z-10 w-full max-w-sm mx-4 mb-4 sm:mb-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-4">
-          {/* Base44 logo */}
-          <div className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+          <div
+            className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
             <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white">
               <ellipse cx="12" cy="12" rx="10" ry="3" />
@@ -149,8 +109,8 @@ function Base44DeviceModal({
             <div className="text-xs text-black/50">Sign in to access your apps</div>
           </div>
           <button
-            onClick={() => { stopPolling(); onClose(); }}
-            className="h-8 w-8 rounded-full bg-[#f3f2ee] flex items-center justify-center text-black/50 hover:text-black"
+            onClick={onClose}
+            className="h-8 w-8 rounded-full bg-[#f3f2ee] flex items-center justify-center text-black/40 hover:text-black"
           >
             <X className="h-4 w-4" />
           </button>
@@ -161,106 +121,130 @@ function Base44DeviceModal({
           <div className="flex items-start gap-2.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-3.5">
             <Shield className="h-4 w-4 text-[#22c55e] shrink-0 mt-0.5" />
             <p className="text-[12px] text-[#166534] leading-snug font-medium">
-              Your credentials stay with Base44. We only get temporary access to your app's export.
+              Your password is sent directly to Base44 and never stored — only
+              the returned session token is saved in your browser.
             </p>
           </div>
 
-          {state.phase === "idle" && (
-            <button
-              onClick={startDeviceFlow}
-              className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
-            >
-              <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-                <ellipse cx="12" cy="12" rx="10" ry="3" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-              </svg>
-              Connect with Base44
-            </button>
-          )}
-
-          {state.phase === "loading" && (
+          {done ? (
             <div className="flex flex-col items-center gap-3 py-6">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
-              <p className="text-sm text-black/50 font-medium">Generating code…</p>
-            </div>
-          )}
-
-          {state.phase === "waiting" && (
-            <>
-              <div>
-                <p className="text-[12px] text-black/50 text-center mb-3 font-medium">
-                  Enter this code at Base44:
-                </p>
-                {/* Code display */}
-                <div className="flex items-center justify-center gap-3 bg-[#f7f6f1] rounded-2xl px-5 py-4">
-                  <span className="font-mono font-extrabold text-[28px] tracking-[0.18em] text-black select-all">
-                    {state.user_code}
-                  </span>
-                  <button
-                    onClick={() => copyCode(state.user_code)}
-                    className="h-9 w-9 rounded-xl bg-white border border-[#eee] flex items-center justify-center shrink-0 shadow-sm"
-                  >
-                    {copied ? (
-                      <CheckCheck className="h-4 w-4 text-[#22c55e]" />
-                    ) : (
-                      <Copy className="h-4 w-4 text-black/50" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Open Base44 button */}
-              <a
-                href={state.verification_uri}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-                  <ellipse cx="12" cy="12" rx="10" ry="3" />
-                  <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-                  <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-                </svg>
-                Login with Base44
-                <ExternalLink className="h-4 w-4" />
-              </a>
-
-              {/* Polling indicator */}
-              <div className="flex items-center justify-center gap-2 text-[12px] text-black/40 font-medium">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Waiting for confirmation…
-              </div>
-            </>
-          )}
-
-          {state.phase === "confirming" && (
-            <div className="flex flex-col items-center gap-3 py-4">
-              <div className="h-14 w-14 rounded-full bg-[#dcfce7] flex items-center justify-center">
-                <Check className="h-8 w-8 text-[#22c55e]" strokeWidth={3} />
+              <div className="h-16 w-16 rounded-full bg-[#dcfce7] flex items-center justify-center">
+                <Check className="h-9 w-9 text-[#22c55e]" strokeWidth={3} />
               </div>
               <p className="text-sm font-bold text-black">Connected!</p>
             </div>
-          )}
-
-          {state.phase === "error" && (
-            <div className="space-y-3">
-              <div className="flex items-start gap-2.5 bg-[#fef2f2] border border-[#fecaca] rounded-2xl p-3.5">
-                <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
-                <p className="text-[12px] text-[#991b1b] leading-snug font-medium">
-                  {state.message}
-                </p>
+          ) : (
+            <>
+              {/* Tab switcher */}
+              <div className="flex bg-[#f3f2ee] rounded-2xl p-1">
+                {(["login", "token"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => { setTab(t); setError(""); }}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                      tab === t
+                        ? "bg-white text-black shadow-sm"
+                        : "text-black/40"
+                    }`}
+                  >
+                    {t === "login" ? "Email & Password" : "Auth Token"}
+                  </button>
+                ))}
               </div>
+
+              {tab === "login" && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30" />
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      className="w-full rounded-2xl border border-[#eee] bg-[#f7f6f1] pl-10 pr-4 py-3.5 text-sm outline-none focus:border-[#f97316]"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30" />
+                    <input
+                      type={showPw ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      className="w-full rounded-2xl border border-[#eee] bg-[#f7f6f1] pl-10 pr-11 py-3.5 text-sm outline-none focus:border-[#f97316]"
+                    />
+                    <button
+                      onClick={() => setShowPw(!showPw)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/30"
+                    >
+                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {tab === "token" && (
+                <div className="space-y-1.5">
+                  <p className="text-[11px] text-black/40 leading-relaxed">
+                    Get your token from{" "}
+                    <a
+                      href="https://app.base44.com/settings"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#f97316] font-semibold underline"
+                    >
+                      app.base44.com/settings
+                    </a>{" "}
+                    → API Keys.
+                  </p>
+                  <div className="relative">
+                    <input
+                      type={showRaw ? "text" : "password"}
+                      placeholder="Paste token here…"
+                      value={rawToken}
+                      onChange={(e) => setRawToken(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleToken()}
+                      className="w-full rounded-2xl border border-[#eee] bg-[#f7f6f1] px-4 pr-11 py-3.5 text-sm font-mono outline-none focus:border-[#f97316]"
+                    />
+                    <button
+                      onClick={() => setShowRaw(!showRaw)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/30"
+                    >
+                      {showRaw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <div className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-2xl p-3">
+                  <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+                  <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                </div>
+              )}
+
+              {/* Submit */}
               <button
-                onClick={startDeviceFlow}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl py-3 bg-[#f3f2ee] text-black font-bold text-sm"
+                onClick={tab === "login" ? handleLogin : handleToken}
+                disabled={loading}
+                className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
+                style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
               >
-                <RefreshCw className="h-4 w-4" />
-                Try again
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                    <ellipse cx="12" cy="12" rx="10" ry="3" />
+                    <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
+                    <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
+                  </svg>
+                )}
+                {loading ? "Connecting…" : "Connect to Base44"}
               </button>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -276,7 +260,9 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       onClick={() => onChange(!on)}
       className={`h-6 w-11 rounded-full p-0.5 transition-colors ${on ? "bg-[#8b5cf6]" : "bg-[#e5e5e5]"}`}
     >
-      <span className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : ""}`} />
+      <span
+        className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : ""}`}
+      />
     </button>
   );
 }
@@ -296,7 +282,7 @@ function StatusBadge({ connected }: { connected: boolean }) {
 function SettingsPage() {
   const { creds, updateCreds, signOut, isLoaded } = useApp();
 
-  const [showDeviceModal, setShowDeviceModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [ghToken, setGhToken] = useState("");
   const [showGhToken, setShowGhToken] = useState(false);
   const [ghLoading, setGhLoading] = useState(false);
@@ -319,7 +305,7 @@ function SettingsPage() {
 
   const handleBase44Success = (token: string, email: string, name: string) => {
     updateCreds({ base44Token: token, base44Email: email || name });
-    setTimeout(() => setShowDeviceModal(false), 800);
+    setTimeout(() => setShowLoginModal(false), 800);
     toast.success(`Connected as ${email || name || "Base44 user"}`);
   };
 
@@ -345,11 +331,10 @@ function SettingsPage() {
     <AppShell>
       <Toaster position="top-center" richColors />
 
-      {/* Device Auth Modal */}
-      {showDeviceModal && (
-        <Base44DeviceModal
+      {showLoginModal && (
+        <Base44LoginModal
           onSuccess={handleBase44Success}
-          onClose={() => setShowDeviceModal(false)}
+          onClose={() => setShowLoginModal(false)}
         />
       )}
 
@@ -370,14 +355,10 @@ function SettingsPage() {
               <p className="text-xs text-black/60 truncate">@{ghUser.login} on GitHub</p>
             )}
             <div className="flex gap-2 mt-2 flex-wrap">
-              <span
-                className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isBase44Connected ? "bg-[#f97316]" : "bg-black/25"}`}
-              >
+              <span className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isBase44Connected ? "bg-[#f97316]" : "bg-black/25"}`}>
                 {isBase44Connected ? "BASE44 ✓" : "BASE44 ✗"}
               </span>
-              <span
-                className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isGitHubConnected ? "bg-[#1a1a1a]" : "bg-black/25"}`}
-              >
+              <span className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isGitHubConnected ? "bg-[#1a1a1a]" : "bg-black/25"}`}>
                 {isGitHubConnected ? "GITHUB ✓" : "GITHUB ✗"}
               </span>
             </div>
@@ -400,10 +381,13 @@ function SettingsPage() {
         </div>
 
         {isBase44Connected ? (
-          <div className="flex items-center gap-3 rounded-2xl p-4" style={{ background: "linear-gradient(135deg, #fff7ed, #ffedd5)" }}>
+          <div
+            className="flex items-center gap-3 rounded-2xl p-4"
+            style={{ background: "linear-gradient(135deg,#fff7ed,#ffedd5)" }}
+          >
             <div
               className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+              style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white">
                 <ellipse cx="12" cy="12" rx="10" ry="3" />
@@ -413,15 +397,15 @@ function SettingsPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-black truncate">{creds.base44Email || "Connected"}</div>
-              <div className="text-[11px] text-black/50">Authenticated via device code</div>
+              <div className="text-[11px] text-black/50">Authenticated via Base44</div>
             </div>
             <Check className="h-5 w-5 text-[#f97316] shrink-0" strokeWidth={3} />
           </div>
         ) : (
           <button
-            onClick={() => setShowDeviceModal(true)}
+            onClick={() => setShowLoginModal(true)}
             className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2.5"
-            style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+            style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
               <ellipse cx="12" cy="12" rx="10" ry="3" />
@@ -528,13 +512,13 @@ function SettingsPage() {
         </div>
       </SectionCard>
 
-      {/* Security note */}
+      {/* Security */}
       <SectionCard title="Privacy & Security">
         <div className="rounded-2xl bg-[#f0fdf4] border border-[#bbf7d0] p-4 text-[12px] text-[#166534] leading-relaxed flex gap-2.5">
           <Shield className="h-4 w-4 shrink-0 mt-0.5 text-[#22c55e]" />
           <span>
-            Tokens are stored only in your browser's local storage. They are
-            never stored on any server — only sent directly to Base44 and GitHub.
+            Your password is never stored. Only the session token returned by Base44
+            is saved — in your browser only, never on any server.
           </span>
         </div>
       </SectionCard>

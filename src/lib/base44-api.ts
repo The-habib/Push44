@@ -2,149 +2,71 @@ import { createServerFn } from "@tanstack/react-start";
 
 const BASE44_API = "https://api.base44.com/v1";
 
-function b44Headers(token?: string) {
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    "Content-Type": "application/json",
-  };
-}
-
 async function b44Fetch(path: string, opts?: RequestInit, token?: string) {
-  const res = await fetch(`${BASE44_API}${path}`, {
-    ...opts,
-    headers: { ...b44Headers(token), ...(opts?.headers ?? {}) },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...((opts?.headers ?? {}) as Record<string, string>),
+  };
+  const res = await fetch(`${BASE44_API}${path}`, { ...opts, headers });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    let msg = `Base44 API error ${res.status}`;
+    let msg = `Base44 error ${res.status}`;
     try {
-      const parsed = JSON.parse(body);
-      msg = parsed.message ?? parsed.error ?? parsed.detail ?? msg;
+      const p = JSON.parse(body);
+      msg = p.message ?? p.error ?? p.detail ?? msg;
     } catch {}
     throw new Error(msg);
   }
   return res.json();
 }
 
-// ─── Device Code Flow ────────────────────────────────────────────────────────
+// ─── Email / Password login ───────────────────────────────────────────────────
 
-export interface DeviceCodeResponse {
-  device_code: string;
-  user_code: string;       // e.g. "VNCR-NWSQ"
-  verification_uri: string; // URL user opens in browser
-  expires_in: number;      // seconds until code expires
-  interval: number;        // polling interval in seconds
-}
+export const base44Login = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { email, password } = ctx.data as { email: string; password: string };
 
-export const initiateBase44DeviceAuth = createServerFn({ method: "POST" }).handler(
-  async () => {
-    const res = await fetch(`${BASE44_API}/auth/device`, {
+    // Try primary endpoint
+    const res = await fetch(`${BASE44_API}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ client_id: "base44-push" }),
+      body: JSON.stringify({ email, password }),
     });
+
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      let msg = `Failed to start device auth (${res.status})`;
+      let msg = `Login failed (${res.status})`;
       try {
         const p = JSON.parse(body);
         msg = p.message ?? p.error ?? p.detail ?? msg;
       } catch {}
       throw new Error(msg);
     }
+
     const data = await res.json();
-    return {
-      device_code: String(data.device_code ?? data.deviceCode ?? ""),
-      user_code: String(
-        data.user_code ??
-        data.userCode ??
-        data.code ??
-        data.verification_code ??
-        ""
-      ),
-      verification_uri: String(
-        data.verification_uri ??
-        data.verificationUri ??
-        data.verification_url ??
-        data.url ??
-        "https://app.base44.com/device"
-      ),
-      expires_in: Number(data.expires_in ?? data.expiresIn ?? 900),
-      interval: Number(data.interval ?? 5),
-    } as DeviceCodeResponse;
-  }
-);
 
-// Returns { status: "pending" | "authorized" | "expired" | "denied" }
-// When authorized also returns { token, email, name }
-export const pollBase44DeviceAuth = createServerFn({ method: "POST" }).handler(
-  async (ctx) => {
-    const { device_code } = ctx.data as { device_code: string };
-
-    const res = await fetch(`${BASE44_API}/auth/device/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        device_code,
-        grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-        client_id: "base44-push",
-      }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    // Standard OAuth device flow error codes
-    const error: string =
-      data.error ?? data.error_code ?? data.status ?? "";
-
-    if (
-      error === "authorization_pending" ||
-      error === "pending" ||
-      res.status === 428
-    ) {
-      return { status: "pending" as const };
-    }
-    if (
-      error === "expired_token" ||
-      error === "expired" ||
-      res.status === 410
-    ) {
-      return { status: "expired" as const };
-    }
-    if (
-      error === "access_denied" ||
-      error === "denied" ||
-      res.status === 403
-    ) {
-      return { status: "denied" as const };
-    }
-
-    if (!res.ok) {
-      return { status: "pending" as const }; // keep polling on unknown errors
-    }
-
-    // Success — extract token
+    // Extract token — Base44 may use different key names
     const token: string =
-      data.access_token ??
       data.token ??
+      data.access_token ??
       data.accessToken ??
       data.jwt ??
       data.auth_token ??
+      data.authToken ??
       "";
-
-    if (!token) return { status: "pending" as const };
+    if (!token) throw new Error("No token in Base44 response — check credentials.");
 
     const user = data.user ?? data.profile ?? {};
     return {
-      status: "authorized" as const,
       token,
-      email: String(user.email ?? data.email ?? ""),
-      name: String(user.name ?? user.full_name ?? user.username ?? data.name ?? ""),
+      email: String(user.email ?? data.email ?? email),
+      name: String(user.name ?? user.full_name ?? user.username ?? data.name ?? email),
     };
   }
 );
 
-// ─── Token validation & user info ─────────────────────────────────────────────
+// ─── Token validation ─────────────────────────────────────────────────────────
 
 export const validateBase44Token = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
@@ -159,7 +81,7 @@ export const validateBase44Token = createServerFn({ method: "POST" }).handler(
   }
 );
 
-// ─── Apps & Files ──────────────────────────────────────────────────────────────
+// ─── Apps ─────────────────────────────────────────────────────────────────────
 
 export interface Base44App {
   id: string;
@@ -189,6 +111,8 @@ export const listBase44Apps = createServerFn({ method: "POST" }).handler(
     );
   }
 );
+
+// ─── Files ────────────────────────────────────────────────────────────────────
 
 export interface Base44File {
   path: string;
