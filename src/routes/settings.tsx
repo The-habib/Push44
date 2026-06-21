@@ -97,7 +97,7 @@ function Base44LoginModal({
             className="h-11 w-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
             style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
-            <Base44Logo size={28} />
+            <Base44Logo size={28} white />
           </div>
           <div className="flex-1">
             <div className="text-base font-extrabold text-black">Connect to Base44</div>
@@ -228,7 +228,7 @@ function Base44LoginModal({
                 className="w-full rounded-3xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
               >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Base44Logo size={20} />}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Base44Logo size={20} white />}
                 {loading ? "Connecting…" : "Connect to Base44"}
               </button>
             </>
@@ -382,7 +382,7 @@ function SettingsPage() {
               className="h-11 w-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
             >
-              <Base44Logo size={28} />
+              <Base44Logo size={28} white />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-black truncate">{creds.base44Email || "Connected"}</div>
@@ -396,7 +396,7 @@ function SettingsPage() {
             className="w-full rounded-3xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2.5"
             style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
-            <Base44Logo size={20} />
+            <Base44Logo size={20} white />
             Login with Base44
           </button>
         )}

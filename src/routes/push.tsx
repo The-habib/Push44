@@ -14,7 +14,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import { GitHubLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";

@@ -3,9 +3,11 @@ import base44Logo from "@/assets/base44-logo-transparent.png";
 export function Base44Logo({
   className = "",
   size,
+  white,
 }: {
   className?: string;
   size?: number;
+  white?: boolean;
 }) {
   return (
     <img
@@ -14,6 +16,7 @@ export function Base44Logo({
       width={size}
       height={size}
       className={`object-contain ${className}`}
+      style={white ? { filter: "brightness(0) invert(1)" } : undefined}
       draggable={false}
     />
   );

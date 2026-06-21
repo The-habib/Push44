@@ -313,7 +313,7 @@ function Base44Step({
     }
   };
 
-  const Base44Icon = () => <Base44Logo size={28} />;
+  const Base44Icon = () => <Base44Logo size={28} white />;
 
   return (
     <div className="w-full">
@@ -694,10 +694,14 @@ function DoneStep({
               className="flex items-center gap-3 rounded-2xl px-4 py-3 border border-black/6 bg-[#fafaf8]"
             >
               <div
-                className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0 text-white text-[10px] font-extrabold"
+                className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: c.color }}
               >
-                {c.label[0]}
+                {c.label === "Base44" ? (
+                  <Base44Logo size={16} white />
+                ) : (
+                  <GitHubLogo className="h-4 w-4 text-white" />
+                )}
               </div>
               <div className="text-left flex-1 min-w-0">
                 <div className="text-xs font-bold text-black">{c.label}</div>
