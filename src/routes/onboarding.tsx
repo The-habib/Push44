@@ -15,6 +15,7 @@ import {
   Zap,
   Copy,
   CheckCircle2,
+  User,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
@@ -97,7 +98,70 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   );
 }
 
-// ─── Step 1 — Base44 Login ────────────────────────────────────────────────────
+// ─── Step 1 — Your Name ───────────────────────────────────────────────────────
+
+function NameStep({ onNext }: { onNext: (name: string) => void }) {
+  const [name, setName] = useState("");
+
+  const initials = name.trim()
+    ? name.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
+  return (
+    <div className="w-full">
+      {/* Avatar preview */}
+      <div className="flex flex-col items-center mb-8">
+        <div
+          className="h-24 w-24 rounded-full flex items-center justify-center mb-5 shadow-2xl ring-2 ring-white/10 transition-all duration-200"
+          style={{ background: name.trim() ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "rgba(255,255,255,0.08)" }}
+        >
+          {name.trim() ? (
+            <span className="text-2xl font-extrabold text-white tracking-tight">{initials}</span>
+          ) : (
+            <User className="h-10 w-10 text-white/20" strokeWidth={1.5} />
+          )}
+        </div>
+        <h2 className="text-2xl font-extrabold text-white text-center tracking-tight">
+          What's your name?
+        </h2>
+        <p className="text-[13px] text-white/40 mt-2 text-center leading-snug">
+          This is how you'll appear across Push44.
+        </p>
+      </div>
+
+      {/* Input */}
+      <input
+        type="text"
+        placeholder="e.g. Alex Johnson"
+        value={name}
+        autoFocus
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && name.trim() && onNext(name.trim())}
+        className="w-full rounded-2xl border border-white/10 px-5 py-4 text-base text-white placeholder:text-white/25 outline-none focus:border-[#a78bfa] transition-colors mb-4 text-center font-semibold"
+        style={{ background: "rgba(255,255,255,0.07)" }}
+      />
+
+      <button
+        onClick={() => onNext(name.trim())}
+        disabled={!name.trim()}
+        className="w-full rounded-2xl py-4 font-bold text-base flex items-center justify-center gap-2.5 disabled:opacity-30 active:scale-[0.98] transition-all"
+        style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)", color: "white" }}
+      >
+        Continue
+        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+      </button>
+
+      <button
+        onClick={() => onNext("")}
+        className="w-full mt-3 py-3 text-[13px] text-white/30 font-medium hover:text-white/50 transition-colors"
+      >
+        Skip for now
+      </button>
+    </div>
+  );
+}
+
+// ─── Step 2 — Base44 Login ────────────────────────────────────────────────────
 
 function Base44Step({
   onNext,
@@ -473,14 +537,20 @@ function GitHubStep({
 // ─── Step 3 — Done ────────────────────────────────────────────────────────────
 
 function DoneStep({
+  displayName,
   base44Email,
   githubUsername,
   onFinish,
 }: {
+  displayName: string;
   base44Email: string;
   githubUsername: string;
   onFinish: () => void;
 }) {
+  const initials = displayName.trim()
+    ? displayName.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "✓";
+
   const connected = [
     base44Email && { icon: "🟠", label: `Base44: ${base44Email}` },
     githubUsername && { icon: "⚫", label: `GitHub: @${githubUsername}` },
@@ -488,16 +558,20 @@ function DoneStep({
 
   return (
     <div className="flex flex-col items-center text-center">
-      {/* Success animation */}
+      {/* Avatar / success state */}
       <div
-        className="h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-2xl"
-        style={{ background: "linear-gradient(135deg,#22c55e22,#22c55e44)", border: "2px solid #22c55e66" }}
+        className="h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-2xl ring-2 ring-[#22c55e]/40"
+        style={{ background: displayName.trim() ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "linear-gradient(135deg,#22c55e22,#22c55e44)" }}
       >
-        <CheckCircle2 className="h-12 w-12 text-[#22c55e]" strokeWidth={1.5} />
+        {displayName.trim() ? (
+          <span className="text-2xl font-extrabold text-white tracking-tight">{initials}</span>
+        ) : (
+          <CheckCircle2 className="h-12 w-12 text-[#22c55e]" strokeWidth={1.5} />
+        )}
       </div>
 
-      <h2 className="text-[32px] font-extrabold text-white mb-3 tracking-tight">
-        You're all set!
+      <h2 className="text-[32px] font-extrabold text-white mb-2 tracking-tight">
+        {displayName.trim() ? `You're ready, ${displayName.split(" ")[0]}!` : "You're all set!"}
       </h2>
       <p className="text-[14px] text-white/50 leading-relaxed mb-8 max-w-xs">
         Push44 is ready. Select a Base44 app, pick a repo, and push your code in one tap.
@@ -538,8 +612,12 @@ function OnboardingPage() {
   const { creds, updateCreds, isLoaded } = useApp();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [displayName, setDisplayName] = useState(creds.displayName ?? "");
   const [base44Email, setBase44Email] = useState(creds.base44Email ?? "");
   const [githubUsername, setGithubUsername] = useState(creds.githubUsername ?? "");
+
+  // Steps: 0=welcome, 1=name, 2=base44, 3=github, 4=done
+  const ACTIVE_STEPS = 3; // name + base44 + github (shown in progress bar)
 
   // If already fully connected, skip straight to dashboard
   useEffect(() => {
@@ -549,25 +627,31 @@ function OnboardingPage() {
     }
   }, [isLoaded]);
 
-  const STEPS = ["welcome", "base44", "github", "done"] as const;
-  const totalDots = STEPS.length - 1; // don't count done step
+  const handleNameNext = (name: string) => {
+    if (name) updateCreds({ displayName: name });
+    setDisplayName(name);
+    setTimeout(() => setStep(2), 100);
+  };
 
   const handleBase44Success = (token: string, email: string) => {
     updateCreds({ base44Token: token, base44Email: email });
     setBase44Email(email);
-    setTimeout(() => setStep(2), 400);
+    setTimeout(() => setStep(3), 400);
   };
 
   const handleGitHubSuccess = (token: string, username: string) => {
     updateCreds({ githubToken: token, githubUsername: username, defaultOwner: username });
     setGithubUsername(username);
-    setTimeout(() => setStep(3), 400);
+    setTimeout(() => setStep(4), 400);
   };
 
   const handleFinish = () => {
     markOnboardingDone();
     navigate({ to: "/" });
   };
+
+  // Progress bar step index (1-based within active steps)
+  const progressStep = step > 0 && step < 4 ? step : null;
 
   return (
     <div
@@ -597,12 +681,12 @@ function OnboardingPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Progress dots (hide on welcome + done) */}
-        {step > 0 && step < 3 && (
+        {/* Progress dots (show only for steps 1–3) */}
+        {progressStep !== null && (
           <div className="flex items-center justify-between mb-8">
-            <StepDots total={totalDots} current={step - 1} />
+            <StepDots total={ACTIVE_STEPS} current={progressStep - 1} />
             <span className="text-[12px] text-white/30 font-medium">
-              Step {step} of {totalDots}
+              Step {progressStep} of {ACTIVE_STEPS}
             </span>
           </div>
         )}
@@ -610,20 +694,22 @@ function OnboardingPage() {
         {/* Step content */}
         <div key={step} style={{ animation: "fadeSlideUp 0.35s ease both" }}>
           {step === 0 && <WelcomeStep onNext={() => setStep(1)} />}
-          {step === 1 && (
+          {step === 1 && <NameStep onNext={handleNameNext} />}
+          {step === 2 && (
             <Base44Step
               onNext={handleBase44Success}
-              onSkip={() => setStep(2)}
-            />
-          )}
-          {step === 2 && (
-            <GitHubStep
-              onNext={handleGitHubSuccess}
               onSkip={() => setStep(3)}
             />
           )}
           {step === 3 && (
+            <GitHubStep
+              onNext={handleGitHubSuccess}
+              onSkip={() => setStep(4)}
+            />
+          )}
+          {step === 4 && (
             <DoneStep
+              displayName={displayName}
               base44Email={base44Email}
               githubUsername={githubUsername}
               onFinish={handleFinish}

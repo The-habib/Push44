@@ -7,7 +7,7 @@ import {
   Settings,
   Github,
 } from "lucide-react";
-import avatar from "@/assets/avatar.png";
+import { useApp } from "@/contexts/AppContext";
 import type { ReactNode } from "react";
 
 const navItems = [
@@ -18,8 +18,38 @@ const navItems = [
   { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
+function AvatarBubble({
+  name,
+  size = 36,
+  fontSize = 14,
+}: {
+  name: string;
+  size?: number;
+  fontSize?: number;
+}) {
+  const initials = name.trim()
+    ? name.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+  return (
+    <div
+      className="rounded-full flex items-center justify-center font-extrabold text-white shrink-0"
+      style={{
+        width: size,
+        height: size,
+        fontSize,
+        background: "linear-gradient(135deg,#8b5cf6,#6d28d9)",
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { creds } = useApp();
+  const displayName =
+    creds.displayName || creds.base44Email || creds.githubUsername || "";
 
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: "#f3f2ee" }}>
@@ -67,12 +97,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="px-4 py-4 border-t" style={{ borderColor: "#e8e6e0" }}>
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
-                <img src={avatar} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+                <AvatarBubble name={displayName} size={36} fontSize={13} />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-black truncate">My Account</div>
-                <div className="text-[11px] text-black/40 truncate">Connected</div>
+                <div className="text-xs font-bold text-black truncate">
+                  {creds.displayName || "My Account"}
+                </div>
+                <div className="text-[11px] text-black/40 truncate">
+                  {creds.base44Email || creds.githubUsername || "Not connected"}
+                </div>
               </div>
             </div>
           </div>
@@ -96,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Github className="h-4 w-4" />
               </a>
               <div className="relative">
-                <img src={avatar} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+                <AvatarBubble name={displayName} size={36} fontSize={13} />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-white" />
               </div>
             </div>
@@ -122,10 +156,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               Push<span className="text-[#8b5cf6]">44</span>
             </h1>
           </div>
-          <div className="relative h-11 w-11">
-            <img src={avatar} alt="Profile" className="h-11 w-11 rounded-full object-cover" width={44} height={44} loading="lazy" />
+          <Link to="/settings" className="relative h-11 w-11 block">
+            <AvatarBubble name={displayName} size={44} fontSize={16} />
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
-          </div>
+          </Link>
         </header>
 
         {/* Mobile page content */}

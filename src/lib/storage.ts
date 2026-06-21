@@ -1,4 +1,5 @@
 export interface Credentials {
+  displayName: string;
   githubToken: string;
   githubUsername: string;
   base44Token: string;
