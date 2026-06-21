@@ -12,6 +12,9 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Use Vercel preset when building outside Lovable sandbox.
+  // NITRO_PRESET env var still wins, so CI/Vercel auto-detection also works.
+  nitro: { preset: "vercel" },
   vite: {
     server: {
       host: "0.0.0.0",

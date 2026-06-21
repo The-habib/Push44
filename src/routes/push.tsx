@@ -57,6 +57,7 @@ function PushPage() {
   const [loadingApps, setLoadingApps] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const [wakingSandbox, setWakingSandbox] = useState(false);
 
   const isConnected = !!(creds.base44Token && creds.githubToken);
 
@@ -106,6 +107,11 @@ function PushPage() {
     setFiles([]);
     setCommitMsg(`Push ${app.name} to GitHub`);
     setLoadingFiles(true);
+    setWakingSandbox(false);
+
+    // Show waking indicator after 3s if files haven't arrived yet
+    const wakeTimer = setTimeout(() => setWakingSandbox(true), 3000);
+
     try {
       const f = await fetchBase44AppFiles({
         data: { token: creds.base44Token!, appId: app.id },
@@ -114,7 +120,9 @@ function PushPage() {
     } catch (e: any) {
       toast.error("Failed to fetch app files: " + e.message);
     } finally {
+      clearTimeout(wakeTimer);
       setLoadingFiles(false);
+      setWakingSandbox(false);
     }
   }
 
@@ -359,9 +367,16 @@ function PushPage() {
         )}
 
         {loadingFiles && selectedApp && (
-          <div className="flex items-center gap-2 mt-3 text-xs text-black/50">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Fetching files from Base44…
+          <div className="flex flex-col gap-1 mt-3">
+            <div className="flex items-center gap-2 text-xs text-black/50">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {wakingSandbox ? "Waking up sandbox…" : "Fetching files from Base44…"}
+            </div>
+            {wakingSandbox && (
+              <div className="text-[11px] text-black/35 ml-5 leading-snug">
+                Sandbox was sleeping — auto-waking it. This takes ~30s.
+              </div>
+            )}
           </div>
         )}
       </SectionCard>

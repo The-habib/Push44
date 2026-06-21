@@ -111,21 +111,58 @@ export interface Base44File {
   content: string;
 }
 
+async function getSandboxStatus(appId: string, token: string): Promise<string> {
+  try {
+    const res = await fetch(`${BASE}/apps/${appId}/sandbox/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return "unknown";
+    const json = await res.json().catch(() => ({}));
+    return json?.status ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+async function wakeAndWaitForSandbox(
+  appId: string,
+  token: string,
+  timeoutMs = 60_000
+): Promise<void> {
+  // Try common wake endpoints — ignore errors (endpoint may not exist)
+  for (const path of [
+    `/apps/${appId}/sandbox/start`,
+    `/apps/${appId}/sandbox/wake`,
+  ]) {
+    try {
+      await fetch(`${BASE}${path}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+    } catch {}
+  }
+
+  // Poll status until alive or timeout
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const status = await getSandboxStatus(appId, token);
+    if (status === "alive") return;
+    await new Promise((r) => setTimeout(r, 3_000));
+  }
+
+  throw new Error(
+    "Sandbox did not wake up in time. Open your app in Base44 and try again."
+  );
+}
+
 export const fetchBase44AppFiles = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
     const { token, appId } = ctx.data as { token: string; appId: string };
 
-    // Ensure sandbox is alive before reading files
-    const statusRes = await fetch(`${BASE}/apps/${appId}/sandbox/status`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (statusRes.ok) {
-      const status = await statusRes.json().catch(() => ({}));
-      if (status?.status !== "alive") {
-        throw new Error(
-          "App sandbox is not running. Open the app in Base44 first to wake it up, then try again."
-        );
-      }
+    // Check sandbox status — auto-wake if not alive
+    const status = await getSandboxStatus(appId, token);
+    if (status !== "alive") {
+      await wakeAndWaitForSandbox(appId, token);
     }
 
     const data = await b44Fetch(`/apps/${appId}/sandbox/files`, undefined, token);
