@@ -330,17 +330,17 @@ function Base44Step({
       </div>
 
       {/* Security note */}
-      <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 mb-5">
-        <Shield className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-emerald-700 leading-snug font-medium">
+      <div className="flex items-start gap-2.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-3.5 mb-5">
+        <Shield className="h-4 w-4 text-[#22c55e] shrink-0 mt-0.5" />
+        <p className="text-[11px] text-[#166534] leading-snug font-medium">
           Your password goes directly to Base44 — never stored here. Only the session token is saved locally.
         </p>
       </div>
 
       {done ? (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center">
-            <CheckCircle2 className="h-9 w-9 text-emerald-500" strokeWidth={2} />
+          <div className="h-16 w-16 rounded-full bg-[#f0fdf4] flex items-center justify-center">
+            <CheckCircle2 className="h-9 w-9 text-[#22c55e]" strokeWidth={2} />
           </div>
           <p className="text-base font-bold text-black">Connected to Base44!</p>
         </div>
@@ -416,9 +416,9 @@ function Base44Step({
           )}
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-2xl p-3 mt-3">
-              <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-              <p className="text-[12px] text-red-600 font-medium">{error}</p>
+            <div className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-2xl p-3 mt-3">
+              <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+              <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
             </div>
           )}
 
@@ -500,8 +500,8 @@ function GitHubStep({
 
       {done ? (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center">
-            <CheckCircle2 className="h-9 w-9 text-emerald-500" strokeWidth={2} />
+          <div className="h-16 w-16 rounded-full bg-[#f0fdf4] flex items-center justify-center">
+            <CheckCircle2 className="h-9 w-9 text-[#22c55e]" strokeWidth={2} />
           </div>
           <p className="text-base font-bold text-black">GitHub connected!</p>
         </div>
@@ -545,7 +545,7 @@ function GitHubStep({
                       className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold border border-black/10 text-black/45 hover:text-black/70 transition-colors bg-white"
                     >
                       {copied
-                        ? <Check className="h-3.5 w-3.5 text-emerald-500" strokeWidth={3} />
+                        ? <Check className="h-3.5 w-3.5 text-[#22c55e]" strokeWidth={3} />
                         : <Copy className="h-3.5 w-3.5" />}
                       {copied ? "Copied!" : "Copy link"}
                     </button>
@@ -599,9 +599,9 @@ function GitHubStep({
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-2xl p-3 mb-4">
-              <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-              <p className="text-[12px] text-red-600 font-medium">{error}</p>
+            <div className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-2xl p-3 mb-4">
+              <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+              <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
             </div>
           )}
 
@@ -703,7 +703,7 @@ function DoneStep({
                 <div className="text-xs font-bold text-black">{c.label}</div>
                 <div className="text-[11px] text-black/40 truncate">{c.sub}</div>
               </div>
-              <Check className="h-4 w-4 text-emerald-500 shrink-0" strokeWidth={3} />
+              <Check className="h-4 w-4 text-[#22c55e] shrink-0" strokeWidth={3} />
             </div>
           ))}
         </div>

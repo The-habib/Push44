@@ -76,28 +76,34 @@ function HistoryPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="rounded-2xl p-4 bg-white">
-          <div className="text-[11px] text-black/60 font-medium">
+        <div className="rounded-3xl p-4 bg-white">
+          <div className="h-9 w-9 rounded-2xl bg-[#f0ebff] flex items-center justify-center mb-3">
+            <GitCommit className="h-4 w-4 text-[#8b5cf6]" strokeWidth={2} />
+          </div>
+          <div className="text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-0.5">
             Total Pushes
           </div>
-          <div className="text-2xl font-extrabold text-black mt-1">
+          <div className="text-2xl font-extrabold text-black leading-none">
             {events.length}
           </div>
           {successCount > 0 && (
-            <div className="text-[10px] text-[#22c55e] font-semibold mt-1">
+            <div className="text-[10px] text-[#22c55e] font-semibold mt-1.5">
               {successCount} successful
             </div>
           )}
         </div>
-        <div className="rounded-2xl p-4 bg-white">
-          <div className="text-[11px] text-black/60 font-medium">
+        <div className="rounded-3xl p-4 bg-white">
+          <div className="h-9 w-9 rounded-2xl bg-[#f0fdf4] flex items-center justify-center mb-3">
+            <Check className="h-4 w-4 text-[#22c55e]" strokeWidth={2.5} />
+          </div>
+          <div className="text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-0.5">
             Success Rate
           </div>
-          <div className="text-2xl font-extrabold text-black mt-1">
+          <div className="text-2xl font-extrabold text-black leading-none">
             {events.length === 0 ? "—" : `${successRate}%`}
           </div>
           {failCount > 0 && (
-            <div className="text-[10px] text-[#ef4444] font-semibold mt-1">
+            <div className="text-[10px] text-[#ef4444] font-semibold mt-1.5">
               {failCount} {failCount === 1 ? "failure" : "failures"}
             </div>
           )}

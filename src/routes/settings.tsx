@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, SectionCard } from "@/components/AppShell";
+import { AppShell, SectionCard, AvatarBubble } from "@/components/AppShell";
 import { useState, useEffect } from "react";
 import {
   Moon,
@@ -10,7 +10,6 @@ import {
   Check,
   X,
   Loader2,
-  User,
   ExternalLink,
   AlertCircle,
   Mail,
@@ -226,7 +225,7 @@ function Base44LoginModal({
               <button
                 onClick={tab === "login" ? handleLogin : handleToken}
                 disabled={loading}
-                className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full rounded-3xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Base44Logo size={20} />}
@@ -332,22 +331,28 @@ function SettingsPage() {
         style={{ backgroundColor: "#e9e4f8" }}
       >
         <div className="flex items-center gap-4">
-          <div className="h-20 w-20 rounded-full bg-[#8b5cf6] flex items-center justify-center ring-4 ring-white shrink-0">
-            <User className="h-10 w-10 text-white" />
+          <div className="ring-4 ring-white/80 rounded-full shrink-0">
+            <AvatarBubble
+              name={creds.displayName || creds.base44Email || creds.githubUsername || ""}
+              size={72}
+              fontSize={24}
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-extrabold text-black truncate">
-              {creds.base44Email || "Not signed in"}
+            <h2 className="text-lg font-extrabold text-black truncate">
+              {creds.displayName || creds.base44Email || "Not signed in"}
             </h2>
             {ghUser && (
-              <p className="text-xs text-black/60 truncate">@{ghUser.login} on GitHub</p>
+              <p className="text-[12px] text-black/50 truncate mt-0.5">@{ghUser.login} on GitHub</p>
             )}
-            <div className="flex gap-2 mt-2 flex-wrap">
-              <span className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isBase44Connected ? "bg-[#f97316]" : "bg-black/25"}`}>
-                {isBase44Connected ? "BASE44 ✓" : "BASE44 ✗"}
+            <div className="flex gap-1.5 mt-2.5 flex-wrap">
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 ${isBase44Connected ? "bg-[#f97316] text-white" : "bg-black/10 text-black/40"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isBase44Connected ? "bg-white/70" : "bg-black/30"}`} />
+                Base44
               </span>
-              <span className={`inline-block text-white text-[10px] font-bold rounded-full px-2.5 py-1 ${isGitHubConnected ? "bg-[#1a1a1a]" : "bg-black/25"}`}>
-                {isGitHubConnected ? "GITHUB ✓" : "GITHUB ✗"}
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 ${isGitHubConnected ? "bg-[#1a1a1a] text-white" : "bg-black/10 text-black/40"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isGitHubConnected ? "bg-white/70" : "bg-black/30"}`} />
+                GitHub
               </span>
             </div>
           </div>
@@ -388,7 +393,7 @@ function SettingsPage() {
         ) : (
           <button
             onClick={() => setShowLoginModal(true)}
-            className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2.5"
+            className="w-full rounded-3xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2.5"
             style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
             <Base44Logo size={20} />
@@ -453,7 +458,7 @@ function SettingsPage() {
             <button
               onClick={connectGitHub}
               disabled={ghLoading}
-              className="w-full bg-[#1a1a1a] text-white font-bold text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full bg-[#1a1a1a] text-white font-bold text-sm py-3.5 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {ghLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitHubLogo className="h-4 w-4" />}
               {ghLoading ? "Connecting…" : "Connect GitHub"}
@@ -505,7 +510,7 @@ function SettingsPage() {
 
       <button
         onClick={() => { signOut(); setGhUser(null); toast.success("Signed out"); }}
-        className="w-full bg-white rounded-2xl py-4 flex items-center justify-center gap-2 text-[#ef4444] font-bold text-sm mb-3"
+        className="w-full bg-white rounded-3xl py-4 flex items-center justify-center gap-2 text-[#ef4444] font-bold text-sm mb-3 border border-[#fecaca]"
       >
         <LogOut className="h-4 w-4" />
         Sign Out

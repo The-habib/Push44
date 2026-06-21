@@ -18,7 +18,7 @@ const navItems = [
   { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
-function AvatarBubble({
+export function AvatarBubble({
   name,
   size = 36,
   fontSize = 14,
@@ -122,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex-1" />
             <div className="flex items-center gap-3">
               <a
-                href="https://github.com"
+                href={creds.githubUsername ? `https://github.com/${creds.githubUsername}` : "https://github.com"}
                 target="_blank"
                 rel="noreferrer"
                 className="h-9 w-9 rounded-xl bg-[#f3f2ee] flex items-center justify-center text-black/50 hover:text-black transition-colors"
@@ -201,7 +201,7 @@ export function SectionCard({
   className?: string;
 }) {
   return (
-    <section className={`bg-white rounded-2xl p-5 mb-5 ${className}`}>
+    <section className={`bg-white rounded-3xl p-5 mb-5 ${className}`}>
       {title && (
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-extrabold text-black text-base">{title}</h3>

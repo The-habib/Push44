@@ -206,7 +206,7 @@ function PushPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-4">
-          <div className="h-16 w-16 rounded-2xl bg-[#e9e4f8] flex items-center justify-center">
+          <div className="h-16 w-16 rounded-3xl bg-[#e9e4f8] flex items-center justify-center">
             <Lock className="h-8 w-8 text-[#8b5cf6]" />
           </div>
           <h2 className="text-xl font-extrabold text-black">Not connected</h2>
@@ -216,7 +216,7 @@ function PushPage() {
           </p>
           <button
             onClick={() => navigate({ to: "/settings" })}
-            className="bg-[#8b5cf6] text-white font-bold px-6 py-3 rounded-2xl"
+            className="bg-[#8b5cf6] text-white font-bold px-6 py-3 rounded-3xl"
           >
             Go to Settings
           </button>
@@ -261,7 +261,7 @@ function PushPage() {
               setFiles([]);
               setCommitMsg("");
             }}
-            className="bg-[#1a1a1a] text-white font-bold px-6 py-3 rounded-2xl"
+            className="bg-[#1a1a1a] text-white font-bold px-6 py-3 rounded-3xl"
           >
             Push another
           </button>
@@ -333,16 +333,19 @@ function PushPage() {
                     : "border-[#eee] bg-white hover:bg-[#fafaf7]"
                 }`}
               >
-                <div className="h-9 w-9 rounded-lg bg-[#8b5cf6] flex items-center justify-center shrink-0">
-                  <span className="text-white font-extrabold text-base italic">
-                    B
-                  </span>
+                <div
+                  className="h-9 w-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0"
+                  style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}
+                >
+                  <Base44Logo size={22} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-black truncate">
                     {app.name}
                   </div>
-                  <div className="text-[11px] text-black/50">ID: {app.id}</div>
+                  <div className="text-[11px] text-black/40">
+                    {new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  </div>
                 </div>
                 {selectedApp?.id === app.id && (
                   <Check
@@ -516,7 +519,7 @@ function PushPage() {
 
       {/* Error */}
       {status === "error" && (
-        <div className="flex items-start gap-3 bg-[#fee2e2] rounded-2xl p-4 mb-5">
+        <div className="flex items-start gap-3 bg-[#fee2e2] rounded-3xl p-4 mb-5">
           <AlertCircle className="h-5 w-5 text-[#ef4444] shrink-0 mt-0.5" />
           <div>
             <div className="text-sm font-bold text-[#ef4444]">Push failed</div>
@@ -535,7 +538,7 @@ function PushPage() {
           files.length === 0 ||
           loadingFiles
         }
-        className="w-full bg-gradient-to-b from-[#a78bfa] to-[#8b5cf6] rounded-2xl py-4 flex items-center justify-center gap-2 shadow-lg mb-3 disabled:opacity-50"
+        className="w-full bg-gradient-to-b from-[#a78bfa] to-[#8b5cf6] rounded-3xl py-4 flex items-center justify-center gap-2 shadow-lg mb-3 disabled:opacity-50"
       >
         {status === "pushing" ? (
           <Loader2 className="h-5 w-5 text-white animate-spin" />
