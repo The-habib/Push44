@@ -16,6 +16,7 @@ import {
   Copy,
   CheckCircle2,
   User,
+  Sparkles,
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
@@ -26,27 +27,129 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const GITHUB_TOKEN_URL =
   "https://github.com/settings/tokens/new?scopes=repo%2Cuser&description=Push44";
 
-function StepDots({ total, current }: { total: number; current: number }) {
+// ─── Progress bar ──────────────────────────────────────────────────────────────
+
+function ProgressBar({ total, current }: { total: number; current: number }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       {Array.from({ length: total }).map((_, i) => (
         <div
           key={i}
-          className="transition-all duration-300"
+          className="h-1.5 rounded-full transition-all duration-400"
           style={{
-            height: 6,
-            width: i === current ? 24 : 6,
-            borderRadius: 9999,
-            background: i === current ? "#dce99a" : "rgba(255,255,255,0.2)",
+            width: i === current ? 28 : 6,
+            background: i < current ? "#1a1a1a" : i === current ? "#dce99a" : "#e0ddd7",
           }}
         />
       ))}
     </div>
+  );
+}
+
+// ─── Shared card wrapper ───────────────────────────────────────────────────────
+
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="w-full bg-white rounded-3xl shadow-xl shadow-black/8 border border-black/5 p-7"
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Light input ──────────────────────────────────────────────────────────────
+
+function Input({
+  icon,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  onKeyDown,
+  disabled,
+  rightSlot,
+  mono,
+  center,
+  autoFocus,
+}: {
+  icon?: React.ReactNode;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  disabled?: boolean;
+  rightSlot?: React.ReactNode;
+  mono?: boolean;
+  center?: boolean;
+  autoFocus?: boolean;
+}) {
+  return (
+    <div className="relative">
+      {icon && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/25 pointer-events-none">
+          {icon}
+        </div>
+      )}
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        autoFocus={autoFocus}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
+        className={`w-full rounded-2xl border bg-[#f8f7f4] py-3.5 text-sm text-black placeholder:text-black/30 outline-none transition-all disabled:opacity-40
+          ${icon ? "pl-10" : "pl-4"}
+          ${rightSlot ? "pr-11" : "pr-4"}
+          ${mono ? "font-mono" : "font-medium"}
+          ${center ? "text-center" : ""}
+          focus:bg-white focus:border-black/20 focus:ring-2 focus:ring-[#dce99a]/60
+          border-black/10`}
+      />
+      {rightSlot && (
+        <div className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightSlot}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── Primary button ───────────────────────────────────────────────────────────
+
+function PrimaryButton({
+  onClick,
+  disabled,
+  loading,
+  children,
+  variant = "lime",
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  children: React.ReactNode;
+  variant?: "lime" | "dark" | "orange";
+}) {
+  const bg =
+    variant === "lime"
+      ? "linear-gradient(135deg,#dce99a,#c5e352)"
+      : variant === "orange"
+      ? "linear-gradient(135deg,#fb923c,#f97316)"
+      : "linear-gradient(135deg,#1a1a1a,#333)";
+  const color = variant === "lime" ? "#111" : "#fff";
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      className="w-full rounded-2xl py-4 font-bold text-[15px] flex items-center justify-center gap-2.5 active:scale-[0.98] transition-all disabled:opacity-40"
+      style={{ background: bg, color }}
+    >
+      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {children}
+    </button>
   );
 }
 
@@ -55,45 +158,49 @@ function StepDots({ total, current }: { total: number; current: number }) {
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
-      {/* Logo */}
-      <div className="h-20 w-20 rounded-3xl bg-[#1a1a1a] flex items-center justify-center mb-6 shadow-2xl ring-1 ring-white/10">
-        <span className="text-[#a78bfa] font-extrabold text-4xl italic">B</span>
+      {/* Logo mark */}
+      <div className="relative mb-7">
+        <div className="h-24 w-24 rounded-3xl bg-[#1a1a1a] flex items-center justify-center shadow-2xl shadow-black/20">
+          <span className="text-[#a78bfa] font-extrabold text-5xl italic leading-none">B</span>
+        </div>
+        {/* Lime dot accent */}
+        <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#dce99a] border-2 border-white flex items-center justify-center">
+          <Zap className="h-3.5 w-3.5 text-black" strokeWidth={3} />
+        </div>
       </div>
 
-      <h1 className="text-[36px] font-extrabold text-white leading-tight tracking-tight mb-3">
+      <h1 className="text-[34px] font-extrabold text-black leading-tight tracking-tight mb-3">
         Welcome to{" "}
-        <span
-          className="text-transparent bg-clip-text"
-          style={{ backgroundImage: "linear-gradient(90deg,#a78bfa,#dce99a)" }}
-        >
+        <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg,#8b5cf6,#6d28d9)" }}>
           Push44
         </span>
       </h1>
-      <p className="text-[15px] text-white/50 leading-relaxed max-w-xs mb-10">
-        Push your Base44 apps to GitHub in one tap. Let's get you set up in under 2 minutes.
+      <p className="text-[15px] text-black/50 leading-relaxed mb-8 max-w-[260px]">
+        Push your Base44 apps to GitHub in one tap. Set up takes under 2 minutes.
       </p>
 
       {/* Feature pills */}
       <div className="flex flex-wrap justify-center gap-2 mb-10">
-        {["Base44 → GitHub", "One-tap push", "Secure & private"].map((f) => (
+        {[
+          { label: "Base44 → GitHub", color: "#f97316" },
+          { label: "One-tap push", color: "#8b5cf6" },
+          { label: "Secure & private", color: "#22c55e" },
+        ].map(({ label, color }) => (
           <span
-            key={f}
-            className="text-[11px] font-semibold text-white/60 border border-white/10 rounded-full px-3 py-1.5"
+            key={label}
+            className="text-[11px] font-bold rounded-full px-3 py-1.5 border"
+            style={{ color, borderColor: `${color}30`, background: `${color}10` }}
           >
-            {f}
+            {label}
           </span>
         ))}
       </div>
 
-      <button
-        onClick={onNext}
-        className="w-full max-w-xs flex items-center justify-center gap-3 rounded-2xl py-4 font-bold text-base text-black active:scale-[0.98] transition-transform"
-        style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
-      >
-        <Zap className="h-5 w-5" strokeWidth={2.5} />
+      <PrimaryButton onClick={onNext} variant="lime">
+        <Zap className="h-4 w-4" strokeWidth={3} />
         Get Started
-        <ArrowRight className="h-5 w-5" strokeWidth={2.5} />
-      </button>
+        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+      </PrimaryButton>
     </div>
   );
 }
@@ -105,55 +212,58 @@ function NameStep({ onNext }: { onNext: (name: string) => void }) {
 
   const initials = name.trim()
     ? name.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-    : "?";
+    : "";
 
   return (
     <div className="w-full">
-      {/* Avatar preview */}
-      <div className="flex flex-col items-center mb-8">
+      <div className="flex flex-col items-center mb-7">
+        {/* Live avatar preview */}
         <div
-          className="h-24 w-24 rounded-full flex items-center justify-center mb-5 shadow-2xl ring-2 ring-white/10 transition-all duration-200"
-          style={{ background: name.trim() ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "rgba(255,255,255,0.08)" }}
+          className="h-20 w-20 rounded-full flex items-center justify-center mb-5 transition-all duration-300 shadow-lg"
+          style={{
+            background: initials
+              ? "linear-gradient(135deg,#8b5cf6,#6d28d9)"
+              : "#f0eee9",
+            boxShadow: initials
+              ? "0 8px 32px rgba(139,92,246,0.35)"
+              : "0 2px 8px rgba(0,0,0,0.06)",
+          }}
         >
-          {name.trim() ? (
-            <span className="text-2xl font-extrabold text-white tracking-tight">{initials}</span>
+          {initials ? (
+            <span className="text-xl font-extrabold text-white tracking-tight">{initials}</span>
           ) : (
-            <User className="h-10 w-10 text-white/20" strokeWidth={1.5} />
+            <User className="h-8 w-8 text-black/20" strokeWidth={1.5} />
           )}
         </div>
-        <h2 className="text-2xl font-extrabold text-white text-center tracking-tight">
-          What's your name?
-        </h2>
-        <p className="text-[13px] text-white/40 mt-2 text-center leading-snug">
-          This is how you'll appear across Push44.
+        <h2 className="text-[22px] font-extrabold text-black tracking-tight">What's your name?</h2>
+        <p className="text-[13px] text-black/40 mt-1.5 text-center">
+          This is how you'll appear in Push44.
         </p>
       </div>
 
-      {/* Input */}
-      <input
-        type="text"
-        placeholder="e.g. Alex Johnson"
-        value={name}
-        autoFocus
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && name.trim() && onNext(name.trim())}
-        className="w-full rounded-2xl border border-white/10 px-5 py-4 text-base text-white placeholder:text-white/25 outline-none focus:border-[#a78bfa] transition-colors mb-4 text-center font-semibold"
-        style={{ background: "rgba(255,255,255,0.07)" }}
-      />
+      <div className="space-y-3">
+        <Input
+          placeholder="e.g. Alex Johnson"
+          value={name}
+          onChange={setName}
+          onKeyDown={(e) => e.key === "Enter" && name.trim() && onNext(name.trim())}
+          center
+          autoFocus
+        />
 
-      <button
-        onClick={() => onNext(name.trim())}
-        disabled={!name.trim()}
-        className="w-full rounded-2xl py-4 font-bold text-base flex items-center justify-center gap-2.5 disabled:opacity-30 active:scale-[0.98] transition-all"
-        style={{ background: "linear-gradient(135deg,#8b5cf6,#6d28d9)", color: "white" }}
-      >
-        Continue
-        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-      </button>
+        <PrimaryButton
+          onClick={() => onNext(name.trim())}
+          disabled={!name.trim()}
+          variant="dark"
+        >
+          Continue
+          <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+        </PrimaryButton>
+      </div>
 
       <button
         onClick={() => onNext("")}
-        className="w-full mt-3 py-3 text-[13px] text-white/30 font-medium hover:text-white/50 transition-colors"
+        className="w-full mt-3 py-2.5 text-[12px] text-black/30 font-semibold hover:text-black/50 transition-colors"
       >
         Skip for now
       </button>
@@ -161,7 +271,7 @@ function NameStep({ onNext }: { onNext: (name: string) => void }) {
   );
 }
 
-// ─── Step 2 — Base44 Login ────────────────────────────────────────────────────
+// ─── Step 2 — Base44 ──────────────────────────────────────────────────────────
 
 function Base44Step({
   onNext,
@@ -203,51 +313,55 @@ function Base44Step({
     }
   };
 
+  const Base44Icon = () => (
+    <svg viewBox="0 0 24 24" className="h-7 w-7 fill-white">
+      <ellipse cx="12" cy="12" rx="10" ry="3" />
+      <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
+      <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
+    </svg>
+  );
+
   return (
     <div className="w-full">
-      {/* Step header */}
-      <div className="flex items-center gap-4 mb-7">
-        <div
-          className="h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg"
-          style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
-        >
-          <svg viewBox="0 0 24 24" className="h-8 w-8 fill-white">
-            <ellipse cx="12" cy="12" rx="10" ry="3" />
-            <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-            <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-          </svg>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+          style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
+          <Base44Icon />
         </div>
         <div>
-          <h2 className="text-xl font-extrabold text-white">Connect Base44</h2>
-          <p className="text-[13px] text-white/40 mt-0.5">Sign in to access your apps</p>
+          <h2 className="text-lg font-extrabold text-black">Connect Base44</h2>
+          <p className="text-[12px] text-black/40 mt-0.5">Sign in to access your apps</p>
         </div>
       </div>
 
       {/* Security note */}
-      <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-5">
-        <Shield className="h-4 w-4 text-[#22c55e] shrink-0 mt-0.5" />
-        <p className="text-[12px] text-white/50 leading-snug">
-          Your password is sent directly to Base44 — never stored here. Only the returned session token is saved.
+      <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 mb-5">
+        <Shield className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+        <p className="text-[11px] text-emerald-700 leading-snug font-medium">
+          Your password goes directly to Base44 — never stored here. Only the session token is saved locally.
         </p>
       </div>
 
       {done ? (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-16 w-16 rounded-full bg-[#dcfce7]/20 flex items-center justify-center">
-            <CheckCircle2 className="h-9 w-9 text-[#22c55e]" strokeWidth={2} />
+          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center">
+            <CheckCircle2 className="h-9 w-9 text-emerald-500" strokeWidth={2} />
           </div>
-          <p className="text-base font-bold text-white">Connected to Base44!</p>
+          <p className="text-base font-bold text-black">Connected to Base44!</p>
         </div>
       ) : (
         <>
           {/* Tab switcher */}
-          <div className="flex bg-white/8 rounded-2xl p-1 mb-4" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="flex bg-[#f0eee9] rounded-2xl p-1 mb-4">
             {(["login", "token"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => { setTab(t); setError(""); }}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  tab === t ? "bg-white text-black shadow" : "text-white/40 hover:text-white/70"
+                  tab === t
+                    ? "bg-white text-black shadow-sm shadow-black/10"
+                    : "text-black/40 hover:text-black/60"
                 }`}
               >
                 {t === "login" ? "Email & Password" : "Auth Token"}
@@ -256,43 +370,34 @@ function Base44Step({
           </div>
 
           {tab === "login" && (
-            <div className="space-y-3">
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submit()}
-                  className="w-full rounded-2xl bg-white/8 border border-white/10 pl-10 pr-4 py-3.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#f97316] transition-colors"
-                  style={{ background: "rgba(255,255,255,0.07)" }}
-                />
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                <input
-                  type={showPw ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submit()}
-                  className="w-full rounded-2xl bg-white/8 border border-white/10 pl-10 pr-11 py-3.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#f97316] transition-colors"
-                  style={{ background: "rgba(255,255,255,0.07)" }}
-                />
-                <button
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+            <div className="space-y-2.5">
+              <Input
+                icon={<Mail className="h-4 w-4" />}
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={setEmail}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+              />
+              <Input
+                icon={<Lock className="h-4 w-4" />}
+                type={showPw ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={setPassword}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                rightSlot={
+                  <button onClick={() => setShowPw(!showPw)} className="text-black/30 hover:text-black/60 transition-colors">
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+              />
             </div>
           )}
 
           {tab === "token" && (
             <div className="space-y-2">
-              <p className="text-[11px] text-white/35 leading-relaxed">
+              <p className="text-[11px] text-black/40 leading-relaxed">
                 Get your token from{" "}
                 <a href="https://app.base44.com/settings" target="_blank" rel="noreferrer"
                   className="text-[#f97316] font-semibold underline">
@@ -300,62 +405,48 @@ function Base44Step({
                 </a>{" "}
                 → API Keys.
               </p>
-              <div className="relative">
-                <input
-                  type={showRaw ? "text" : "password"}
-                  placeholder="Paste token here…"
-                  value={rawToken}
-                  onChange={(e) => setRawToken(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submit()}
-                  className="w-full rounded-2xl border border-white/10 px-4 pr-11 py-3.5 text-sm font-mono text-white placeholder:text-white/25 outline-none focus:border-[#f97316] transition-colors"
-                  style={{ background: "rgba(255,255,255,0.07)" }}
-                />
-                <button
-                  onClick={() => setShowRaw(!showRaw)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
-                >
-                  {showRaw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              <Input
+                type={showRaw ? "text" : "password"}
+                placeholder="Paste token here…"
+                value={rawToken}
+                onChange={setRawToken}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                mono
+                rightSlot={
+                  <button onClick={() => setShowRaw(!showRaw)} className="text-black/30 hover:text-black/60 transition-colors">
+                    {showRaw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+              />
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 mt-3">
+            <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-2xl p-3 mt-3">
               <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-              <p className="text-[12px] text-red-300 font-medium">{error}</p>
+              <p className="text-[12px] text-red-600 font-medium">{error}</p>
             </div>
           )}
 
-          <button
-            onClick={submit}
-            disabled={loading}
-            className="w-full mt-4 rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-all"
-            style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-              <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-                <ellipse cx="12" cy="12" rx="10" ry="3" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-              </svg>
-            )}
-            {loading ? "Connecting…" : "Connect Base44"}
-          </button>
-
-          <button
-            onClick={onSkip}
-            className="w-full mt-3 py-3 text-[13px] text-white/30 font-medium hover:text-white/50 transition-colors"
-          >
-            Skip for now
-          </button>
+          <div className="mt-4 space-y-2">
+            <PrimaryButton onClick={submit} loading={loading} variant="orange">
+              {!loading && <Base44Icon />}
+              {loading ? "Connecting…" : "Connect Base44"}
+            </PrimaryButton>
+            <button
+              onClick={onSkip}
+              className="w-full py-2.5 text-[12px] text-black/30 font-semibold hover:text-black/50 transition-colors"
+            >
+              Skip for now
+            </button>
+          </div>
         </>
       )}
     </div>
   );
 }
 
-// ─── Step 2 — GitHub ─────────────────────────────────────────────────────────
+// ─── Step 3 — GitHub ──────────────────────────────────────────────────────────
 
 function GitHubStep({
   onNext,
@@ -402,48 +493,54 @@ function GitHubStep({
 
   return (
     <div className="w-full">
-      {/* Step header */}
-      <div className="flex items-center gap-4 mb-7">
-        <div className="h-14 w-14 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0 shadow-lg ring-1 ring-white/10">
-          <Github className="h-8 w-8 text-white" strokeWidth={1.5} />
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="h-12 w-12 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0 shadow-md">
+          <Github className="h-6 w-6 text-white" strokeWidth={1.5} />
         </div>
         <div>
-          <h2 className="text-xl font-extrabold text-white">Connect GitHub</h2>
-          <p className="text-[13px] text-white/40 mt-0.5">Where your code will be pushed</p>
+          <h2 className="text-lg font-extrabold text-black">Connect GitHub</h2>
+          <p className="text-[12px] text-black/40 mt-0.5">Where your code will be pushed</p>
         </div>
       </div>
 
       {done ? (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-16 w-16 rounded-full bg-[#dcfce7]/20 flex items-center justify-center">
-            <CheckCircle2 className="h-9 w-9 text-[#22c55e]" strokeWidth={2} />
+          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center">
+            <CheckCircle2 className="h-9 w-9 text-emerald-500" strokeWidth={2} />
           </div>
-          <p className="text-base font-bold text-white">GitHub connected!</p>
+          <p className="text-base font-bold text-black">GitHub connected!</p>
         </div>
       ) : (
         <>
-          {/* Step-by-step guide */}
           <div className="space-y-3 mb-5">
-            {/* Step 1: Open GitHub */}
-            <div className="rounded-2xl border border-white/10 p-4" style={{ background: "rgba(255,255,255,0.05)" }}>
+            {/* Step 1 */}
+            <div
+              className="rounded-2xl border p-4 transition-all"
+              style={{
+                background: opened ? "#f0fdf4" : "#fafaf8",
+                borderColor: opened ? "#86efac" : "#ede9e0",
+              }}
+            >
               <div className="flex items-start gap-3">
                 <div
-                  className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 mt-0.5"
-                  style={{ background: opened ? "#22c55e" : "rgba(255,255,255,0.15)", color: "white" }}
+                  className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 mt-0.5 transition-all"
+                  style={{
+                    background: opened ? "#22c55e" : "#1a1a1a",
+                    color: "white",
+                  }}
                 >
                   {opened ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : "1"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white mb-2">
-                    Open GitHub token creator
-                  </p>
-                  <p className="text-[12px] text-white/40 mb-3 leading-snug">
-                    We'll open GitHub with <strong className="text-white/60">repo</strong> &amp; <strong className="text-white/60">user</strong> scopes pre-selected. Just scroll down and click <em className="text-white/60">Generate token</em>.
+                  <p className="text-sm font-bold text-black mb-1.5">Open GitHub token creator</p>
+                  <p className="text-[11px] text-black/45 mb-3 leading-snug">
+                    Opens GitHub with <strong className="text-black/60">repo</strong> &amp; <strong className="text-black/60">user</strong> scopes pre-filled. Scroll down and click <em className="text-black/60">Generate token</em>.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={openGitHub}
-                      className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-bold text-black active:scale-95 transition-transform"
+                      className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-black active:scale-95 transition-transform"
                       style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
                     >
                       <ExternalLink className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -451,9 +548,11 @@ function GitHubStep({
                     </button>
                     <button
                       onClick={copyUrl}
-                      className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-semibold border border-white/15 text-white/50 hover:text-white/80 transition-colors"
+                      className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold border border-black/10 text-black/45 hover:text-black/70 transition-colors bg-white"
                     >
-                      {copied ? <Check className="h-3.5 w-3.5 text-[#22c55e]" strokeWidth={3} /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied
+                        ? <Check className="h-3.5 w-3.5 text-emerald-500" strokeWidth={3} />
+                        : <Copy className="h-3.5 w-3.5" />}
                       {copied ? "Copied!" : "Copy link"}
                     </button>
                   </div>
@@ -461,23 +560,24 @@ function GitHubStep({
               </div>
             </div>
 
-            {/* Step 2: Paste token */}
+            {/* Step 2 */}
             <div
               className="rounded-2xl border p-4 transition-all"
               style={{
-                background: opened ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.03)",
-                borderColor: opened ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.07)",
+                background: opened ? "#fafaf8" : "#f5f4f0",
+                borderColor: opened ? "#ede9e0" : "#eae7de",
+                opacity: opened ? 1 : 0.6,
               }}
             >
               <div className="flex items-start gap-3">
                 <div
                   className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 mt-0.5"
-                  style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
+                  style={{ background: "#1a1a1a", color: "white" }}
                 >
                   2
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold mb-2 ${opened ? "text-white" : "text-white/40"}`}>
+                  <p className={`text-sm font-bold mb-2 ${opened ? "text-black" : "text-black/40"}`}>
                     Paste your token here
                   </p>
                   <div className="relative">
@@ -489,13 +589,12 @@ function GitHubStep({
                       onChange={(e) => setToken(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && connect()}
                       disabled={!opened}
-                      className="w-full rounded-xl border border-white/10 px-3.5 pr-10 py-3 text-sm font-mono text-white placeholder:text-white/20 outline-none focus:border-[#dce99a] transition-colors disabled:opacity-30"
-                      style={{ background: "rgba(255,255,255,0.07)" }}
+                      className="w-full rounded-xl border border-black/10 bg-white px-3.5 pr-10 py-3 text-sm font-mono text-black placeholder:text-black/25 outline-none focus:border-black/20 focus:ring-2 focus:ring-[#dce99a]/60 transition-all disabled:opacity-40"
                     />
                     <button
                       onClick={() => setShowToken(!showToken)}
                       disabled={!opened}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 disabled:opacity-30"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 disabled:opacity-30 transition-colors"
                     >
                       {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -506,35 +605,36 @@ function GitHubStep({
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 mb-4">
+            <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-2xl p-3 mb-4">
               <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-              <p className="text-[12px] text-red-300 font-medium">{error}</p>
+              <p className="text-[12px] text-red-600 font-medium">{error}</p>
             </div>
           )}
 
-          <button
-            onClick={connect}
-            disabled={loading || !token.trim()}
-            className="w-full rounded-2xl py-4 font-bold text-[15px] flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-all"
-            style={{ background: "linear-gradient(135deg,#1a1a1a,#2d2d2d)", color: "white", border: "1px solid rgba(255,255,255,0.1)" }}
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Github className="h-5 w-5" strokeWidth={1.5} />}
-            {loading ? "Verifying…" : "Connect GitHub"}
-          </button>
-
-          <button
-            onClick={onSkip}
-            className="w-full mt-3 py-3 text-[13px] text-white/30 font-medium hover:text-white/50 transition-colors"
-          >
-            Skip for now
-          </button>
+          <div className="space-y-2">
+            <PrimaryButton
+              onClick={connect}
+              disabled={!token.trim()}
+              loading={loading}
+              variant="dark"
+            >
+              {!loading && <Github className="h-4 w-4" strokeWidth={2} />}
+              {loading ? "Verifying…" : "Connect GitHub"}
+            </PrimaryButton>
+            <button
+              onClick={onSkip}
+              className="w-full py-2.5 text-[12px] text-black/30 font-semibold hover:text-black/50 transition-colors"
+            >
+              Skip for now
+            </button>
+          </div>
         </>
       )}
     </div>
   );
 }
 
-// ─── Step 3 — Done ────────────────────────────────────────────────────────────
+// ─── Step 4 — Done ────────────────────────────────────────────────────────────
 
 function DoneStep({
   displayName,
@@ -547,61 +647,78 @@ function DoneStep({
   githubUsername: string;
   onFinish: () => void;
 }) {
+  const firstName = displayName.trim().split(/\s+/)[0] || "";
   const initials = displayName.trim()
     ? displayName.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "✓";
 
   const connected = [
-    base44Email && { icon: "🟠", label: `Base44: ${base44Email}` },
-    githubUsername && { icon: "⚫", label: `GitHub: @${githubUsername}` },
-  ].filter(Boolean) as { icon: string; label: string }[];
+    base44Email && { label: `Base44`, sub: base44Email, color: "#f97316" },
+    githubUsername && { label: "GitHub", sub: `@${githubUsername}`, color: "#1a1a1a" },
+  ].filter(Boolean) as { label: string; sub: string; color: string }[];
 
   return (
     <div className="flex flex-col items-center text-center">
-      {/* Avatar / success state */}
-      <div
-        className="h-24 w-24 rounded-full flex items-center justify-center mb-6 shadow-2xl ring-2 ring-[#22c55e]/40"
-        style={{ background: displayName.trim() ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "linear-gradient(135deg,#22c55e22,#22c55e44)" }}
-      >
-        {displayName.trim() ? (
-          <span className="text-2xl font-extrabold text-white tracking-tight">{initials}</span>
-        ) : (
-          <CheckCircle2 className="h-12 w-12 text-[#22c55e]" strokeWidth={1.5} />
-        )}
+      {/* Avatar / celebration */}
+      <div className="relative mb-6">
+        <div
+          className="h-24 w-24 rounded-full flex items-center justify-center shadow-xl"
+          style={{
+            background: displayName.trim()
+              ? "linear-gradient(135deg,#8b5cf6,#6d28d9)"
+              : "linear-gradient(135deg,#22c55e,#16a34a)",
+            boxShadow: displayName.trim()
+              ? "0 12px 40px rgba(139,92,246,0.35)"
+              : "0 12px 40px rgba(34,197,94,0.35)",
+          }}
+        >
+          {displayName.trim() ? (
+            <span className="text-2xl font-extrabold text-white tracking-tight">{initials}</span>
+          ) : (
+            <CheckCircle2 className="h-12 w-12 text-white" strokeWidth={1.5} />
+          )}
+        </div>
+        {/* Sparkle */}
+        <div className="absolute -top-1 -right-1 h-7 w-7 rounded-full bg-[#dce99a] border-2 border-white flex items-center justify-center shadow-sm">
+          <Sparkles className="h-3.5 w-3.5 text-black" strokeWidth={2.5} />
+        </div>
       </div>
 
-      <h2 className="text-[32px] font-extrabold text-white mb-2 tracking-tight">
-        {displayName.trim() ? `You're ready, ${displayName.split(" ")[0]}!` : "You're all set!"}
+      <h2 className="text-[28px] font-extrabold text-black mb-2 tracking-tight">
+        {firstName ? `You're ready, ${firstName}!` : "You're all set!"}
       </h2>
-      <p className="text-[14px] text-white/50 leading-relaxed mb-8 max-w-xs">
-        Push44 is ready. Select a Base44 app, pick a repo, and push your code in one tap.
+      <p className="text-[13px] text-black/45 leading-relaxed mb-7 max-w-[240px]">
+        Select a Base44 app, pick a repo, and push your code in one tap.
       </p>
 
       {/* Connected accounts */}
       {connected.length > 0 && (
-        <div className="w-full max-w-xs space-y-2 mb-8">
+        <div className="w-full space-y-2 mb-7">
           {connected.map((c) => (
             <div
               key={c.label}
-              className="flex items-center gap-3 rounded-2xl px-4 py-3"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+              className="flex items-center gap-3 rounded-2xl px-4 py-3 border border-black/6 bg-[#fafaf8]"
             >
-              <span>{c.icon}</span>
-              <span className="text-sm text-white/70 font-medium">{c.label}</span>
-              <Check className="ml-auto h-4 w-4 text-[#22c55e]" strokeWidth={3} />
+              <div
+                className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0 text-white text-[10px] font-extrabold"
+                style={{ background: c.color }}
+              >
+                {c.label[0]}
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <div className="text-xs font-bold text-black">{c.label}</div>
+                <div className="text-[11px] text-black/40 truncate">{c.sub}</div>
+              </div>
+              <Check className="h-4 w-4 text-emerald-500 shrink-0" strokeWidth={3} />
             </div>
           ))}
         </div>
       )}
 
-      <button
-        onClick={onFinish}
-        className="w-full max-w-xs flex items-center justify-center gap-3 rounded-2xl py-4 font-bold text-base text-black active:scale-[0.98] transition-transform"
-        style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
-      >
-        <Zap className="h-5 w-5" strokeWidth={2.5} />
+      <PrimaryButton onClick={onFinish} variant="lime">
+        <Zap className="h-4 w-4" strokeWidth={3} />
         Go to Dashboard
-      </button>
+      </PrimaryButton>
     </div>
   );
 }
@@ -617,9 +734,8 @@ function OnboardingPage() {
   const [githubUsername, setGithubUsername] = useState(creds.githubUsername ?? "");
 
   // Steps: 0=welcome, 1=name, 2=base44, 3=github, 4=done
-  const ACTIVE_STEPS = 3; // name + base44 + github (shown in progress bar)
+  const ACTIVE_STEPS = 3;
 
-  // If already fully connected, skip straight to dashboard
   useEffect(() => {
     if (isLoaded && creds.base44Token && creds.githubToken) {
       markOnboardingDone();
@@ -630,7 +746,7 @@ function OnboardingPage() {
   const handleNameNext = (name: string) => {
     if (name) updateCreds({ displayName: name });
     setDisplayName(name);
-    setTimeout(() => setStep(2), 100);
+    setTimeout(() => setStep(2), 80);
   };
 
   const handleBase44Success = (token: string, email: string) => {
@@ -650,77 +766,80 @@ function OnboardingPage() {
     navigate({ to: "/" });
   };
 
-  // Progress bar step index (1-based within active steps)
   const progressStep = step > 0 && step < 4 ? step : null;
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center px-5 py-10"
-      style={{ background: "linear-gradient(145deg,#0d0d1a 0%,#13132b 50%,#0a1628 100%)" }}
+      className="min-h-screen w-full flex flex-col items-center justify-center px-5 py-12"
+      style={{ background: "#f3f2ee" }}
     >
-      {/* Stars bg — deterministic positions to avoid SSR hydration mismatch */}
+      {/* Subtle background texture dots */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {[
-          [12,7,1.5,0.3],[34,23,1,0.2],[56,41,2,0.35],[78,15,1.5,0.25],[91,62,1,0.15],
-          [5,80,2,0.3],[23,55,1,0.2],[45,92,1.5,0.4],[67,34,1,0.2],[89,77,2,0.3],
-          [11,48,1,0.15],[33,67,1.5,0.25],[55,11,1,0.3],[77,88,2,0.2],[99,30,1,0.35],
-          [8,39,1.5,0.2],[28,73,1,0.3],[48,57,2,0.15],[68,19,1,0.25],[88,44,1.5,0.3],
-          [17,84,1,0.2],[37,6,2,0.35],[57,70,1,0.2],[76,95,1.5,0.25],[97,52,1,0.15],
-          [3,26,2,0.3],[43,87,1,0.2],[63,13,1.5,0.35],[83,60,1,0.25],[22,98,2,0.2],
-        ].map(([left, top, size, opacity], i) => (
+          [8,12],[24,38],[45,8],[62,55],[80,20],[93,70],
+          [15,75],[33,90],[52,62],[71,85],[88,42],[4,50],
+        ].map(([left, top], i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-white"
-            style={{ width: size, height: size, top: `${top}%`, left: `${left}%`, opacity }}
+            className="absolute h-1 w-1 rounded-full bg-black/8"
+            style={{ left: `${left}%`, top: `${top}%` }}
           />
         ))}
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full opacity-10 blur-3xl"
-          style={{ background: "radial-gradient(circle,#8b5cf6,transparent)" }} />
-        <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full opacity-8 blur-3xl"
-          style={{ background: "radial-gradient(circle,#f97316,transparent)" }} />
+        {/* Soft lime glow top-right */}
+        <div
+          className="absolute -top-32 -right-32 h-96 w-96 rounded-full blur-3xl opacity-40"
+          style={{ background: "radial-gradient(circle,#dce99a,transparent)" }}
+        />
+        {/* Soft purple glow bottom-left */}
+        <div
+          className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full blur-3xl opacity-25"
+          style={{ background: "radial-gradient(circle,#a78bfa,transparent)" }}
+        />
       </div>
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Progress dots (show only for steps 1–3) */}
+        {/* Progress bar (steps 1–3) */}
         {progressStep !== null && (
-          <div className="flex items-center justify-between mb-8">
-            <StepDots total={ACTIVE_STEPS} current={progressStep - 1} />
-            <span className="text-[12px] text-white/30 font-medium">
-              Step {progressStep} of {ACTIVE_STEPS}
+          <div className="flex items-center justify-between mb-6 px-1">
+            <ProgressBar total={ACTIVE_STEPS} current={progressStep - 1} />
+            <span className="text-[11px] text-black/35 font-semibold">
+              {progressStep} of {ACTIVE_STEPS}
             </span>
           </div>
         )}
 
-        {/* Step content */}
-        <div key={step} style={{ animation: "fadeSlideUp 0.35s ease both" }}>
-          {step === 0 && <WelcomeStep onNext={() => setStep(1)} />}
-          {step === 1 && <NameStep onNext={handleNameNext} />}
-          {step === 2 && (
-            <Base44Step
-              onNext={handleBase44Success}
-              onSkip={() => setStep(3)}
-            />
-          )}
-          {step === 3 && (
-            <GitHubStep
-              onNext={handleGitHubSuccess}
-              onSkip={() => setStep(4)}
-            />
-          )}
-          {step === 4 && (
-            <DoneStep
-              displayName={displayName}
-              base44Email={base44Email}
-              githubUsername={githubUsername}
-              onFinish={handleFinish}
-            />
+        {/* Card */}
+        <div key={step} style={{ animation: "fadeSlideUp 0.3s cubic-bezier(0.22,1,0.36,1) both" }}>
+          {step === 0 ? (
+            <WelcomeStep onNext={() => setStep(1)} />
+          ) : (
+            <Card>
+              {step === 1 && <NameStep onNext={handleNameNext} />}
+              {step === 2 && <Base44Step onNext={handleBase44Success} onSkip={() => setStep(3)} />}
+              {step === 3 && <GitHubStep onNext={handleGitHubSuccess} onSkip={() => setStep(4)} />}
+              {step === 4 && (
+                <DoneStep
+                  displayName={displayName}
+                  base44Email={base44Email}
+                  githubUsername={githubUsername}
+                  onFinish={handleFinish}
+                />
+              )}
+            </Card>
           )}
         </div>
+
+        {/* Push44 wordmark at bottom */}
+        {step === 0 && (
+          <p className="text-center mt-8 text-[11px] text-black/25 font-semibold tracking-wide">
+            PUSH44 · BASE44 → GITHUB
+          </p>
+        )}
       </div>
 
       <style>{`
         @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(18px); }
+          from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
