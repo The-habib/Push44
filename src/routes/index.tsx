@@ -83,6 +83,10 @@ function Index() {
   const isConnected = !!(creds.base44Token && creds.githubToken);
   const lastPush = history[0];
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = (creds.displayName || "").trim().split(/\s+/)[0] || "";
+
   useEffect(() => {
     if (!isLoaded) return;
     setHistory(getHistory());
@@ -103,37 +107,47 @@ function Index() {
 
   return (
     <AppShell>
+
+      {/* ── Greeting ─────────────────────────────────────────────── */}
+      <div className="mb-5 pt-1">
+        <p className="text-[12px] text-black/40 font-semibold tracking-widest uppercase">
+          {greeting}{firstName ? `, ${firstName}` : ""}
+        </p>
+        <h2 className="text-[22px] font-extrabold text-black leading-tight mt-1">
+          {isConnected ? "What are you shipping?" : "Let's get connected."}
+        </h2>
+      </div>
+
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section
-        className="relative rounded-[32px] overflow-hidden mb-4"
-        style={{ background: "linear-gradient(145deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)" }}
+        className="relative rounded-[28px] overflow-hidden mb-4"
+        style={{ background: "linear-gradient(145deg,#0d0d1f 0%,#16213e 55%,#0a2050 100%)" }}
       >
-        {/* Subtle grid texture */}
+        {/* Grid texture */}
         <div
           className="absolute inset-0 opacity-[0.06]"
           style={{
             backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",
-            backgroundSize: "32px 32px",
+            backgroundSize: "28px 28px",
           }}
         />
-
         {/* Glow blobs */}
-        <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle,#8b5cf6,transparent)" }} />
-        <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full opacity-15 blur-3xl"
+        <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle,#7c3aed,transparent)" }} />
+        <div className="absolute -bottom-10 -left-10 h-44 w-44 rounded-full opacity-20 blur-3xl"
           style={{ background: "radial-gradient(circle,#f97316,transparent)" }} />
 
-        <div className="relative z-10 px-6 pt-7 pb-6">
-          {/* Badge */}
+        <div className="relative z-10 px-6 pt-7 pb-7">
+          {/* Status pill */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-3 py-1.5 mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#dce99a] animate-pulse" />
-            <span className="text-[11px] font-semibold text-white/70 tracking-wide uppercase">
-              Base44 → GitHub
+            <span className={`h-1.5 w-1.5 rounded-full ${isConnected ? "bg-[#dce99a] animate-pulse" : "bg-white/30"}`} />
+            <span className="text-[11px] font-semibold text-white/70 tracking-widest uppercase">
+              {isConnected ? "Base44 → GitHub" : "Not connected"}
             </span>
           </div>
 
           {/* Headline */}
-          <h2 className="text-[38px] leading-[1] font-extrabold tracking-tight mb-2">
+          <h2 className="text-[36px] leading-[1.02] font-extrabold tracking-tight mb-2">
             <span className="text-white">Push your</span>
             <br />
             <span className="text-white">code to </span>
@@ -144,42 +158,29 @@ function Index() {
               GitHub
             </span>
           </h2>
-          <p className="text-[13px] text-white/50 font-medium mb-6 leading-snug">
+
+          <p className="text-[13px] text-white/45 font-medium mb-6 leading-snug">
             {isConnected
               ? `${loadingApps ? "…" : apps.length} apps · ${loadingRepos ? "…" : repos.length} repos · ${history.length} pushes`
-              : "Connect your accounts to begin."}
+              : "Connect Base44 and GitHub to start pushing."}
           </p>
 
-          {/* CTA row */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate({ to: isConnected ? "/push" : "/settings" })}
-              className="flex items-center gap-2.5 rounded-2xl px-5 py-3.5 font-bold text-sm text-black shadow-lg active:scale-95 transition-transform"
-              style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
-            >
-              <Zap className="h-4 w-4" strokeWidth={2.5} />
-              {isConnected ? "Push Now" : "Get Started"}
-              <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-            </button>
-
-            {isConnected && (
-              <div className="flex items-center gap-1.5 text-[11px] text-white/40 font-medium">
-                <span className="h-1 w-1 rounded-full bg-white/40" />
-                <span>Secure</span>
-                <span className="h-1 w-1 rounded-full bg-white/40" />
-                <span>Private</span>
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => navigate({ to: isConnected ? "/push" : "/settings" })}
+            className="inline-flex items-center gap-2.5 rounded-2xl px-5 py-3.5 font-bold text-sm text-black shadow-lg active:scale-95 transition-transform"
+            style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
+          >
+            <Zap className="h-4 w-4" strokeWidth={2.5} />
+            {isConnected ? "Push Now" : "Get Started"}
+            <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+          </button>
         </div>
 
-        {/* Decorative GitHub icon */}
-        <div
-          className="absolute right-5 top-1/2 -translate-y-1/2 h-[120px] w-[120px] rounded-full flex items-center justify-center opacity-10"
-          style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(4px)" }}
-        >
-          <GitHubLogo className="h-16 w-16 text-white" />
-        </div>
+        {/* Decorative GitHub mark */}
+        <GitHubLogo
+          className="absolute right-5 top-1/2 -translate-y-1/2 text-white"
+          style={{ width: 108, height: 108, opacity: 0.07 }}
+        />
       </section>
 
       {/* ── Setup banner ─────────────────────────────────────────── */}
@@ -195,10 +196,10 @@ function Index() {
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-[#9a3412]">Setup required</div>
             <div className="text-[12px] text-[#c2410c]/80 mt-0.5 leading-snug">
-              Connect your Base44 account and GitHub token to start pushing.
+              Tap to connect your Base44 account and GitHub token.
             </div>
           </div>
-          <Settings className="h-4 w-4 text-[#f97316] shrink-0" />
+          <ArrowRight className="h-4 w-4 text-[#f97316] shrink-0" />
         </button>
       )}
 
@@ -228,6 +229,75 @@ function Index() {
           icon={Clock}
         />
       </div>
+
+      {/* ── Last push ────────────────────────────────────────────── */}
+      {lastPush && (
+        <div className="bg-white rounded-3xl p-5 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[13px] font-extrabold text-black">Last Push</span>
+            <button
+              onClick={() => navigate({ to: "/history" })}
+              className="text-[11px] font-bold text-[#8b5cf6] bg-[#f0ebff] rounded-full px-3 py-1.5"
+            >
+              History
+            </button>
+          </div>
+          <div
+            className="rounded-2xl p-4"
+            style={{
+              background: lastPush.status === "success"
+                ? "linear-gradient(135deg,#f0fdf4,#dcfce7)"
+                : "linear-gradient(135deg,#fef2f2,#fee2e2)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: lastPush.status === "success" ? "#22c55e22" : "#ef444422" }}
+              >
+                {lastPush.status === "success" ? (
+                  <CheckCircle2 className="h-5 w-5 text-[#22c55e]" strokeWidth={2} />
+                ) : (
+                  <XCircle className="h-5 w-5 text-[#ef4444]" strokeWidth={2} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-black truncate">{lastPush.appName}</div>
+                <div className="text-[12px] text-black/50 truncate mt-0.5">{lastPush.repo}</div>
+                {lastPush.commitHash && (
+                  <div className="text-[11px] font-mono text-black/40 mt-1.5 bg-black/5 rounded-lg px-2 py-1 inline-block">
+                    {lastPush.commitHash.slice(0, 10)}
+                  </div>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <div
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: lastPush.status === "success" ? "#22c55e" : "#ef4444",
+                    color: "white",
+                  }}
+                >
+                  {lastPush.status === "success" ? "✓ Pushed" : "✗ Failed"}
+                </div>
+                <div className="text-[10px] text-black/35 mt-1.5 font-medium">
+                  {formatRelativeTime(lastPush.timestamp)}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-black/5">
+              <div className="text-[11px] text-black/50">
+                <span className="font-semibold">{lastPush.filesCount}</span> files
+              </div>
+              <span className="h-1 w-1 rounded-full bg-black/20" />
+              <div className="flex items-center gap-1 text-[11px] text-black/50">
+                <GitBranch className="h-3 w-3" />
+                <span className="font-semibold">{lastPush.branch}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Recent repo ──────────────────────────────────────────── */}
       {isConnected && repos.length > 0 && (
@@ -268,92 +338,15 @@ function Index() {
         </div>
       )}
 
-      {/* ── Last push ────────────────────────────────────────────── */}
-      {lastPush && (
-        <div className="bg-white rounded-3xl p-5 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[13px] font-extrabold text-black">Last Push</span>
-            <button
-              onClick={() => navigate({ to: "/history" })}
-              className="text-[11px] font-bold text-[#8b5cf6] bg-[#f0ebff] rounded-full px-3 py-1.5"
-            >
-              History
-            </button>
-          </div>
-
-          <div
-            className="rounded-2xl p-4"
-            style={{
-              background: lastPush.status === "success"
-                ? "linear-gradient(135deg,#f0fdf4,#dcfce7)"
-                : "linear-gradient(135deg,#fef2f2,#fee2e2)",
-            }}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
-                style={{
-                  background: lastPush.status === "success" ? "#22c55e22" : "#ef444422",
-                }}
-              >
-                {lastPush.status === "success" ? (
-                  <CheckCircle2 className="h-5 w-5 text-[#22c55e]" strokeWidth={2} />
-                ) : (
-                  <XCircle className="h-5 w-5 text-[#ef4444]" strokeWidth={2} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-black truncate">{lastPush.appName}</div>
-                <div className="text-[12px] text-black/50 truncate mt-0.5">{lastPush.repo}</div>
-                {lastPush.commitHash && (
-                  <div className="text-[11px] font-mono text-black/40 mt-1.5 bg-black/5 rounded-lg px-2 py-1 inline-block">
-                    {lastPush.commitHash.slice(0, 10)}
-                  </div>
-                )}
-              </div>
-              <div className="text-right shrink-0">
-                <div
-                  className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                  style={{
-                    background: lastPush.status === "success" ? "#22c55e" : "#ef4444",
-                    color: "white",
-                  }}
-                >
-                  {lastPush.status === "success" ? "✓ Pushed" : "✗ Failed"}
-                </div>
-                <div className="text-[10px] text-black/35 mt-1.5 font-medium">
-                  {formatRelativeTime(lastPush.timestamp)}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-black/5">
-              <div className="text-[11px] text-black/50">
-                <span className="font-semibold">{lastPush.filesCount}</span> files
-              </div>
-              <span className="h-1 w-1 rounded-full bg-black/20" />
-              <div className="flex items-center gap-1 text-[11px] text-black/50">
-                <GitBranch className="h-3 w-3" />
-                <span className="font-semibold">{lastPush.branch}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Quick actions ─────────────────────────────────────────── */}
+      {/* ── Ship it card ─────────────────────────────────────────── */}
       {isConnected && (
         <div
-          className="rounded-3xl p-5 flex items-center justify-between"
+          className="rounded-3xl p-5 flex items-center justify-between mb-1"
           style={{ background: "linear-gradient(135deg,#1a1a2e,#0f3460)" }}
         >
           <div>
-            <div className="text-base font-extrabold text-white mb-0.5">
-              Ready to ship?
-            </div>
-            <div className="text-[12px] text-white/40">
-              Push your latest Base44 app in seconds.
-            </div>
+            <div className="text-base font-extrabold text-white mb-0.5">Ready to ship?</div>
+            <div className="text-[12px] text-white/40">Push your latest app in seconds.</div>
           </div>
           <button
             onClick={() => navigate({ to: "/push" })}

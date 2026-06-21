@@ -147,16 +147,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="md:hidden flex flex-col min-h-screen">
         {/* Mobile header */}
         <header className="flex items-center justify-between px-5 pt-4 pb-3 bg-[#f3f2ee]">
-          <div className="h-11 w-11" /> {/* spacer to balance avatar */}
-          <div className="flex items-center gap-2.5">
-            <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center">
+          {/* Left: Logo (left-aligned, not centered) */}
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0 shadow-sm">
               <span className="text-[#a78bfa] font-extrabold text-xl italic">B</span>
             </div>
             <h1 className="text-[22px] font-extrabold text-black tracking-tight">
               Push<span className="text-[#8b5cf6]">44</span>
             </h1>
-          </div>
-          <Link to="/settings" className="relative h-11 w-11 block">
+          </Link>
+          {/* Right: Avatar → Settings */}
+          <Link to="/settings" className="relative block">
             <AvatarBubble name={displayName} size={44} fontSize={16} />
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
           </Link>
