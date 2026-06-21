@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import thumbsUp from "@/assets/thumbs-up.png";
-import avatar from "@/assets/avatar.png";
+import { AppShell, SectionCard } from "@/components/AppShell";
 import {
-  Menu,
   Lock,
   ChevronRight,
   ArrowRight,
@@ -13,11 +12,6 @@ import {
   GitBranch,
   Github,
   Check,
-  Home,
-  UploadCloud,
-  Archive,
-  History,
-  Settings,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -34,28 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="min-h-screen w-full flex justify-center" style={{ backgroundColor: "#f3f2ee" }}>
-      <div className="w-full max-w-[430px] px-5 pt-4 pb-28 relative">
-        {/* Top bar */}
-        <header className="flex items-center justify-between mb-5">
-          <button className="h-11 w-11 rounded-2xl bg-white shadow-sm flex items-center justify-center">
-            <Menu className="h-5 w-5 text-black" strokeWidth={2.5} />
-          </button>
-          <div className="flex items-center gap-2.5">
-            <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center">
-              <span className="text-[#a78bfa] font-extrabold text-xl italic">B</span>
-            </div>
-            <h1 className="text-[22px] font-extrabold text-black tracking-tight">
-              Base44 <span className="text-[#8b5cf6]">Push</span>
-            </h1>
-          </div>
-          <div className="relative h-11 w-11">
-            <img src={avatar} alt="Profile" className="h-11 w-11 rounded-full object-cover" width={44} height={44} loading="lazy" />
-            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
-          </div>
-        </header>
-
-        {/* Hero card */}
+    <AppShell>
         <section className="relative rounded-[32px] px-6 pt-7 pb-6 overflow-hidden mb-5" style={{ backgroundColor: "#dfeaa0" }}>
           {/* painted brush background */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 480" preserveAspectRatio="none">
@@ -124,13 +97,11 @@ function Index() {
         </section>
 
         {/* Recent Repository */}
-        <section className="bg-white rounded-2xl p-5 mb-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-extrabold text-black text-base">Recent Repository</h3>
-            <button className="flex items-center gap-1 bg-[#f3f2ee] rounded-full px-3 py-1.5 text-xs font-semibold text-black">
-              View all <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
+        <SectionCard title="Recent Repository" action={
+          <button className="flex items-center gap-1 bg-[#f3f2ee] rounded-full px-3 py-1.5 text-xs font-semibold text-black">
+            View all <ChevronRight className="h-3 w-3" />
+          </button>
+        }>
           <div className="flex items-center gap-3 border border-[#eee] rounded-xl p-2.5">
             <div className="h-10 w-10 rounded-lg border border-[#eee] flex items-center justify-center">
               <Github className="h-5 w-5 text-black" />
@@ -141,7 +112,7 @@ function Index() {
             </span>
             <ChevronRight className="h-4 w-4 text-black/60" />
           </div>
-        </section>
+        </SectionCard>
 
         {/* Stat cards */}
         <section className="grid grid-cols-3 gap-3 mb-5">
@@ -169,13 +140,11 @@ function Index() {
         </section>
 
         {/* Recent Changes */}
-        <section className="bg-white rounded-2xl p-5 mb-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-extrabold text-black text-base">Recent Changes</h3>
-            <button className="flex items-center gap-1 text-[#7c3aed] text-xs font-semibold">
-              View all <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
+        <SectionCard title="Recent Changes" action={
+          <button className="flex items-center gap-1 text-[#7c3aed] text-xs font-semibold">
+            View all <ChevronRight className="h-3 w-3" />
+          </button>
+        }>
           <div className="relative rounded-xl bg-[#f7f6f1] p-4 overflow-hidden">
             <ul className="font-mono text-[13px] space-y-2 relative z-10">
               {[
@@ -205,7 +174,7 @@ function Index() {
             </span>
             <span className="text-xs text-black/70 font-medium">All changes are ready to be pushed.</span>
           </div>
-        </section>
+        </SectionCard>
 
         {/* Ready to ship CTA */}
         <section className="rounded-2xl p-5 flex items-center gap-3 mb-5 overflow-hidden relative" style={{ backgroundColor: "#e9e4f8" }}>
@@ -222,27 +191,6 @@ function Index() {
             <span className="text-white font-semibold text-sm whitespace-nowrap">Push to GitHub</span>
           </button>
         </section>
-
-        {/* Bottom nav */}
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white rounded-t-[28px] shadow-[0_-4px_20px_rgba(0,0,0,0.05)] px-4 pt-3 pb-6">
-          <div className="flex items-center justify-between">
-            {[
-              { icon: Home, label: "Dashboard", active: true },
-              { icon: UploadCloud, label: "Push" },
-              { icon: Archive, label: "Repositories" },
-              { icon: History, label: "History" },
-              { icon: Settings, label: "Settings" },
-            ].map(({ icon: Icon, label, active }) => (
-              <button key={label} className="flex flex-col items-center gap-1 flex-1">
-                <span className={`h-9 w-12 rounded-full flex items-center justify-center ${active ? "bg-[#dce99a]" : ""}`}>
-                  <Icon className={`h-5 w-5 ${active ? "text-black" : "text-black/70"}`} strokeWidth={active ? 2.5 : 2} />
-                </span>
-                <span className={`text-[10px] ${active ? "font-bold text-black" : "text-black/60 font-medium"}`}>{label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-      </div>
-    </div>
+    </AppShell>
   );
 }
