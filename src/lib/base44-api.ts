@@ -103,7 +103,8 @@ export const listBase44Apps = createServerFn({ method: "POST" }).handler(
 );
 
 // ─── Files ────────────────────────────────────────────────────────────────────
-// GET /apps/{id}/files → array or { files: [...] }
+// Real endpoint: GET /apps/{id}/sandbox/files
+// Response: { app_id: string, files: { [path]: content } }
 
 export interface Base44File {
   path: string;
@@ -113,17 +114,30 @@ export interface Base44File {
 export const fetchBase44AppFiles = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
     const { token, appId } = ctx.data as { token: string; appId: string };
-    const data = await b44Fetch(`/apps/${appId}/files`, undefined, token);
-    const raw: any[] = Array.isArray(data)
-      ? data
-      : (data.files ?? data.data ?? data.results ?? []);
-    return raw
-      .filter((f: any) => f && (f.path || f.name || f.filename))
-      .map(
-        (f: any): Base44File => ({
-          path: String(f.path ?? f.name ?? f.filename ?? ""),
-          content: String(f.content ?? f.code ?? f.text ?? f.body ?? ""),
-        })
-      );
+
+    // Ensure sandbox is alive before reading files
+    const statusRes = await fetch(`${BASE}/apps/${appId}/sandbox/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (statusRes.ok) {
+      const status = await statusRes.json().catch(() => ({}));
+      if (status?.status !== "alive") {
+        throw new Error(
+          "App sandbox is not running. Open the app in Base44 first to wake it up, then try again."
+        );
+      }
+    }
+
+    const data = await b44Fetch(`/apps/${appId}/sandbox/files`, undefined, token);
+
+    // Response: { app_id, files: { "path": "content", ... } }
+    const filesObj: Record<string, string> = data?.files ?? {};
+
+    return Object.entries(filesObj).map(
+      ([path, content]): Base44File => ({
+        path,
+        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+      })
+    );
   }
 );
