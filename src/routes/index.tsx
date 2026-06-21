@@ -56,50 +56,70 @@ function Index() {
         </header>
 
         {/* Hero card */}
-        <section className="relative rounded-[28px] p-6 overflow-hidden mb-5" style={{ backgroundColor: "#dce99a" }}>
-          {/* decorative brush */}
-          <div className="absolute right-4 top-20 h-44 w-44 rounded-full opacity-60" style={{ background: "radial-gradient(circle, #c5d97a 0%, transparent 70%)" }} />
-          <div className="relative z-10 max-w-[60%]">
-            <h2 className="text-[34px] leading-[1.05] font-extrabold text-black tracking-tight">
-              Push your<br />code to <span className="text-[#7a9b2e]">GitHub</span>
+        <section className="relative rounded-[32px] px-6 pt-7 pb-6 overflow-hidden mb-5" style={{ backgroundColor: "#dfeaa0" }}>
+          {/* painted brush background */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 480" preserveAspectRatio="none">
+            <path d="M 180 60 C 260 40, 340 90, 360 200 C 380 310, 320 400, 220 420 C 140 435, 90 380, 110 290 C 125 220, 130 90, 180 60 Z"
+              fill="#c8d97a" opacity="0.55" />
+            <path d="M 200 120 C 270 110, 330 180, 320 270 C 312 350, 240 380, 180 350 C 130 325, 145 200, 200 120 Z"
+              fill="#b8cc5e" opacity="0.35" />
+          </svg>
+
+          {/* Title spanning full width */}
+          <div className="relative z-20">
+            <h2 className="text-[40px] leading-[0.98] font-extrabold text-black tracking-tight">
+              Push your<br />code to <span className="text-[#7d9b2c]">GitHub</span>
             </h2>
-            <p className="mt-3 text-[14px] text-black/70 leading-snug">
+          </div>
+
+          {/* Right side illustration cluster */}
+          <div className="absolute right-3 top-4 w-[170px] h-[280px] z-10 pointer-events-none">
+            {/* Purple B square */}
+            <div className="absolute left-2 top-6 h-[68px] w-[68px] rounded-[20px] bg-[#8b5cf6] flex items-center justify-center rotate-[-10deg] shadow-[0_8px_20px_rgba(139,92,246,0.35)]">
+              <span className="text-white font-extrabold text-[34px] italic leading-none">B</span>
+            </div>
+            {/* Purple sparkle */}
+            <svg className="absolute left-[88px] top-2 w-5 h-5" viewBox="0 0 20 20" fill="#8b5cf6">
+              <path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" />
+            </svg>
+            {/* Green asterisk */}
+            <div className="absolute right-1 top-8 text-[#a3c043] text-[28px] font-light leading-none">✳</div>
+            {/* Dashed curved arrow B -> github */}
+            <svg className="absolute left-12 top-16 w-[110px] h-[80px]" viewBox="0 0 110 80" fill="none">
+              <path d="M5 5 C 50 -5, 95 25, 75 70" stroke="#1a1a1a" strokeWidth="1.8" strokeDasharray="4 4" strokeLinecap="round" />
+              <path d="M67 62 L75 70 L78 60" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </svg>
+            {/* GitHub black circle */}
+            <div className="absolute right-0 top-[100px] h-[120px] w-[120px] rounded-full bg-[#1a1a1a] flex items-center justify-center shadow-xl">
+              <Github className="h-[72px] w-[72px] text-white" strokeWidth={1.5} />
+            </div>
+            {/* Dots */}
+            <div className="absolute left-[-20px] top-[150px] h-2.5 w-2.5 rounded-full bg-white" />
+            <div className="absolute left-[-8px] top-[200px] h-3 w-3 rounded-full bg-[#f97316]" />
+            <div className="absolute left-2 top-[260px] h-2 w-2 rounded-full bg-[#8b5cf6]" />
+            <div className="absolute right-2 top-[250px] h-1.5 w-1.5 rounded-full bg-[#a3c043]" />
+          </div>
+
+          {/* Subtitle + CTA below */}
+          <div className="relative z-20 mt-32 max-w-[55%]">
+            <p className="text-[14px] text-black/75 leading-snug font-medium">
               Ship your Base44 projects<br />in one secure click.
             </p>
-            <button className="mt-5 group flex items-center gap-2 bg-black rounded-full pl-4 pr-1.5 py-1.5 shadow-lg">
-              <Cloud className="h-4 w-4 text-white" />
-              <span className="text-white font-semibold text-sm pr-3">Push Now</span>
-              <span className="h-9 w-9 rounded-full bg-[#c5e352] flex items-center justify-center">
-                <ArrowRight className="h-4 w-4 text-black" strokeWidth={2.5} />
+            <button className="mt-5 flex items-center gap-3 bg-[#0a0a0a] rounded-full pl-5 pr-1.5 py-1.5 shadow-[0_10px_24px_rgba(0,0,0,0.25)]">
+              <Cloud className="h-[18px] w-[18px] text-white" strokeWidth={2} />
+              <span className="text-white font-semibold text-[15px]">Push Now</span>
+              <span className="h-10 w-10 rounded-full bg-[#c5e352] flex items-center justify-center ml-1">
+                <ArrowRight className="h-[18px] w-[18px] text-black" strokeWidth={2.5} />
               </span>
             </button>
-            <div className="mt-5 flex items-center gap-2 text-[11px] text-black/70 font-medium">
-              <Lock className="h-3.5 w-3.5" />
+            <div className="mt-6 flex items-center gap-2 text-[12px] text-black/75 font-medium">
+              <Lock className="h-3.5 w-3.5" strokeWidth={2.2} />
               <span>Secure</span>
               <span className="text-black/40">•</span>
               <span>Private</span>
               <span className="text-black/40">•</span>
               <span>Encrypted</span>
             </div>
-          </div>
-
-          {/* Right side illustration */}
-          <div className="absolute right-4 top-5 w-[150px] h-[260px]">
-            <div className="absolute right-16 top-2 h-14 w-14 rounded-2xl bg-[#8b5cf6] flex items-center justify-center rotate-[-8deg] shadow-md">
-              <span className="text-white font-extrabold text-2xl italic">B</span>
-            </div>
-            <svg className="absolute right-4 top-14 w-16 h-12" viewBox="0 0 60 50" fill="none">
-              <path d="M5 5 Q 30 0 50 25 T 55 45" stroke="black" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
-              <path d="M50 40 L55 45 L48 47" stroke="black" strokeWidth="1.5" fill="none" />
-            </svg>
-            <div className="absolute right-1 top-3 text-[#8b5cf6] text-xl">✦</div>
-            <div className="absolute right-[-4px] top-12 text-[#a3c043] text-2xl">✳</div>
-            <div className="absolute right-20 top-32 h-[100px] w-[100px] rounded-full bg-[#1a1a1a] flex items-center justify-center">
-              <Github className="h-14 w-14 text-white" />
-            </div>
-            <div className="absolute right-6 top-44 h-3 w-3 rounded-full bg-[#f97316]" />
-            <div className="absolute right-28 top-36 h-2 w-2 rounded-full bg-white" />
-            <div className="absolute right-16 top-56 h-2 w-2 rounded-full bg-[#8b5cf6]" />
           </div>
         </section>
 
