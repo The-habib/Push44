@@ -22,12 +22,10 @@ import { getHistory, formatRelativeTime } from "@/lib/storage";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Push44 — Ship to GitHub in one click" },
-      {
-        name: "description",
-        content:
-          "Push your Base44 projects to GitHub securely, privately, and encrypted in one click.",
-      },
+      { title: "Dashboard — Push44" },
+      { name: "description", content: "Your Push44 dashboard. See your Base44 apps, GitHub repos, and push history at a glance." },
+      { property: "og:title", content: "Dashboard — Push44" },
+      { property: "og:description", content: "Your Push44 dashboard. See your Base44 apps, GitHub repos, and push history at a glance." },
     ],
   }),
   component: Index,
@@ -82,10 +80,13 @@ function Index() {
 
   const isConnected = !!(creds.base44Token && creds.githubToken);
   const lastPush = history[0];
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const firstName = (creds.displayName || "").trim().split(/\s+/)[0] || "";
+
+  const [greeting, setGreeting] = useState("");
+  useEffect(() => {
+    const h = new Date().getHours();
+    setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;

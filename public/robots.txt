@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://push-44.vercel.app/sitemap.xml

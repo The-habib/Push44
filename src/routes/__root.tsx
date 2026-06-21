@@ -77,18 +77,59 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+const SITE_URL = "https://push-44.vercel.app";
+const SITE_NAME = "Push44";
+const SITE_TITLE = "Push44 — Push Base44 Apps to GitHub in One Tap";
+const SITE_DESC =
+  "The fastest way to push your Base44 app source code to GitHub. Connect once, pick your app and repo, then ship in a single tap. Free, secure, and private.";
+
+const jsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESC,
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web Browser",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+  featureList: [
+    "One-tap push from Base44 to GitHub",
+    "Bulk file upload via GitHub Trees API",
+    "Push history tracking",
+    "Multiple repository support",
+    "Secure — credentials stored locally only",
+  ],
+});
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Push44" },
-      { name: "description", content: "Push your Base44 projects to GitHub in one click." },
-      { name: "author", content: "Push44" },
-      { property: "og:title", content: "Push44" },
-      { property: "og:description", content: "Push your Base44 projects to GitHub in one click." },
+      { title: SITE_TITLE },
+      { name: "description", content: SITE_DESC },
+      { name: "keywords", content: "base44, github, push, deploy, source code, developer tool, base44 github, push base44, base44 app" },
+      { name: "author", content: SITE_NAME },
+      { name: "robots", content: "index, follow" },
+      { name: "theme-color", content: "#f97316" },
+
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:title", content: SITE_TITLE },
+      { property: "og:description", content: SITE_DESC },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/logo.png` },
+      { property: "og:image:width", content: "1024" },
+      { property: "og:image:height", content: "1024" },
+      { property: "og:image:alt", content: "Push44 — Push Base44 Apps to GitHub" },
+      { property: "og:locale", content: "en_US" },
+
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: SITE_TITLE },
+      { name: "twitter:description", content: SITE_DESC },
+      { name: "twitter:image", content: `${SITE_URL}/logo.png` },
+      { name: "twitter:image:alt", content: "Push44 logo" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -98,6 +139,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", type: "image/png", href: logoUrl },
       { rel: "apple-touch-icon", href: logoUrl },
+      { rel: "canonical", href: SITE_URL },
+      { rel: "sitemap", type: "application/xml", href: `${SITE_URL}/sitemap.xml` },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: jsonLd,
+      },
     ],
   }),
   shellComponent: RootShell,

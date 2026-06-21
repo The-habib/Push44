@@ -25,6 +25,17 @@ import { getGitHubUser } from "@/lib/github-api";
 import { markOnboardingDone } from "@/lib/storage";
 
 export const Route = createFileRoute("/onboarding")({
+  head: () => ({
+    meta: [
+      { title: "Push44 — Push Base44 Apps to GitHub in One Tap" },
+      { name: "description", content: "The fastest way to push your Base44 app source code to GitHub. Connect once, pick your app and repo, then ship in a single tap. Free, secure, and private." },
+      { property: "og:title", content: "Push44 — Push Base44 Apps to GitHub in One Tap" },
+      { property: "og:description", content: "Connect your Base44 account and GitHub token, then push all your app source files in one tap. No copy-paste. No manual uploads." },
+      { property: "og:url", content: "https://push-44.vercel.app/onboarding" },
+      { name: "twitter:title", content: "Push44 — Push Base44 Apps to GitHub in One Tap" },
+      { name: "twitter:description", content: "Push your Base44 app to GitHub in seconds. Free, private, and secure." },
+    ],
+  }),
   component: OnboardingPage,
 });
 

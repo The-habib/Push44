@@ -17,8 +17,10 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "History — Push44" },
-      { name: "description", content: "Your past pushes and commits." },
+      { title: "Push History — Push44" },
+      { name: "description", content: "A full log of every Base44-to-GitHub push you've made. See commit hashes, file counts, branches, and status for each push." },
+      { property: "og:title", content: "Push History — Push44" },
+      { property: "og:description", content: "A complete log of every Base44-to-GitHub push — commit hashes, file counts, and more." },
     ],
   }),
   component: HistoryPage,

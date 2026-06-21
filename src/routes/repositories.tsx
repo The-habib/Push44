@@ -20,8 +20,10 @@ import { listGitHubRepos } from "@/lib/github-api";
 export const Route = createFileRoute("/repositories")({
   head: () => ({
     meta: [
-      { title: "Repositories — Push44" },
-      { name: "description", content: "All your connected GitHub repositories." },
+      { title: "GitHub Repositories — Push44" },
+      { name: "description", content: "Browse all your GitHub repositories connected to Push44. See repo names, default branches, and visibility at a glance." },
+      { property: "og:title", content: "GitHub Repositories — Push44" },
+      { property: "og:description", content: "Browse all your GitHub repositories connected to Push44." },
     ],
   }),
   component: ReposPage,

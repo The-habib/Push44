@@ -24,8 +24,10 @@ import { Toaster, toast } from "sonner";
 export const Route = createFileRoute("/push")({
   head: () => ({
     meta: [
-      { title: "Push — Push44" },
-      { name: "description", content: "Push your latest changes to GitHub." },
+      { title: "Push to GitHub — Push44" },
+      { name: "description", content: "Select a Base44 app, choose a GitHub repo, and push all your source files in one commit. Fast, bulk push via GitHub Trees API." },
+      { property: "og:title", content: "Push to GitHub — Push44" },
+      { property: "og:description", content: "Select a Base44 app and push all source files to GitHub in one tap." },
     ],
   }),
   component: PushPage,

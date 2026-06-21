@@ -25,7 +25,9 @@ export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
       { title: "Settings — Push44" },
-      { name: "description", content: "Manage your account and preferences." },
+      { name: "description", content: "Connect your Base44 account and GitHub Personal Access Token. Manage your Push44 credentials and preferences." },
+      { property: "og:title", content: "Settings — Push44" },
+      { property: "og:description", content: "Connect Base44 and GitHub to start pushing your apps." },
     ],
   }),
   component: SettingsPage,
