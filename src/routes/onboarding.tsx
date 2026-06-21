@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
+import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
@@ -160,9 +161,11 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
     <div className="flex flex-col items-center text-center">
       {/* Logo mark */}
       <div className="relative mb-7">
-        <div className="h-24 w-24 rounded-3xl bg-[#1a1a1a] flex items-center justify-center shadow-2xl shadow-black/20">
-          <span className="text-[#a78bfa] font-extrabold text-5xl italic leading-none">B</span>
-        </div>
+        <img
+          src={appLogo}
+          alt="Push44"
+          className="h-24 w-24 rounded-3xl object-cover shadow-2xl shadow-black/20"
+        />
         {/* Lime dot accent */}
         <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#dce99a] border-2 border-white flex items-center justify-center">
           <Zap className="h-3.5 w-3.5 text-black" strokeWidth={3} />

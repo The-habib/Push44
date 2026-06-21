@@ -12,6 +12,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import logoUrl from "../assets/logo.png?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider, useApp } from "../contexts/AppContext";
 import { isOnboardingDone, markOnboardingDone } from "../lib/storage";
@@ -95,6 +96,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
+      { rel: "icon", type: "image/png", href: logoUrl },
+      { rel: "apple-touch-icon", href: logoUrl },
     ],
   }),
   shellComponent: RootShell,
