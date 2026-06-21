@@ -6,6 +6,12 @@ A mobile-first web app that lets users log in with their Base44 account and push
 
 ---
 
+## Handover Status (June 2026)
+
+This project is fully functional and production-ready. Everything below describes the current working state so the next developer can pick up immediately.
+
+---
+
 ## What This App Does
 
 1. User logs in with their Base44 email + password (or pastes an auth token)
@@ -27,7 +33,7 @@ A mobile-first web app that lets users log in with their Base44 account and push
 | Package manager | **bun** (not npm/yarn) |
 | Styling | Tailwind CSS 4 (no config file needed) |
 | Toasts | sonner |
-| Icons | lucide-react |
+| Icons | lucide-react + custom `BrandLogos.tsx` (real Base44 + GitHub marks) |
 | State | React Context (`AppContext`) + localStorage |
 
 ---
@@ -42,7 +48,8 @@ src/
 │   ├── push.tsx          — Main push flow (select app → fetch files → pick repo → commit)
 │   ├── settings.tsx      — Base44 login modal + GitHub PAT + preferences
 │   ├── repositories.tsx  — Lists all user's GitHub repos
-│   └── history.tsx       — Push history from localStorage
+│   ├── history.tsx       — Push history from localStorage
+│   └── onboarding.tsx    — First-run wizard (Base44 login → GitHub connect)
 ├── lib/
 │   ├── base44-api.ts     — All Base44 server functions (login, list apps, fetch files)
 │   ├── github-api.ts     — All GitHub server functions (user, repos, create repo, push)
@@ -50,8 +57,12 @@ src/
 │   └── utils.ts          — Tailwind cn() helper
 ├── contexts/
 │   └── AppContext.tsx    — Global credential state, persisted to localStorage
+├── assets/
+│   ├── base44-logo.png              — Original Base44 logo (orange circle mark)
+│   └── base44-logo-transparent.png  — Same logo with background removed (used in UI)
 └── components/
-    ├── AppShell.tsx      — Mobile shell (bottom nav, header, SectionCard)
+    ├── AppShell.tsx      — Mobile shell (bottom nav, header, SectionCard, AvatarBubble)
+    ├── BrandLogos.tsx    — Real brand marks: Base44Logo (img) + GitHubLogo (SVG Invertocat)
     └── ui/               — shadcn/ui components (button, card, etc.)
 ```
 
@@ -67,7 +78,7 @@ src/
 | Validate token | GET | `https://app.base44.com/api/auth/me` | Returns user object directly |
 | List apps | GET | `https://app.base44.com/api/apps` | Returns plain array |
 | Check sandbox | GET | `https://app.base44.com/api/apps/{id}/sandbox/status` | Returns `{"status":"alive"}` |
-| **Fetch files** | GET | `https://app.base44.com/api/apps/{id}/sandbox/files` | ⚠️ See below |
+| **Fetch files** | GET | `https://app.base44.com/api/apps/{id}/sandbox/files` | See below |
 
 **WRONG endpoints (do NOT use):**
 - ❌ `https://api.base44.com/v1/...` — this server returns HTML 404s
@@ -109,7 +120,7 @@ Returns the user object **directly** (no `.user` wrapper):
 ```
 Keys are file paths, values are file content strings. A typical app has **~87 files**.
 
-**Important:** The sandbox must be `"alive"` before fetching files. If not alive, tell the user to open their app in Base44 first. The code already checks this.
+**Important:** The sandbox must be `"alive"` before fetching files. If not alive, show an error asking the user to open their app in Base44 first. The code already checks this.
 
 ---
 
@@ -145,8 +156,9 @@ All stored in **browser localStorage only** — nothing is ever sent to any serv
 
 ```typescript
 // localStorage keys:
-"b44push_credentials"  // { githubToken, githubUsername, base44Token, base44Email, defaultBranch, ... }
+"b44push_credentials"  // { githubToken, githubUsername, base44Token, base44Email, defaultBranch, displayName, ... }
 "b44push_history"      // PushRecord[] (max 100 entries)
+"b44push_onboarded"    // boolean — whether the user has completed first-run onboarding
 ```
 
 The `AppContext` loads these on mount and provides `updateCreds()` / `signOut()`.
@@ -163,8 +175,9 @@ The workflow "Start application" runs this automatically.
 
 ---
 
-## What's Working
+## What's Working (fully built)
 
+- ✅ First-run onboarding wizard (`/onboarding`) — multi-step: welcome → Base44 login → GitHub PAT connect
 - ✅ Base44 login (email/password modal with two tabs: login & paste-token)
 - ✅ GitHub Personal Access Token connection + validation
 - ✅ List all Base44 apps
@@ -173,28 +186,33 @@ The workflow "Start application" runs this automatically.
 - ✅ Create new GitHub repo (public or private)
 - ✅ Push all files in one commit via Trees API
 - ✅ Push history saved to localStorage
-- ✅ Dashboard with live stats
-- ✅ Repositories page
-- ✅ Mobile-first responsive design (designed for ~390px wide)
+- ✅ Dashboard (`/`) with live stats (app count, repo count, push count)
+- ✅ Repositories page (`/repositories`) — lists all GitHub repos with metadata
+- ✅ History page (`/history`) — shows all past pushes with status
+- ✅ Settings page (`/settings`) — manage Base44 + GitHub credentials
+- ✅ Real brand logos throughout — actual Base44 orange logo + official GitHub Invertocat SVG (via `src/components/BrandLogos.tsx`)
+- ✅ Mobile-first responsive design (~390px wide, bottom nav, warm cream `#f3f2ee` palette)
+- ✅ User avatar bubble in header showing initials from logged-in user's name
 
 ---
 
-## What Could Be Improved / Next Steps
+## Suggested Next Steps
 
-- **Auto sandbox wake-up:** If sandbox status ≠ "alive", wake it automatically and retry (currently shows error asking user to open in Base44 first)
-- **Token expiry detection:** If stored token is rejected (401), show a re-login banner automatically  
+- **Auto sandbox wake-up:** If sandbox status ≠ "alive", wake it automatically and retry instead of showing an error
+- **Token expiry detection:** If stored token is rejected (401), show a re-login banner automatically
 - **Org/workspace apps:** Base44 has org-scoped apps — `GET /organizations/{orgId}/apps` — not currently fetched
-- **File diff preview:** Show which files changed before pushing
-- **Multiple branches:** Currently pushes to one branch; could support branch selection per push
-- **Auto-commit message:** Could generate commit message from app name + timestamp automatically
-- **GitHub OAuth:** Replace manual PAT with proper GitHub OAuth flow for better UX
+- **File diff preview:** Show which files changed since the last push before committing
+- **Multiple branches:** Currently pushes to one branch; support branch selection per push
+- **Auto-commit message:** Generate commit message from app name + timestamp automatically
+- **GitHub OAuth:** Replace manual PAT entry with proper GitHub OAuth flow for better UX
 
 ---
 
 ## User Preferences
 
-- Keep all server functions in `src/lib/` (never in `src/lib/server/` — it gets blocked)
+- Keep all server functions in `src/lib/` (never in `src/lib/server/` — blocked by vite config)
 - Mobile-first design (~390px wide, bottom nav, no desktop sidebar)
 - Use `bun` for all package operations
 - Use `sonner` for toast notifications
 - Store credentials in localStorage only, never server-side
+- Brand logos in `src/components/BrandLogos.tsx` — `Base44Logo` and `GitHubLogo` components used everywhere
