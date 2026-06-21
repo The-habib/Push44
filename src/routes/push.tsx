@@ -3,7 +3,6 @@ import { AppShell, SectionCard } from "@/components/AppShell";
 import { useState, useEffect } from "react";
 import {
   Cloud,
-  Github,
   GitBranch,
   FileText,
   Lock,
@@ -15,6 +14,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
+import { GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
@@ -249,7 +249,7 @@ function PushPage() {
               rel="noreferrer"
               className="flex items-center gap-2 text-[#8b5cf6] font-semibold text-sm"
             >
-              <Github className="h-4 w-4" />
+              <GitHubLogo className="h-4 w-4" />
               View on GitHub
               <ExternalLink className="h-3 w-3" />
             </a>
@@ -303,7 +303,7 @@ function PushPage() {
           </p>
         </div>
         <div className="absolute right-4 top-6 h-[120px] w-[120px] rounded-[28px] bg-[#1a1a1a] flex items-center justify-center shadow-xl">
-          <Github className="h-16 w-16 text-white" strokeWidth={1.5} />
+          <GitHubLogo className="h-16 w-16 text-white" />
         </div>
       </section>
 
@@ -369,7 +369,7 @@ function PushPage() {
           <div>
             <div className="flex items-center gap-3 border border-[#eee] rounded-xl p-2.5 mb-3">
               <div className="h-10 w-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
-                <Github className="h-5 w-5 text-white" />
+                <GitHubLogo className="h-5 w-5 text-white" />
               </div>
               <span className="flex-1 text-sm font-semibold text-black truncate">
                 {selectedRepo.full_name}
@@ -464,7 +464,7 @@ function PushPage() {
                     }}
                     className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-[#eee] hover:bg-[#fafaf7] transition-colors text-left"
                   >
-                    <Github className="h-4 w-4 text-black/50 shrink-0" />
+                    <GitHubLogo className="h-4 w-4 text-black/50 shrink-0" />
                     <span className="text-sm font-medium text-black truncate">
                       {r.full_name}
                     </span>

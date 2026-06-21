@@ -3,7 +3,6 @@ import { AppShell } from "@/components/AppShell";
 import { useState, useEffect } from "react";
 import {
   ArrowRight,
-  Github,
   Clock,
   GitBranch,
   Loader2,
@@ -14,6 +13,7 @@ import {
   XCircle,
   Settings,
 } from "lucide-react";
+import { GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
@@ -178,7 +178,7 @@ function Index() {
           className="absolute right-5 top-1/2 -translate-y-1/2 h-[120px] w-[120px] rounded-full flex items-center justify-center opacity-10"
           style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(4px)" }}
         >
-          <Github className="h-16 w-16 text-white" strokeWidth={1} />
+          <GitHubLogo className="h-16 w-16 text-white" />
         </div>
       </section>
 
@@ -218,7 +218,7 @@ function Index() {
           loading={loadingRepos && isConnected}
           bg="#f0fdf4"
           accent="#22c55e"
-          icon={Github}
+          icon={GitHubLogo}
         />
         <Stat
           label="Pushes"
@@ -248,7 +248,7 @@ function Index() {
           ) : (
             <div className="flex items-center gap-3 bg-[#f9f8f4] rounded-2xl p-3">
               <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
-                <Github className="h-5 w-5 text-white" strokeWidth={1.5} />
+                <GitHubLogo className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-black truncate">{repos[0].full_name}</div>

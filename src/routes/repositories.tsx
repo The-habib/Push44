@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell, SectionCard } from "@/components/AppShell";
 import { useState, useEffect } from "react";
 import {
-  Github,
   GitBranch,
   Search,
   Star,
@@ -14,6 +13,7 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import { GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listGitHubRepos } from "@/lib/github-api";
 
@@ -116,7 +116,7 @@ function ReposPage() {
       {!isConnected ? (
         <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
           <div className="h-14 w-14 rounded-2xl bg-[#f3f2ee] flex items-center justify-center">
-            <Github className="h-7 w-7 text-black/40" />
+            <GitHubLogo className="h-7 w-7 text-black/40" />
           </div>
           <p className="text-sm text-black/50 max-w-xs">
             Connect your GitHub account in Settings to see your repositories.
@@ -182,7 +182,7 @@ function ReposPage() {
                       className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
                       style={{ backgroundColor: ACCENTS[i % ACCENTS.length] }}
                     >
-                      <Github className="h-5 w-5 text-black" />
+                      <GitHubLogo className="h-5 w-5 text-black" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">

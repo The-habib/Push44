@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, SectionCard } from "@/components/AppShell";
 import { useState, useEffect } from "react";
 import {
-  Github,
   Moon,
   LogOut,
   Shield,
@@ -17,6 +16,7 @@ import {
   Mail,
   Lock,
 } from "lucide-react";
+import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
@@ -95,14 +95,10 @@ function Base44LoginModal({
         {/* Header */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-4">
           <div
-            className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+            className="h-11 w-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
             style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
-            <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white">
-              <ellipse cx="12" cy="12" rx="10" ry="3" />
-              <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-              <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-            </svg>
+            <Base44Logo size={28} />
           </div>
           <div className="flex-1">
             <div className="text-base font-extrabold text-black">Connect to Base44</div>
@@ -233,15 +229,7 @@ function Base44LoginModal({
                 className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
               >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-                    <ellipse cx="12" cy="12" rx="10" ry="3" />
-                    <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-                    <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-                  </svg>
-                )}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Base44Logo size={20} />}
                 {loading ? "Connecting…" : "Connect to Base44"}
               </button>
             </>
@@ -386,14 +374,10 @@ function SettingsPage() {
             style={{ background: "linear-gradient(135deg,#fff7ed,#ffedd5)" }}
           >
             <div
-              className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+              className="h-11 w-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
             >
-              <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white">
-                <ellipse cx="12" cy="12" rx="10" ry="3" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-                <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-              </svg>
+              <Base44Logo size={28} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-black truncate">{creds.base44Email || "Connected"}</div>
@@ -407,11 +391,7 @@ function SettingsPage() {
             className="w-full rounded-2xl py-4 font-bold text-white text-[15px] flex items-center justify-center gap-2.5"
             style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-              <ellipse cx="12" cy="12" rx="10" ry="3" />
-              <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-              <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-            </svg>
+            <Base44Logo size={20} />
             Login with Base44
           </button>
         )}
@@ -434,7 +414,7 @@ function SettingsPage() {
         {isGitHubConnected && ghUser ? (
           <div className="flex items-center gap-3 rounded-2xl bg-[#f3f2ee] p-4">
             <div className="h-11 w-11 rounded-full bg-[#1a1a1a] flex items-center justify-center shrink-0">
-              <Github className="h-6 w-6 text-white" />
+              <GitHubLogo className="h-6 w-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-black truncate">{ghUser.name}</div>
@@ -475,7 +455,7 @@ function SettingsPage() {
               disabled={ghLoading}
               className="w-full bg-[#1a1a1a] text-white font-bold text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              {ghLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}
+              {ghLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitHubLogo className="h-4 w-4" />}
               {ghLoading ? "Connecting…" : "Connect GitHub"}
             </button>
           </div>

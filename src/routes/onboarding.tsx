@@ -6,7 +6,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Github,
   Check,
   Loader2,
   AlertCircle,
@@ -18,6 +17,7 @@ import {
   User,
   Sparkles,
 } from "lucide-react";
+import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
@@ -313,13 +313,7 @@ function Base44Step({
     }
   };
 
-  const Base44Icon = () => (
-    <svg viewBox="0 0 24 24" className="h-7 w-7 fill-white">
-      <ellipse cx="12" cy="12" rx="10" ry="3" />
-      <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(60 12 12)" />
-      <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(120 12 12)" />
-    </svg>
-  );
+  const Base44Icon = () => <Base44Logo size={28} />;
 
   return (
     <div className="w-full">
@@ -496,7 +490,7 @@ function GitHubStep({
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="h-12 w-12 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0 shadow-md">
-          <Github className="h-6 w-6 text-white" strokeWidth={1.5} />
+          <GitHubLogo className="h-6 w-6 text-white" />
         </div>
         <div>
           <h2 className="text-lg font-extrabold text-black">Connect GitHub</h2>
@@ -618,7 +612,7 @@ function GitHubStep({
               loading={loading}
               variant="dark"
             >
-              {!loading && <Github className="h-4 w-4" strokeWidth={2} />}
+              {!loading && <GitHubLogo className="h-4 w-4" />}
               {loading ? "Verifying…" : "Connect GitHub"}
             </PrimaryButton>
             <button

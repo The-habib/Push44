@@ -5,8 +5,8 @@ import {
   Archive,
   History,
   Settings,
-  Github,
 } from "lucide-react";
+import { GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import type { ReactNode } from "react";
 
@@ -127,7 +127,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 rel="noreferrer"
                 className="h-9 w-9 rounded-xl bg-[#f3f2ee] flex items-center justify-center text-black/50 hover:text-black transition-colors"
               >
-                <Github className="h-4 w-4" />
+                <GitHubLogo className="h-4 w-4" />
               </a>
               <div className="relative">
                 <AvatarBubble name={displayName} size={36} fontSize={13} />
