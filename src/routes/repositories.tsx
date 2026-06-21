@@ -20,7 +20,7 @@ import { listGitHubRepos } from "@/lib/github-api";
 export const Route = createFileRoute("/repositories")({
   head: () => ({
     meta: [
-      { title: "Repositories — Base44 Push" },
+      { title: "Repositories — Push44" },
       { name: "description", content: "All your connected GitHub repositories." },
     ],
   }),

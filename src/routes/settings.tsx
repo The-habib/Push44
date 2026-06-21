@@ -25,7 +25,7 @@ import { Toaster, toast } from "sonner";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Base44 Push" },
+      { title: "Settings — Push44" },
       { name: "description", content: "Manage your account and preferences." },
     ],
   }),
@@ -530,7 +530,7 @@ function SettingsPage() {
         <LogOut className="h-4 w-4" />
         Sign Out
       </button>
-      <p className="text-center text-[11px] text-black/40 font-medium">Base44 Push · v2.0.0</p>
+      <p className="text-center text-[11px] text-black/40 font-medium">Push44 · v2.0.0</p>
     </AppShell>
   );
 }

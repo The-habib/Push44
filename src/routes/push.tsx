@@ -24,7 +24,7 @@ import { Toaster, toast } from "sonner";
 export const Route = createFileRoute("/push")({
   head: () => ({
     meta: [
-      { title: "Push — Base44 Push" },
+      { title: "Push — Push44" },
       { name: "description", content: "Push your latest changes to GitHub." },
     ],
   }),

@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="text-[#a78bfa] font-extrabold text-xl italic">B</span>
             </div>
             <h1 className="text-[22px] font-extrabold text-black tracking-tight">
-              Base44 <span className="text-[#8b5cf6]">Push</span>
+              Push<span className="text-[#8b5cf6]">44</span>
             </h1>
           </div>
           <div className="relative h-11 w-11">

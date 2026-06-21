@@ -17,7 +17,7 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "History — Base44 Push" },
+      { title: "History — Push44" },
       { name: "description", content: "Your past pushes and commits." },
     ],
   }),

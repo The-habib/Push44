@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Base44 Push" },
+      { title: "Push44" },
       { name: "description", content: "Push your Base44 projects to GitHub in one click." },
-      { name: "author", content: "Base44 Push" },
-      { property: "og:title", content: "Base44 Push" },
+      { name: "author", content: "Push44" },
+      { property: "og:title", content: "Push44" },
       { property: "og:description", content: "Push your Base44 projects to GitHub in one click." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

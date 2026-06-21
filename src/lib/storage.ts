@@ -21,8 +21,22 @@ export interface PushRecord {
   timestamp: number;
 }
 
-const CREDS_KEY = "b44push_credentials";
-const HISTORY_KEY = "b44push_history";
+const CREDS_KEY = "push44_credentials";
+const HISTORY_KEY = "push44_history";
+
+// Migrate old keys on first load
+if (typeof localStorage !== "undefined") {
+  const oldCreds = localStorage.getItem("b44push_credentials");
+  const oldHistory = localStorage.getItem("b44push_history");
+  if (oldCreds && !localStorage.getItem(CREDS_KEY)) {
+    localStorage.setItem(CREDS_KEY, oldCreds);
+    localStorage.removeItem("b44push_credentials");
+  }
+  if (oldHistory && !localStorage.getItem(HISTORY_KEY)) {
+    localStorage.setItem(HISTORY_KEY, oldHistory);
+    localStorage.removeItem("b44push_history");
+  }
+}
 
 export function getCredentials(): Partial<Credentials> {
   try {

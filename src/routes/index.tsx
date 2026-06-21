@@ -22,7 +22,7 @@ import { getHistory, formatRelativeTime } from "@/lib/storage";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Base44 Push — Ship to GitHub in one click" },
+      { title: "Push44 — Ship to GitHub in one click" },
       {
         name: "description",
         content:

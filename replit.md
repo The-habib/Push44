@@ -1,4 +1,4 @@
-# Base44 Push
+# Push44
 
 A mobile-first web app that lets users log in with their Base44 account and push their Base44 app source code directly to GitHub — in one tap.
 
