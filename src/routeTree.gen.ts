@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RepositoriesRouteImport } from './routes/repositories'
 import { Route as PushRouteImport } from './routes/push'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const PushRoute = PushRouteImport.update({
   path: '/push',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/onboarding': typeof OnboardingRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/onboarding': typeof OnboardingRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/onboarding': typeof OnboardingRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/history' | '/push' | '/repositories' | '/settings'
+  fullPaths:
+    | '/'
+    | '/history'
+    | '/onboarding'
+    | '/push'
+    | '/repositories'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/history' | '/push' | '/repositories' | '/settings'
-  id: '__root__' | '/' | '/history' | '/push' | '/repositories' | '/settings'
+  to: '/' | '/history' | '/onboarding' | '/push' | '/repositories' | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/history'
+    | '/onboarding'
+    | '/push'
+    | '/repositories'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoryRoute: typeof HistoryRoute
+  OnboardingRoute: typeof OnboardingRoute
   PushRoute: typeof PushRoute
   RepositoriesRoute: typeof RepositoriesRoute
   SettingsRoute: typeof SettingsRoute
@@ -102,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PushRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history': {
       id: '/history'
       path: '/history'
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoryRoute: HistoryRoute,
+  OnboardingRoute: OnboardingRoute,
   PushRoute: PushRoute,
   RepositoriesRoute: RepositoriesRoute,
   SettingsRoute: SettingsRoute,

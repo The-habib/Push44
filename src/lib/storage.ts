@@ -75,6 +75,28 @@ export function clearHistory(): void {
   localStorage.removeItem(HISTORY_KEY);
 }
 
+const ONBOARDING_KEY = "push44_onboarded";
+
+export function isOnboardingDone(): boolean {
+  try {
+    return localStorage.getItem(ONBOARDING_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function markOnboardingDone(): void {
+  try {
+    localStorage.setItem(ONBOARDING_KEY, "true");
+  } catch {}
+}
+
+export function resetOnboarding(): void {
+  try {
+    localStorage.removeItem(ONBOARDING_KEY);
+  } catch {}
+}
+
 export function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);

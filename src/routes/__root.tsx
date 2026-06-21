@@ -6,12 +6,15 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useNavigate,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AppProvider } from "../contexts/AppContext";
+import { AppProvider, useApp } from "../contexts/AppContext";
+import { isOnboardingDone, markOnboardingDone } from "../lib/storage";
 
 function NotFoundComponent() {
   return (
@@ -114,13 +117,37 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function OnboardingGuard() {
+  const { creds, isLoaded } = useApp();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (pathname === "/onboarding") return;
+
+    // Existing user with both tokens — mark done silently
+    if (creds.base44Token && creds.githubToken) {
+      markOnboardingDone();
+      return;
+    }
+
+    // First-time user — send to onboarding
+    if (!isOnboardingDone()) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [isLoaded, pathname, creds.base44Token, creds.githubToken]);
+
+  return <Outlet />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <Outlet />
+        <OnboardingGuard />
       </AppProvider>
     </QueryClientProvider>
   );
