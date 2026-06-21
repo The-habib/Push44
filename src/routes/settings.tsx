@@ -91,7 +91,7 @@ function Base44LoginModal({
       />
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-sm mx-4 mb-4 sm:mb-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-sm mx-4 mb-28 sm:mb-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-4">
           <div
