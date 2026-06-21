@@ -176,11 +176,13 @@ function Index() {
           </button>
         </div>
 
-        {/* Decorative GitHub mark */}
-        <GitHubLogo
-          className="absolute right-5 top-1/2 -translate-y-1/2 text-white"
-          style={{ width: 108, height: 108, opacity: 0.07 }}
-        />
+        {/* Decorative GitHub mark — wrapper carries opacity since GitHubLogo has no style prop */}
+        <div
+          className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ opacity: 0.08 }}
+        >
+          <GitHubLogo size={110} className="text-white" />
+        </div>
       </section>
 
       {/* ── Setup banner ─────────────────────────────────────────── */}
