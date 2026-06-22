@@ -16,5 +16,14 @@ export default defineConfig({
     port: 5000,
     strictPort: true,
     allowedHosts: true,
+    watch: {
+      ignored: [
+        "**/.cache/**",
+        "**/node_modules/**",
+        "**/attached_assets/**",
+        "**/.local/**",
+        "**/.agents/**",
+      ],
+    },
   },
 });
