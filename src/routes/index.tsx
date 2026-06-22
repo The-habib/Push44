@@ -269,7 +269,7 @@ function LandingPage() {
                     <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
                   </motion.button>
                 </Link>
-                <a href="https://github.com/push44" target="_blank" rel="noreferrer">
+                <a href="https://github.com/The-habib/Push44" target="_blank" rel="noreferrer">
                   <motion.button
                     className="flex items-center gap-2 rounded-2xl px-8 py-4 text-[15px] font-semibold text-[#1a1a1a] border border-[#e8e0d8] bg-white hover:bg-[#1a1a1a] hover:text-white hover:border-[#1a1a1a] transition-colors"
                     whileHover={{ y: -1 }}
