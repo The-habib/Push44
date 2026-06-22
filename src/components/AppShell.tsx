@@ -7,7 +7,7 @@ import { useApp } from "@/contexts/AppContext";
 import type { ReactNode } from "react";
 
 const NAV = [
-  { to: "/",            icon: Home,        label: "Dashboard" },
+  { to: "/dashboard",   icon: Home,        label: "Dashboard" },
   { to: "/push",        icon: UploadCloud, label: "Push"      },
   { to: "/repositories",icon: Archive,     label: "Repos"     },
   { to: "/history",     icon: History,     label: "History"   },

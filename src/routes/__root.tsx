@@ -83,6 +83,7 @@ function OnboardingGuard() {
   useEffect(() => {
     if (!isLoaded) return;
     if (pathname === "/onboarding") return;
+    if (pathname === "/") return;
 
     if (creds.base44Token && creds.githubToken) {
       markOnboardingDone();

@@ -353,7 +353,7 @@ function OnboardingPage() {
             <motion.div key="done" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <DoneStep />
               <FadeUp delay={0.28}>
-                <MotionButton onClick={() => { markOnboardingDone(); navigate({ to: "/" }); }}
+                <MotionButton onClick={() => { markOnboardingDone(); navigate({ to: "/dashboard" }); }}
                   className="w-full rounded-2xl py-3.5 font-bold text-[14px] flex items-center justify-center gap-2 text-black"
                   style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}>
                   <Zap className="h-4 w-4" strokeWidth={3} />Open Push44<ArrowRight className="h-4 w-4" strokeWidth={2.5} />

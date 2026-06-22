@@ -4,30 +4,42 @@
     <loc>https://push-44.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
   <url>
     <loc>https://push-44.vercel.app/onboarding</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
+    <lastmod>2026-06-22</lastmod>
+  </url>
+  <url>
+    <loc>https://push-44.vercel.app/dashboard</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
   <url>
     <loc>https://push-44.vercel.app/push</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
   <url>
     <loc>https://push-44.vercel.app/repositories</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
   <url>
     <loc>https://push-44.vercel.app/history</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.4</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
   <url>
     <loc>https://push-44.vercel.app/settings</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
+    <lastmod>2026-06-22</lastmod>
   </url>
 </urlset>
