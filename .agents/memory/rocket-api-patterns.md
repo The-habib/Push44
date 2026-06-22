@@ -7,7 +7,8 @@ description: Confirmed working endpoints, auth patterns, and critical gotchas fo
 
 - `AUTH_BASE = https://appuser.dhiwise.com` — user profile, workspace list
 - `BACK_BASE  = https://back.rocket.new`   — chat threads, app data
-- `APP_BASE   = https://application.rocket.new` — application files (unconfirmed)
+- `APP_BASE   = https://application.rocket.new` — production deploy ping (no auth needed!)
+- `APP_CODE_BASE = https://appcodeformat.dhiwise.com` — S3-backed file access (JWT auth needed)
 
 ## companyId is required for ALL back.rocket.new calls
 
@@ -40,20 +41,62 @@ Response: { data: { list: [{ _id, displayName, name, threadDetails: { applicatio
   "threadDetails": {
     "applicationId": "6a1c9a2e8be93c00147a3884",  ← use for file fetching
     "name": "CallbreakScoreKeeper",
+    "languageType": "DART",
     "isCodeGenerated": true
-  },
-  "clusterId": "..."
+  }
 }
 ```
 
-## File fetching
+## File fetching — confirmed working (reverse-engineered from Rocket.new JS bundle)
 
-`chat-thread/get` with `{ id: threadId }` returns thread metadata (NOT files directly). Use `threadDetails.applicationId` to then query application-specific file endpoints on `application.rocket.new`.
+### Step 1: Get file tree
+```
+POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
+Headers: { Authorization: "JWT {token}" (or Bearer), Content-Type: application/json }
+Body: { applicationId: "6a1c9a2e8be93c00147a3884" }
+Response: directory tree (format TBD — handled by flattenDirTree())
+```
+Confirmed: returns 401 without auth, 200 with JWT token.
 
-The `RocketApp.applicationId` field stores this and is passed through to `fetchRocketAppFiles`.
+### Step 2: Get each file content
+```
+POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
+Headers: { Authorization: "JWT {token}" }
+Body: { applicationId: "...", file: "lib/main.dart" }
+Response: file content
+```
+Confirmed: returns 401 without auth, 200 with JWT token.
+
+### Alternative: download ZIP (only when dev container is ACTIVE)
+```
+GET ${editorBackendURL}/api/download-project?t={timestamp}
+```
+`editorBackendURL` is dynamic — set via WebSocket events when project is open. NOT accessible without the running container.
+
+## Production deploy ping (no auth needed!)
+
+```
+POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+Body: { applicationId: "..." }
+Response: { data: { production: { backendUrl, previewUrl, status, ... } } }
+```
+The `production.backendUrl` is the DEPLOYED app's backend (not the code editor container).
+The production container may be terminated (`status.Name: "terminated"`) which causes 502 on file endpoints.
 
 ## CRITICAL: Never use loginToBack()
 
 `loginToBack()` tries 10+ endpoints that all fail. It adds 20-30 seconds of invisible delay before app listing or file fetching starts. It always returns `null`. The auth token itself (`Bearer {token}`) works directly on back.rocket.new — no session exchange needed.
 
 **Why:** loginToBack was attempting to exchange the dhiwise.com JWT for a back.rocket.new session token, but the back server accepts the JWT directly via `Authorization: Bearer`.
+
+## URL constants from Rocket.new JS bundle
+
+```js
+let i = "https://gateway.rocket.new"           // GATEWAY_BASE
+let r = "https://appuser.dhiwise.com"           // AUTH_BASE / USER_SERVICE
+let s = "https://back.rocket.new"               // PLAYGROUND_BACKEND_SERVICE_URL / BACK_BASE
+let c = "https://application.rocket.new"        // ROCKET_PROJECT_SERVICE / APP_BASE
+let p = "https://project.rocket.new"
+let g = "https://horizon-backend.rocket.new"
+BASE_CONTAINER_CODE_URL = "https://appcodeformat.dhiwise.com"
+```

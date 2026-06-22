@@ -494,6 +494,75 @@ function extractFilesFromPayload(d: any): RocketFile[] | null {
   return null;
 }
 
+// ── Confirmed working file endpoints (reverse-engineered from Rocket.new JS bundle):
+//
+//   Project structure (when container sleeping):
+//     POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
+//     Body: { applicationId }  |  Auth: JWT {token}
+//
+//   File content (when container sleeping):
+//     POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
+//     Body: { applicationId, file: "path/to/file" }  |  Auth: JWT {token}
+//
+//   Download ZIP (only when dev container is ACTIVE):
+//     GET  ${editorBackendURL}/api/download-project?t={timestamp}
+//     (editorBackendURL is dynamic — only available via WebSocket when project is open)
+
+const APP_CODE_BASE = "https://appcodeformat.dhiwise.com";
+
+/** Recursively flatten a directory tree into a list of file paths. */
+function flattenDirTree(node: any, prefix = ""): string[] {
+  if (!node || typeof node !== "object") return [];
+
+  // Flat array of strings → these are file paths directly
+  if (Array.isArray(node)) {
+    return node.flatMap((item: any): string[] => {
+      if (typeof item === "string") return [item];
+      if (item?.path && typeof item.path === "string") return [item.path];
+      if (item?.name) {
+        const name = String(item.name);
+        const full = prefix + name;
+        if (item.type === "file" || (!item.children && !item.items)) return [full];
+        const children = item.children ?? item.items ?? [];
+        return flattenDirTree(children, full + "/");
+      }
+      return flattenDirTree(item, prefix);
+    });
+  }
+
+  // Nested object: { type, name, children } style tree
+  if (node.type === "file") return [(prefix + String(node.name ?? "")).replace(/\/+$/, "")].filter(Boolean);
+  if ((node.type === "directory" || node.type === "folder") && node.children) {
+    const dir = prefix + (node.name ? String(node.name) + "/" : "");
+    return flattenDirTree(node.children, dir);
+  }
+
+  // Plain object where keys are filenames and values are sub-trees or null/true
+  const paths: string[] = [];
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "data" || key === "payload" || key === "result") {
+      paths.push(...flattenDirTree(value as any, prefix));
+    } else if (value === null || value === true || value === false || typeof value === "string") {
+      paths.push(prefix + key);
+    } else if (typeof value === "object") {
+      paths.push(...flattenDirTree(value as any, prefix + key + "/"));
+    }
+  }
+  return paths;
+}
+
+/** Extract file content string from an S3 file-content response. */
+function extractContent(d: any): string | null {
+  if (!d) return null;
+  const p = d.data ?? d.result ?? d.payload ?? d;
+  if (typeof p === "string") return p;
+  const c = p.content ?? p.code ?? p.fileContent ?? p.body ?? p.text;
+  if (typeof c === "string") return c;
+  if (c !== undefined && c !== null) return JSON.stringify(c, null, 2);
+  if (typeof p.data === "string") return p.data;
+  return null;
+}
+
 export async function fetchRocketAppFiles({
   data,
 }: {
@@ -507,49 +576,14 @@ export async function fetchRocketAppFiles({
 
   log("fetching files", { appId, applicationId });
 
-  // Auth header variants (no loginToBack — it never works and adds 20-30s delay)
-  const headerVariants = [
-    backHeaders(token),
-    backHeadersJWT(token),
-  ];
-
-  async function tryPost(url: string, body: object): Promise<RocketFile[] | null> {
-    for (const hdrs of headerVariants) {
-      try {
-        const res = await fetch(url, { method: "POST", headers: hdrs, body: JSON.stringify(body) });
-        if (!res.ok) { if (res.status === 401) break; continue; }
-        const raw = await res.json().catch(() => null);
-        if (!raw) continue;
-        const d = await rocketDecrypt(raw);
-        log(`POST ${url.split("/").slice(-2).join("/")}`, d);
-        const files = extractFilesFromPayload(d);
-        if (files && files.length > 0) return files;
-      } catch { /* try next */ }
-    }
-    return null;
-  }
-
-  async function tryGet(url: string): Promise<RocketFile[] | null> {
-    for (const hdrs of headerVariants) {
-      try {
-        const res = await fetch(url, { method: "GET", headers: hdrs });
-        if (!res.ok) { if (res.status === 401) break; continue; }
-        const raw = await res.json().catch(() => null);
-        if (!raw) continue;
-        const d = await rocketDecrypt(raw);
-        log(`GET ${url.split("/").slice(-2).join("/")}`, d);
-        const files = extractFilesFromPayload(d);
-        if (files && files.length > 0) return files;
-      } catch { /* try next */ }
-    }
-    return null;
-  }
-
-  // ── Step 1: Get thread details to extract applicationId if not already known.
-  // chat-thread/get with { id } is confirmed working from previous investigation.
+  // ── Step 1: Resolve applicationId via chat-thread/get if not already known.
   if (!applicationId) {
-    for (const body of [{ id: appId }, { threadId: appId }, { chatThreadId: appId }, { _id: appId }]) {
-      for (const hdrs of headerVariants) {
+    const hdrsVariants = [
+      { "Content-Type": "application/json", Authorization: `Bearer ${token}`, pageURL: "https://rocket.new" },
+      { "Content-Type": "application/json", Authorization: `JWT ${token}`, pageURL: "https://rocket.new" },
+    ];
+    for (const hdrs of hdrsVariants) {
+      for (const body of [{ id: appId }, { threadId: appId }]) {
         try {
           const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/get`, {
             method: "POST", headers: hdrs, body: JSON.stringify(body),
@@ -558,13 +592,12 @@ export async function fetchRocketAppFiles({
           const raw = await res.json().catch(() => null);
           if (!raw) continue;
           const d = await rocketDecrypt(raw);
-          log(`chat-thread/get ${JSON.stringify(body)}`, d);
-          // Extract applicationId from threadDetails
+          log("chat-thread/get", d);
           const thread = d.data ?? d;
           const td = thread.threadDetails ?? {};
           applicationId = String(td.applicationId ?? td._id ?? thread.applicationId ?? "");
-          if (applicationId) { log("applicationId resolved", applicationId); break; }
-          // Also check if files are already in this response
+          if (applicationId) { log("applicationId from thread", applicationId); break; }
+          // If thread response already contains files, return them now
           const files = extractFilesFromPayload(d);
           if (files && files.length > 0) return files;
         } catch { /* try next */ }
@@ -573,71 +606,111 @@ export async function fetchRocketAppFiles({
     }
   }
 
-  log("applicationId final", applicationId || "(none)");
+  log("applicationId", applicationId || "(none)");
+  if (!applicationId) {
+    throw new Error(
+      "Could not resolve application ID for this Rocket.new project. " +
+      "The project may not have generated any code yet."
+    );
+  }
 
-  // ── Step 2: Try fetching files using applicationId first (more specific)
-  if (applicationId) {
-    const PROJECT_BASE = "https://project.rocket.new";
-    // GET endpoints using applicationId
-    for (const base of [APP_BASE, PROJECT_BASE, BACK_BASE, GATEWAY_BASE]) {
-      for (const path of [
-        `/api/v1/application/${applicationId}/files`,
-        `/api/v1/application/${applicationId}/code`,
-        `/api/v1/application/${applicationId}`,
-        `/api/v1/project/${applicationId}/files`,
-        `/api/v1/project/${applicationId}`,
-      ]) {
-        const result = await tryGet(`${base}${path}`);
-        if (result) return result;
+  // ── Step 2: S3-backed project structure + per-file content.
+  // Confirmed working endpoint (reverse-engineered from Rocket.new JS bundle).
+  // Auth format: both JWT and Bearer are attempted.
+  const s3Headers = [
+    { "Content-Type": "application/json", Authorization: `JWT ${token}` },
+    { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  ];
+
+  let filePaths: string[] = [];
+  let workingHeaders: Record<string, string> | null = null;
+
+  for (const hdrs of s3Headers) {
+    try {
+      const res = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/project-structure`, {
+        method: "POST",
+        headers: hdrs,
+        body: JSON.stringify({ applicationId }),
+      });
+      log(`project-structure status (${hdrs.Authorization.split(" ")[0]})`, res.status);
+      if (!res.ok) continue;
+      const raw = await res.json().catch(() => null);
+      if (!raw) continue;
+      const d = await rocketDecrypt(raw);
+      log("project-structure response", d);
+      const extracted = flattenDirTree(d.data ?? d.result ?? d.payload ?? d);
+      if (extracted.length > 0) {
+        filePaths = extracted.filter(p => p && !p.endsWith("/"));
+        workingHeaders = hdrs;
+        log("file paths count", filePaths.length);
+        log("file paths sample", filePaths.slice(0, 10));
+        break;
+      }
+    } catch (e: any) { log("project-structure error", e?.message); }
+  }
+
+  if (filePaths.length > 0 && workingHeaders) {
+    // Fetch all files in parallel (batches of 20 to avoid flooding)
+    const BATCH = 20;
+    const results: RocketFile[] = [];
+    for (let i = 0; i < filePaths.length; i += BATCH) {
+      const batch = filePaths.slice(i, i + BATCH);
+      const batchResults = await Promise.allSettled(
+        batch.map(async (filePath) => {
+          try {
+            const res = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+              method: "POST",
+              headers: workingHeaders!,
+              body: JSON.stringify({ applicationId, file: filePath }),
+            });
+            if (!res.ok) return null;
+            const raw = await res.json().catch(() => null);
+            if (!raw) return null;
+            const d = await rocketDecrypt(raw);
+            const content = extractContent(d);
+            if (content === null) return null;
+            return { path: filePath, content } as RocketFile;
+          } catch { return null; }
+        })
+      );
+      for (const r of batchResults) {
+        if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
       }
     }
+    if (results.length > 0) {
+      log("files fetched", results.length);
+      return results;
+    }
+    log("file-content fetch returned 0 files — falling through to fallbacks", {});
+  }
 
-    // POST endpoints using applicationId
-    for (const base of [BACK_BASE, GATEWAY_BASE]) {
-      for (const body of [{ applicationId }, { id: applicationId }, { _id: applicationId }]) {
-        for (const path of [
-          "/api/v1/application/get",
-          "/api/v1/application/get-code",
-          "/api/v1/code/get",
-          "/api/v2/application/get",
-        ]) {
-          const result = await tryPost(`${base}${path}`, body);
-          if (result) return result;
+  // ── Step 3: Fallback — try other known endpoints with both applicationId and appId.
+  const allIds = [...new Set([applicationId, appId].filter(Boolean))];
+  for (const id of allIds) {
+    for (const hdrs of s3Headers) {
+      for (const base of [BACK_BASE, GATEWAY_BASE]) {
+        for (const body of [{ id }, { applicationId: id }, { _id: id }]) {
+          for (const path of ["/api/v1/application/get", "/api/v1/application/get-code", "/api/v1/code/get"]) {
+            try {
+              const res = await fetch(`${base}${path}`, {
+                method: "POST", headers: hdrs, body: JSON.stringify(body),
+              });
+              if (!res.ok) continue;
+              const raw = await res.json().catch(() => null);
+              if (!raw) continue;
+              const d = await rocketDecrypt(raw);
+              log(`fallback ${path}`, d);
+              const files = extractFilesFromPayload(d);
+              if (files && files.length > 0) return files;
+            } catch { /* try next */ }
+          }
         }
-      }
-    }
-  }
-
-  // ── Step 3: Try file endpoints using thread appId
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const path of [
-      `/api/v1/chat-thread/${appId}/files`,
-      `/api/v1/chat-thread/${appId}/code`,
-      `/api/v1/playground-project/${appId}/files`,
-      `/api/v1/application/${appId}/files`,
-    ]) {
-      const result = await tryGet(`${base}${path}`);
-      if (result) return result;
-    }
-  }
-
-  // POST with thread ID
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const body of [{ threadId: appId }, { chatThreadId: appId }, { id: appId }]) {
-      for (const path of [
-        "/api/v1/chat-thread/get-code",
-        "/api/v1/chat-thread/export",
-        "/api/v1/code/get",
-        "/api/v1/code/export",
-      ]) {
-        const result = await tryPost(`${base}${path}`, body);
-        if (result) return result;
       }
     }
   }
 
   throw new Error(
     "Could not extract source files from this Rocket.new project. " +
-    "The project may not have generated any code yet."
+    "The project may not have generated any code yet, or code access requires the project to be rebuilt."
   );
 }
