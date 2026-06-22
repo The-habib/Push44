@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Shield, Eye, EyeOff, Check, X, Loader2,
-  ExternalLink, AlertCircle, Mail, Lock, GitBranch,
+  ExternalLink, AlertCircle, Mail, Lock, GitBranch, ChevronRight,
 } from "lucide-react";
 import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
@@ -16,14 +16,19 @@ import { Toaster, toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
-function StatusChip({ on }: { on: boolean }) {
+function StatusDot({ on }: { on: boolean }) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
-      style={{ background: on ? "#f0fdf4" : "#fef2f2", color: on ? "#22c55e" : "#ef4444", border: `1px solid ${on ? "#bbf7d0" : "#fecaca"}` }}
-    >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: on ? "#22c55e" : "#ef4444" }} />
-      {on ? "Connected" : "Not connected"}
+    <span className="flex items-center gap-1.5">
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ background: on ? "#22c55e" : "#d1d5db" }}
+      />
+      <span
+        className="text-[11px] font-semibold"
+        style={{ color: on ? "#16a34a" : "#9ca3af" }}
+      >
+        {on ? "Connected" : "Not connected"}
+      </span>
     </span>
   );
 }
@@ -65,7 +70,6 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
       >
-        {/* Header */}
         <div className="px-6 pt-6 pb-5 border-b border-[#f7f4f0]">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
@@ -78,7 +82,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
             </div>
             <motion.button onClick={onClose}
               className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
-              whileHover={{ scale: 1.08, background: "#fef2f2", color: "#ef4444" }} whileTap={{ scale: 0.9 }}>
+              whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }}>
               <X className="h-4 w-4" />
             </motion.button>
           </div>
@@ -104,7 +108,6 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* Tabs */}
                 <div className="flex bg-[#faf7f3] rounded-xl p-1 mb-4">
                   {(["login", "token"] as const).map((t) => (
                     <motion.button key={t} onClick={() => { setTab(t); setError(""); }}
@@ -186,6 +189,7 @@ function SettingsPage() {
   const [ghLoading, setGhLoading] = useState(false);
   const [ghUser, setGhUser]       = useState<{ login: string; name: string } | null>(null);
   const [branch, setBranch]       = useState("main");
+  const [expandGh, setExpandGh]   = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -202,6 +206,7 @@ function SettingsPage() {
 
   const b44Connected = !!creds.base44Token;
   const ghConnected  = !!creds.githubToken && !!ghUser;
+  const displayName  = creds.displayName || creds.base44Email || creds.githubUsername || "";
 
   const connectGitHub = async () => {
     if (!ghToken.trim()) { toast.error("Enter your GitHub token"); return; }
@@ -210,12 +215,11 @@ function SettingsPage() {
       const user = await getGitHubUser({ data: { token: ghToken.trim() } });
       updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login, defaultOwner: user.login });
       setGhUser({ login: user.login, name: user.name });
+      setExpandGh(false);
       toast.success(`GitHub connected as @${user.login}`);
     } catch (e: any) { toast.error(e.message ?? "Invalid token"); }
     finally { setGhLoading(false); }
   };
-
-  const displayName = creds.displayName || creds.base44Email || creds.githubUsername || "";
 
   return (
     <AppShell>
@@ -231,177 +235,229 @@ function SettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* Profile hero */}
+      {/* ── Profile card ── */}
       <FadeUp>
-        <div className="flex items-center gap-4 bg-white rounded-[24px] p-5 border border-[#f0ece4] mb-5">
-          <div className="relative">
-            <AvatarBubble name={displayName} size={60} fontSize={20} />
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#22c55e] ring-2 ring-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-[18px] font-black text-[#1a1a1a] truncate">{displayName || "Settings"}</h1>
-            {ghUser && <p className="text-[12px] text-[#9a8880] mt-0.5">@{ghUser.login} on GitHub</p>}
-            <div className="flex items-center gap-2 mt-2">
-              <StatusChip on={b44Connected} />
-              <StatusChip on={ghConnected} />
-            </div>
-          </div>
-        </div>
-      </FadeUp>
+        <div
+          className="relative overflow-hidden rounded-[24px] border border-[#f0ece4] mb-4"
+          style={{ background: "linear-gradient(135deg,#fff8f3 0%,#fffcf8 60%,#fff 100%)" }}
+        >
+          {/* orange accent stripe */}
+          <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(to right,#f97316,#fb923c,transparent)" }} />
 
-      {/* Base44 */}
-      <FadeUp delay={0.07}>
-        <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f7f4f0]">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-              style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}>
-              <Base44Logo size={20} white />
+          <div className="flex items-center gap-4 px-5 pt-6 pb-5">
+            <div className="relative shrink-0">
+              <AvatarBubble name={displayName} size={58} fontSize={20} />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[#22c55e] ring-2 ring-white" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-[14px] font-black text-[#1a1a1a]">Base44</h3>
-              <p className="text-[11px] text-[#9a8880]">Source of your apps</p>
-            </div>
-            <StatusChip on={b44Connected} />
-          </div>
-          <div className="px-5 py-4">
-            <AnimatePresence mode="wait">
-              {b44Connected ? (
-                <motion.div key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#f97316]" strokeWidth={3} />
-                    <span className="text-[13px] font-semibold text-[#1a1a1a] truncate max-w-[180px]">{creds.base44Email || "Authenticated"}</span>
-                  </div>
-                  <MotionButton
-                    onClick={() => { updateCreds({ base44Token: "", base44Email: "" }); toast.success("Base44 disconnected"); }}
-                    className="text-[12px] text-[#ef4444] font-bold bg-[#fef2f2] rounded-xl px-3 py-1.5 shrink-0"
-                  >
-                    Disconnect
-                  </MotionButton>
-                </motion.div>
-              ) : (
-                <motion.div key="off" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <MotionButton onClick={() => setShowModal(true)}
-                    className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2"
-                    style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}>
-                    <Base44Logo size={18} white />Login with Base44
-                  </MotionButton>
-                </motion.div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[20px] font-black text-[#1a1a1a] tracking-tight truncate leading-tight">
+                {displayName || "Account"}
+              </h1>
+              {ghUser && (
+                <p className="text-[12px] text-[#9a8880] mt-0.5 truncate">@{ghUser.login} on GitHub</p>
               )}
-            </AnimatePresence>
+              <div className="flex items-center gap-4 mt-2.5">
+                <StatusDot on={b44Connected} />
+                <span className="h-3 w-px bg-[#ede9e3]" />
+                <StatusDot on={ghConnected} />
+              </div>
+            </div>
           </div>
         </div>
       </FadeUp>
 
-      {/* GitHub */}
-      <FadeUp delay={0.12}>
+      {/* ── Connections card ── */}
+      <FadeUp delay={0.06}>
         <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f7f4f0]">
-            <div className="h-9 w-9 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
-              <GitHubLogo className="h-4.5 w-4.5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-[14px] font-black text-[#1a1a1a]">GitHub</h3>
-              <p className="text-[11px] text-[#9a8880]">Where code gets pushed</p>
-            </div>
-            <StatusChip on={ghConnected} />
+          {/* Section label */}
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Connections</p>
           </div>
-          <div className="px-5 py-4">
-            <AnimatePresence mode="wait">
-              {ghConnected && ghUser ? (
-                <motion.div key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
-                    <GitHubLogo className="h-4.5 w-4.5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{ghUser.name || ghUser.login}</div>
-                    <div className="text-[11px] text-[#9a8880]">@{ghUser.login}</div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <motion.a href={`https://github.com/${ghUser.login}`} target="_blank" rel="noreferrer"
-                      className="h-8 w-8 rounded-xl bg-[#faf7f3] border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
-                      whileHover={{ scale: 1.1, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}>
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </motion.a>
-                    <MotionButton
+
+          {/* Base44 row */}
+          <div className="px-5 py-3.5" style={{ borderTop: "1px solid #f7f4f0" }}>
+            <div className="flex items-center gap-3">
+              <div
+                className="h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0 overflow-hidden"
+                style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
+              >
+                <Base44Logo size={18} white />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">Base44</p>
+                <AnimatePresence mode="wait">
+                  {b44Connected ? (
+                    <motion.p key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#9a8880] truncate mt-0.5">
+                      {creds.base44Email || "Authenticated"}
+                    </motion.p>
+                  ) : (
+                    <motion.p key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#c8b8a2] mt-0.5">
+                      Not connected
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+              <AnimatePresence mode="wait">
+                {b44Connected ? (
+                  <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => { updateCreds({ base44Token: "", base44Email: "" }); toast.success("Base44 disconnected"); }}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
+                    style={{ background: "#fef2f2", color: "#ef4444" }}>
+                    Disconnect
+                  </motion.button>
+                ) : (
+                  <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => setShowModal(true)}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
+                    style={{ background: "#f97316" }}>
+                    Connect
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* GitHub row */}
+          <div className="px-5 py-3.5" style={{ borderTop: "1px solid #f7f4f0" }}>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-[11px] bg-[#1a1a1a] flex items-center justify-center shrink-0">
+                <GitHubLogo className="h-[18px] w-[18px] text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">GitHub</p>
+                <AnimatePresence mode="wait">
+                  {ghConnected && ghUser ? (
+                    <motion.p key="user" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#9a8880] truncate mt-0.5">
+                      @{ghUser.login}
+                    </motion.p>
+                  ) : (
+                    <motion.p key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#c8b8a2] mt-0.5">
+                      Not connected
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {ghConnected && ghUser && (
+                  <motion.a
+                    href={`https://github.com/${ghUser.login}`} target="_blank" rel="noreferrer"
+                    className="h-7 w-7 rounded-[9px] bg-[#faf7f3] border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
+                    whileHover={{ scale: 1.08, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
+                    transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </motion.a>
+                )}
+                <AnimatePresence mode="wait">
+                  {ghConnected ? (
+                    <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       onClick={() => { updateCreds({ githubToken: "", githubUsername: "" }); setGhUser(null); toast.success("GitHub disconnected"); }}
-                      className="text-[12px] text-[#ef4444] font-bold bg-[#fef2f2] rounded-xl px-3 py-1.5">
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px]"
+                      style={{ background: "#fef2f2", color: "#ef4444" }}>
                       Disconnect
+                    </motion.button>
+                  ) : (
+                    <motion.button key="expand" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setExpandGh((v) => !v)}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white"
+                      style={{ background: "#1a1a1a" }}>
+                      Connect
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* GitHub token input — expands inline */}
+            <AnimatePresence>
+              {!ghConnected && expandGh && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-3 space-y-2.5">
+                    <p className="text-[11px] text-[#9a8880] leading-relaxed">
+                      Create a token at{" "}
+                      <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noreferrer"
+                        className="text-[#f97316] font-semibold">github.com/settings/tokens</a>{" "}
+                      with <strong className="text-[#1a1a1a]">repo</strong> scope.
+                    </p>
+                    <div className="relative">
+                      <input
+                        type={showGhTok ? "text" : "password"}
+                        placeholder="ghp_xxxxxxxxxxxx"
+                        value={ghToken}
+                        onChange={(e) => setGhToken(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && connectGitHub()}
+                        className="w-full rounded-[14px] border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[12px] font-mono outline-none focus:border-[#1a1a1a]/30 focus:bg-white transition-colors pr-11"
+                      />
+                      <button onClick={() => setShowGhTok(!showGhTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                        {showGhTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <MotionButton onClick={connectGitHub} disabled={ghLoading}
+                      className="w-full bg-[#1a1a1a] text-white font-bold text-[13px] py-3 rounded-[14px] flex items-center justify-center gap-2 disabled:opacity-50">
+                      {ghLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitHubLogo className="h-4 w-4" />}
+                      {ghLoading ? "Connecting…" : "Connect GitHub"}
                     </MotionButton>
                   </div>
                 </motion.div>
-              ) : (
-                <motion.div key="off" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-                  <p className="text-[12px] text-[#9a8880] leading-relaxed">
-                    Create a token at{" "}
-                    <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noreferrer"
-                      className="text-[#f97316] font-semibold">github.com/settings/tokens</a>{" "}
-                    with <strong>repo</strong> scope.
-                  </p>
-                  <div className="relative">
-                    <input
-                      type={showGhTok ? "text" : "password"} placeholder="ghp_xxxxxxxxxxxx" value={ghToken}
-                      onChange={(e) => setGhToken(e.target.value)} onKeyDown={(e) => e.key === "Enter" && connectGitHub()}
-                      className="w-full rounded-2xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#f97316]/40 focus:bg-white transition-colors pr-11"
-                    />
-                    <button onClick={() => setShowGhTok(!showGhTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
-                      {showGhTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <MotionButton onClick={connectGitHub} disabled={ghLoading}
-                    className="w-full bg-[#1a1a1a] text-white font-bold text-[13px] py-3.5 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50">
-                    {ghLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitHubLogo className="h-4 w-4" />}
-                    {ghLoading ? "Connecting…" : "Connect GitHub"}
-                  </MotionButton>
-                </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
       </FadeUp>
 
-      {/* Push defaults */}
-      <FadeUp delay={0.17}>
+      {/* ── Push defaults ── */}
+      <FadeUp delay={0.12}>
         <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f7f4f0]">
-            <div className="h-9 w-9 rounded-xl bg-[#fff4ed] flex items-center justify-center shrink-0">
-              <GitBranch className="h-4 w-4 text-[#f97316]" />
-            </div>
-            <div>
-              <h3 className="text-[14px] font-black text-[#1a1a1a]">Push Defaults</h3>
-              <p className="text-[11px] text-[#9a8880]">Default branch name</p>
-            </div>
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Push Defaults</p>
           </div>
-          <div className="px-5 py-4">
-            <input
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              onBlur={() => updateCreds({ defaultBranch: branch })}
-              placeholder="main"
-              className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] outline-none focus:border-[#f97316]/40 focus:bg-white transition-colors font-mono"
-            />
+          <div className="px-5 py-3.5" style={{ borderTop: "1px solid #f7f4f0" }}>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-[11px] bg-[#fff4ed] border border-[#fde0c8] flex items-center justify-center shrink-0">
+                <GitBranch className="h-4 w-4 text-[#f97316]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] text-[#9a8880] mb-1 font-medium">Default branch</p>
+                <input
+                  value={branch}
+                  onChange={(e) => setBranch(e.target.value)}
+                  onBlur={() => updateCreds({ defaultBranch: branch })}
+                  placeholder="main"
+                  className="w-full rounded-[10px] border border-[#f0ece4] bg-[#faf7f3] px-3 py-2 text-[13px] font-mono outline-none focus:border-[#f97316]/40 focus:bg-white transition-colors"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </FadeUp>
 
-      {/* Privacy */}
-      <FadeUp delay={0.22}>
-        <div className="flex gap-3 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl px-4 py-3.5 mb-5 text-[12px] text-[#166534] leading-relaxed">
-          <Shield className="h-4 w-4 shrink-0 mt-0.5 text-[#22c55e]" />
-          <span>Your credentials are stored only in your browser — never sent to any third-party server.</span>
-        </div>
-      </FadeUp>
-
-      {/* Sign out */}
-      <FadeUp delay={0.27}>
+      {/* ── Sign out + footer ── */}
+      <FadeUp delay={0.18}>
         <MotionButton
           onClick={() => { signOut(); setGhUser(null); toast.success("Signed out"); }}
-          className="w-full bg-white border-2 border-[#fca5a5] text-[#dc2626] font-bold text-[13px] rounded-2xl py-3.5 flex items-center justify-center gap-2 mb-3"
+          className="w-full bg-white border border-[#f0ece4] text-[#9a8880] font-bold text-[13px] rounded-[18px] py-3.5 flex items-center justify-center gap-2 mb-4"
+          whileHover={{ borderColor: "#fca5a5", color: "#dc2626", background: "#fff8f8" }}
         >
-          <LogOut className="h-4 w-4" />Sign Out
+          <LogOut className="h-4 w-4" />
+          Sign Out
         </MotionButton>
-        <p className="text-center text-[11px] text-[#c8b8a2] font-medium pb-2">Push44 v2.0 · Free forever</p>
+
+        <div className="flex items-center justify-center gap-2 pb-2">
+          <Shield className="h-3 w-3 text-[#c8b8a2]" />
+          <p className="text-center text-[11px] text-[#c8b8a2] font-medium">
+            Credentials stored locally · never sent to any server · Push44 v2.0
+          </p>
+        </div>
       </FadeUp>
     </AppShell>
   );
