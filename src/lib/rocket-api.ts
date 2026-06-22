@@ -197,41 +197,89 @@ function mapToRocketApp(a: any): RocketApp {
   };
 }
 
+async function rocketGet(url: string, token: string): Promise<any> {
+  const res = await fetch(url, {
+    method: "GET",
+    headers: jwtHeaders(token),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, `Request failed (${res.status})`));
+  }
+  const raw = await res.json();
+  return rocketDecrypt(raw);
+}
+
 export async function listRocketApps({
   data,
 }: {
   data: { token: string };
 }): Promise<RocketApp[]> {
-  const endpoints = [
-    { url: `${BACK_BASE}/api/v2/application/list`, body: {} },
-    { url: `${BACK_BASE}/api/v1/recent-threads-projects/list`, body: {} },
-    { url: `${BACK_BASE}/api/v1/project/list`, body: {} },
-    { url: `${BACK_BASE}/api/v2/project/list`, body: {} },
-    { url: `${BACK_BASE}/api/v1/thread/list`, body: {} },
-    { url: `${BACK_BASE}/api/v1/chat-thread/list`, body: {} },
+  // Step 1 — fetch profile to learn user/workspace IDs
+  let userId = "";
+  let workspaceId = "";
+  let orgId = "";
+  try {
+    const profile = await rocketGet(`${AUTH_BASE}/web/v1/user/get-profile`, data.token);
+    const u = profile?.data ?? profile?.user ?? profile;
+    userId      = String(u?._id ?? u?.id ?? u?.userId ?? "");
+    workspaceId = String(u?.workspaceId ?? u?.workspace?._id ?? u?.workspace?.id ?? "");
+    orgId       = String(u?.orgId ?? u?.organizationId ?? u?.organization?._id ?? "");
+    console.warn(`[push44-debug] profile => userId:${userId} workspaceId:${workspaceId} orgId:${orgId} email:${u?.email}`);
+  } catch (e: any) {
+    console.warn(`[push44-debug] profile fetch failed:`, e?.message);
+  }
+
+  // Step 2 — build endpoint list, inserting workspace/org/user-scoped variants where we have IDs
+  const postEndpoints: string[] = [
+    `${BACK_BASE}/api/v2/application/list`,
+    `${BACK_BASE}/api/v1/recent-threads-projects/list`,
+    `${BACK_BASE}/api/v2/thread/list`,
+    `${BACK_BASE}/api/v2/chat-thread/list`,
   ];
+  if (workspaceId) {
+    postEndpoints.push(`${BACK_BASE}/api/v1/workspace/${workspaceId}/application/list`);
+    postEndpoints.push(`${BACK_BASE}/api/v2/workspace/${workspaceId}/application/list`);
+  }
+  if (orgId) {
+    postEndpoints.push(`${BACK_BASE}/api/v1/org/${orgId}/application/list`);
+  }
+
+  const getEndpoints: string[] = [
+    `${BACK_BASE}/api/v1/application/list`,
+    `${AUTH_BASE}/web/v1/projects/list`,
+    `${AUTH_BASE}/web/v2/application/list`,
+  ];
+  if (userId) {
+    getEndpoints.push(`${BACK_BASE}/api/v1/user/${userId}/applications`);
+    getEndpoints.push(`${AUTH_BASE}/web/v1/user/${userId}/projects`);
+  }
 
   const seen = new Set<string>();
   const allApps: RocketApp[] = [];
   let gotValidResponse = false;
 
-  for (const ep of endpoints) {
+  for (const url of postEndpoints) {
     try {
-      const d = await rocketPost(ep.url, data.token, ep.body);
+      const d = await rocketPost(url, data.token, {});
       gotValidResponse = true;
-      console.warn(`[push44-debug] ${ep.url} =>`, JSON.stringify(d).slice(0, 600));
       const arr = deepFindArray(d);
-      console.warn(`[push44-debug] found ${arr.length} items from ${ep.url}`);
       for (const item of arr) {
         const mapped = mapToRocketApp(item);
-        if (mapped.id && !seen.has(mapped.id)) {
-          seen.add(mapped.id);
-          allApps.push(mapped);
-        }
+        if (mapped.id && !seen.has(mapped.id)) { seen.add(mapped.id); allApps.push(mapped); }
       }
-    } catch (e: any) {
-      console.warn(`[push44-debug] ${ep.url} failed:`, e?.message);
-    }
+    } catch { /* try next */ }
+  }
+
+  for (const url of getEndpoints) {
+    try {
+      const d = await rocketGet(url, data.token);
+      gotValidResponse = true;
+      const arr = deepFindArray(d);
+      for (const item of arr) {
+        const mapped = mapToRocketApp(item);
+        if (mapped.id && !seen.has(mapped.id)) { seen.add(mapped.id); allApps.push(mapped); }
+      }
+    } catch { /* try next */ }
   }
 
   if (!gotValidResponse) {
