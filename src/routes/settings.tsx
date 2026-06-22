@@ -191,7 +191,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
 }
 
 function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
-  const [tab, setTab]           = useState<"otp" | "token">("otp");
+  const [tab, setTab]           = useState<"otp" | "token">("token");
   // OTP flow
   const [email, setEmail]       = useState("");
   const [otpCode, setOtpCode]   = useState("");
@@ -387,11 +387,20 @@ function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                     </motion.div>
                   ) : (
                     <motion.div key="tok" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-2">
-                      <p className="text-[11px] text-[#9a8880]">
-                        Get your API key from{" "}
-                        <a href="https://rocket.new/settings" target="_blank" rel="noreferrer"
-                          className="text-[#6366f1] font-semibold">rocket.new/settings</a>
-                      </p>
+                      <div className="bg-[#eef2ff] rounded-xl p-3 space-y-1.5">
+                        <p className="text-[11px] font-bold text-[#3730a3]">How to get your token:</p>
+                        <ol className="text-[11px] text-[#4338ca] space-y-1 list-none">
+                          <li>1. Open{" "}
+                            <a href="https://rocket.new" target="_blank" rel="noreferrer"
+                              className="font-bold underline">rocket.new</a>{" "}and log in
+                          </li>
+                          <li>2. Go to{" "}
+                            <a href="https://rocket.new/settings" target="_blank" rel="noreferrer"
+                              className="font-bold underline">rocket.new/settings</a>
+                          </li>
+                          <li>3. Find <strong>"API Key"</strong> or <strong>"Access Token"</strong> and copy it</li>
+                        </ol>
+                      </div>
                       <div className="relative">
                         <input
                           type={showTok ? "text" : "password"}
