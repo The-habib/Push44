@@ -174,51 +174,136 @@ function PushPage() {
     return (
       <AppShell>
         <AnimatedCorner variant="push" />
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center">
-          <motion.div
-            className="h-24 w-24 rounded-full flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 280, damping: 20 }}
-          >
-            <Rocket className="h-11 w-11 text-white" />
-          </motion.div>
+        <div className="flex flex-col min-h-[72vh] pt-4 pb-2">
 
-          <FadeUp delay={0.08}>
-            <div>
-              <h2 className="text-[28px] font-black text-[#1a1a1a] mb-1">Pushed!</h2>
-              <p className="text-[13px] text-[#6b6360]">
-                <strong>{files.length}</strong> files → <strong>{selectedRepo?.full_name}</strong> on <strong>{branch}</strong>
-              </p>
-            </div>
-          </FadeUp>
+          {/* Success icon + headline */}
+          <FadeUp>
+            <div className="flex flex-col items-center text-center mb-6">
+              {/* Stacked icon: outer ring + inner check */}
+              <div className="relative mb-4">
+                <motion.div
+                  className="h-20 w-20 rounded-full"
+                  style={{ background: "rgba(34,197,94,0.1)", border: "2px solid rgba(34,197,94,0.2)" }}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                />
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.15, type: "spring", stiffness: 360, damping: 20 }}
+                >
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}>
+                    <Check className="h-6 w-6 text-white" strokeWidth={3} />
+                  </div>
+                </motion.div>
+                {/* Orbit dot */}
+                <motion.div
+                  className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full"
+                  style={{ background: "#f97316" }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 18 }}
+                />
+              </div>
 
-          <FadeUp delay={0.14}>
-            <div className="font-mono text-[12px] bg-[#1c1917] text-[#fb923c] px-5 py-2.5 rounded-xl border border-[#f97316]/20">
-              commit {commitHash}
-            </div>
-          </FadeUp>
-
-          {selectedRepo && (
-            <FadeUp delay={0.2}>
-              <a
-                href={`${selectedRepo.html_url}/tree/${branch}`}
-                target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 text-[#f97316] font-semibold text-[13px] bg-[#fff4ed] rounded-2xl px-4 py-2.5 border border-[#f97316]/20"
+              <motion.h2
+                className="text-[30px] font-black text-[#1a1a1a] tracking-tight leading-none mb-1.5"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12, duration: 0.4 }}
               >
-                <GitHubLogo className="h-4 w-4" /> View on GitHub <ExternalLink className="h-3 w-3" />
-              </a>
-            </FadeUp>
-          )}
+                Shipped!
+              </motion.h2>
+              <motion.p
+                className="text-[13px] text-[#9a8880]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
+                Your code is live on GitHub
+              </motion.p>
+            </div>
+          </FadeUp>
 
-          <FadeUp delay={0.28}>
-            <MotionButton
-              onClick={() => { setStatus("idle"); setSelectedApp(null); setFiles([]); setCommitMsg(""); }}
-              className="bg-[#1a1a1a] text-white font-bold px-6 py-3.5 rounded-2xl text-[13px]"
-            >
-              Push another app
-            </MotionButton>
+          {/* Summary card */}
+          <FadeUp delay={0.16}>
+            <div className="bg-white rounded-[22px] border border-[#f0ece4] overflow-hidden mb-3"
+              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
+
+              {/* Green top stripe */}
+              <div className="h-1 w-full" style={{ background: "linear-gradient(90deg,#22c55e,#16a34a)" }} />
+
+              <div className="px-5 py-4 space-y-3.5">
+                {/* App → Repo row */}
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
+                    <Base44Logo size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] text-[#9a8880] font-medium uppercase tracking-wide mb-0.5">App pushed</div>
+                    <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{selectedApp?.name ?? "App"}</div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-[#f5f2ee]" />
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center">
+                    <div className="text-[18px] font-black text-[#1a1a1a]">{files.length}</div>
+                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Files</div>
+                  </div>
+                  <div className="text-center border-x border-[#f5f2ee]">
+                    <div className="text-[13px] font-black text-[#1a1a1a] truncate px-1">{branch}</div>
+                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Branch</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-[13px] font-black text-[#1a1a1a] font-mono">{commitHash}</div>
+                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Commit</div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-[#f5f2ee]" />
+
+                {/* Repo row */}
+                <div className="flex items-center gap-2.5">
+                  <GitHubLogo size={16} className="text-[#6b6360] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-semibold text-[#1a1a1a] truncate">{selectedRepo?.full_name}</div>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#9a8880] bg-[#f5f2ee] px-2 py-0.5 rounded-full shrink-0">{branch}</span>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* Actions */}
+          <FadeUp delay={0.24}>
+            <div className="space-y-2.5">
+              {selectedRepo && (
+                <a
+                  href={`${selectedRepo.html_url}/tree/${branch}`}
+                  target="_blank" rel="noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-[16px] border border-[#f0ece4] bg-white text-[13px] font-bold text-[#1a1a1a]"
+                  style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+                >
+                  <GitHubLogo size={16} className="text-[#1a1a1a]" />
+                  View on GitHub
+                  <ExternalLink className="h-3 w-3 text-[#9a8880]" />
+                </a>
+              )}
+              <MotionButton
+                onClick={() => { setStatus("idle"); setSelectedApp(null); setFiles([]); setCommitMsg(""); }}
+                className="w-full py-3.5 rounded-[16px] text-[13px] font-bold text-white"
+                style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}
+              >
+                Push another app
+              </MotionButton>
+            </div>
           </FadeUp>
         </div>
       </AppShell>
