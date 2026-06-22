@@ -219,7 +219,9 @@ export async function listRocketApps({
     try {
       const d = await rocketPost(ep.url, data.token, ep.body);
       gotValidResponse = true;
+      console.warn(`[push44-debug] ${ep.url} =>`, JSON.stringify(d).slice(0, 600));
       const arr = deepFindArray(d);
+      console.warn(`[push44-debug] found ${arr.length} items from ${ep.url}`);
       for (const item of arr) {
         const mapped = mapToRocketApp(item);
         if (mapped.id && !seen.has(mapped.id)) {
@@ -227,7 +229,9 @@ export async function listRocketApps({
           allApps.push(mapped);
         }
       }
-    } catch { /* try next endpoint */ }
+    } catch (e: any) {
+      console.warn(`[push44-debug] ${ep.url} failed:`, e?.message);
+    }
   }
 
   if (!gotValidResponse) {
