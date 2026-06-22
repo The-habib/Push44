@@ -29,7 +29,7 @@ export const Route = createFileRoute("/push")({
 });
 
 type Platform = "base44" | "rocket";
-interface App  { id: string; name: string; updated_at: string; icon?: string }
+interface App  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface Repo { full_name: string; default_branch: string; html_url: string }
 interface FileEntry { path: string; content: string }
 type PushStatus = "idle" | "pushing" | "done" | "error";
@@ -277,7 +277,7 @@ function PushPage() {
       if (platform === "base44") {
         setFiles(await fetchBase44AppFiles({ data: { token: creds.base44Token!, appId: app.id } }));
       } else {
-        setFiles(await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id } }));
+        setFiles(await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId } }));
       }
     }
     catch (e: any) { toast.error("Failed to fetch files: " + e.message); }

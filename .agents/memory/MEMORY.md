@@ -1,3 +1,4 @@
 - [Base44 Real API](base44-real-api.md) — real base URL is app.base44.com/api NOT api.base44.com; token key is access_token; files via /sandbox/files
 - [Vite Import Protection](vite-import-protection.md) — @lovable.dev/vite-tanstack-config blocks **/server/** path imports; never put createServerFn in server/ subdirectory
 - [GitHub Trees API Push](github-trees-push.md) — bulk push pattern: blobs → tree → commit → update ref; handle empty repo (no HEAD) separately
+- [Rocket.new API Patterns](rocket-api-patterns.md) — companyId header required for chat-thread/search; files need applicationId from threadDetails; skip loginToBack

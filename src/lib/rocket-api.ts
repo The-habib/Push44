@@ -245,7 +245,8 @@ export async function validateRocketToken({ data }: { data: { token: string } })
 // ─── Projects ────────────────────────────────────────────────────────────────
 
 export interface RocketApp {
-  id: string;
+  id: string;           // thread _id (used as primary key throughout the app)
+  applicationId?: string; // threadDetails.applicationId — used for file fetching
   name: string;
   updated_at: string;
   icon?: string;
@@ -270,11 +271,15 @@ function deepFindApps(v: any, depth = 0): any[] {
 }
 
 function mapToRocketApp(a: any): RocketApp {
+  // threadDetails holds applicationId and app name for chat-thread items
+  const td = a.threadDetails ?? {};
   return {
     id: String(a._id ?? a.id ?? a.threadId ?? a.chatThreadId ?? a.projectId ?? ""),
+    applicationId: td.applicationId ?? td._id ?? a.applicationId ?? undefined,
     name: String(
-      a.title ?? a.name ?? a.appName ?? a.threadName ?? a.chatThreadName ??
-      a.projectName ?? a.subject ?? "Untitled"
+      a.displayName ?? a.title ?? a.name ?? a.appName ??
+      td.name ?? td.appName ??
+      a.threadName ?? a.chatThreadName ?? a.projectName ?? a.subject ?? "Untitled"
     ),
     updated_at: String(a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()),
     icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
@@ -284,12 +289,95 @@ function mapToRocketApp(a: any): RocketApp {
 export async function listRocketApps({ data }: { data: { token: string; companyId?: string } }): Promise<RocketApp[]> {
   const authToken = data.token;
   let companyId = data.companyId ?? "";
-  const seen = new Set<string>();
-  const allApps: RocketApp[] = [];
-  let reachable = false;
 
   const log = (label: string, val: any) =>
-    console.warn(`[push44] ${label}`, JSON.stringify(val).slice(0, 600));
+    console.warn(`[push44] ${label}`, JSON.stringify(val).slice(0, 800));
+
+  // ── Step 1: Resolve companyId — needed as a header for all back.rocket.new calls.
+  // (loginToBack is intentionally skipped — it makes 10+ failing requests and adds 20-30s delay.)
+
+  if (!companyId) {
+    // 1a. Try JWT claims (no network cost)
+    const claims = decodeJwtPayload(authToken);
+    if (claims) {
+      log("JWT claims", claims);
+      companyId = String(
+        claims.companyId ?? claims.company_id ??
+        claims.workspaceId ?? claims.workspace_id ??
+        claims.cid ?? claims.wid ?? ""
+      );
+      if (companyId) log("companyId from JWT", companyId);
+    }
+  }
+
+  if (!companyId) {
+    // 1b. GET /web/v1/workspace/list on auth server — confirmed working.
+    //     Response: { data: { list: [{ companyId: "...", ... }] } }
+    try {
+      const res = await fetch(`${AUTH_BASE}/web/v1/workspace/list`, {
+        method: "GET",
+        headers: authHeaders(authToken),
+      });
+      if (res.ok) {
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        log("workspace/list", d);
+        const u = d.data ?? d;
+        // Response may be { list: [...] } or { data: { list: [...] } }
+        const list: any[] = Array.isArray(u.list) ? u.list
+          : Array.isArray(u) ? u : [];
+        if (list.length > 0) {
+          // companyId is the actual workspace ID, NOT _id
+          companyId = String(list[0].companyId ?? list[0].company_id ?? "");
+          if (companyId) log("companyId from workspace/list", companyId);
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (!companyId) {
+    // 1c. Try profile endpoints as last resort
+    for (const url of [
+      `${AUTH_BASE}/auth/v3/get-user-from-token-r`,
+      `${AUTH_BASE}/web/v1/user/get-profile`,
+    ]) {
+      try {
+        const res = await fetch(url, { method: "GET", headers: authHeaders(authToken) });
+        if (!res.ok) continue;
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        const u = d.data ?? d;
+        const user = u.user ?? u;
+        const cid = String(
+          u.companyId ?? u.company_id ??
+          user.companyId ?? user.company_id ??
+          u.workspaceId ?? user.workspaceId ?? ""
+        );
+        if (cid && cid !== "undefined") { companyId = cid; log("companyId from profile", cid); break; }
+      } catch { /* try next */ }
+    }
+  }
+
+  log("companyId final", companyId || "(none)");
+
+  if (!companyId) {
+    throw new Error(
+      "NEEDS_OTP_LOGIN: Your Rocket.new API key doesn't carry workspace info. " +
+      "Please reconnect using Login with Email (OTP) to list your projects."
+    );
+  }
+
+  // ── Step 2: Fetch chat threads — the canonical project list.
+  // Confirmed: Bearer auth + companyId header → returns workspace projects.
+  const threadHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${authToken}`,
+    companyId,
+    pageURL: "https://rocket.new",
+  };
+
+  const seen = new Set<string>();
+  const allApps: RocketApp[] = [];
 
   function addApps(arr: any[]) {
     for (const item of arr) {
@@ -301,283 +389,59 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     }
   }
 
-  // ── 0. Establish a session on back.rocket.new + resolve companyId from profile
-  const [backSession] = await Promise.all([
-    loginToBack(authToken),
-  ]);
-
-  // The "active" token for back.rocket.new calls: use exchanged session if available, else auth token
-  const backToken = backSession ?? authToken;
-  log("backToken source", backSession ? "session-exchange" : "auth-token-direct");
-
-  // ── Step 0a: Try extracting companyId from the JWT payload itself (no API call)
-  if (!companyId) {
-    const claims = decodeJwtPayload(authToken);
-    if (claims) {
-      console.warn("[push44] JWT claims", JSON.stringify(claims).slice(0, 1000));
-      companyId = String(
-        claims.companyId ?? claims.company_id ??
-        claims.workspaceId ?? claims.workspace_id ??
-        claims.cid ?? claims.wid ?? ""
-      );
-      if (companyId) log("companyId from JWT claims", companyId);
-    } else {
-      log("JWT decode", "token is not a JWT — opaque API key");
-    }
-  }
-
-  // ── Step 0b: Profile / company endpoints on auth server (do NOT fall back to _id)
-  if (!companyId) {
-    const profileUrls = [
-      `${AUTH_BASE}/auth/v3/get-user-from-token-r`,
-      `${AUTH_BASE}/web/v1/user/get-profile`,
-      `${AUTH_BASE}/web/v1/workspace/list`,      // confirmed working — companyId in list[0].companyId
-      `${AUTH_BASE}/web/v3/user/company-info`,
-      `${AUTH_BASE}/web/v3/company/get`,
-      `${AUTH_BASE}/api/v1/company`,
-    ];
-    for (const url of profileUrls) {
-      try {
-        const res = await fetch(url, { method: "GET", headers: authHeaders(authToken) });
-        if (!res.ok) continue;
-        const raw = await res.json();
-        const d = await rocketDecrypt(raw);
-        console.warn(`[push44] profile (${url.split("/").slice(-2).join("/")})`, JSON.stringify(d).slice(0, 4000));
-        const u = d.data ?? d;
-        const user = u.user ?? u;
-        const workspace = u.workspace ?? user.workspace ?? u.company ?? user.company;
-        // list-style responses (e.g. workspace/list) have companyId in list[0]
-        const firstListItem = Array.isArray(u.list) && u.list.length > 0 ? u.list[0] : null;
-        // IMPORTANT: do NOT fall back to _id — it causes 401 on back.rocket.new
-        const candidate = String(
-          workspace?._id ?? workspace?.id ??
-          u.companyId ?? u.company_id ??
-          user.companyId ?? user.company_id ??
-          firstListItem?.companyId ?? firstListItem?.company_id ??
-          firstListItem?.company?._id ??
-          u.defaultWorkspaceId ?? u.workspaceId ??
-          user.defaultWorkspaceId ?? user.workspaceId ?? ""
-        );
-        if (candidate && candidate !== "undefined") {
-          companyId = candidate;
-          log("companyId resolved from profile", companyId);
-          break;
-        }
-      } catch { /* try next */ }
-    }
-  }
-
-  // ── Step 0c: Try to get companyId via back.rocket.new session exchange
-  // Send token in different body formats to see if we can get workspace context
-  if (!companyId) {
-    for (const [body, headers] of [
-      [{ jwtToken: authToken }, { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, pageURL: "https://rocket.new" }],
-      [{ accessToken: authToken }, { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, pageURL: "https://rocket.new" }],
-      [{ token: authToken }, { "Content-Type": "application/json", Authorization: `Bearer ${authToken}`, pageURL: "https://rocket.new" }],
-    ] as const) {
-      for (const url of [`${BACK_BASE}/api/v1/auth/user-login`, `${BACK_BASE}/api/v1/auth/sso`]) {
-        try {
-          const res = await fetch(url, {
-            method: "POST",
-            headers: headers as Record<string, string>,
-            body: JSON.stringify(body),
-          });
-          const raw = await res.json().catch(() => null);
-          const d = raw ? await rocketDecrypt(raw) : null;
-          if (d) log(`${res.status} session-exchange ${url.split("/").pop()}`, d);
-          if (res.ok && d) {
-            const p = d.data ?? d;
-            const cid = String(p.companyId ?? p.company_id ?? p.workspaceId ?? "");
-            if (cid && cid !== "undefined") { companyId = cid; log("companyId from session-exchange", cid); break; }
-          }
-        } catch { /* try next */ }
-      }
-      if (companyId) break;
-    }
-  }
-
-  // Helper closures — try both Bearer and JWT formats
-  async function tryPost(base: string, path: string, body: object, tag: string) {
-    for (const hdrs of [
-      backHeaders(backToken, companyId || undefined),
-      backHeadersJWT(backToken, companyId || undefined),
-      backHeaders(authToken, companyId || undefined),
-      backHeadersJWT(authToken, companyId || undefined),
-    ]) {
-      try {
-        const res = await fetch(`${base}${path}`, {
-          method: "POST",
-          headers: hdrs,
-          body: JSON.stringify(body),
-        });
-        reachable = true;
-        const raw = await res.json().catch(() => null);
-        const d = raw ? await rocketDecrypt(raw) : null;
-        log(`${res.status} POST ${tag}`, d ?? raw);
-        if (res.ok && d) return d;
-        // If 401, no point retrying with same token — break and try next token variant
-        if (res.status === 401) break;
-      } catch (e: any) { log(`ERR POST ${tag}`, e?.message); }
-    }
-    return null;
-  }
-
-  async function tryGet(base: string, path: string, tag: string) {
-    for (const hdrs of [
-      backHeaders(backToken, companyId || undefined),
-      backHeadersJWT(backToken, companyId || undefined),
-      backHeaders(authToken, companyId || undefined),
-      backHeadersJWT(authToken, companyId || undefined),
-    ]) {
-      try {
-        const res = await fetch(`${base}${path}`, { method: "GET", headers: hdrs });
-        reachable = true;
-        const raw = await res.json().catch(() => null);
-        const d = raw ? await rocketDecrypt(raw) : null;
-        log(`${res.status} GET ${tag}`, d ?? raw);
-        if (res.ok && d) return d;
-        if (res.status === 401) break;
-      } catch (e: any) { log(`ERR GET ${tag}`, e?.message); }
-    }
-    return null;
-  }
-
-  // ── 1. Workspace list — resolve companyId + workspaceIds
-  let workspaceIds: string[] = [];
-  // Try auth base first (no companyId header), then back/gateway
-  // Confirmed working path: /web/v1/workspace/list on appuser.dhiwise.com
-  for (const [base, path] of [
-    [AUTH_BASE, "/web/v1/workspace/list"],
-    [BACK_BASE, "/api/v1/workspace/list"],
-    [GATEWAY_BASE, "/api/v1/workspace/list"],
-  ] as const) {
+  // Try chat-thread/search first (confirmed working with companyId header)
+  for (const body of [{}, { search: "" }, { page: 1, limit: 100 }]) {
     try {
-      const res = await fetch(`${base}${path}`, {
-        method: "GET",
-        // For auth base, use plain auth headers without companyId
-        headers: base === AUTH_BASE
-          ? authHeaders(authToken)
-          : backHeaders(backToken, companyId || undefined),
-      });
-      reachable = true;
-      const raw = await res.json().catch(() => null);
-      const d = raw ? await rocketDecrypt(raw) : null;
-      log(`${res.status} GET workspace/list [${base}]`, d);
-      if (res.ok && d) {
-        const wsArr = deepFindApps(d);
-        if (!companyId && wsArr.length > 0) {
-          companyId = String(wsArr[0]?.companyId ?? wsArr[0]?._id ?? "");
-        }
-        workspaceIds = wsArr
-          .map((w: any) => String(w.companyId ?? w._id ?? w.id ?? ""))
-          .filter(Boolean);
-        log("workspaceIds", workspaceIds);
-        break;
-      }
-    } catch { /* try next */ }
-  }
-
-  // ── 2. chat-thread/search — canonical app listing
-  const searchBodies = [
-    {},
-    { search: "" },
-    { page: 1, limit: 100 },
-    { page: 1, limit: 100, search: "" },
-    { type: "all" },
-    { isOwner: true },
-    ...(workspaceIds[0] ? [{ workspaceId: workspaceIds[0] }] : []),
-    ...(companyId ? [{ companyId }] : []),
-  ];
-  for (const body of searchBodies) {
-    const d = await tryPost(BACK_BASE, "/api/v1/chat-thread/search", body, `chat-thread/search ${JSON.stringify(body)}`);
-    if (d) {
-      const arr = deepFindApps(d);
-      if (arr.length > 0) { addApps(arr); break; }
-    }
-  }
-  // Also try gateway
-  if (allApps.length === 0) {
-    for (const body of [{}, { page: 1, limit: 100 }]) {
-      const d = await tryPost(GATEWAY_BASE, "/api/v1/chat-thread/search", body, `gw/chat-thread/search`);
-      if (d) { addApps(deepFindApps(d)); if (allApps.length > 0) break; }
-    }
-  }
-
-  // ── 3. playground-project/list
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const body of [{}, { page: 1, limit: 100 }]) {
-      const d = await tryPost(base, "/api/v1/playground-project/list", body, `playground-project/list`);
-      if (d) addApps(deepFindApps(d));
-    }
-    const dg = await tryGet(base, "/api/v1/playground-project/list", "playground-project/list GET");
-    if (dg) addApps(deepFindApps(dg));
-  }
-
-  // ── 4. application/list v1/v2/v3
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const ver of ["v1", "v2", "v3"]) {
-      for (const body of [{}, { page: 1, limit: 100 }, { type: "owned" }]) {
-        const d = await tryPost(base, `/api/${ver}/application/list`, body, `${ver}/application/list`);
-        if (d) addApps(deepFindApps(d));
-      }
-    }
-  }
-
-  // ── 5. recent-threads
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    const rt = await tryPost(base, "/api/v1/recent-threads-projects/list", {}, "recent-threads/list");
-    if (rt) addApps(deepFindApps(rt));
-  }
-
-  // ── 6. Per-workspace queries
-  for (const wsId of workspaceIds.slice(0, 3)) {
-    for (const [base, path] of [
-      [BACK_BASE, `/api/v2/workspace/${wsId}/application/list`],
-      [BACK_BASE, `/api/v1/workspace/${wsId}/chat-thread/list`],
-      [GATEWAY_BASE, `/api/v1/workspace/${wsId}/chat-thread/list`],
-    ] as const) {
-      const d = await tryPost(base, path, { page: 1, limit: 100 }, path.split("/").slice(-4).join("/"));
-      if (d) addApps(deepFindApps(d));
-    }
-  }
-
-  // ── 7. GET fallbacks
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const path of ["/api/v1/chat-thread/list", "/api/v1/application/list"]) {
-      const d = await tryGet(base, path, path);
-      if (d) addApps(deepFindApps(d));
-    }
-  }
-
-  // ── 8. APP_BASE endpoints
-  for (const path of ["/api/v1/application/list", "/api/v1/projects"]) {
-    try {
-      const res = await fetch(`${APP_BASE}${path}`, {
-        method: "GET",
-        headers: backHeaders(backToken, companyId || undefined),
+      const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/search`, {
+        method: "POST",
+        headers: threadHeaders,
+        body: JSON.stringify(body),
       });
       if (res.ok) {
-        const raw = await res.json().catch(() => null);
-        const d = raw ? await rocketDecrypt(raw) : null;
-        log(`${res.status} GET app-base${path}`, d);
-        if (d) addApps(deepFindApps(d));
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        log(`chat-thread/search ${JSON.stringify(body)}`, d);
+        const arr = deepFindApps(d);
+        if (arr.length > 0) { addApps(arr); break; }
       }
-    } catch { /* non-fatal */ }
+    } catch { /* try next body */ }
+  }
+
+  // Fallback: gateway
+  if (allApps.length === 0) {
+    try {
+      const res = await fetch(`${GATEWAY_BASE}/api/v1/chat-thread/search`, {
+        method: "POST",
+        headers: { ...threadHeaders, Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ page: 1, limit: 100 }),
+      });
+      if (res.ok) {
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        log("gw/chat-thread/search", d);
+        addApps(deepFindApps(d));
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Fallback: JWT auth format
+  if (allApps.length === 0) {
+    try {
+      const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, companyId, pageURL: "https://rocket.new" },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        log("chat-thread/search (JWT)", d);
+        addApps(deepFindApps(d));
+      }
+    } catch { /* ignore */ }
   }
 
   log("FINAL app count", allApps.length);
-
-  if (!reachable) throw new Error("Could not reach Rocket.new. Check your token and try again.");
-
-  // If we have no apps AND no workspace context (companyId), the pasted API key
-  // cannot list projects — the workspace ID is only available after OTP login.
-  if (allApps.length === 0 && !companyId) {
-    throw new Error(
-      "NEEDS_OTP_LOGIN: Your Rocket.new API key doesn't carry workspace info. " +
-      "Please reconnect using Login with Email (OTP) to list your projects."
-    );
-  }
-
   return allApps;
 }
 
@@ -633,21 +497,18 @@ function extractFilesFromPayload(d: any): RocketFile[] | null {
 export async function fetchRocketAppFiles({
   data,
 }: {
-  data: { token: string; appId: string };
+  data: { token: string; appId: string; applicationId?: string };
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
+  let applicationId = data.applicationId ?? "";
+
   const log = (label: string, val: any) =>
-    console.warn(`[push44:files] ${label}`, JSON.stringify(val).slice(0, 600));
+    console.warn(`[push44:files] ${label}`, JSON.stringify(val).slice(0, 800));
 
-  // Establish a back session first (same as listRocketApps does)
-  const backSession = await loginToBack(token);
-  const backToken = backSession ?? token;
-  log("backToken source", backSession ? "session" : "auth-direct");
+  log("fetching files", { appId, applicationId });
 
-  // All headers variants to try
+  // Auth header variants (no loginToBack — it never works and adds 20-30s delay)
   const headerVariants = [
-    backHeaders(backToken),
-    backHeadersJWT(backToken),
     backHeaders(token),
     backHeadersJWT(token),
   ];
@@ -655,16 +516,12 @@ export async function fetchRocketAppFiles({
   async function tryPost(url: string, body: object): Promise<RocketFile[] | null> {
     for (const hdrs of headerVariants) {
       try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: hdrs,
-          body: JSON.stringify(body),
-        });
+        const res = await fetch(url, { method: "POST", headers: hdrs, body: JSON.stringify(body) });
         if (!res.ok) { if (res.status === 401) break; continue; }
         const raw = await res.json().catch(() => null);
         if (!raw) continue;
         const d = await rocketDecrypt(raw);
-        log(`${res.status} POST ${url.split("/").slice(-3).join("/")}`, d);
+        log(`POST ${url.split("/").slice(-2).join("/")}`, d);
         const files = extractFilesFromPayload(d);
         if (files && files.length > 0) return files;
       } catch { /* try next */ }
@@ -680,7 +537,7 @@ export async function fetchRocketAppFiles({
         const raw = await res.json().catch(() => null);
         if (!raw) continue;
         const d = await rocketDecrypt(raw);
-        log(`${res.status} GET ${url.split("/").slice(-3).join("/")}`, d);
+        log(`GET ${url.split("/").slice(-2).join("/")}`, d);
         const files = extractFilesFromPayload(d);
         if (files && files.length > 0) return files;
       } catch { /* try next */ }
@@ -688,80 +545,90 @@ export async function fetchRocketAppFiles({
     return null;
   }
 
-  // ── 1. chat-thread/get — primary path (POST with different ID fields)
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const body of [
-      { threadId: appId },
-      { chatThreadId: appId },
-      { id: appId },
-      { _id: appId },
-      { threadId: appId, includeFiles: true },
-      { threadId: appId, includeCode: true },
-    ]) {
-      const result = await tryPost(`${base}/api/v1/chat-thread/get`, body);
-      if (result) return result;
+  // ── Step 1: Get thread details to extract applicationId if not already known.
+  // chat-thread/get with { id } is confirmed working from previous investigation.
+  if (!applicationId) {
+    for (const body of [{ id: appId }, { threadId: appId }, { chatThreadId: appId }, { _id: appId }]) {
+      for (const hdrs of headerVariants) {
+        try {
+          const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/get`, {
+            method: "POST", headers: hdrs, body: JSON.stringify(body),
+          });
+          if (!res.ok) continue;
+          const raw = await res.json().catch(() => null);
+          if (!raw) continue;
+          const d = await rocketDecrypt(raw);
+          log(`chat-thread/get ${JSON.stringify(body)}`, d);
+          // Extract applicationId from threadDetails
+          const thread = d.data ?? d;
+          const td = thread.threadDetails ?? {};
+          applicationId = String(td.applicationId ?? td._id ?? thread.applicationId ?? "");
+          if (applicationId) { log("applicationId resolved", applicationId); break; }
+          // Also check if files are already in this response
+          const files = extractFilesFromPayload(d);
+          if (files && files.length > 0) return files;
+        } catch { /* try next */ }
+      }
+      if (applicationId) break;
     }
   }
 
-  // ── 2. playground-project/get
-  for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const body of [
-      { projectId: appId },
-      { id: appId },
-      { _id: appId },
-      { playgroundProjectId: appId },
-    ]) {
-      const result = await tryPost(`${base}/api/v1/playground-project/get`, body);
-      if (result) return result;
-      const result2 = await tryPost(`${base}/api/v2/playground-project/get`, body);
-      if (result2) return result2;
+  log("applicationId final", applicationId || "(none)");
+
+  // ── Step 2: Try fetching files using applicationId first (more specific)
+  if (applicationId) {
+    const PROJECT_BASE = "https://project.rocket.new";
+    // GET endpoints using applicationId
+    for (const base of [APP_BASE, PROJECT_BASE, BACK_BASE, GATEWAY_BASE]) {
+      for (const path of [
+        `/api/v1/application/${applicationId}/files`,
+        `/api/v1/application/${applicationId}/code`,
+        `/api/v1/application/${applicationId}`,
+        `/api/v1/project/${applicationId}/files`,
+        `/api/v1/project/${applicationId}`,
+      ]) {
+        const result = await tryGet(`${base}${path}`);
+        if (result) return result;
+      }
+    }
+
+    // POST endpoints using applicationId
+    for (const base of [BACK_BASE, GATEWAY_BASE]) {
+      for (const body of [{ applicationId }, { id: applicationId }, { _id: applicationId }]) {
+        for (const path of [
+          "/api/v1/application/get",
+          "/api/v1/application/get-code",
+          "/api/v1/code/get",
+          "/api/v2/application/get",
+        ]) {
+          const result = await tryPost(`${base}${path}`, body);
+          if (result) return result;
+        }
+      }
     }
   }
 
-  // ── 3. GET by ID in path
+  // ── Step 3: Try file endpoints using thread appId
   for (const base of [BACK_BASE, GATEWAY_BASE]) {
     for (const path of [
-      `/api/v1/chat-thread/${appId}`,
       `/api/v1/chat-thread/${appId}/files`,
       `/api/v1/chat-thread/${appId}/code`,
-      `/api/v1/playground-project/${appId}`,
       `/api/v1/playground-project/${appId}/files`,
-      `/api/v1/application/${appId}`,
       `/api/v1/application/${appId}/files`,
-      `/api/v1/application/${appId}/code`,
-      `/api/v2/application/${appId}/files`,
     ]) {
       const result = await tryGet(`${base}${path}`);
       if (result) return result;
     }
   }
 
-  // ── 4. application.rocket.new endpoints
-  const PROJECT_BASE = "https://project.rocket.new";
-  for (const base of [APP_BASE, PROJECT_BASE]) {
-    for (const path of [
-      `/api/v1/project/${appId}/files`,
-      `/api/v1/project/${appId}/code`,
-      `/api/v1/project/${appId}`,
-      `/api/v1/application/${appId}/files`,
-      `/api/v1/application/${appId}/code`,
-      `/api/v1/${appId}/files`,
-    ]) {
-      const result = await tryGet(`${base}${path}`);
-      if (result) return result;
-    }
-  }
-
-  // ── 5. Code/export endpoints
+  // POST with thread ID
   for (const base of [BACK_BASE, GATEWAY_BASE]) {
-    for (const body of [{ threadId: appId }, { chatThreadId: appId }, { projectId: appId }]) {
+    for (const body of [{ threadId: appId }, { chatThreadId: appId }, { id: appId }]) {
       for (const path of [
         "/api/v1/chat-thread/get-code",
         "/api/v1/chat-thread/export",
         "/api/v1/code/get",
         "/api/v1/code/export",
-        "/api/v1/project/export",
-        "/api/v1/project/get-files",
       ]) {
         const result = await tryPost(`${base}${path}`, body);
         if (result) return result;
