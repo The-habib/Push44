@@ -38,15 +38,16 @@ function HistoryPage() {
           { label: "Success rate",  value: successRate !== null ? `${successRate}%` : "—", bg: "#f0fdf4", accent: "#22c55e", note: failCount > 0 ? `${failCount} ${failCount === 1 ? "failure" : "failures"}` : null },
         ].map(({ label, value, bg, accent, note }) => (
           <StaggerItem key={label}>
-            <motion.div className="rounded-3xl p-4 bg-white"
-              whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+            <motion.div className="rounded-[18px] p-4 border"
+              style={{ background: bg, borderColor: `${accent}22` }}
+              whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }}
               transition={{ type: "spring", stiffness: 380, damping: 28 }}>
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center mb-3" style={{ background: `${accent}18` }}>
-                <Check className="h-4 w-4" style={{ color: accent }} strokeWidth={2.5} />
+              <div className="h-8 w-8 rounded-[10px] flex items-center justify-center mb-3" style={{ background: `${accent}20` }}>
+                <Check className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2.5} />
               </div>
-              <div className="text-[10px] font-semibold text-black/35 uppercase tracking-wider mb-0.5">{label}</div>
+              <div className="text-[10px] font-bold text-black/35 uppercase tracking-wider mb-0.5">{label}</div>
               <div className="text-[22px] font-extrabold text-black leading-none">{value}</div>
-              {note && <div className="text-[10px] font-semibold mt-1.5" style={{ color: accent }}>{note}</div>}
+              {note && <div className="text-[10px] font-bold mt-1.5" style={{ color: accent }}>{note}</div>}
             </motion.div>
           </StaggerItem>
         ))}

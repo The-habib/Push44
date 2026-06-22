@@ -178,7 +178,7 @@ function PushPage() {
 
       {/* Step 1 */}
       <FadeUp delay={0.06}>
-        <SectionCard title="1 — Select Base44 App">
+        <SectionCard title="Select Base44 App">
           {loadingApps ? (
             <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-[#8b5cf6]" /></div>
           ) : apps.length === 0 ? (
@@ -239,7 +239,7 @@ function PushPage() {
 
       {/* Step 2 */}
       <FadeUp delay={0.12}>
-        <SectionCard title="2 — Target Repository">
+        <SectionCard title="Target Repository">
           {selectedRepo ? (
             <div>
               <div className="flex items-center gap-3 border border-[#eee] rounded-xl p-3 mb-3">
@@ -326,7 +326,7 @@ function PushPage() {
         {files.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
-            <SectionCard title={`3 — Files to Push (${files.length})`}>
+            <SectionCard title={`Files to Push · ${files.length}`}>
               <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
                 {files.map((f, i) => (
                   <motion.div key={f.path} className="flex items-center gap-2 py-0.5"
@@ -349,7 +349,7 @@ function PushPage() {
         {selectedApp && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
-            <SectionCard title="4 — Commit Message">
+            <SectionCard title="Commit Message">
               <div className="relative">
                 <MessageSquare className="absolute left-3.5 top-3.5 h-4 w-4 text-black/30" />
                 <textarea value={commitMsg} onChange={(e) => setCommitMsg(e.target.value)}

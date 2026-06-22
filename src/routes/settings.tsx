@@ -25,21 +25,6 @@ function StatusDot({ on }: { on: boolean }) {
   );
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <motion.button
-      onClick={() => onChange(!on)}
-      className="h-6 w-11 rounded-full p-0.5 shrink-0"
-      style={{ background: on ? "#8b5cf6" : "#e5e5e5" }}
-      whileTap={{ scale: 0.92 }}
-      transition={{ duration: 0.15 }}
-    >
-      <motion.span className="block h-5 w-5 rounded-full bg-white shadow-sm"
-        animate={{ x: on ? 20 : 0 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }} />
-    </motion.button>
-  );
-}
 
 function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
   const [tab, setTab]       = useState<"login" | "token">("login");
@@ -184,7 +169,6 @@ function SettingsPage() {
   const [showGhTok, setShowGhTok] = useState(false);
   const [ghLoading, setGhLoading] = useState(false);
   const [ghUser, setGhUser]       = useState<{ login: string; name: string } | null>(null);
-  const [darkMode, setDarkMode]   = useState(false);
   const [branch, setBranch]       = useState("main");
 
   useEffect(() => {
@@ -340,19 +324,6 @@ function SettingsPage() {
         </SectionCard>
       </FadeUp>
 
-      {/* Preferences */}
-      <FadeUp delay={0.21}>
-        <SectionCard title="Preferences">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <div className="text-[13px] font-semibold text-black">Dark Mode</div>
-              <div className="text-[11px] text-black/40 mt-0.5">Coming soon</div>
-            </div>
-            <Toggle on={darkMode} onChange={setDarkMode} />
-          </div>
-        </SectionCard>
-      </FadeUp>
-
       {/* Privacy */}
       <FadeUp delay={0.25}>
         <SectionCard title="Privacy">
@@ -364,13 +335,13 @@ function SettingsPage() {
       </FadeUp>
 
       {/* Sign out */}
-      <FadeUp delay={0.29}>
+      <FadeUp delay={0.25}>
         <MotionButton
           onClick={() => { signOut(); setGhUser(null); toast.success("Signed out"); }}
-          className="w-full bg-white border border-[#fecaca] text-[#ef4444] font-bold text-[13px] rounded-2xl py-3.5 flex items-center justify-center gap-2 mb-3">
+          className="w-full bg-white border-2 border-[#fca5a5] text-[#dc2626] font-bold text-[13px] rounded-2xl py-3.5 flex items-center justify-center gap-2 mb-3 shadow-sm">
           <LogOut className="h-4 w-4" />Sign Out
         </MotionButton>
-        <p className="text-center text-[11px] text-black/30 font-medium">Push44 · v2.0.0</p>
+        <p className="text-center text-[11px] text-black/30 font-medium">Push44 · v2.0</p>
       </FadeUp>
     </AppShell>
   );

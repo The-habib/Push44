@@ -143,16 +143,16 @@ function Dashboard() {
         ].map(({ label, value, loading, bg, accent, Icon }) => (
           <StaggerItem key={label}>
             <motion.div
-              className="rounded-3xl p-4 flex flex-col gap-3"
-              style={{ background: bg }}
-              whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.09)" }}
+              className="rounded-[18px] p-4 flex flex-col gap-3 border"
+              style={{ background: bg, borderColor: `${accent}22` }}
+              whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }}
               transition={{ type: "spring", stiffness: 380, damping: 28 }}
             >
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: `${accent}22` }}>
-                <Icon className="h-4 w-4" style={{ color: accent }} strokeWidth={2} />
+              <div className="h-8 w-8 rounded-[10px] flex items-center justify-center" style={{ background: `${accent}20` }}>
+                <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2} />
               </div>
               <div>
-                <div className="text-[10px] font-semibold text-black/40 uppercase tracking-wider mb-0.5">{label}</div>
+                <div className="text-[10px] font-bold text-black/35 uppercase tracking-wider mb-0.5">{label}</div>
                 <div className="text-[22px] font-extrabold text-black leading-none">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin text-black/25 mt-1" /> : value}
                 </div>
@@ -165,7 +165,7 @@ function Dashboard() {
       {/* Last push */}
       {lastPush && (
         <FadeUp delay={0.18}>
-          <div className="bg-white rounded-3xl p-5 mb-4">
+          <div className="bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[13px] font-extrabold text-black">Last Push</span>
               <MotionButton onClick={() => navigate({ to: "/history" })}
@@ -214,7 +214,7 @@ function Dashboard() {
       {/* Recent repo */}
       {isConnected && repos.length > 0 && (
         <FadeUp delay={0.22}>
-          <div className="bg-white rounded-3xl p-5 mb-4">
+          <div className="bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[13px] font-extrabold text-black">Recent Repository</span>
               <MotionButton onClick={() => navigate({ to: "/repositories" })}
