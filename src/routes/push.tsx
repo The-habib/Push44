@@ -508,6 +508,27 @@ function PushPage() {
             hasRocket={hasRocket}
           />
 
+          {/* Show which account is connected */}
+          {platformConnected && (
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-[11px] text-[#9a8880]">
+                Querying as{" "}
+                <span className="font-semibold text-[#1a1a1a]">
+                  {platform === "rocket"
+                    ? (creds.rocketEmail || "your Rocket.new account")
+                    : (creds.base44Email || "your Base44 account")}
+                </span>
+              </span>
+              <button
+                onClick={() => navigate({ to: "/settings" })}
+                className="text-[10px] font-bold"
+                style={{ color: platformColor }}
+              >
+                Wrong account?
+              </button>
+            </div>
+          )}
+
           {/* If selected platform not connected */}
           {!platformConnected ? (
             <div className="text-center py-5">
