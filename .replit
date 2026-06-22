@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bun", "bun-1.3"]
+modules = ["nodejs-20", "web", "bun"]
 [agent]
 expertMode = true
 stack = "BEST_EFFORT_FALLBACK"
@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bunx --bun vite --host 0.0.0.0 --port 5000"
+args = "bun run dev"
 waitForPort = 5000
 
 [[ports]]
