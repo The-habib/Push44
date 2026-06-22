@@ -14,7 +14,15 @@ import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
 import { Toaster, toast } from "sonner";
 
-export const Route = createFileRoute("/settings")({ component: SettingsPage });
+export const Route = createFileRoute("/settings")({
+  head: () => ({
+    meta: [
+      { title: "Settings · Push44" },
+      { name: "description", content: "Connect your Base44 account and GitHub personal access token to start pushing apps to GitHub." },
+    ],
+  }),
+  component: SettingsPage,
+});
 
 function StatusDot({ on }: { on: boolean }) {
   return (

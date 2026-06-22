@@ -15,7 +15,15 @@ import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { getGitHubUser } from "@/lib/github-api";
 import { markOnboardingDone } from "@/lib/storage";
 
-export const Route = createFileRoute("/onboarding")({ component: OnboardingPage });
+export const Route = createFileRoute("/onboarding")({
+  head: () => ({
+    meta: [
+      { title: "Get Started · Push44" },
+      { name: "description", content: "Set up Push44 in under 2 minutes — connect your Base44 account and GitHub token to start pushing apps." },
+    ],
+  }),
+  component: OnboardingPage,
+});
 
 const GITHUB_TOKEN_URL = "https://github.com/settings/tokens/new?scopes=repo%2Cuser&description=Push44";
 const ease = [0.25, 0.46, 0.45, 0.94] as const;

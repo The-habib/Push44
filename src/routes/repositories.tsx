@@ -17,7 +17,15 @@ import {
   getRepoCommits, getRepoContributors,
 } from "@/lib/github-api";
 
-export const Route = createFileRoute("/repositories")({ component: ReposPage });
+export const Route = createFileRoute("/repositories")({
+  head: () => ({
+    meta: [
+      { title: "GitHub Repositories · Push44" },
+      { name: "description", content: "Browse and manage all your GitHub repositories — stars, branches, languages and recent commits." },
+    ],
+  }),
+  component: ReposPage,
+});
 
 /* ─── Language colour palette ─── */
 const LANG_COLORS: Record<string, string> = {

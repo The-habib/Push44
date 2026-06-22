@@ -64,6 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { creds } = useApp();
   const displayName = creds.displayName || creds.base44Email || creds.githubUsername || "";
   const pageTitle = PAGE_TITLES[pathname] ?? "Push44";
+  const fullyConnected = !!(creds.base44Token && creds.githubToken);
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>
@@ -91,11 +92,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           {/* Nav */}
-          <nav className="flex-1 px-2.5 py-4 space-y-0.5">
+          <nav className="flex-1 px-2.5 py-4 space-y-0.5" aria-label="Main navigation">
             {NAV.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
               return (
-                <Link key={to} to={to}>
+                <Link key={to} to={to} aria-current={active ? "page" : undefined}>
                   <div className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-[12px] text-sm font-semibold cursor-pointer select-none transition-colors group">
                     {active && (
                       <motion.div
@@ -130,7 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <div className="relative shrink-0">
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-white" />
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-bold text-[#1a1a1a] truncate leading-tight">{creds.displayName || "Account"}</div>
@@ -163,7 +164,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link to="/settings">
                 <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={spring}>
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-[#faf7f3]" />
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-[#faf7f3] ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`} />
                 </motion.div>
               </Link>
             </div>
@@ -219,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link to="/settings">
                 <motion.div className="relative mr-1" whileTap={{ scale: 0.88 }} transition={spring}>
                   <AvatarBubble name={displayName} size={34} fontSize={12} />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e]"
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
                     style={{ boxShadow: "0 0 0 2px rgba(255,252,248,0.9)" }} />
                 </motion.div>
               </Link>
@@ -243,12 +244,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Bottom nav */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#f0ece4] rounded-t-[22px] px-2 pt-2 pb-7"
+          aria-label="Main navigation"
           style={{ background: "rgba(255,252,248,0.97)", backdropFilter: "blur(20px)", boxShadow: "0 -1px 0 rgba(249,115,22,0.08), 0 -8px 28px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-around">
             {NAV.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
               return (
-                <Link key={to} to={to} className="flex flex-col items-center gap-1 py-1 px-3">
+                <Link key={to} to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-1 py-1 px-3">
                   <motion.div
                     className="relative h-9 w-10 flex items-center justify-center rounded-[10px]"
                     whileTap={{ scale: 0.84 }}

@@ -16,7 +16,15 @@ import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/gith
 import { addHistory } from "@/lib/storage";
 import { Toaster, toast } from "sonner";
 
-export const Route = createFileRoute("/push")({ component: PushPage });
+export const Route = createFileRoute("/push")({
+  head: () => ({
+    meta: [
+      { title: "Push to GitHub · Push44" },
+      { name: "description", content: "Select a Base44 app, pick a GitHub repo and push all source files in one atomic commit." },
+    ],
+  }),
+  component: PushPage,
+});
 
 interface App  { id: string; name: string; updated_at: string; icon?: string }
 interface Repo { full_name: string; default_branch: string; html_url: string }

@@ -11,7 +11,15 @@ import {
 import { GitHubLogo } from "@/components/BrandLogos";
 import { getHistory, clearHistory, formatRelativeTime, type PushRecord } from "@/lib/storage";
 
-export const Route = createFileRoute("/history")({ component: HistoryPage });
+export const Route = createFileRoute("/history")({
+  head: () => ({
+    meta: [
+      { title: "Push History · Push44" },
+      { name: "description", content: "Browse every GitHub push made from Base44 apps — commit hashes, file counts, branches and timestamps." },
+    ],
+  }),
+  component: HistoryPage,
+});
 
 function HistoryPage() {
   const navigate = useNavigate();
