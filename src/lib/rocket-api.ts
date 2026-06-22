@@ -53,7 +53,7 @@ export async function rocketVerifyOTP({
 }: {
   data: { email: string; otp: string };
 }) {
-  const res = await fetch(`${AUTH_BASE}/auth/v3/rocket/verify-otp`, {
+  const res = await fetch(`${AUTH_BASE}/auth/v3/rocket/verify-email-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: data.email, otp: data.otp }),
