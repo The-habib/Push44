@@ -188,25 +188,46 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ── Mobile ──────────────────────────────────────── */}
       <div className="md:hidden flex flex-col min-h-screen">
 
-        {/* Mobile header */}
-        <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#f0ece4]"
-          style={{ background: "#faf7f3" }}>
-          <Link to="/dashboard" className="flex items-center gap-1">
-            <motion.img src={appLogo} alt="Push44" className="h-9 w-9 rounded-2xl object-cover"
-              whileTap={{ scale: 0.92 }} transition={spring} />
-            <span className="text-[18px] font-black text-[#1a1a1a] tracking-tight leading-none">
-              Push<span className="text-[#f97316]">44</span>
-            </span>
-          </Link>
-          <Link to="/settings">
-            <motion.div className="relative" whileTap={{ scale: 0.9 }} transition={spring}>
-              <AvatarBubble name={displayName} size={38} fontSize={13} />
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#faf7f3]" />
-            </motion.div>
-          </Link>
-        </header>
+        {/* Floating pill header */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
+          <motion.div
+            className="pointer-events-auto w-full"
+            style={{ maxWidth: 480 }}
+            initial={{ opacity: 0, y: -14, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div
+              className="flex items-center justify-between px-2 py-1.5 rounded-full"
+              style={{
+                background: "rgba(255,252,248,0.82)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.09), 0 0 0 1px rgba(240,236,228,0.9), inset 0 1px 0 rgba(255,255,255,0.9)",
+              }}
+            >
+              {/* Logo + wordmark */}
+              <Link to="/dashboard" className="flex items-center gap-1 pl-2 pr-3 py-1">
+                <motion.img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover"
+                  whileTap={{ scale: 0.9 }} transition={spring} />
+                <span className="text-[14px] font-black text-[#1a1a1a] tracking-tight leading-none">
+                  Push<span style={{ color: "#f97316" }}>44</span>
+                </span>
+              </Link>
 
-        <main className="flex-1 px-4 pt-4 pb-28">
+              {/* Avatar */}
+              <Link to="/settings">
+                <motion.div className="relative mr-1" whileTap={{ scale: 0.88 }} transition={spring}>
+                  <AvatarBubble name={displayName} size={34} fontSize={12} />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e]"
+                    style={{ boxShadow: "0 0 0 2px rgba(255,252,248,0.9)" }} />
+                </motion.div>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+
+        <main className="flex-1 px-4 pt-20 pb-28">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
