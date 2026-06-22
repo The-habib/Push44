@@ -1,46 +1,50 @@
-const BASE = "https://api.rocket.new";
+// Real Rocket.new API endpoints — reverse-engineered from assets.rocket.new JS bundles.
+//
+// Auth server:  https://appuser.dhiwise.com
+// Main backend: https://back.rocket.new
+// Token format: "JWT <token>"  (NOT "Bearer")
+//
+// Auth flow:
+//   1. POST /auth/v3/rocket/send-otp   { email }
+//   2. POST /auth/v3/rocket/verify-otp { email, otp }  → returns token
+//   3. GET  /web/v1/user/get-profile   Authorization: JWT <token>
 
-async function rocketFetch(
-  path: string,
-  opts?: RequestInit,
-  token?: string
-): Promise<any> {
-  const headers: Record<string, string> = {
+const AUTH_BASE    = "https://appuser.dhiwise.com";
+const BACK_BASE    = "https://back.rocket.new";
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function jwtHeaders(token: string): Record<string, string> {
+  return {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...((opts?.headers ?? {}) as Record<string, string>),
+    Authorization: `JWT ${token}`,
   };
-  const res = await fetch(`${BASE}${path}`, { ...opts, headers });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    let msg = `Rocket.new error ${res.status}`;
-    try {
-      const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
-    } catch {}
-    throw new Error(msg);
-  }
-  return res.json();
 }
+
+async function parseError(res: Response, fallback: string): Promise<string> {
+  const body = await res.text().catch(() => "");
+  try {
+    const p = JSON.parse(body);
+    return p.message ?? p.error ?? p.detail ?? p.msg ?? fallback;
+  } catch {
+    return body.trim() || fallback;
+  }
+}
+
+// ─── OTP auth ───────────────────────────────────────────────────────────────
 
 export async function rocketRequestOTP({
   data,
 }: {
   data: { email: string };
 }) {
-  const res = await fetch(`${BASE}/auth/otp/send`, {
+  const res = await fetch(`${AUTH_BASE}/auth/v3/rocket/send-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: data.email }),
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    let msg = `Failed to send OTP (${res.status})`;
-    try {
-      const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
-    } catch {}
-    throw new Error(msg);
+    throw new Error(await parseError(res, `Failed to send OTP (${res.status})`));
   }
 }
 
@@ -49,45 +53,55 @@ export async function rocketVerifyOTP({
 }: {
   data: { email: string; otp: string };
 }) {
-  const res = await fetch(`${BASE}/auth/otp/verify`, {
+  const res = await fetch(`${AUTH_BASE}/auth/v3/rocket/verify-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: data.email, otp: data.otp }),
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    let msg = `OTP verification failed (${res.status})`;
-    try {
-      const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
-    } catch {}
-    throw new Error(msg);
+    throw new Error(await parseError(res, `OTP verification failed (${res.status})`));
   }
   const d = await res.json();
+
+  // Token may be nested under data / user or at root
+  const payload = d.data ?? d;
   const token: string =
-    d.access_token ?? d.token ?? d.accessToken ?? d.api_key ?? "";
-  if (!token) throw new Error("No token returned from Rocket.new.");
-  const user = d.user ?? d;
+    payload.token ?? payload.access_token ?? payload.accessToken ?? payload.jwtToken ?? "";
+  if (!token) throw new Error("No token returned from Rocket.new. Check your OTP code.");
+
+  const user = payload.user ?? payload;
   return {
     token,
     email: String(user.email ?? data.email),
     name: String(
-      user.full_name ?? user.name ?? user.username ?? user.display_name ?? data.email
+      user.name ?? user.full_name ?? user.username ?? user.displayName ?? data.email
     ),
   };
 }
+
+// ─── Token validation ────────────────────────────────────────────────────────
 
 export async function validateRocketToken({
   data,
 }: {
   data: { token: string };
 }) {
-  const me = await rocketFetch("/auth/me", undefined, data.token);
+  const res = await fetch(`${AUTH_BASE}/web/v1/user/get-profile`, {
+    method: "GET",
+    headers: jwtHeaders(data.token),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, `Token validation failed (${res.status})`));
+  }
+  const d = await res.json();
+  const user = d.data ?? d.user ?? d;
   return {
-    email: String(me.email ?? ""),
-    name: String(me.full_name ?? me.name ?? me.username ?? me.display_name ?? ""),
+    email: String(user.email ?? ""),
+    name: String(user.name ?? user.full_name ?? user.username ?? user.displayName ?? ""),
   };
 }
+
+// ─── Projects ────────────────────────────────────────────────────────────────
 
 export interface RocketApp {
   id: string;
@@ -101,21 +115,34 @@ export async function listRocketApps({
 }: {
   data: { token: string };
 }): Promise<RocketApp[]> {
-  const d = await rocketFetch("/projects", undefined, data.token);
+  const res = await fetch(`${BACK_BASE}/api/v2/application/list`, {
+    method: "POST",
+    headers: jwtHeaders(data.token),
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, `Failed to list projects (${res.status})`));
+  }
+  const d = await res.json();
+
+  // Response may be { data: [...] } or { applications: [...] } or plain array
   const raw: any[] = Array.isArray(d)
     ? d
-    : (d.projects ?? d.apps ?? d.data ?? d.results ?? []);
+    : (d.data ?? d.applications ?? d.projects ?? d.results ?? []);
+
   return raw.map(
     (a: any): RocketApp => ({
-      id: String(a.id ?? a._id ?? a.projectId ?? ""),
-      name: String(a.name ?? a.title ?? a.project_name ?? "Unnamed Project"),
+      id: String(a._id ?? a.id ?? a.projectId ?? a.threadId ?? ""),
+      name: String(a.name ?? a.title ?? a.appName ?? a.projectName ?? "Untitled"),
       updated_at: String(
-        a.updated_at ?? a.updatedAt ?? a.modified_at ?? new Date().toISOString()
+        a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()
       ),
-      icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? a.icon_url ?? undefined,
+      icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
     })
   );
 }
+
+// ─── Files ───────────────────────────────────────────────────────────────────
 
 export interface RocketFile {
   path: string;
@@ -129,10 +156,24 @@ export async function fetchRocketAppFiles({
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
 
-  const d = await rocketFetch(`/projects/${appId}/files`, undefined, token);
+  // Fetch thread/project details which contains the generated code
+  const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/get`, {
+    method: "POST",
+    headers: jwtHeaders(token),
+    body: JSON.stringify({ threadId: appId }),
+  });
 
-  if (d?.files && typeof d.files === "object" && !Array.isArray(d.files)) {
-    return Object.entries(d.files as Record<string, string>).map(
+  if (!res.ok) {
+    throw new Error(await parseError(res, `Failed to fetch project files (${res.status})`));
+  }
+
+  const d = await res.json();
+  const project = d.data ?? d;
+
+  // If it returns a files map (like Base44: { "src/App.tsx": "..." })
+  const filesMap = project.files ?? project.code ?? project.sourceFiles;
+  if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
+    return Object.entries(filesMap as Record<string, string>).map(
       ([path, content]): RocketFile => ({
         path,
         content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
@@ -140,17 +181,27 @@ export async function fetchRocketAppFiles({
     );
   }
 
-  if (Array.isArray(d?.files ?? d)) {
-    const arr: any[] = d?.files ?? d;
-    return arr.map(
+  // If it returns an array of file objects
+  const filesArr: any[] = Array.isArray(filesMap)
+    ? filesMap
+    : Array.isArray(project.files ?? project)
+    ? project.files ?? project
+    : [];
+
+  if (filesArr.length > 0) {
+    return filesArr.map(
       (f: any): RocketFile => ({
         path: String(f.path ?? f.name ?? f.filename ?? ""),
-        content: typeof f.content === "string"
-          ? f.content
-          : JSON.stringify(f.content ?? f, null, 2),
+        content:
+          typeof f.content === "string"
+            ? f.content
+            : JSON.stringify(f.content ?? f, null, 2),
       })
     );
   }
 
-  return [];
+  throw new Error(
+    "Could not extract source files from this Rocket.new project. " +
+    "The project may not have generated code yet."
+  );
 }
