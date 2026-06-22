@@ -86,121 +86,138 @@ function StepDots({ total, current }: { total: number; current: number }) {
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   const features = [
-    { n: "01", title: "Fetch source files", desc: "Every file from your Base44 sandbox, pulled in one request." },
-    { n: "02", title: "Commit in one tap", desc: "Atomic push to any GitHub repo via the Trees API." },
-    { n: "03", title: "Private by default", desc: "Tokens stay in your browser. Nothing touches our servers." },
+    {
+      icon: <FolderDown className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
+      title: "Fetch all source files",
+      desc: "Every file from your Base44 sandbox, pulled in one request.",
+    },
+    {
+      icon: <GitCommit className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
+      title: "Commit in one tap",
+      desc: "Atomic push to any GitHub repo via the Trees API.",
+    },
+    {
+      icon: <ShieldCheck className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
+      title: "Private by default",
+      desc: "Tokens stay in your browser. Nothing touches our servers.",
+    },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#0a0a0a" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "#fffcf8" }}>
 
-      {/* ── Top bar ─────────────────────────────── */}
+      {/* ── Hero ── */}
       <motion.div
-        className="flex items-center justify-between px-5 pt-12 pb-0 z-10 relative"
+        className="relative overflow-hidden px-5 pt-16 pb-10 flex flex-col items-center text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center gap-2.5">
-          <img src={appLogo} alt="Push44" className="h-8 w-8 rounded-[8px] object-cover" />
-          <span className="text-[13px] font-bold text-white/80 tracking-tight">Push44</span>
-        </div>
+        {/* warm radial glow */}
         <div
-          className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase"
-          style={{ background: "rgba(249,115,22,0.14)", color: "#f97316", border: "1px solid rgba(249,115,22,0.22)" }}
-        >
-          Free
-        </div>
-      </motion.div>
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 80% 55% at 50% -5%, rgba(249,115,22,0.13) 0%, transparent 70%)" }}
+        />
+        {/* orange top line */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-[3px] rounded-b-full" style={{ background: "#f97316" }} />
 
-      {/* ── Hero headline ───────────────────────── */}
-      <div className="flex-1 px-5 flex flex-col justify-center">
+        {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mb-6 z-10"
+          initial={{ scale: 0.82, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 24 }}
         >
-          {/* Eyebrow */}
-          <div className="flex items-center gap-2 mb-5">
-            <div className="h-px flex-1" style={{ background: "linear-gradient(to right, #f97316, transparent)" }} />
-            <span className="text-[10px] font-bold tracking-[0.18em] uppercase" style={{ color: "#f97316" }}>
-              Base44 to GitHub
-            </span>
-          </div>
-
-          {/* Title block */}
-          <h1
-            className="font-black leading-[0.92] tracking-tighter text-white mb-6"
-            style={{ fontSize: "clamp(52px, 14vw, 68px)" }}
+          <img
+            src={appLogo}
+            alt="Push44"
+            className="h-20 w-20 rounded-[22px] object-cover border border-[#f0ece4]"
+            style={{ boxShadow: "0 8px 32px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.06)" }}
+          />
+          <div
+            className="absolute -bottom-2 -right-2 h-6 w-6 rounded-full border-2 border-[#fffcf8] flex items-center justify-center"
+            style={{ background: "#f97316" }}
           >
-            Push
-            <br />
-            <span style={{ color: "#f97316" }}>any app</span>
-            <br />
-            to Git.
-          </h1>
+            <Zap className="h-3 w-3 text-white" strokeWidth={3} />
+          </div>
+        </motion.div>
 
-          <p className="text-[14px] leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.38)", maxWidth: 260 }}>
-            Select an app, pick a repo, tap once. Done in under two minutes.
+        {/* Wordmark */}
+        <motion.div
+          className="z-10"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.45 }}
+        >
+          <h1 className="text-[36px] font-black tracking-tight leading-none text-[#1a1a1a] mb-3">
+            Push<span style={{ color: "#f97316" }}>44</span>
+          </h1>
+          <p className="text-[14px] text-[#6b6360] leading-relaxed max-w-[240px] mx-auto">
+            Back up your Base44 apps to GitHub in one tap.
           </p>
         </motion.div>
 
-        {/* ── Feature rows ─── */}
-        <div>
-          {features.map((f, i) => (
-            <motion.div
-              key={f.n}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.22 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        {/* eyebrow pill */}
+        <motion.div
+          className="mt-5 z-10 inline-flex items-center gap-2 rounded-full border border-[#f0ece4] bg-white px-3.5 py-1.5"
+          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+        >
+          <motion.span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: "#f97316" }}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+          />
+          <span className="text-[11px] font-bold text-[#9a8880] tracking-wide uppercase">Free · No sign-up · 2 min setup</span>
+        </motion.div>
+      </motion.div>
+
+      {/* ── Features ── */}
+      <div className="flex-1 px-4 pt-2 pb-4 space-y-2.5">
+        {features.map((f, i) => (
+          <motion.div
+            key={f.title}
+            className="flex items-center gap-4 bg-white rounded-[18px] border border-[#f0ece4] px-4 py-4"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32 + i * 0.08, type: "spring", stiffness: 340, damping: 28 }}
+          >
+            <div
+              className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+              style={{ background: "#fff4ed", border: "1px solid rgba(249,115,22,0.12)" }}
             >
-              <div
-                className="flex items-start gap-4 py-4"
-                style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-              >
-                <span
-                  className="font-mono text-[11px] font-bold mt-0.5 shrink-0 tabular-nums"
-                  style={{ color: "#f97316", letterSpacing: "0.04em" }}
-                >
-                  {f.n}
-                </span>
-                <div>
-                  <p className="text-[13px] font-bold text-white leading-tight mb-0.5">{f.title}</p>
-                  <p className="text-[11.5px] leading-snug" style={{ color: "rgba(255,255,255,0.34)" }}>
-                    {f.desc}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
-        </div>
+              {f.icon}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-extrabold text-[#1a1a1a] leading-tight tracking-tight">{f.title}</p>
+              <p className="text-[11.5px] text-[#9a8880] mt-0.5 leading-snug">{f.desc}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* ── CTA ─────────────────────────────────── */}
+      {/* ── CTA ── */}
       <motion.div
-        className="px-5 pb-12 pt-6"
-        initial={{ opacity: 0, y: 12 }}
+        className="px-4 pb-10 pt-3"
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.56, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 0.56, type: "spring", stiffness: 300, damping: 28 }}
       >
         <MotionButton
           onClick={onNext}
-          className="w-full rounded-[16px] py-[17px] font-bold text-[15px] flex items-center justify-center gap-2 text-white relative overflow-hidden"
-          style={{ background: "#f97316" }}
+          className="w-full rounded-[16px] py-[15px] font-bold text-[15px] flex items-center justify-center gap-2 text-white"
+          style={{
+            background: "#f97316",
+            boxShadow: "0 4px 20px rgba(249,115,22,0.35), 0 1px 0 rgba(255,255,255,0.15) inset",
+          }}
         >
-          {/* Gloss */}
-          <div
-            className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.12), transparent)" }}
-          />
-          <span className="relative">Get Started</span>
-          <ArrowRight className="h-4 w-4 relative" strokeWidth={2.5} />
+          Get Started
+          <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
         </MotionButton>
-
-        <p className="text-center text-[10.5px] font-medium mt-3" style={{ color: "rgba(255,255,255,0.22)", letterSpacing: "0.04em" }}>
-          No account needed — connect Base44 + GitHub in 2 min
-        </p>
       </motion.div>
     </div>
   );
