@@ -29,6 +29,22 @@ const LANG_COLORS: Record<string, string> = {
 };
 function langColor(name: string) { return LANG_COLORS[name] ?? "#c8b8a2"; }
 
+/* ─── Lines-of-code estimation (bytes ÷ avg bytes per line per language) ─── */
+const BYTES_PER_LINE: Record<string, number> = {
+  TypeScript: 58, JavaScript: 55, Python: 44, CSS: 38, HTML: 68,
+  Java: 65, "C++": 58, Go: 52, Rust: 60, Ruby: 48, Kotlin: 60,
+  Swift: 58, Dart: 55, Shell: 42, Vue: 55, PHP: 55, Scala: 62,
+  Haskell: 52, R: 45,
+};
+function estimateLOC(langs: { name: string; bytes: number }[]) {
+  return langs.reduce((sum, l) => sum + Math.round(l.bytes / (BYTES_PER_LINE[l.name] ?? 55)), 0);
+}
+function fmtLOC(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
 /* ─── Helpers ─── */
 function fmtSize(kb: number) {
   if (kb < 1024) return `${kb} KB`;
@@ -82,6 +98,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
   }, [repo.full_name]);
 
   const spring = { type: "spring", stiffness: 320, damping: 28 } as const;
+  const totalLOC = estimateLOC(languages);
 
   return (
     <motion.div
@@ -147,6 +164,41 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
             </div>
           ) : (
             <>
+              {/* ── Lines of Code hero ── */}
+              {totalLOC > 0 && (
+                <motion.div
+                  className="rounded-[22px] p-4 relative overflow-hidden"
+                  style={{ background: "linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%)" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {/* subtle grid texture */}
+                  <div className="absolute inset-0 opacity-[0.04]"
+                    style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Estimated lines of code</p>
+                      <div className="flex items-end gap-2">
+                        <span className="text-[38px] font-black text-white leading-none tracking-tight">
+                          {fmtLOC(totalLOC)}
+                        </span>
+                        <span className="text-[13px] font-bold text-white/40 mb-1">lines</span>
+                      </div>
+                      <p className="text-[10px] text-white/30 mt-1.5">
+                        Estimated from {languages.length} language{languages.length !== 1 ? "s" : ""}
+                        {" · "}{languages.reduce((s, l) => s + l.bytes, 0) > 1_000_000
+                          ? `${(languages.reduce((s, l) => s + l.bytes, 0) / 1_000_000).toFixed(1)} MB`
+                          : `${Math.round(languages.reduce((s, l) => s + l.bytes, 0) / 1024)} KB`} source
+                      </p>
+                    </div>
+                    <div className="h-14 w-14 rounded-2xl bg-white/8 flex items-center justify-center border border-white/10">
+                      <span className="text-[22px]">💻</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* ── Stats grid ── */}
               <div className="grid grid-cols-3 gap-2.5">
                 {[
@@ -196,15 +248,28 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                     ))}
                   </div>
 
-                  {/* Legend */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-2">
-                    {languages.map((l) => (
-                      <div key={l.name} className="flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: langColor(l.name) }} />
-                        <span className="text-[12px] font-semibold text-[#1a1a1a]">{l.name}</span>
-                        <span className="text-[11px] text-[#9a8880]">{l.pct.toFixed(1)}%</span>
-                      </div>
-                    ))}
+                  {/* Legend — per language with LOC */}
+                  <div className="space-y-2 mt-1">
+                    {languages.map((l) => {
+                      const loc = Math.round(l.bytes / (BYTES_PER_LINE[l.name] ?? 55));
+                      return (
+                        <div key={l.name} className="flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: langColor(l.name) }} />
+                          <span className="text-[12px] font-bold text-[#1a1a1a] w-24 truncate">{l.name}</span>
+                          <div className="flex-1 h-1.5 rounded-full bg-[#f0ece4] overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: langColor(l.name) }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${l.pct}%` }}
+                              transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-semibold text-[#9a8880] w-8 text-right">{l.pct.toFixed(0)}%</span>
+                          <span className="text-[11px] font-bold text-[#6b6360] w-16 text-right">~{fmtLOC(loc)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
