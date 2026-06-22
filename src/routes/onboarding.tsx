@@ -84,35 +84,94 @@ function StepDots({ total, current }: { total: number; current: number }) {
 }
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
+  const features = [
+    { icon: "📦", title: "Fetch all source files", desc: "~87 files pulled straight from your Base44 sandbox" },
+    { icon: "⚡", title: "Push in one tap", desc: "Atomic commit to any GitHub repo in seconds" },
+    { icon: "🔒", title: "Stays on your device", desc: "Credentials never leave your browser" },
+  ];
   return (
-    <div className="flex flex-col items-center text-center px-4">
-      <ScaleIn delay={0.05}>
-        <div className="relative mb-6">
-          <motion.img src={appLogo} alt="Push44" className="h-20 w-20 rounded-[22px] object-cover shadow-xl"
-            animate={{ y: [0, -5, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} />
-          <motion.div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#f97316] border-2 border-white flex items-center justify-center"
-            animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
-            <Zap className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+    <div className="flex flex-col min-h-screen">
+      {/* Hero top */}
+      <motion.div
+        className="relative flex flex-col items-center justify-center pt-16 pb-10 px-6 rounded-b-[40px] overflow-hidden"
+        style={{ background: "linear-gradient(160deg,#1a1a1a 0%,#2d1a0a 100%)" }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* dot grid */}
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
+        {/* orange glow */}
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 h-40 w-40 rounded-full opacity-30 blur-3xl"
+          style={{ background: "#f97316" }} />
+
+        <motion.div className="relative mb-5"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 22 }}>
+          <motion.img src={appLogo} alt="Push44"
+            className="h-24 w-24 rounded-[28px] object-cover shadow-2xl border-2 border-white/10"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} />
+          <motion.div
+            className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-[#f97316] border-2 border-[#1a1a1a] flex items-center justify-center"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+            <Zap className="h-4 w-4 text-white" strokeWidth={3} />
           </motion.div>
-        </div>
-      </ScaleIn>
-      <FadeUp delay={0.12}>
-        <h1 className="text-[30px] font-black text-[#1a1a1a] tracking-tight mb-2">
-          Welcome to <span className="text-[#f97316]">Push44</span>
-        </h1>
-      </FadeUp>
-      <FadeUp delay={0.18}>
-        <p className="text-[14px] text-[#6b6360] leading-relaxed mb-7 max-w-[240px]">
-          Push your Base44 apps to GitHub in one tap. Takes under 2 minutes to set up.
-        </p>
-      </FadeUp>
-      <FadeUp delay={0.24}>
+        </motion.div>
+
+        <motion.h1
+          className="text-[32px] font-black text-white tracking-tight text-center mb-2"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22, duration: 0.4 }}>
+          Welcome to <span style={{ color: "#f97316" }}>Push44</span>
+        </motion.h1>
+        <motion.p
+          className="text-[14px] text-white/50 text-center max-w-[230px] leading-relaxed"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.4 }}>
+          Push your Base44 apps to GitHub in one tap.
+        </motion.p>
+      </motion.div>
+
+      {/* Feature cards */}
+      <div className="flex-1 px-5 pt-6 pb-4 space-y-3">
+        {features.map((f, i) => (
+          <motion.div key={f.title}
+            className="flex items-center gap-4 bg-white rounded-[20px] border border-[#f0ece4] px-4 py-4 shadow-sm"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.38 + i * 0.08, type: "spring", stiffness: 300, damping: 26 }}>
+            <div className="h-11 w-11 rounded-2xl bg-[#fff4ed] flex items-center justify-center text-[22px] shrink-0">
+              {f.icon}
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-[#1a1a1a]">{f.title}</p>
+              <p className="text-[11px] text-[#9a8880] mt-0.5 leading-snug">{f.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CTA pinned to bottom */}
+      <motion.div
+        className="px-5 pb-10 pt-2"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.62, type: "spring", stiffness: 280, damping: 26 }}>
         <MotionButton onClick={onNext}
-          className="w-full max-w-[280px] rounded-2xl py-3.5 font-bold text-[14px] flex items-center justify-center gap-2 text-white"
-          style={{ background: "#f97316", boxShadow: "0 4px 20px rgba(249,115,22,0.35)" }}>
-          <Zap className="h-4 w-4" strokeWidth={3} />Get Started<ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+          className="w-full rounded-2xl py-4 font-bold text-[15px] flex items-center justify-center gap-2 text-white"
+          style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", boxShadow: "0 6px 24px rgba(249,115,22,0.4)" }}>
+          <Zap className="h-4.5 w-4.5" strokeWidth={3} />
+          Get Started
+          <ArrowRight className="h-4.5 w-4.5" strokeWidth={2.5} />
         </MotionButton>
-      </FadeUp>
+        <p className="text-center text-[11px] text-[#9a8880] mt-3 font-medium">
+          Free · No account needed · 2 min setup
+        </p>
+      </motion.div>
     </div>
   );
 }
@@ -327,37 +386,50 @@ function OnboardingPage() {
   const TOTAL = 4;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 relative"
-      style={{ background: "linear-gradient(160deg,#fffcf8 0%,#fff4ed 60%,#faf7f3 100%)" }}>
+    <div className="min-h-screen relative"
+      style={{ background: step === 0 ? "#fffcf8" : "linear-gradient(160deg,#fffcf8 0%,#fff4ed 60%,#faf7f3 100%)" }}>
       <AnimatedCorner variant="onboarding" />
 
-      <div className="w-full max-w-sm relative z-10">
-        {step > 0 && step < TOTAL && (
-          <motion.div className="flex items-center justify-between mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <StepDots total={TOTAL - 1} current={step - 1} />
-            <span className="text-[11px] text-[#9a8880] font-semibold">{step} / {TOTAL - 1}</span>
+      {/* Steps 1-4: centred card layout */}
+      {step > 0 && (
+        <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 relative z-10">
+          <div className="w-full max-w-sm">
+            {step < TOTAL && (
+              <motion.div className="flex items-center justify-between mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <StepDots total={TOTAL - 1} current={step - 1} />
+                <span className="text-[11px] text-[#9a8880] font-semibold">{step} / {TOTAL - 1}</span>
+              </motion.div>
+            )}
+            <AnimatePresence mode="wait">
+              {step === 1 && <NameStep key="n" onNext={(n) => { if (n) updateCreds({ displayName: n }); setStep(2); }} />}
+              {step === 2 && <Base44Step key="b" onNext={(t, e) => { updateCreds({ base44Token: t, base44Email: e }); setStep(3); }} onSkip={() => setStep(3)} />}
+              {step === 3 && <GitHubStep key="g" onNext={(t, u) => { updateCreds({ githubToken: t, githubUsername: u }); setStep(4); }} onSkip={() => setStep(4)} />}
+              {step === 4 && (
+                <motion.div key="done" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                  <DoneStep />
+                  <FadeUp delay={0.28}>
+                    <MotionButton onClick={() => { markOnboardingDone(); navigate({ to: "/dashboard" }); }}
+                      className="w-full rounded-2xl py-3.5 font-bold text-[14px] flex items-center justify-center gap-2 text-white"
+                      style={{ background: "#f97316", boxShadow: "0 4px 20px rgba(249,115,22,0.35)" }}>
+                      <Zap className="h-4 w-4" strokeWidth={3} />Open Push44<ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+                    </MotionButton>
+                  </FadeUp>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
+      {/* Step 0: full-screen welcome */}
+      <AnimatePresence>
+        {step === 0 && (
+          <motion.div key="welcome" className="relative z-10"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }}>
+            <WelcomeStep onNext={() => setStep(1)} />
           </motion.div>
         )}
-
-        <AnimatePresence mode="wait">
-          {step === 0 && <motion.div key="w" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><WelcomeStep onNext={() => setStep(1)} /></motion.div>}
-          {step === 1 && <NameStep key="n" onNext={(n) => { if (n) updateCreds({ displayName: n }); setStep(2); }} />}
-          {step === 2 && <Base44Step key="b" onNext={(t, e) => { updateCreds({ base44Token: t, base44Email: e }); setStep(3); }} onSkip={() => setStep(3)} />}
-          {step === 3 && <GitHubStep key="g" onNext={(t, u) => { updateCreds({ githubToken: t, githubUsername: u }); setStep(4); }} onSkip={() => setStep(4)} />}
-          {step === 4 && (
-            <motion.div key="done" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <DoneStep />
-              <FadeUp delay={0.28}>
-                <MotionButton onClick={() => { markOnboardingDone(); navigate({ to: "/dashboard" }); }}
-                  className="w-full rounded-2xl py-3.5 font-bold text-[14px] flex items-center justify-center gap-2 text-white"
-                  style={{ background: "#f97316", boxShadow: "0 4px 20px rgba(249,115,22,0.35)" }}>
-                  <Zap className="h-4 w-4" strokeWidth={3} />Open Push44<ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-                </MotionButton>
-              </FadeUp>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
