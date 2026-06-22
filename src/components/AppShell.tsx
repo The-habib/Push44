@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Logo */}
           <Link to="/dashboard">
-            <div className="flex items-center gap-1.5 px-5 py-5 border-b border-[#f0ece4] cursor-pointer group">
+            <div className="flex items-center gap-2 px-5 py-5 border-b border-[#f0ece4] cursor-pointer group">
               <motion.img
                 src={appLogo} alt="Push44"
                 className="h-8 w-8 rounded-xl object-cover"
@@ -191,7 +191,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Mobile header */}
         <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#f0ece4]"
           style={{ background: "#faf7f3" }}>
-          <Link to="/dashboard" className="flex items-center gap-1.5">
+          <Link to="/dashboard" className="flex items-center gap-2">
             <motion.img src={appLogo} alt="Push44" className="h-9 w-9 rounded-2xl object-cover"
               whileTap={{ scale: 0.92 }} transition={spring} />
             <span className="text-[18px] font-black text-[#1a1a1a] tracking-tight leading-none">

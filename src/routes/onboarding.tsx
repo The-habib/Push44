@@ -123,7 +123,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
         {/* Logo */}
         <motion.div
-          className="relative mb-6 z-10"
+          className="relative mb-4 z-10"
           initial={{ scale: 0.82, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 24 }}
