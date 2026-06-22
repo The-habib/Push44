@@ -86,151 +86,121 @@ function StepDots({ total, current }: { total: number; current: number }) {
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   const features = [
-    {
-      icon: <FolderDown className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
-      title: "Fetch all source files",
-      desc: "~87 files pulled straight from your Base44 sandbox",
-    },
-    {
-      icon: <GitCommit className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
-      title: "Push in one tap",
-      desc: "Atomic commit to any GitHub repo in seconds",
-    },
-    {
-      icon: <ShieldCheck className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
-      title: "Stays on your device",
-      desc: "Credentials never leave your browser",
-    },
+    { n: "01", title: "Fetch source files", desc: "Every file from your Base44 sandbox — ~87 files, one request." },
+    { n: "02", title: "Commit in one tap", desc: "Atomic push to any GitHub repo via the Trees API." },
+    { n: "03", title: "Private by default", desc: "Tokens stay in your browser. Nothing touches our servers." },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#faf8f5]">
-      {/* Hero */}
+    <div className="flex flex-col min-h-screen" style={{ background: "#0a0a0a" }}>
+
+      {/* ── Top bar ─────────────────────────────── */}
       <motion.div
-        className="relative flex flex-col items-center justify-center pt-14 pb-12 px-6 overflow-hidden"
-        style={{ background: "linear-gradient(170deg,#111111 0%,#1f1008 100%)" }}
+        className="flex items-center justify-between px-5 pt-12 pb-0 z-10 relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.45 }}
+        transition={{ duration: 0.4 }}
       >
-        {/* subtle grid */}
+        <div className="flex items-center gap-2.5">
+          <img src={appLogo} alt="Push44" className="h-8 w-8 rounded-[8px] object-cover" />
+          <span className="text-[13px] font-bold text-white/80 tracking-tight">Push44</span>
+        </div>
         <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        {/* orange glow behind logo */}
-        <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-56 w-56 rounded-full blur-[80px] opacity-25 pointer-events-none"
-          style={{ background: "#f97316" }}
-        />
-
-        {/* Logo */}
-        <motion.div
-          className="relative mb-7 z-10"
-          initial={{ scale: 0.75, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, type: "spring", stiffness: 280, damping: 22 }}
+          className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase"
+          style={{ background: "rgba(249,115,22,0.14)", color: "#f97316", border: "1px solid rgba(249,115,22,0.22)" }}
         >
-          <div className="relative">
-            <img
-              src={appLogo}
-              alt="Push44"
-              className="h-[88px] w-[88px] rounded-[26px] object-cover shadow-[0_8px_40px_rgba(0,0,0,0.5)] border border-white/10"
-            />
-            {/* pulse ring */}
-            <motion.div
-              className="absolute inset-0 rounded-[26px] border-2 border-[#f97316]/40"
-              animate={{ scale: [1, 1.18, 1], opacity: [0.7, 0, 0.7] }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </div>
-          {/* badge */}
-          <div className="absolute -bottom-2.5 -right-2.5 h-7 w-7 rounded-full bg-[#f97316] border-2 border-[#111111] flex items-center justify-center shadow-lg">
-            <Zap className="h-3.5 w-3.5 text-white" strokeWidth={3} />
-          </div>
-        </motion.div>
+          Free
+        </div>
+      </motion.div>
 
-        {/* Wordmark */}
+      {/* ── Hero headline ───────────────────────── */}
+      <div className="flex-1 px-5 flex flex-col justify-center">
         <motion.div
-          className="z-10 text-center"
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
+          transition={{ delay: 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="text-[34px] font-black text-white tracking-tight leading-none mb-3">
-            Welcome to{" "}
-            <span className="text-[#f97316]">Push44</span>
+          {/* Eyebrow */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="h-px flex-1" style={{ background: "linear-gradient(to right, #f97316, transparent)" }} />
+            <span className="text-[10px] font-bold tracking-[0.18em] uppercase" style={{ color: "#f97316" }}>
+              Base44 to GitHub
+            </span>
+          </div>
+
+          {/* Title block */}
+          <h1
+            className="font-black leading-[0.92] tracking-tighter text-white mb-6"
+            style={{ fontSize: "clamp(52px, 14vw, 68px)" }}
+          >
+            Push
+            <br />
+            <span style={{ color: "#f97316" }}>any app</span>
+            <br />
+            to Git.
           </h1>
-          <p className="text-[13px] text-white/40 leading-relaxed max-w-[210px] mx-auto tracking-wide font-medium">
-            Push your Base44 apps to GitHub in one tap
+
+          <p className="text-[14px] leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.38)", maxWidth: 260 }}>
+            Select an app, pick a repo, tap once. Done in under two minutes.
           </p>
         </motion.div>
 
-        {/* bottom fade */}
-        <div
-          className="absolute bottom-0 inset-x-0 h-10 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, transparent, #faf8f5)" }}
-        />
-      </motion.div>
-
-      {/* Feature list */}
-      <div className="flex-1 px-5 pt-7 pb-4 space-y-2.5">
-        {features.map((f, i) => (
-          <motion.div
-            key={f.title}
-            className="flex items-center gap-4 bg-white rounded-2xl border border-[#ede9e3] px-4 py-4"
-            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 + i * 0.08, type: "spring", stiffness: 320, damping: 28 }}
-          >
-            <div className="h-10 w-10 rounded-xl bg-[#fff4ed] flex items-center justify-center shrink-0">
-              {f.icon}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[13px] font-bold text-[#111111] leading-tight">{f.title}</p>
-              <p className="text-[11.5px] text-[#a09590] mt-0.5 leading-snug">{f.desc}</p>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* trust strip */}
-        <motion.div
-          className="flex items-center justify-center gap-4 pt-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.58 }}
-        >
-          {["Free", "No sign-up", "Open source"].map((tag, i) => (
-            <span key={tag} className="flex items-center gap-1.5 text-[10.5px] font-semibold text-[#b8aea8] tracking-wide uppercase">
-              {i > 0 && <span className="h-1 w-1 rounded-full bg-[#ddd9d3] inline-block" />}
-              {tag}
-            </span>
+        {/* ── Feature rows ─── */}
+        <div>
+          {features.map((f, i) => (
+            <motion.div
+              key={f.n}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.22 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div
+                className="flex items-start gap-4 py-4"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <span
+                  className="font-mono text-[11px] font-bold mt-0.5 shrink-0 tabular-nums"
+                  style={{ color: "#f97316", letterSpacing: "0.04em" }}
+                >
+                  {f.n}
+                </span>
+                <div>
+                  <p className="text-[13px] font-bold text-white leading-tight mb-0.5">{f.title}</p>
+                  <p className="text-[11.5px] leading-snug" style={{ color: "rgba(255,255,255,0.34)" }}>
+                    {f.desc}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           ))}
-        </motion.div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+        </div>
       </div>
 
-      {/* CTA */}
+      {/* ── CTA ─────────────────────────────────── */}
       <motion.div
-        className="px-5 pb-10 pt-3"
-        initial={{ opacity: 0, y: 14 }}
+        className="px-5 pb-12 pt-6"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55, type: "spring", stiffness: 280, damping: 26 }}
+        transition={{ delay: 0.56, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         <MotionButton
           onClick={onNext}
-          className="w-full rounded-2xl py-[15px] font-bold text-[15px] flex items-center justify-center gap-2.5 text-white tracking-wide"
-          style={{
-            background: "linear-gradient(135deg,#f97316 0%,#ea580c 100%)",
-            boxShadow: "0 4px 20px rgba(249,115,22,0.38), 0 1px 0 rgba(255,255,255,0.12) inset",
-          }}
+          className="w-full rounded-[16px] py-[17px] font-bold text-[15px] flex items-center justify-center gap-2 text-white relative overflow-hidden"
+          style={{ background: "#f97316" }}
         >
-          Get Started
-          <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+          {/* Gloss */}
+          <div
+            className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.12), transparent)" }}
+          />
+          <span className="relative">Get Started</span>
+          <ArrowRight className="h-4 w-4 relative" strokeWidth={2.5} />
         </MotionButton>
+
+        <p className="text-center text-[10.5px] font-medium mt-3" style={{ color: "rgba(255,255,255,0.22)", letterSpacing: "0.04em" }}>
+          No account needed — connect Base44 + GitHub in 2 min
+        </p>
       </motion.div>
     </div>
   );
