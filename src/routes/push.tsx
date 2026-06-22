@@ -6,7 +6,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Cloud, GitBranch, FileText, Lock, MessageSquare, Loader2,
-  ChevronDown, Plus, Check, AlertCircle, ExternalLink, Zap, Rocket,
+  ChevronDown, ChevronUp, Plus, Check, AlertCircle, ExternalLink, Zap, Rocket,
+  File, FileCode2, FileJson, Image, Braces,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
@@ -49,6 +50,74 @@ function SectionShell({ step, label, active, done, children }: { step: number; l
         <span className="text-[14px] font-black text-[#1a1a1a]">{label}</span>
       </div>
       <div className="px-5 py-4">{children}</div>
+    </motion.div>
+  );
+}
+
+function fileIcon(path: string) {
+  const ext = path.split(".").pop()?.toLowerCase() ?? "";
+  if (["tsx", "jsx"].includes(ext)) return { Icon: FileCode2, color: "#06b6d4" };
+  if (["ts", "js", "mjs"].includes(ext)) return { Icon: FileCode2, color: "#f59e0b" };
+  if (ext === "json") return { Icon: FileJson, color: "#10b981" };
+  if (["css", "scss", "sass"].includes(ext)) return { Icon: Braces, color: "#a855f7" };
+  if (["md", "mdx", "txt"].includes(ext)) return { Icon: FileText, color: "#6b7280" };
+  if (["png", "jpg", "jpeg", "svg", "webp", "gif", "ico"].includes(ext)) return { Icon: Image, color: "#f97316" };
+  return { Icon: File, color: "#9a8880" };
+}
+
+function FileBrowser({ files }: { files: { path: string; content: string }[] }) {
+  const totalLines = files.reduce((acc, f) => acc + f.content.split("\n").length, 0);
+  const sorted = [...files].sort((a, b) => a.path.localeCompare(b.path));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      className="overflow-hidden mb-3"
+    >
+      <div className="bg-white rounded-[22px] border border-[#f0ece4] overflow-hidden"
+        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#f5f2ee]">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded-full flex items-center justify-center"
+              style={{ background: "#22c55e" }}>
+              <Check className="h-3 w-3 text-white" strokeWidth={3} />
+            </div>
+            <span className="text-[13px] font-black text-[#1a1a1a]">{files.length} files ready</span>
+          </div>
+          <span className="text-[11px] text-[#9a8880] font-medium">{totalLines.toLocaleString()} lines</span>
+        </div>
+
+        {/* Scrollable file list */}
+        <div className="overflow-y-auto" style={{ maxHeight: 260 }}>
+          {sorted.map((file, i) => {
+            const { Icon, color } = fileIcon(file.path);
+            const lines = file.content.split("\n").length;
+            const parts = file.path.split("/");
+            const name = parts.pop() ?? file.path;
+            const dir = parts.join("/");
+            return (
+              <motion.div
+                key={file.path}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(i * 0.012, 0.3), duration: 0.2 }}
+                className="flex items-center gap-2.5 px-4 py-2 border-b border-[#f9f7f5] last:border-0"
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12px] font-semibold text-[#1a1a1a] truncate">{name}</div>
+                  {dir && <div className="text-[10px] text-[#9a8880] truncate">{dir}/</div>}
+                </div>
+                <span className="text-[10px] text-[#b5afa8] shrink-0 font-mono">{lines}L</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -435,26 +504,9 @@ function PushPage() {
         </SectionShell>
       </FadeUp>
 
-      {/* Files chip */}
+      {/* File browser */}
       <AnimatePresence>
-        {files.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-3"
-          >
-            <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[13px] font-bold text-[#166534]">
-                <Check className="h-4 w-4 text-[#22c55e]" strokeWidth={3} />
-                {files.length} files ready to push
-              </div>
-              <div className="text-[11px] text-[#9a8880] font-mono max-h-5 overflow-hidden">
-                {files.slice(0, 1).map(f => f.path)[0]}…
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {files.length > 0 && <FileBrowser files={files} />}
       </AnimatePresence>
 
       {/* Step 2 — Target repo */}
