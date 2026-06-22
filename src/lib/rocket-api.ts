@@ -23,20 +23,40 @@ async function rocketFetch(
   return res.json();
 }
 
-export async function rocketLogin({
+export async function rocketRequestOTP({
   data,
 }: {
-  data: { email: string; password: string };
+  data: { email: string };
 }) {
-  const { email, password } = data;
-  const res = await fetch(`${BASE}/auth/login`, {
+  const res = await fetch(`${BASE}/auth/otp/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: data.email }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    let msg = `Login failed (${res.status})`;
+    let msg = `Failed to send OTP (${res.status})`;
+    try {
+      const p = JSON.parse(body);
+      msg = p.message ?? p.error ?? p.detail ?? msg;
+    } catch {}
+    throw new Error(msg);
+  }
+}
+
+export async function rocketVerifyOTP({
+  data,
+}: {
+  data: { email: string; otp: string };
+}) {
+  const res = await fetch(`${BASE}/auth/otp/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: data.email, otp: data.otp }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    let msg = `OTP verification failed (${res.status})`;
     try {
       const p = JSON.parse(body);
       msg = p.message ?? p.error ?? p.detail ?? msg;
@@ -50,9 +70,9 @@ export async function rocketLogin({
   const user = d.user ?? d;
   return {
     token,
-    email: String(user.email ?? email),
+    email: String(user.email ?? data.email),
     name: String(
-      user.full_name ?? user.name ?? user.username ?? user.display_name ?? email
+      user.full_name ?? user.name ?? user.username ?? user.display_name ?? data.email
     ),
   };
 }
