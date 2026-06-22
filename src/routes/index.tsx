@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { useEffect, useState, useRef } from "react";
 import {
   ArrowRight, Zap, GitBranch, Shield, Clock, Layers, UploadCloud,
-  CheckCircle2, ChevronDown, Star, Terminal, Lock, Menu, X,
+  CheckCircle2, ChevronDown, Star, Terminal, Lock, X,
   FileCode2, GitCommit, Package, Boxes
 } from "lucide-react";
 import { GitHubLogo } from "@/components/BrandLogos";
@@ -82,120 +82,56 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-/* ── Floating pill header ─────────────────────────── */
+/* ── Floating header — logo + button only ─────────── */
 function FloatingHeader({ isConnected }: { isConnected: boolean }) {
   const [visible, setVisible] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    // animate in after a short delay on mount
-    const t = setTimeout(() => setVisible(true), 200);
+    const t = setTimeout(() => setVisible(true), 300);
     return () => clearTimeout(t);
   }, []);
 
-  const navLinks = [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Features", href: "#features" },
-    { label: "FAQ", href: "#faq" },
-  ];
-
   return (
-    <>
-      {/* Desktop floating pill */}
-      <motion.header
-        className="fixed top-5 left-0 right-0 z-50 flex justify-center pointer-events-none"
-        initial={{ opacity: 0, y: -24 }}
-        animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -24 }}
-        transition={{ duration: 0.55, ease }}
-      >
-        <div
-          className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.05)] px-2 py-2"
-          style={{ background: "rgba(13,13,31,0.82)", backdropFilter: "blur(20px)" }}
+    <motion.header
+      className="fixed top-6 left-0 right-0 z-50 flex justify-between items-center px-5 sm:px-10 pointer-events-none"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -20 }}
+      transition={{ duration: 0.5, ease }}
+    >
+      {/* Logo pill */}
+      <Link to="/" className="pointer-events-auto">
+        <motion.div
+          className="flex items-center gap-2.5 rounded-2xl border border-white/10 px-3.5 py-2.5"
+          style={{ background: "rgba(10,10,24,0.75)", backdropFilter: "blur(18px)", boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={spring}
         >
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 px-3 py-1.5">
-            <motion.img src={appLogo} alt="Push44" className="h-7 w-7 rounded-lg object-cover" whileHover={{ scale: 1.08 }} transition={spring} />
-            <span className="text-[15px] font-extrabold tracking-tight text-white">
-              Push<span style={{ color: "#a78bfa" }}>44</span>
-            </span>
-          </Link>
+          <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-xl object-cover" />
+          <span className="text-[15px] font-extrabold tracking-tight text-white">
+            Push<span style={{ color: "#a78bfa" }}>44</span>
+          </span>
+        </motion.div>
+      </Link>
 
-          {/* Divider */}
-          <span className="hidden sm:block h-5 w-px bg-white/10 mx-1" />
-
-          {/* Nav links */}
-          <nav className="hidden sm:flex items-center gap-0.5">
-            {navLinks.map(({ label, href }) => (
-              <a
-                key={href}
-                href={href}
-                className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white/50 hover:text-white hover:bg-white/[0.08] transition-all duration-150"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Divider */}
-          <span className="hidden sm:block h-5 w-px bg-white/10 mx-1" />
-
-          {/* CTA */}
-          <Link to={isConnected ? "/dashboard" : "/onboarding"}>
-            <motion.button
-              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold text-black"
-              style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={spring}
-            >
-              <Zap className="h-3.5 w-3.5" strokeWidth={2.8} />
-              {isConnected ? "Dashboard" : "Get Started"}
-            </motion.button>
-          </Link>
-
-          {/* Mobile menu button */}
-          <button
-            className="sm:hidden ml-1 h-9 w-9 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        </div>
-      </motion.header>
-
-      {/* Mobile dropdown */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            className="fixed top-20 left-4 right-4 z-40 rounded-2xl border border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.4)] p-3 space-y-1"
-            style={{ background: "rgba(13,13,31,0.95)", backdropFilter: "blur(20px)" }}
-            initial={{ opacity: 0, y: -12, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.97 }}
-            transition={{ duration: 0.2, ease }}
-          >
-            {navLinks.map(({ label, href }) => (
-              <a
-                key={href}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-semibold text-white/60 hover:text-white hover:bg-white/[0.07] transition-all"
-              >
-                {label}
-              </a>
-            ))}
-            <div className="pt-2 border-t border-white/[0.07]">
-              <Link to={isConnected ? "/dashboard" : "/onboarding"} onClick={() => setMobileOpen(false)}>
-                <button className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-[14px] font-bold text-black" style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}>
-                  <Zap className="h-4 w-4" strokeWidth={2.8} />
-                  {isConnected ? "Open Dashboard" : "Get Started Free"}
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+      {/* CTA pill */}
+      <Link to={isConnected ? "/dashboard" : "/onboarding"} className="pointer-events-auto">
+        <motion.button
+          className="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-[13px] font-bold text-black"
+          style={{
+            background: "linear-gradient(135deg,#dce99a,#bedd44)",
+            boxShadow: "0 4px 20px rgba(220,233,154,0.35), inset 0 1px 0 rgba(255,255,255,0.3)",
+          }}
+          whileHover={{ scale: 1.05, boxShadow: "0 8px 28px rgba(220,233,154,0.5), inset 0 1px 0 rgba(255,255,255,0.3)" }}
+          whileTap={{ scale: 0.96 }}
+          transition={spring}
+        >
+          <Zap className="h-3.5 w-3.5" strokeWidth={3} />
+          {isConnected ? "Dashboard" : "Get Started"}
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </motion.button>
+      </Link>
+    </motion.header>
   );
 }
 
