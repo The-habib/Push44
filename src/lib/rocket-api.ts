@@ -205,8 +205,14 @@ export async function listRocketApps({
   const endpoints = [
     { url: `${BACK_BASE}/api/v2/application/list`, body: {} },
     { url: `${BACK_BASE}/api/v1/recent-threads-projects/list`, body: {} },
+    { url: `${BACK_BASE}/api/v1/project/list`, body: {} },
+    { url: `${BACK_BASE}/api/v2/project/list`, body: {} },
+    { url: `${BACK_BASE}/api/v1/thread/list`, body: {} },
+    { url: `${BACK_BASE}/api/v1/chat-thread/list`, body: {} },
   ];
 
+  const seen = new Set<string>();
+  const allApps: RocketApp[] = [];
   let gotValidResponse = false;
 
   for (const ep of endpoints) {
@@ -214,14 +220,21 @@ export async function listRocketApps({
       const d = await rocketPost(ep.url, data.token, ep.body);
       gotValidResponse = true;
       const arr = deepFindArray(d);
-      if (arr.length > 0) return arr.map(mapToRocketApp);
-      // Got a valid decrypted response but empty array — stop trying
-      break;
+      for (const item of arr) {
+        const mapped = mapToRocketApp(item);
+        if (mapped.id && !seen.has(mapped.id)) {
+          seen.add(mapped.id);
+          allApps.push(mapped);
+        }
+      }
     } catch { /* try next endpoint */ }
   }
 
-  if (gotValidResponse) return [];
-  throw new Error("Could not reach Rocket.new. Check your token and try again.");
+  if (!gotValidResponse) {
+    throw new Error("Could not reach Rocket.new. Check your token and try again.");
+  }
+
+  return allApps;
 }
 
 // ─── Files ───────────────────────────────────────────────────────────────────
