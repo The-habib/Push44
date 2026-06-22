@@ -588,54 +588,185 @@ export interface RocketFile {
   content: string;
 }
 
+// Extract files array from any shape of API response
+function extractFilesFromPayload(d: any): RocketFile[] | null {
+  if (!d || typeof d !== "object") return null;
+
+  const project = d.data ?? d.result ?? d.payload ?? d;
+
+  // Object map: { "src/App.tsx": "...", ... }
+  const filesMap =
+    project.files ?? project.code ?? project.sourceFiles ??
+    project.codeFiles ?? project.fileContents ?? project.source ??
+    project.generatedCode ?? project.generatedFiles;
+
+  if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
+    const entries = Object.entries(filesMap as Record<string, unknown>);
+    if (entries.length > 0) {
+      return entries.map(([path, content]): RocketFile => ({
+        path,
+        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+      }));
+    }
+  }
+
+  // Array of { path, content } objects
+  const filesArr: any[] =
+    Array.isArray(project.files) ? project.files :
+    Array.isArray(project.code) ? project.code :
+    Array.isArray(project.sourceFiles) ? project.sourceFiles :
+    Array.isArray(project.codeFiles) ? project.codeFiles :
+    Array.isArray(d) ? d : [];
+
+  if (filesArr.length > 0 && filesArr[0] && (filesArr[0].path || filesArr[0].name || filesArr[0].filename)) {
+    return filesArr.map((f: any): RocketFile => ({
+      path: String(f.path ?? f.name ?? f.filename ?? f.filePath ?? ""),
+      content: typeof f.content === "string" ? f.content
+        : typeof f.code === "string" ? f.code
+        : JSON.stringify(f.content ?? f.code ?? f, null, 2),
+    }));
+  }
+
+  return null;
+}
+
 export async function fetchRocketAppFiles({
   data,
 }: {
   data: { token: string; appId: string };
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
+  const log = (label: string, val: any) =>
+    console.warn(`[push44:files] ${label}`, JSON.stringify(val).slice(0, 600));
 
-  for (const [base, body] of [
-    [BACK_BASE, { threadId: appId }],
-    [BACK_BASE, { chatThreadId: appId }],
-    [GATEWAY_BASE, { threadId: appId }],
-  ] as const) {
-    try {
-      for (const hdrs of [
-        backHeaders(token),
-        backHeadersJWT(token),
-      ]) {
-        const res = await fetch(`${base}/api/v1/chat-thread/get`, {
+  // Establish a back session first (same as listRocketApps does)
+  const backSession = await loginToBack(token);
+  const backToken = backSession ?? token;
+  log("backToken source", backSession ? "session" : "auth-direct");
+
+  // All headers variants to try
+  const headerVariants = [
+    backHeaders(backToken),
+    backHeadersJWT(backToken),
+    backHeaders(token),
+    backHeadersJWT(token),
+  ];
+
+  async function tryPost(url: string, body: object): Promise<RocketFile[] | null> {
+    for (const hdrs of headerVariants) {
+      try {
+        const res = await fetch(url, {
           method: "POST",
           headers: hdrs,
           body: JSON.stringify(body),
         });
-        if (!res.ok) continue;
-        const raw = await res.json();
+        if (!res.ok) { if (res.status === 401) break; continue; }
+        const raw = await res.json().catch(() => null);
+        if (!raw) continue;
         const d = await rocketDecrypt(raw);
-        const project = d.data ?? d;
-        const filesMap = project.files ?? project.code ?? project.sourceFiles;
-        if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
-          return Object.entries(filesMap as Record<string, string>).map(
-            ([path, content]): RocketFile => ({
-              path,
-              content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
-            })
-          );
-        }
-        const filesArr: any[] = Array.isArray(filesMap)
-          ? filesMap
-          : Array.isArray(project.files ?? project)
-          ? (project.files ?? project)
-          : [];
-        if (filesArr.length > 0) {
-          return filesArr.map((f: any): RocketFile => ({
-            path: String(f.path ?? f.name ?? f.filename ?? ""),
-            content: typeof f.content === "string" ? f.content : JSON.stringify(f.content ?? f, null, 2),
-          }));
-        }
+        log(`${res.status} POST ${url.split("/").slice(-3).join("/")}`, d);
+        const files = extractFilesFromPayload(d);
+        if (files && files.length > 0) return files;
+      } catch { /* try next */ }
+    }
+    return null;
+  }
+
+  async function tryGet(url: string): Promise<RocketFile[] | null> {
+    for (const hdrs of headerVariants) {
+      try {
+        const res = await fetch(url, { method: "GET", headers: hdrs });
+        if (!res.ok) { if (res.status === 401) break; continue; }
+        const raw = await res.json().catch(() => null);
+        if (!raw) continue;
+        const d = await rocketDecrypt(raw);
+        log(`${res.status} GET ${url.split("/").slice(-3).join("/")}`, d);
+        const files = extractFilesFromPayload(d);
+        if (files && files.length > 0) return files;
+      } catch { /* try next */ }
+    }
+    return null;
+  }
+
+  // ── 1. chat-thread/get — primary path (POST with different ID fields)
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const body of [
+      { threadId: appId },
+      { chatThreadId: appId },
+      { id: appId },
+      { _id: appId },
+      { threadId: appId, includeFiles: true },
+      { threadId: appId, includeCode: true },
+    ]) {
+      const result = await tryPost(`${base}/api/v1/chat-thread/get`, body);
+      if (result) return result;
+    }
+  }
+
+  // ── 2. playground-project/get
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const body of [
+      { projectId: appId },
+      { id: appId },
+      { _id: appId },
+      { playgroundProjectId: appId },
+    ]) {
+      const result = await tryPost(`${base}/api/v1/playground-project/get`, body);
+      if (result) return result;
+      const result2 = await tryPost(`${base}/api/v2/playground-project/get`, body);
+      if (result2) return result2;
+    }
+  }
+
+  // ── 3. GET by ID in path
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const path of [
+      `/api/v1/chat-thread/${appId}`,
+      `/api/v1/chat-thread/${appId}/files`,
+      `/api/v1/chat-thread/${appId}/code`,
+      `/api/v1/playground-project/${appId}`,
+      `/api/v1/playground-project/${appId}/files`,
+      `/api/v1/application/${appId}`,
+      `/api/v1/application/${appId}/files`,
+      `/api/v1/application/${appId}/code`,
+      `/api/v2/application/${appId}/files`,
+    ]) {
+      const result = await tryGet(`${base}${path}`);
+      if (result) return result;
+    }
+  }
+
+  // ── 4. application.rocket.new endpoints
+  const PROJECT_BASE = "https://project.rocket.new";
+  for (const base of [APP_BASE, PROJECT_BASE]) {
+    for (const path of [
+      `/api/v1/project/${appId}/files`,
+      `/api/v1/project/${appId}/code`,
+      `/api/v1/project/${appId}`,
+      `/api/v1/application/${appId}/files`,
+      `/api/v1/application/${appId}/code`,
+      `/api/v1/${appId}/files`,
+    ]) {
+      const result = await tryGet(`${base}${path}`);
+      if (result) return result;
+    }
+  }
+
+  // ── 5. Code/export endpoints
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const body of [{ threadId: appId }, { chatThreadId: appId }, { projectId: appId }]) {
+      for (const path of [
+        "/api/v1/chat-thread/get-code",
+        "/api/v1/chat-thread/export",
+        "/api/v1/code/get",
+        "/api/v1/code/export",
+        "/api/v1/project/export",
+        "/api/v1/project/get-files",
+      ]) {
+        const result = await tryPost(`${base}${path}`, body);
+        if (result) return result;
       }
-    } catch { /* try next */ }
+    }
   }
 
   throw new Error(
