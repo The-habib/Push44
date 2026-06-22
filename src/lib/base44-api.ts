@@ -63,6 +63,7 @@ export interface Base44App {
   name: string;
   updated_at: string;
   files_count?: number;
+  icon?: string;
 }
 
 export async function listBase44Apps({ data }: { data: { token: string } }): Promise<Base44App[]> {
@@ -76,6 +77,7 @@ export async function listBase44Apps({ data }: { data: { token: string } }): Pro
         a.updated_at ?? a.updatedAt ?? a.modified_at ?? new Date().toISOString()
       ),
       files_count: Number(a.files_count ?? a.filesCount ?? 0),
+      icon: a.icon ?? a.logo ?? a.app_icon ?? a.thumbnail ?? a.image ?? undefined,
     })
   );
 }

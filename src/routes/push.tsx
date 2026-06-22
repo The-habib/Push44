@@ -268,9 +268,28 @@ function PushPage() {
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 380, damping: 28 }}
                     >
-                      <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-                        style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
-                        <Base44Logo size={22} />
+                      <div className="h-9 w-9 rounded-xl shrink-0 overflow-hidden">
+                        {app.icon ? (
+                          <img
+                            src={app.icon}
+                            alt={app.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              const t = e.currentTarget;
+                              t.style.display = "none";
+                              if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = "flex";
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="h-9 w-9 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: "linear-gradient(135deg,#fb923c,#f97316)",
+                            display: app.icon ? "none" : "flex",
+                          }}
+                        >
+                          <Base44Logo size={22} />
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{app.name}</div>
