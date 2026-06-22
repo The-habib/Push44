@@ -83,69 +83,77 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 function Navbar({ isConnected }: { isConnected: boolean }) {
-  const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 100);
-    const fn = () => setScrolled(window.scrollY > 20);
+    const t = setTimeout(() => setVisible(true), 120);
+    const fn = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", fn, { passive: true });
     return () => { clearTimeout(t); window.removeEventListener("scroll", fn); };
   }, []);
 
   return (
-    <motion.nav
-      className="fixed top-0 left-0 right-0 z-50"
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -8 }}
-      transition={{ duration: 0.4, ease }}
-    >
-      <div
-        className="transition-all duration-300"
-        style={{
-          background: scrolled ? "rgba(255,252,248,0.95)" : "transparent",
-          backdropFilter: scrolled ? "blur(16px)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(249,115,22,0.1)" : "1px solid transparent",
-        }}
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
+      <motion.div
+        className="pointer-events-auto w-full"
+        style={{ maxWidth: 480 }}
+        initial={{ opacity: 0, y: -16, scale: 0.96 }}
+        animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -16, scale: visible ? 1 : 0.96 }}
+        transition={{ duration: 0.45, ease }}
       >
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={appLogo} alt="Push44" className="h-8 w-8 rounded-[10px] object-cover" />
-            <span className="text-[15px] font-black tracking-tight text-[#1a1a1a]">
-              Push<span className="text-[#f97316]">44</span>
+        {/* Pill shell */}
+        <motion.div
+          className="flex items-center justify-between px-2 py-1.5 rounded-full"
+          animate={{
+            background: scrolled
+              ? "rgba(255,252,248,0.88)"
+              : "rgba(255,252,248,0.72)",
+            boxShadow: scrolled
+              ? "0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(249,115,22,0.14), inset 0 1px 0 rgba(255,255,255,0.8)"
+              : "0 4px 20px rgba(0,0,0,0.08), 0 0 0 1px rgba(240,236,228,0.9), inset 0 1px 0 rgba(255,255,255,0.9)",
+          }}
+          transition={{ duration: 0.3 }}
+          style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
+        >
+          {/* Logo + wordmark */}
+          <Link to="/" className="flex items-center gap-1.5 pl-2 pr-3 py-1">
+            <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover" />
+            <span className="text-[14px] font-black tracking-tight text-[#1a1a1a] leading-none">
+              Push<span style={{ color: "#f97316" }}>44</span>
             </span>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-1">
+          {/* Desktop links */}
+          <div className="hidden sm:flex items-center gap-0.5">
             {[{ label: "How it works", href: "#how-it-works" }, { label: "FAQ", href: "#faq" }].map(({ label, href }) => (
-              <a key={label} href={href} className="px-4 py-2 text-[13px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-xl hover:bg-[#f97316]/8">
+              <a key={label} href={href}
+                className="px-3 py-1.5 text-[12px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-full hover:bg-black/5">
                 {label}
               </a>
             ))}
-            <a
-              href="https://github.com/The-habib/Push44"
-              target="_blank" rel="noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-xl hover:bg-[#f97316]/8"
-            >
-              <GitHubLogo className="h-3.5 w-3.5" />
+            <a href="https://github.com/The-habib/Push44" target="_blank" rel="noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-full hover:bg-black/5">
+              <GitHubLogo className="h-3 w-3" />
               GitHub
             </a>
           </div>
 
+          {/* CTA */}
           <Link to={isConnected ? "/dashboard" : "/onboarding"}>
             <motion.button
-              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold text-white"
-              style={{ background: "#f97316", boxShadow: "0 2px 12px rgba(249,115,22,0.35)" }}
-              whileHover={{ scale: 1.03, boxShadow: "0 4px 18px rgba(249,115,22,0.5)" }}
-              whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-bold text-white"
+              style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", boxShadow: "0 2px 10px rgba(249,115,22,0.4)" }}
+              whileHover={{ scale: 1.04, boxShadow: "0 4px 16px rgba(249,115,22,0.55)" }}
+              whileTap={{ scale: 0.96 }}
               transition={spring}
             >
               {isConnected ? "Dashboard" : "Get Started"}
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
             </motion.button>
           </Link>
-        </div>
-      </div>
-    </motion.nav>
+        </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
