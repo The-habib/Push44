@@ -270,25 +270,25 @@ function PushPage() {
 
                 <div className="h-px bg-[#f5f2ee]" />
 
-                {/* Stats row */}
-                <div className="grid grid-cols-4 gap-0">
-                  <div className="text-center">
-                    <div className="text-[17px] font-black text-[#1a1a1a]">{files.length}</div>
-                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Files</div>
+                {/* Stats 2×2 */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl px-3 py-2.5" style={{ background: "#faf7f3" }}>
+                    <div className="text-[22px] font-black text-[#1a1a1a] leading-none">{files.length}</div>
+                    <div className="text-[10px] text-[#9a8880] font-bold uppercase tracking-wide mt-0.5">Files</div>
                   </div>
-                  <div className="text-center border-x border-[#f5f2ee]">
-                    <div className="text-[17px] font-black text-[#1a1a1a]">
-                      {(files.reduce((acc, f) => acc + f.content.split("\n").length, 0)).toLocaleString()}
+                  <div className="rounded-xl px-3 py-2.5" style={{ background: "#faf7f3" }}>
+                    <div className="text-[22px] font-black text-[#1a1a1a] leading-none">
+                      {files.reduce((acc, f) => acc + f.content.split("\n").length, 0).toLocaleString()}
                     </div>
-                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Lines</div>
+                    <div className="text-[10px] text-[#9a8880] font-bold uppercase tracking-wide mt-0.5">Lines of code</div>
                   </div>
-                  <div className="text-center border-r border-[#f5f2ee]">
-                    <div className="text-[13px] font-black text-[#1a1a1a] truncate px-1">{branch}</div>
-                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Branch</div>
+                  <div className="rounded-xl px-3 py-2.5" style={{ background: "#faf7f3" }}>
+                    <div className="text-[15px] font-black text-[#1a1a1a] leading-none truncate">{branch}</div>
+                    <div className="text-[10px] text-[#9a8880] font-bold uppercase tracking-wide mt-0.5">Branch</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-[12px] font-black text-[#1a1a1a] font-mono">{commitHash}</div>
-                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Commit</div>
+                  <div className="rounded-xl px-3 py-2.5" style={{ background: "#faf7f3" }}>
+                    <div className="text-[14px] font-black text-[#1a1a1a] leading-none font-mono">{commitHash}</div>
+                    <div className="text-[10px] text-[#9a8880] font-bold uppercase tracking-wide mt-0.5">Commit</div>
                   </div>
                 </div>
 
