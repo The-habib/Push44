@@ -240,7 +240,7 @@ function PushPage() {
     } else {
       if (!creds.rocketToken) return;
       setLA(true);
-      try { setAppsError(""); setApps(await listRocketApps({ data: { token: creds.rocketToken } })); }
+      try { setAppsError(""); setApps(await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } })); }
       catch (e: any) { setAppsError(e.message ?? "Unknown error"); }
       finally { setLA(false); }
     }

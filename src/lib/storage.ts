@@ -6,6 +6,7 @@ export interface Credentials {
   base44Email: string;
   rocketToken: string;
   rocketEmail: string;
+  rocketCompanyId: string;
   defaultBranch: string;
   defaultRepo: string;
   defaultOwner: string;

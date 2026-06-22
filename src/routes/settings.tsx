@@ -190,7 +190,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
   );
 }
 
-function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
+function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string, c: string) => void; onClose: () => void }) {
   const [tab, setTab]           = useState<"otp" | "token">("token");
   // OTP flow
   const [email, setEmail]       = useState("");
@@ -217,7 +217,7 @@ function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
     setError(""); setLoading(true);
     try {
       const r = await rocketVerifyOTP({ data: { email: email.trim(), otp: otpCode.trim() } });
-      setDone(true); setTimeout(() => onSuccess(r.token, r.email, r.name), 600);
+      setDone(true); setTimeout(() => onSuccess(r.token, r.email, r.name, r.companyId ?? ""), 600);
     } catch (e: any) { setError(e.message ?? "Invalid code."); }
     finally { setLoading(false); }
   };
@@ -227,7 +227,7 @@ function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
     setError(""); setLoading(true);
     try {
       const info = await validateRocketToken({ data: { token: tok.trim() } });
-      setDone(true); setTimeout(() => onSuccess(tok.trim(), info.email, info.name), 600);
+      setDone(true); setTimeout(() => onSuccess(tok.trim(), info.email, info.name, info.companyId ?? ""), 600);
     } catch (e: any) { setError(e.message ?? "Invalid token."); }
     finally { setLoading(false); }
   };
@@ -499,7 +499,7 @@ function SettingsPage() {
         )}
         {showRocketModal && (
           <RocketModal
-            onSuccess={(t, e, n) => { updateCreds({ rocketToken: t, rocketEmail: e, displayName: n || e }); setShowRocketModal(false); toast.success(`Connected as ${e || n}`); }}
+            onSuccess={(t, e, n, c) => { updateCreds({ rocketToken: t, rocketEmail: e, rocketCompanyId: c, displayName: n || e }); setShowRocketModal(false); toast.success(`Connected as ${e || n}`); }}
             onClose={() => setShowRocketModal(false)}
           />
         )}
@@ -617,7 +617,7 @@ function SettingsPage() {
               <AnimatePresence mode="wait">
                 {rocketConnected ? (
                   <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => { updateCreds({ rocketToken: "", rocketEmail: "" }); toast.success("Rocket.new disconnected"); }}
+                    onClick={() => { updateCreds({ rocketToken: "", rocketEmail: "", rocketCompanyId: "" }); toast.success("Rocket.new disconnected"); }}
                     className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
                     style={{ background: "#fef2f2", color: "#ef4444" }}>
                     Disconnect
