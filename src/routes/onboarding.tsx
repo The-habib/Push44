@@ -108,7 +108,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
       {/* ── Hero ── */}
       <motion.div
-        className="relative overflow-hidden px-5 pt-16 pb-10 flex flex-col items-center text-center"
+        className="relative overflow-hidden px-5 pt-8 pb-4 flex flex-col items-center text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
@@ -123,7 +123,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
         {/* Logo */}
         <motion.div
-          className="relative mb-4 z-10"
+          className="relative mb-3 z-10"
           initial={{ scale: 0.82, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 24 }}
@@ -131,7 +131,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <img
             src={appLogo}
             alt="Push44"
-            className="h-20 w-20 rounded-[22px] object-cover border border-[#f0ece4]"
+            className="h-16 w-16 rounded-[18px] object-cover border border-[#f0ece4]"
             style={{ boxShadow: "0 8px 32px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.06)" }}
           />
           <div
@@ -149,17 +149,17 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18, duration: 0.45 }}
         >
-          <h1 className="text-[36px] font-black tracking-tight leading-none text-[#1a1a1a] mb-3">
+          <h1 className="text-[30px] font-black tracking-tight leading-none text-[#1a1a1a] mb-1.5">
             Push<span style={{ color: "#f97316" }}>44</span>
           </h1>
-          <p className="text-[14px] text-[#6b6360] leading-relaxed max-w-[240px] mx-auto">
+          <p className="text-[13px] text-[#6b6360] leading-relaxed max-w-[240px] mx-auto">
             Back up your Base44 apps to GitHub in one tap.
           </p>
         </motion.div>
 
         {/* eyebrow pill */}
         <motion.div
-          className="mt-5 z-10 inline-flex items-center gap-2 rounded-full border border-[#f0ece4] bg-white px-3.5 py-1.5"
+          className="mt-3 z-10 inline-flex items-center gap-2 rounded-full border border-[#f0ece4] bg-white px-3.5 py-1.5"
           style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -176,11 +176,11 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       </motion.div>
 
       {/* ── Features ── */}
-      <div className="flex-1 px-4 pt-2 pb-4 space-y-2.5">
+      <div className="flex-1 px-4 pt-1 pb-2 space-y-2">
         {features.map((f, i) => (
           <motion.div
             key={f.title}
-            className="flex items-center gap-4 bg-white rounded-[18px] border border-[#f0ece4] px-4 py-4"
+            className="flex items-center gap-3.5 bg-white rounded-[16px] border border-[#f0ece4] px-4 py-3"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -202,7 +202,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
       {/* ── CTA ── */}
       <motion.div
-        className="px-4 pb-10 pt-3"
+        className="px-4 pb-6 pt-2"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.56, type: "spring", stiffness: 300, damping: 28 }}
