@@ -1,6 +1,6 @@
 # Push44
 
-A mobile-first web app that lets users log in with their Base44 account and push their Base44 app source code directly to GitHub — in one tap.
+A mobile-first web app that lets users push their **Base44** or **Rocket.new** app source code directly to GitHub — in one tap.
 
 **Dev:** runs on port 5000 via `bun run dev`
 **Live:** https://push-44.vercel.app
@@ -9,17 +9,17 @@ A mobile-first web app that lets users log in with their Base44 account and push
 
 ## Handover Status (June 2026)
 
-This project is fully functional, production-ready, and SEO-optimised. Everything below describes the current working state so the next developer can pick up immediately.
+The Base44 integration is fully functional and production-ready. The Rocket.new integration lists apps correctly and the file-fetching approach has been fully reverse-engineered — the correct endpoints are implemented and awaiting final live verification with the user's token.
 
 ---
 
 ## What This App Does
 
-1. User logs in with their Base44 email + password (or pastes an auth token)
+1. User logs in with their Base44 **or** Rocket.new account
 2. User connects a GitHub Personal Access Token
-3. User selects one of their Base44 apps
-4. App wakes the sandbox if needed, then fetches all source files
-5. App pushes all files to a GitHub repo in a single commit (using the Trees API)
+3. User selects one of their apps
+4. App fetches all source files
+5. App pushes all files to a GitHub repo in a single commit (Trees API)
 6. Push history is saved locally
 
 ---
@@ -46,89 +46,187 @@ src/
 ├── routes/
 │   ├── __root.tsx        — root layout + global SEO meta + JSON-LD + OnboardingGuard
 │   ├── index.tsx         — Dashboard (greeting, hero, stats, last push, recent repo)
-│   ├── push.tsx          — Main push flow (select app → wake sandbox → fetch files → pick repo → commit)
-│   ├── settings.tsx      — Base44 login modal + GitHub PAT + preferences
+│   ├── push.tsx          — Main push flow (select app → fetch files → pick repo → commit)
+│   ├── settings.tsx      — Base44 login + Rocket.new login + GitHub PAT + preferences
 │   ├── repositories.tsx  — Lists all user's GitHub repos
 │   ├── history.tsx       — Push history from localStorage
-│   └── onboarding.tsx    — First-run wizard (Base44 login → GitHub connect)
+│   └── onboarding.tsx    — First-run wizard (login → GitHub connect)
 ├── lib/
 │   ├── base44-api.ts     — All Base44 server functions (login, list apps, wake sandbox, fetch files)
+│   ├── rocket-api.ts     — All Rocket.new server functions (OTP login, list apps, fetch files)
 │   ├── github-api.ts     — All GitHub server functions (user, repos, create repo, push)
 │   ├── storage.ts        — localStorage helpers (credentials + push history)
 │   └── utils.ts          — Tailwind cn() helper
 ├── contexts/
 │   └── AppContext.tsx    — Global credential state, persisted to localStorage
 ├── assets/
-│   ├── logo.png                     — App logo: cat in orange box (used in header, onboarding, favicon)
-│   ├── base44-logo.png              — Original Base44 logo (orange circle mark)
+│   ├── logo.png                     — App logo: cat in orange box
+│   ├── base44-logo.png              — Original Base44 logo
 │   └── base44-logo-transparent.png  — Base44 logo with background removed
 └── components/
-    ├── AppShell.tsx      — Mobile shell (left-aligned logo header, bottom nav, SectionCard, AvatarBubble)
-    ├── BrandLogos.tsx    — Base44Logo (img, supports `white` prop) + GitHubLogo (SVG Invertocat)
-    └── ui/               — shadcn/ui components (button, card, etc.)
+    ├── AppShell.tsx      — Mobile shell (header, bottom nav, SectionCard, AvatarBubble)
+    ├── BrandLogos.tsx    — Base44Logo + GitHubLogo + RocketLogo
+    ├── RocketModal.tsx   — Rocket.new OTP login UI
+    └── ui/               — shadcn/ui components
 
 public/
-├── logo.png       — App logo served at /logo.png (used for OG image meta tag on Vercel)
-├── robots.txt     — Allows all crawlers, points to sitemap
-└── sitemap.xml    — All 6 routes with priorities and change frequencies
+├── logo.png       — served at /logo.png (OG image meta tag)
+├── robots.txt     — allows all crawlers, points to sitemap
+└── sitemap.xml    — all 6 routes with priorities
 ```
 
 ---
 
 ## ⚠️ Critical: Real Base44 API Endpoints
 
-**These were discovered by live testing** — the official docs are wrong/outdated.
+**Discovered by live testing** — the official docs are wrong/outdated.
 
-| Action | Method | Endpoint | Notes |
-|---|---|---|---|
-| Login | POST | `https://app.base44.com/api/auth/login` | Body: `{email, password}` |
-| Validate token | GET | `https://app.base44.com/api/auth/me` | Returns user object directly |
-| List apps | GET | `https://app.base44.com/api/apps` | Returns plain array |
-| Check sandbox | GET | `https://app.base44.com/api/apps/{id}/sandbox/status` | Returns `{"status":"alive"}` |
-| Wake sandbox | POST | `https://app.base44.com/api/apps/{id}/sandbox/wake` | Call if status ≠ "alive" |
-| **Fetch files** | GET | `https://app.base44.com/api/apps/{id}/sandbox/files` | See below |
+| Action | Method | Endpoint |
+|---|---|---|
+| Login | POST | `https://app.base44.com/api/auth/login` |
+| Validate token | GET | `https://app.base44.com/api/auth/me` |
+| List apps | GET | `https://app.base44.com/api/apps` |
+| Check sandbox | GET | `https://app.base44.com/api/apps/{id}/sandbox/status` |
+| Wake sandbox | POST | `https://app.base44.com/api/apps/{id}/sandbox/wake` |
+| Fetch files | GET | `https://app.base44.com/api/apps/{id}/sandbox/files` |
 
 **WRONG endpoints (do NOT use):**
-- ❌ `https://api.base44.com/v1/...` — this server returns HTML 404s
-- ❌ `/apps/{id}/files` — 404
+- ❌ `https://api.base44.com/v1/...` — returns HTML 404s
 - ❌ `/apps/{id}/code` — returns 412 "App does not support direct file reads"
-- ❌ `/auth/device` — 404 (no device code flow exists publicly)
 
 ### Login Response Shape
 ```json
-{
-  "success": true,
-  "access_token": "eyJhbGci...",
-  "user": {
-    "email": "user@example.com",
-    "full_name": "Username",
-    "id": "...",
-    "api_key": "32charkey..."
-  }
-}
+{ "success": true, "access_token": "eyJ...", "user": { "email": "...", "full_name": "...", "api_key": "..." } }
 ```
 Token key is **`access_token`** (NOT `token`). User name is **`full_name`** (NOT `name`).
 
-### `/auth/me` Response Shape
-Returns the user object **directly** (no `.user` wrapper):
+### `/auth/me` Response
+Returns the user object **directly** (no `.user` wrapper).
+
+### `/sandbox/files` Response
 ```json
-{ "email": "...", "full_name": "...", "api_key": "...", ... }
+{ "app_id": "...", "files": { "package.json": "...", "src/App.jsx": "..." } }
+```
+Keys are file paths, values are file content strings. Typical app: ~87 files.
+
+The sandbox must be `"alive"` before fetching files. The code auto-wakes it (polls status, retries). UI shows "Waking up sandbox…" after 3 seconds if still waiting.
+
+---
+
+## ⚠️ Critical: Real Rocket.new API Endpoints
+
+**Reverse-engineered from the Rocket.new JS bundle** — no public docs exist. All confirmed by live testing.
+
+### URL Constants
+
+| Constant | Value |
+|---|---|
+| `AUTH_BASE` | `https://appuser.dhiwise.com` |
+| `BACK_BASE` | `https://back.rocket.new` |
+| `APP_BASE` | `https://application.rocket.new` |
+| `GATEWAY_BASE` | `https://gateway.rocket.new` |
+| `APP_CODE_BASE` | `https://appcodeformat.dhiwise.com` |
+
+### Authentication Flow (OTP)
+
+```
+1. POST https://appuser.dhiwise.com/web/v1/user/send-otp
+   Body: { email }
+   → Returns nothing useful; triggers OTP email
+
+2. POST https://appuser.dhiwise.com/web/v1/user/verify-otp
+   Body: { email, otp }
+   → Returns: { data: { token: "eyJ...", user: { companyId, fullName, ... } } }
 ```
 
-### `/sandbox/files` Response Shape
+Token is a **JWT**. Save `companyId` from `data.user.companyId` (NOT `data.companyId`).
+
+### Resolving companyId
+
+`companyId` is required as an HTTP header for all `back.rocket.new` calls. Without it, searches return `context: "general"` — an empty list.
+
+If `companyId` is missing from the OTP response:
+```
+GET https://appuser.dhiwise.com/web/v1/workspace/list
+Header: Authorization: JWT {token}
+→ Returns: { data: { list: [{ companyId: "..." }] } }
+```
+
+### Listing Apps
+
+```
+POST https://back.rocket.new/api/v1/chat-thread/search
+Headers: {
+  Authorization: Bearer {token},
+  companyId: {companyId},
+  pageURL: "https://rocket.new"
+}
+Body: {}
+```
+
+Response shape:
 ```json
 {
-  "app_id": "6a385b9f9e6d50785356b515",
-  "files": {
-    "package.json": "{ \"name\": \"base44-app\", ... }",
-    "src/App.jsx": "import React ...",
-    "src/components/Header.jsx": "..."
+  "data": {
+    "list": [{
+      "_id": "6a1c99e26581ee0014b82705",
+      "displayName": "CallbreakScoreKeeper",
+      "threadDetails": {
+        "applicationId": "6a1c9a2e8be93c00147a3884",
+        "name": "CallbreakScoreKeeper",
+        "languageType": "DART"
+      }
+    }]
   }
 }
 ```
-Keys are file paths, values are file content strings. A typical app has **~87 files**.
 
-**Important:** The sandbox must be `"alive"` before fetching files. The code auto-wakes the sandbox (POST to wake endpoint, polls status, retries) before fetching files. The push UI shows "Waking up sandbox…" after a 3-second delay if still waiting.
+The `_id` is the **thread ID** (used to identify the app in UI). The `threadDetails.applicationId` is the **application ID** (used for file fetching).
+
+### Fetching Files — S3 Approach (confirmed working endpoint)
+
+Rocket.new stores code in S3 via `appcodeformat.dhiwise.com`. This works even when the container is sleeping or terminated.
+
+**Step 1 — Get file tree:**
+```
+POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
+Headers: { Authorization: "JWT {token}", Content-Type: application/json }
+Body: { applicationId: "..." }
+→ Returns directory tree (format varies — code handles multiple formats)
+```
+
+**Step 2 — Fetch each file:**
+```
+POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
+Headers: { Authorization: "JWT {token}", Content-Type: application/json }
+Body: { applicationId: "...", file: "lib/main.dart" }
+→ Returns file content
+```
+
+Both endpoints return `401` without auth (confirming they exist). Auth format: try `JWT {token}` first, then `Bearer {token}`.
+
+Files are fetched in parallel batches of 20 to avoid flooding the server.
+
+### Production Container Ping (no auth needed)
+
+```
+POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+Body: { applicationId: "..." }
+→ Returns: { data: { production: { backendUrl, previewUrl, status, stateStatus } } }
+```
+
+**Important:** This returns the **deployed app's** backend URL (e.g. a Flutter API server) — NOT the code editor container. The code container URL is dynamic and only available via WebSocket when the project is open. If `status.Name === "terminated"`, the container is shut down and returns 502 — use the S3 file approach instead.
+
+### CRITICAL: Never call `loginToBack()`
+
+There is no session exchange needed. The JWT token from OTP login works directly on `back.rocket.new` via `Authorization: Bearer`. `loginToBack()` tries 10+ failing endpoints and adds 20–30 seconds of invisible delay. It always returns `null`.
+
+### WRONG Rocket.new endpoints (do NOT use)
+
+- ❌ `https://api.base44.com/...` — wrong server entirely
+- ❌ `GET ${containerUrl}/api/download-project` — only works when dev container is **actively open** in the editor (URL is ephemeral, set via WebSocket)
+- ❌ `https://application.rocket.new/apis/v1/application/production-deploy/ping` as a GET — only works as POST
+- ❌ Any endpoint on `back.rocket.new` without `companyId` header — returns empty list
 
 ---
 
@@ -136,30 +234,27 @@ Keys are file paths, values are file content strings. A typical app has **~87 fi
 
 `@lovable.dev/vite-tanstack-config` **blocks any file whose path matches `**/server/**`** from being imported in client code.
 
-**Never put `createServerFn` files in a `server/` subdirectory.**
-
-All server functions live directly in `src/lib/` (e.g., `src/lib/base44-api.ts`, `src/lib/github-api.ts`).
+**Never put `createServerFn` files in a `server/` subdirectory.** All server functions live directly in `src/lib/`.
 
 ---
 
 ## ⚠️ Critical: Static Assets
 
-The Vite dev server does **not** serve the `public/` directory in development. Static files needed by the UI (logo, etc.) must be imported as ES modules from `src/assets/`:
+The Vite dev server does **not** serve `public/` in development. Static files needed by the UI must be imported as ES modules from `src/assets/`:
 
 ```ts
 import appLogo from "@/assets/logo.png";   // ✅ works in dev + prod
 // <img src="/logo.png" />                 // ❌ 404 in dev
 ```
 
-The `public/` directory **is** served by Nitro/Vercel in production — it's used only for files that must be accessible at a bare URL path: `robots.txt`, `sitemap.xml`, and `logo.png` (for the OG image meta tag).
+`public/` is served in production only — used for `robots.txt`, `sitemap.xml`, and `logo.png` (OG image).
 
 ---
 
 ## ⚠️ Critical: SSR Hydration
 
-This is a TanStack Start SSR app. Any value computed from `new Date()`, `Math.random()`, or `localStorage` must be initialised inside `useEffect` (client-only), never at render time. Otherwise React throws a hydration mismatch error.
+Any value from `new Date()`, `Math.random()`, or `localStorage` must be initialised inside `useEffect` (client-only), never at render time.
 
-**Pattern for time-sensitive values:**
 ```tsx
 const [greeting, setGreeting] = useState("");
 useEffect(() => {
@@ -172,7 +267,7 @@ useEffect(() => {
 
 ## ⚠️ Critical: Base44Logo `white` Prop
 
-The `Base44Logo` component (`src/components/BrandLogos.tsx`) accepts a `white` boolean prop. **Always pass `white` when placing the logo on any orange or dark background** — without it the orange PNG logo is invisible against orange:
+Always pass `white` when placing the logo on any orange or dark background — without it the orange PNG is invisible:
 
 ```tsx
 <Base44Logo size={20} white />   // on orange/dark backgrounds
@@ -183,7 +278,7 @@ The `Base44Logo` component (`src/components/BrandLogos.tsx`) accepts a `white` b
 
 ## ⚠️ Critical: GitHubLogo Opacity
 
-`GitHubLogo` only accepts `className`, `size`, `color`, and `strokeWidth` props — **no `style` prop**. Inline `style={{ opacity: ... }}` is silently ignored. Always wrap in a `div` to apply opacity:
+`GitHubLogo` has no `style` prop — inline opacity is silently ignored. Wrap in a `div`:
 
 ```tsx
 <div style={{ opacity: 0.08 }} className="pointer-events-none">
@@ -195,51 +290,49 @@ The `Base44Logo` component (`src/components/BrandLogos.tsx`) accepts a `white` b
 
 ## GitHub Push Flow
 
-Uses GitHub's **Trees API** for efficient bulk commits (no file-by-file uploads):
+Uses GitHub's **Trees API** for efficient bulk commits:
 
 1. `GET /user` — validate token + get username
 2. `GET /repos/{owner}/{repo}/git/refs/heads/{branch}` — get current HEAD
 3. `GET /repos/{owner}/{repo}/git/commits/{sha}` — get base tree SHA
-4. `POST /repos/{owner}/{repo}/git/blobs` — create blob for each file (parallel)
+4. `POST /repos/{owner}/{repo}/git/blobs` — create blob per file (parallel)
 5. `POST /repos/{owner}/{repo}/git/trees` — create tree with all blobs
 6. `POST /repos/{owner}/{repo}/git/commits` — create commit
 7. `PATCH /repos/{owner}/{repo}/git/refs/heads/{branch}` — update branch ref
 
-If the repo is brand new/empty (no HEAD), skips steps 2–3 and uses `POST /git/refs` instead of `PATCH`.
+If repo is brand new/empty (no HEAD), skips steps 2–3 and uses `POST /git/refs` instead of `PATCH`.
 
 ---
 
 ## Credentials & Storage
 
-All stored in **browser localStorage only** — nothing is ever sent to any server except directly to Base44 and GitHub APIs.
+All stored in **browser localStorage only** — nothing is ever sent to any server except directly to Base44, Rocket.new, and GitHub APIs.
 
 ```typescript
-// localStorage keys:
-"b44push_credentials"  // { githubToken, githubUsername, base44Token, base44Email, defaultBranch, displayName, ... }
+"b44push_credentials"  // {
+//   githubToken, githubUsername,
+//   base44Token, base44Email,
+//   rocketToken, rocketEmail, rocketCompanyId,  ← Rocket.new
+//   defaultBranch, displayName, ...
+// }
 "b44push_history"      // PushRecord[] (max 100 entries)
-"b44push_onboarded"    // boolean — whether the user has completed first-run onboarding
+"b44push_onboarded"    // boolean
 ```
-
-The `AppContext` loads these on mount and provides `updateCreds()` / `signOut()`.
 
 ---
 
 ## SEO Setup
 
-All SEO lives in `src/routes/__root.tsx`. Key things in place:
+All SEO lives in `src/routes/__root.tsx`:
 
-- **Global meta:** title, description, keywords, author, robots, theme-color
-- **Open Graph:** og:title, og:description, og:url, og:image (`/logo.png`), og:type, og:locale
-- **Twitter Card:** summary card with image
-- **JSON-LD structured data:** `WebApplication` schema (name, URL, category: DeveloperApplication, free offer, feature list)
-- **Favicon:** `<link rel="icon">` pointing to the Vite-imported `logoUrl`
-- **Apple touch icon:** same logo
-- **Canonical URL:** `https://push-44.vercel.app`
-- **Sitemap link:** `<link rel="sitemap">`
+- Global meta: title, description, keywords, robots, theme-color
+- Open Graph: og:title, og:description, og:url, og:image (`/logo.png`), og:type
+- Twitter Card: summary card with image
+- JSON-LD: `WebApplication` schema
+- Favicon + Apple touch icon: Vite-imported logo
+- Canonical URL: `https://push-44.vercel.app`
 
-Each route has its own `head()` with a specific `<title>` and `<meta description>`.
-
-**To get Google to index it:** submit the site + sitemap (`/sitemap.xml`) in Google Search Console.
+Each route has its own `head()` with specific `<title>` and `<meta description>`.
 
 ---
 
@@ -249,47 +342,43 @@ Each route has its own `head()` with a specific `<title>` and `<meta description
 bun run dev    # starts on port 5000
 ```
 
-The workflow "Start application" runs this automatically.
-
 ---
 
-## What's Working (fully built)
+## What's Working
 
-- ✅ First-run onboarding wizard (`/onboarding`) — multi-step: welcome → Base44 login → GitHub PAT connect
-- ✅ Base44 login (email/password modal with two tabs: login & paste-token)
-- ✅ GitHub Personal Access Token connection + validation
+- ✅ Base44 login (email/password + paste-token)
+- ✅ Rocket.new login (OTP email flow)
+- ✅ GitHub PAT connection + validation
 - ✅ List all Base44 apps
-- ✅ Auto sandbox wake-up — polls status and wakes automatically before fetching files
-- ✅ Fetch all source files from a Base44 app's sandbox (~87 files)
+- ✅ List all Rocket.new apps (via `chat-thread/search` with `companyId` header)
+- ✅ Base44 sandbox auto-wake before fetching files
+- ✅ Base44 file fetch (~87 files)
+- ✅ Rocket.new file fetch via S3 endpoints on `appcodeformat.dhiwise.com` (project-structure → file-content)
 - ✅ List all GitHub repos (sorted by last updated)
 - ✅ Create new GitHub repo (public or private)
 - ✅ Push all files in one commit via Trees API
 - ✅ Push history saved to localStorage
-- ✅ Dashboard (`/`) — time-based greeting, hero card, live stats, last push, recent repo
-- ✅ Repositories page (`/repositories`) — lists all GitHub repos with metadata
-- ✅ History page (`/history`) — shows all past pushes with status
-- ✅ Settings page (`/settings`) — manage Base44 + GitHub credentials
-- ✅ Custom app logo (cat in orange box) — in header, onboarding, browser tab, iOS home screen
-- ✅ Mobile header — logo left-aligned, avatar right (no empty spacer)
-- ✅ Real brand logos — Base44Logo (PNG, `white` prop) + GitHubLogo (SVG Invertocat)
-- ✅ Mobile-first responsive design (~390px wide, bottom nav, cream `#f3f2ee` palette)
+- ✅ Dashboard — time-based greeting, hero, stats, last push, recent repo
+- ✅ Repositories page — all GitHub repos with metadata
+- ✅ History page — all past pushes with status
+- ✅ Settings page — manage all credentials
+- ✅ First-run onboarding wizard
+- ✅ Mobile-first responsive design (~390px, bottom nav, cream `#f3f2ee` palette)
 - ✅ Desktop layout — sidebar nav + topbar
-- ✅ User avatar bubble showing initials from logged-in user's name
-- ✅ SEO — meta tags, OG, Twitter Card, JSON-LD, sitemap.xml, robots.txt, per-route titles
+- ✅ SEO — meta, OG, Twitter Card, JSON-LD, sitemap, robots
 - ✅ Deployed to Vercel at https://push-44.vercel.app
 
 ---
 
 ## Suggested Next Steps
 
-- **Public landing page:** A static `/` route that Google can crawl without JavaScript — hero, feature bullets, screenshots, CTA
-- **Token expiry detection:** If stored token is rejected (401), show a re-login banner automatically
-- **Org/workspace apps:** Base44 has org-scoped apps — `GET /organizations/{orgId}/apps` — not currently fetched
-- **File diff preview:** Show which files changed since the last push before committing
-- **Multiple branches:** Currently pushes to one branch; support branch selection per push
-- **GitHub OAuth:** Replace manual PAT entry with proper GitHub OAuth flow for better UX
-- **OG image:** Create a proper 1200×630 social preview image (current OG image is the square logo)
-- **Google Search Console:** Submit sitemap at https://push-44.vercel.app/sitemap.xml to accelerate indexing
+- **Verify Rocket.new file fetch end-to-end** — the S3 endpoints are implemented and confirmed to exist (401 without auth); need live test with user token to confirm the tree response format and file content shape
+- **Token expiry detection** — if stored token is rejected (401), show a re-login banner automatically
+- **File diff preview** — show which files changed since last push before committing
+- **Multiple branches** — support branch selection per push (currently always pushes to default branch)
+- **GitHub OAuth** — replace manual PAT entry with proper OAuth flow
+- **OG image** — create a proper 1200×630 social preview image
+- **Google Search Console** — submit sitemap at https://push-44.vercel.app/sitemap.xml
 
 ---
 
@@ -300,6 +389,6 @@ The workflow "Start application" runs this automatically.
 - Use `bun` for all package operations
 - Use `sonner` for toast notifications
 - Store credentials in localStorage only, never server-side
-- Brand logos in `src/components/BrandLogos.tsx` — `Base44Logo` (with `white` prop) and `GitHubLogo`
-- App logo (`src/assets/logo.png`) imported as ES module — never referenced as `/logo.png` in JSX
+- Brand logos in `src/components/BrandLogos.tsx`
+- App logo imported as ES module from `src/assets/` — never as `/logo.png` in JSX
 - Any `new Date()` / time-sensitive values must be computed in `useEffect` (SSR hydration safety)
