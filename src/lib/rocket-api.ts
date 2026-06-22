@@ -4,13 +4,56 @@
 // Main backend: https://back.rocket.new
 // Token format: "JWT <token>"  (NOT "Bearer")
 //
-// Auth flow:
-//   1. POST /auth/v3/rocket/send-otp   { email }
-//   2. POST /auth/v3/rocket/verify-otp { email, otp }  → returns token
-//   3. GET  /web/v1/user/get-profile   Authorization: JWT <token>
+// Encryption: AES-256-CBC. API responses are encrypted with the key below.
+// Key source: version.txt blob decrypted with the same hardcoded key (it's self-referential).
+// Encrypted payload shape: { requestAnchor: "<IV base64>", processedContent: "<ciphertext base64>" }
 
-const AUTH_BASE    = "https://appuser.dhiwise.com";
-const BACK_BASE    = "https://back.rocket.new";
+const AUTH_BASE = "https://appuser.dhiwise.com";
+const BACK_BASE = "https://back.rocket.new";
+
+// AES-256-CBC key — hardcoded in the Rocket.new JS bundle (decryptObject function)
+const AES_KEY_B64 = "dqf8SIWZdQtptMTEH45CHo4A0DJLrkq02y80wmirLYo";
+
+// ─── Decryption (Web Crypto API) ─────────────────────────────────────────────
+
+function b64ToBytes(b64: string): Uint8Array {
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+}
+
+async function importAesKey(keyB64: string): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    "raw",
+    b64ToBytes(keyB64),
+    { name: "AES-CBC" },
+    false,
+    ["decrypt"]
+  );
+}
+
+function isEncryptedPayload(v: any): v is { requestAnchor: string; processedContent: string } {
+  return (
+    v &&
+    typeof v === "object" &&
+    typeof v.requestAnchor === "string" &&
+    typeof v.processedContent === "string" &&
+    v.requestAnchor.length > 0 &&
+    v.processedContent.length > 0
+  );
+}
+
+async function rocketDecrypt(data: any): Promise<any> {
+  if (!isEncryptedPayload(data)) return data;
+  try {
+    const key = await importAesKey(AES_KEY_B64);
+    const iv = b64ToBytes(data.requestAnchor);
+    const ciphertext = b64ToBytes(data.processedContent);
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-CBC", iv }, key, ciphertext);
+    const text = new TextDecoder().decode(decrypted);
+    return JSON.parse(text);
+  } catch {
+    return data; // return as-is if decryption fails
+  }
+}
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -25,10 +68,27 @@ async function parseError(res: Response, fallback: string): Promise<string> {
   const body = await res.text().catch(() => "");
   try {
     const p = JSON.parse(body);
-    return p.message ?? p.error ?? p.detail ?? p.msg ?? fallback;
+    const plain = p.message ?? p.error ?? p.detail ?? p.msg;
+    if (plain) return plain;
+    // might be encrypted error
+    const dec = await rocketDecrypt(p).catch(() => p);
+    return dec?.message ?? dec?.error ?? fallback;
   } catch {
     return body.trim() || fallback;
   }
+}
+
+async function rocketPost(url: string, token: string, body: object = {}): Promise<any> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: jwtHeaders(token),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, `Request failed (${res.status})`));
+  }
+  const raw = await res.json();
+  return rocketDecrypt(raw);
 }
 
 // ─── OTP auth ───────────────────────────────────────────────────────────────
@@ -61,9 +121,10 @@ export async function rocketVerifyOTP({
   if (!res.ok) {
     throw new Error(await parseError(res, `OTP verification failed (${res.status})`));
   }
-  const d = await res.json();
+  const raw = await res.json();
+  const d = await rocketDecrypt(raw);
 
-  // Token may be nested under data / user or at root
+  // Token may be nested under data or at root
   const payload = d.data ?? d;
   const token: string =
     payload.token ?? payload.access_token ?? payload.accessToken ?? payload.jwtToken ?? "";
@@ -73,9 +134,7 @@ export async function rocketVerifyOTP({
   return {
     token,
     email: String(user.email ?? data.email),
-    name: String(
-      user.name ?? user.full_name ?? user.username ?? user.displayName ?? data.email
-    ),
+    name: String(user.name ?? user.full_name ?? user.username ?? user.displayName ?? data.email),
   };
 }
 
@@ -93,7 +152,8 @@ export async function validateRocketToken({
   if (!res.ok) {
     throw new Error(await parseError(res, `Token validation failed (${res.status})`));
   }
-  const d = await res.json();
+  const raw = await res.json();
+  const d = await rocketDecrypt(raw);
   const user = d.data ?? d.user ?? d;
   return {
     email: String(user.email ?? ""),
@@ -110,68 +170,57 @@ export interface RocketApp {
   icon?: string;
 }
 
+function deepFindArray(v: any, depth = 0): any[] {
+  if (depth > 4) return [];
+  if (Array.isArray(v)) return v;
+  if (v && typeof v === "object") {
+    for (const key of ["applications", "projects", "apps", "threads", "chatThreads",
+      "items", "results", "list"]) {
+      if (Array.isArray(v[key])) return v[key];
+    }
+    for (const key of ["data", "payload", "result", "response"]) {
+      if (v[key] !== undefined) {
+        const found = deepFindArray(v[key], depth + 1);
+        if (found.length > 0) return found;
+      }
+    }
+  }
+  return [];
+}
+
+function mapToRocketApp(a: any): RocketApp {
+  return {
+    id: String(a._id ?? a.id ?? a.projectId ?? a.threadId ?? ""),
+    name: String(a.name ?? a.title ?? a.appName ?? a.projectName ?? a.threadName ?? "Untitled"),
+    updated_at: String(a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()),
+    icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
+  };
+}
+
 export async function listRocketApps({
   data,
 }: {
   data: { token: string };
 }): Promise<RocketApp[]> {
-  // Try primary endpoint first, then fallback
   const endpoints = [
     { url: `${BACK_BASE}/api/v2/application/list`, body: {} },
     { url: `${BACK_BASE}/api/v1/recent-threads-projects/list`, body: {} },
-    { url: `${BACK_BASE}/api/v2/application/list`, body: { page: 1, limit: 50 } },
   ];
 
-  let lastRaw: any = null;
+  let debugInfo = "";
 
   for (const ep of endpoints) {
-    const res = await fetch(ep.url, {
-      method: "POST",
-      headers: jwtHeaders(data.token),
-      body: JSON.stringify(ep.body),
-    });
-    if (!res.ok) continue;
-    const d = await res.json();
-    lastRaw = d;
-
-    // Deep unwrap nested structures
-    const unwrap = (v: any, depth = 0): any[] => {
-      if (depth > 4) return [];
-      if (Array.isArray(v)) return v;
-      if (v && typeof v === "object") {
-        for (const key of ["applications", "projects", "apps", "threads", "chatThreads",
-          "items", "results", "list", "data", "payload", "response"]) {
-          if (Array.isArray(v[key]) && v[key].length > 0) return v[key];
-        }
-        // recurse into first object-valued key that looks promising
-        for (const key of ["data", "payload", "result", "response"]) {
-          if (v[key] && typeof v[key] === "object") {
-            const found = unwrap(v[key], depth + 1);
-            if (found.length > 0) return found;
-          }
-        }
-      }
-      return [];
-    };
-
-    const raw = unwrap(d);
-    if (raw.length > 0) {
-      return raw.map(
-        (a: any): RocketApp => ({
-          id: String(a._id ?? a.id ?? a.projectId ?? a.threadId ?? ""),
-          name: String(a.name ?? a.title ?? a.appName ?? a.projectName ?? a.threadName ?? "Untitled"),
-          updated_at: String(
-            a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()
-          ),
-          icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
-        })
-      );
-    }
+    try {
+      const d = await rocketPost(ep.url, data.token, ep.body);
+      debugInfo = JSON.stringify(d, null, 2).slice(0, 800);
+      const arr = deepFindArray(d);
+      if (arr.length > 0) return arr.map(mapToRocketApp);
+      // Got a valid decrypted response but empty array — stop trying
+      break;
+    } catch { /* try next endpoint */ }
   }
 
-  // Return debug info so we can see the real structure
-  const preview = JSON.stringify(lastRaw, null, 2).slice(0, 600);
-  throw new Error(`No projects found. API response: ${preview}`);
+  throw new Error(`No projects found. Decrypted response: ${debugInfo || "(no response)"}`);
 }
 
 // ─── Files ───────────────────────────────────────────────────────────────────
