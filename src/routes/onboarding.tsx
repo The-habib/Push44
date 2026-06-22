@@ -86,7 +86,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   const features = [
-    { n: "01", title: "Fetch source files", desc: "Every file from your Base44 sandbox — ~87 files, one request." },
+    { n: "01", title: "Fetch source files", desc: "Every file from your Base44 sandbox, pulled in one request." },
     { n: "02", title: "Commit in one tap", desc: "Atomic push to any GitHub repo via the Trees API." },
     { n: "03", title: "Private by default", desc: "Tokens stay in your browser. Nothing touches our servers." },
   ];
