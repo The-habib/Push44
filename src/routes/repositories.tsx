@@ -193,7 +193,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                       </p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-white/8 flex items-center justify-center border border-white/10">
-                      <span className="text-[22px]">💻</span>
+                      <GitHubLogo className="h-7 w-7 text-white/60" />
                     </div>
                   </div>
                 </motion.div>

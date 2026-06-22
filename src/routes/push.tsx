@@ -187,7 +187,7 @@ function PushPage() {
 
           <FadeUp delay={0.08}>
             <div>
-              <h2 className="text-[28px] font-black text-[#1a1a1a] mb-1">Pushed! 🎉</h2>
+              <h2 className="text-[28px] font-black text-[#1a1a1a] mb-1">Pushed!</h2>
               <p className="text-[13px] text-[#6b6360]">
                 <strong>{files.length}</strong> files → <strong>{selectedRepo?.full_name}</strong> on <strong>{branch}</strong>
               </p>
