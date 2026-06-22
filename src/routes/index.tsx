@@ -284,20 +284,6 @@ function LandingPage() {
                 </a>
               </motion.div>
 
-              {/* Stats row */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="flex items-center gap-8 mt-10 flex-wrap"
-              >
-                {[{ val: "87+", label: "files per push" }, { val: "<5s", label: "average time" }, { val: "100%", label: "free forever" }].map(({ val, label }) => (
-                  <div key={label} className="flex items-baseline gap-1.5">
-                    <span className="text-[26px] font-black text-[#f97316] tracking-tight">{val}</span>
-                    <span className="text-[12px] font-medium text-[#9a8880]">{label}</span>
-                  </div>
-                ))}
-              </motion.div>
             </div>
 
             {/* Right — terminal card */}
