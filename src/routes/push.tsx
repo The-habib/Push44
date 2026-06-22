@@ -189,6 +189,7 @@ function PushPage() {
 
   const [platform, setPlatform]         = useState<Platform>("base44");
   const [apps, setApps]                 = useState<App[]>([]);
+  const [appsError, setAppsError]       = useState("");
   const [repos, setRepos]               = useState<Repo[]>([]);
   const [selectedApp, setSelectedApp]   = useState<App | null>(null);
   const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
@@ -237,8 +238,8 @@ function PushPage() {
     } else {
       if (!creds.rocketToken) return;
       setLA(true);
-      try { setApps(await listRocketApps({ data: { token: creds.rocketToken } })); }
-      catch (e: any) { toast.error("Failed to load Rocket.new projects: " + e.message); }
+      try { setAppsError(""); setApps(await listRocketApps({ data: { token: creds.rocketToken } })); }
+      catch (e: any) { setAppsError(e.message ?? "Unknown error"); }
       finally { setLA(false); }
     }
   };
@@ -535,9 +536,17 @@ function PushPage() {
               Loading {platformLabel} apps…
             </div>
           ) : apps.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-[13px] text-[#9a8880] mb-2">No apps found.</p>
-              <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[13px]">Try again →</button>
+            <div className="py-4 space-y-3">
+              <div className="text-center">
+                <p className="text-[13px] text-[#9a8880] mb-2">No apps found.</p>
+                <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[13px]">Try again →</button>
+              </div>
+              {appsError && (
+                <div className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3">
+                  <p className="text-[10px] font-bold text-[#991b1b] mb-1">Debug — API response:</p>
+                  <pre className="text-[10px] text-[#7f1d1d] whitespace-pre-wrap break-all leading-snug max-h-48 overflow-y-auto">{appsError}</pre>
+                </div>
+              )}
             </div>
           ) : (
             <StaggerContainer className="space-y-2">

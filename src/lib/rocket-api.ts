@@ -115,42 +115,63 @@ export async function listRocketApps({
 }: {
   data: { token: string };
 }): Promise<RocketApp[]> {
-  const res = await fetch(`${BACK_BASE}/api/v2/application/list`, {
-    method: "POST",
-    headers: jwtHeaders(data.token),
-    body: JSON.stringify({}),
-  });
-  if (!res.ok) {
-    throw new Error(await parseError(res, `Failed to list projects (${res.status})`));
-  }
-  const d = await res.json();
+  // Try primary endpoint first, then fallback
+  const endpoints = [
+    { url: `${BACK_BASE}/api/v2/application/list`, body: {} },
+    { url: `${BACK_BASE}/api/v1/recent-threads-projects/list`, body: {} },
+    { url: `${BACK_BASE}/api/v2/application/list`, body: { page: 1, limit: 50 } },
+  ];
 
-  // Unwrap nested structures: { data: { applications: [...] } } or { data: [...] } or plain array
-  const unwrap = (v: any): any[] => {
-    if (Array.isArray(v)) return v;
-    if (v && typeof v === "object") {
-      // Try common array keys one level deep
-      for (const key of ["applications", "projects", "apps", "items", "results", "list", "threads"]) {
-        if (Array.isArray(v[key])) return v[key];
+  let lastRaw: any = null;
+
+  for (const ep of endpoints) {
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: jwtHeaders(data.token),
+      body: JSON.stringify(ep.body),
+    });
+    if (!res.ok) continue;
+    const d = await res.json();
+    lastRaw = d;
+
+    // Deep unwrap nested structures
+    const unwrap = (v: any, depth = 0): any[] => {
+      if (depth > 4) return [];
+      if (Array.isArray(v)) return v;
+      if (v && typeof v === "object") {
+        for (const key of ["applications", "projects", "apps", "threads", "chatThreads",
+          "items", "results", "list", "data", "payload", "response"]) {
+          if (Array.isArray(v[key]) && v[key].length > 0) return v[key];
+        }
+        // recurse into first object-valued key that looks promising
+        for (const key of ["data", "payload", "result", "response"]) {
+          if (v[key] && typeof v[key] === "object") {
+            const found = unwrap(v[key], depth + 1);
+            if (found.length > 0) return found;
+          }
+        }
       }
-      // recurse one level into data/payload
-      if (v.data !== undefined) return unwrap(v.data);
-      if (v.payload !== undefined) return unwrap(v.payload);
-    }
-    return [];
-  };
-  const raw = unwrap(d);
+      return [];
+    };
 
-  return raw.map(
-    (a: any): RocketApp => ({
-      id: String(a._id ?? a.id ?? a.projectId ?? a.threadId ?? ""),
-      name: String(a.name ?? a.title ?? a.appName ?? a.projectName ?? "Untitled"),
-      updated_at: String(
-        a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()
-      ),
-      icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
-    })
-  );
+    const raw = unwrap(d);
+    if (raw.length > 0) {
+      return raw.map(
+        (a: any): RocketApp => ({
+          id: String(a._id ?? a.id ?? a.projectId ?? a.threadId ?? ""),
+          name: String(a.name ?? a.title ?? a.appName ?? a.projectName ?? a.threadName ?? "Untitled"),
+          updated_at: String(
+            a.updatedAt ?? a.updated_at ?? a.modifiedAt ?? new Date().toISOString()
+          ),
+          icon: a.icon ?? a.logo ?? a.thumbnail ?? a.image ?? undefined,
+        })
+      );
+    }
+  }
+
+  // Return debug info so we can see the real structure
+  const preview = JSON.stringify(lastRaw, null, 2).slice(0, 600);
+  throw new Error(`No projects found. API response: ${preview}`);
 }
 
 // ─── Files ───────────────────────────────────────────────────────────────────
