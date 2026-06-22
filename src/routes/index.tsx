@@ -82,55 +82,107 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-/* ── Floating header — logo + button only ─────────── */
+/* ── Floating island navbar ─────────────────────────── */
 function FloatingHeader({ isConnected }: { isConnected: boolean }) {
   const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 300);
-    return () => clearTimeout(t);
+    const t = setTimeout(() => setVisible(true), 200);
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   return (
     <motion.header
-      className="fixed top-6 left-0 right-0 z-50 flex justify-between items-center px-5 sm:px-10 pointer-events-none"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -20 }}
-      transition={{ duration: 0.5, ease }}
+      className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -16 }}
+      transition={{ duration: 0.55, ease }}
     >
-      {/* Logo pill */}
-      <Link to="/" className="pointer-events-auto">
-        <motion.div
-          className="flex items-center gap-2.5 rounded-2xl border border-white/10 px-3.5 py-2.5"
-          style={{ background: "rgba(10,10,24,0.75)", backdropFilter: "blur(18px)", boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          transition={spring}
-        >
-          <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-xl object-cover" />
-          <span className="text-[15px] font-extrabold tracking-tight text-white">
-            Push<span style={{ color: "#a78bfa" }}>44</span>
-          </span>
-        </motion.div>
-      </Link>
+      <motion.div
+        className="pointer-events-auto flex items-center gap-0.5 rounded-2xl border px-2 py-2"
+        animate={{
+          borderColor: scrolled ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+          boxShadow: scrolled
+            ? "0 8px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset"
+            : "0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset",
+        }}
+        transition={{ duration: 0.3 }}
+        style={{ background: "rgba(8,8,20,0.88)", backdropFilter: "blur(24px)" }}
+      >
+        {/* Logo */}
+        <Link to="/">
+          <motion.div
+            className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 cursor-pointer"
+            whileHover={{ background: "rgba(255,255,255,0.06)" }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+          >
+            <img src={appLogo} alt="Push44" className="h-6 w-6 rounded-[8px] object-cover" />
+            <span className="text-[14px] font-extrabold tracking-tight text-white">
+              Push<span style={{ color: "#a78bfa" }}>44</span>
+            </span>
+          </motion.div>
+        </Link>
 
-      {/* CTA pill */}
-      <Link to={isConnected ? "/dashboard" : "/onboarding"} className="pointer-events-auto">
-        <motion.button
-          className="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-[13px] font-bold text-black"
-          style={{
-            background: "linear-gradient(135deg,#dce99a,#bedd44)",
-            boxShadow: "0 4px 20px rgba(220,233,154,0.35), inset 0 1px 0 rgba(255,255,255,0.3)",
-          }}
-          whileHover={{ scale: 1.05, boxShadow: "0 8px 28px rgba(220,233,154,0.5), inset 0 1px 0 rgba(255,255,255,0.3)" }}
-          whileTap={{ scale: 0.96 }}
-          transition={spring}
-        >
-          <Zap className="h-3.5 w-3.5" strokeWidth={3} />
-          {isConnected ? "Dashboard" : "Get Started"}
-          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </motion.button>
-      </Link>
+        {/* Divider */}
+        <div className="w-px h-4 mx-1 bg-white/10 hidden sm:block" />
+
+        {/* Nav links — desktop only */}
+        <div className="hidden sm:flex items-center gap-0.5">
+          {[
+            { label: "How it works", href: "#how-it-works" },
+            { label: "FAQ", href: "#faq" },
+          ].map(({ label, href }) => (
+            <motion.a
+              key={label}
+              href={href}
+              className="px-3 py-1.5 text-[12.5px] font-semibold rounded-xl cursor-pointer"
+              style={{ color: "rgba(255,255,255,0.45)" }}
+              whileHover={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.9)" }}
+              transition={{ duration: 0.15 }}
+            >
+              {label}
+            </motion.a>
+          ))}
+          <motion.a
+            href="https://github.com/The-habib/Push44"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-semibold rounded-xl cursor-pointer"
+            style={{ color: "rgba(255,255,255,0.45)" }}
+            whileHover={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.9)" }}
+            transition={{ duration: 0.15 }}
+          >
+            <GitHubLogo className="h-3.5 w-3.5" />
+            GitHub
+            <Star className="h-3 w-3 opacity-50" />
+          </motion.a>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-4 mx-1 bg-white/10" />
+
+        {/* CTA */}
+        <Link to={isConnected ? "/dashboard" : "/onboarding"}>
+          <motion.button
+            className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-bold text-black cursor-pointer"
+            style={{
+              background: "linear-gradient(135deg,#dce99a,#c8e03c)",
+              boxShadow: "0 2px 12px rgba(220,233,154,0.3), inset 0 1px 0 rgba(255,255,255,0.35)",
+            }}
+            whileHover={{ scale: 1.04, boxShadow: "0 4px 20px rgba(220,233,154,0.5), inset 0 1px 0 rgba(255,255,255,0.35)" }}
+            whileTap={{ scale: 0.95 }}
+            transition={spring}
+          >
+            <Zap className="h-3.5 w-3.5" strokeWidth={3} />
+            {isConnected ? "Dashboard" : "Get Started"}
+            <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+          </motion.button>
+        </Link>
+      </motion.div>
     </motion.header>
   );
 }
@@ -240,14 +292,23 @@ function LandingPage() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease }}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-7 border border-white/[0.12] bg-white/[0.05]"
+                className="inline-flex items-center gap-3 rounded-full px-4 py-2 mb-7 border border-white/[0.12] bg-white/[0.05]"
               >
-                <motion.span className="h-2 w-2 rounded-full bg-[#dce99a]"
+                <motion.span className="h-2 w-2 rounded-full bg-[#dce99a] shrink-0"
                   animate={{ scale: [1, 1.8, 1], opacity: [1, 0.3, 1] }}
                   transition={{ duration: 2, repeat: Infinity }} />
-                <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-white/50">
+                <span className="text-[11px] font-bold tracking-[0.13em] uppercase text-white/50">
                   Free · No sign-up · Works instantly
                 </span>
+                <span className="h-3 w-px bg-white/10" />
+                <a
+                  href="https://github.com/The-habib/Push44"
+                  target="_blank" rel="noreferrer"
+                  className="flex items-center gap-1 text-[11px] font-bold tracking-[0.08em] uppercase text-white/35 hover:text-white/70 transition-colors"
+                >
+                  <GitHubLogo className="h-3 w-3" />
+                  Open Source
+                </a>
               </motion.div>
 
               {/* H1 */}
@@ -729,21 +790,47 @@ function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="bg-[#050510] py-10 border-t border-white/[0.05]">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-5">
-          <div className="flex items-center gap-2.5">
-            <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-lg object-cover" />
-            <span className="text-[15px] font-extrabold text-white tracking-tight">
-              Push<span style={{ color: "#8b5cf6" }}>44</span>
-            </span>
+      <footer className="bg-[#050510] py-12 border-t border-white/[0.05]">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
+            <div className="flex items-center gap-1.5">
+              <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover" />
+              <span className="text-[15px] font-extrabold text-white tracking-tight">
+                Push<span style={{ color: "#8b5cf6" }}>44</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-5 text-[12px] font-semibold text-white/25">
+              <Link to="/onboarding" className="hover:text-white/60 transition-colors">Get Started</Link>
+              <a href="#how-it-works" className="hover:text-white/60 transition-colors">How it works</a>
+              <a href="#faq" className="hover:text-white/60 transition-colors">FAQ</a>
+              <a
+                href="https://github.com/The-habib/Push44"
+                target="_blank" rel="noreferrer"
+                className="flex items-center gap-1.5 hover:text-white/60 transition-colors"
+              >
+                <GitHubLogo className="h-3.5 w-3.5" />
+                Open Source
+              </a>
+            </div>
           </div>
-          <p className="text-[11px] text-white/15 font-medium text-center">
-            Free · Open Source · No servers · Built for Base44 developers
-          </p>
-          <div className="flex items-center gap-5 text-[12px] font-semibold text-white/20">
-            <Link to="/onboarding" className="hover:text-white/50 transition-colors">Get Started</Link>
-            <a href="#faq" className="hover:text-white/50 transition-colors">FAQ</a>
-            <a href="#how-it-works" className="hover:text-white/50 transition-colors">How it works</a>
+          <div className="border-t border-white/[0.05] pt-7 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[11px] text-white/15 font-medium">
+              © {new Date().getFullYear()} Push44 — MIT License
+            </p>
+            <p className="text-[11px] text-white/10 font-medium text-center">
+              Free forever · No servers · No accounts · Built for Base44 developers
+            </p>
+            <motion.a
+              href="https://github.com/The-habib/Push44"
+              target="_blank" rel="noreferrer"
+              className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-[11px] font-bold border border-white/10 text-white/30"
+              whileHover={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)" }}
+              transition={{ duration: 0.2 }}
+            >
+              <GitHubLogo className="h-3.5 w-3.5" />
+              Star on GitHub
+              <Star className="h-3 w-3" />
+            </motion.a>
           </div>
         </div>
       </footer>

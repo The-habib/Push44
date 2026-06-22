@@ -77,14 +77,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Logo */}
           <Link to="/dashboard">
-            <div className="flex items-center gap-2.5 px-5 py-5 border-b border-black/[0.06] cursor-pointer group">
+            <div className="flex items-center gap-1.5 px-5 py-5 border-b border-black/[0.06] cursor-pointer group">
               <motion.img
                 src={appLogo} alt="Push44"
                 className="h-8 w-8 rounded-xl object-cover"
                 whileHover={{ scale: 1.08 }}
                 transition={spring}
               />
-              <span className="text-[17px] font-extrabold text-black tracking-tight">
+              <span className="text-[16px] font-extrabold text-black tracking-tight leading-none">
                 Push<span style={{ color: "#8b5cf6" }}>44</span>
               </span>
             </div>
@@ -191,10 +191,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Mobile header */}
         <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06]"
           style={{ background: "#f3f2ee" }}>
-          <Link to="/dashboard" className="flex items-center gap-2.5">
+          <Link to="/dashboard" className="flex items-center gap-1.5">
             <motion.img src={appLogo} alt="Push44" className="h-9 w-9 rounded-2xl object-cover"
               whileTap={{ scale: 0.92 }} transition={spring} />
-            <span className="text-[19px] font-extrabold text-black tracking-tight">
+            <span className="text-[18px] font-extrabold text-black tracking-tight leading-none">
               Push<span style={{ color: "#8b5cf6" }}>44</span>
             </span>
           </Link>
