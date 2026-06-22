@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Mail, Lock, Eye, EyeOff, Check, Loader2, AlertCircle,
-  Shield, Zap, Copy, ExternalLink, Sparkles, User,
+  Shield, Zap, Copy, ExternalLink, User, Rocket,
 } from "lucide-react";
 import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
@@ -315,7 +315,7 @@ function DoneStep() {
       <ScaleIn>
         <motion.div className="h-20 w-20 rounded-full bg-[#dcfce7] flex items-center justify-center mb-5"
           animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}>
-          <Sparkles className="h-10 w-10 text-[#22c55e]" />
+          <Rocket className="h-10 w-10 text-[#22c55e]" />
         </motion.div>
       </ScaleIn>
       <FadeUp delay={0.1}><h2 className="text-[26px] font-extrabold text-black tracking-tight mb-2">You're all set!</h2></FadeUp>
