@@ -206,6 +206,8 @@ function PushPage() {
   const [loadingRepos, setLR]           = useState(false);
   const [loadingFiles, setLF]           = useState(false);
   const [wakingSandbox, setWaking]      = useState(false);
+  const [manualUrl, setManualUrl]       = useState("");
+  const [manualLoading, setManualLoading] = useState(false);
 
   const hasBase44 = !!creds.base44Token;
   const hasRocket = !!creds.rocketToken;
@@ -277,6 +279,28 @@ function PushPage() {
       setRepos((p) => [r, ...p]); setShowNewRepo(false); setNewRepoName("");
       toast.success(`Repo "${r.full_name}" created!`);
     } catch (e: any) { toast.error("Create repo failed: " + e.message); }
+  };
+
+  const handleManualRocketUrl = async () => {
+    const raw = manualUrl.trim();
+    if (!raw) { toast.error("Paste a Rocket.new project URL first"); return; }
+    // Extract ID from URLs like:
+    // https://rocket.new/chat/abc123
+    // https://rocket.new/project/abc123
+    // https://rocket.new/app/abc123
+    // or just a raw ID
+    const match = raw.match(/\/(?:chat|project|app|thread|session)\/([a-zA-Z0-9_-]+)/);
+    const projectId = match ? match[1] : raw.replace(/^https?:\/\/[^/]+\//, "").split("/")[0];
+    if (!projectId) { toast.error("Couldn't find a project ID in that URL"); return; }
+
+    const fakeApp: App = { id: projectId, name: `Rocket project (${projectId.slice(0, 8)}…)`, updated_at: new Date().toISOString() };
+    setManualLoading(true);
+    setManualUrl("");
+    try {
+      await handleSelectApp(fakeApp);
+    } finally {
+      setManualLoading(false);
+    }
   };
 
   const handlePush = async () => {
@@ -557,22 +581,46 @@ function PushPage() {
               Loading {platformLabel} apps…
             </div>
           ) : apps.length === 0 ? (
-            <div className="py-6 text-center">
-              <div
-                className="h-12 w-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: platform === "rocket" ? "linear-gradient(135deg,#ede9fe,#ddd6fe)" : "#fff4ed" }}
-              >
-                {platform === "rocket" ? <RocketLogo size={22} /> : <Base44Logo size={22} />}
+            <div className="py-4">
+              <div className="text-center mb-4">
+                <div
+                  className="h-12 w-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                  style={{ background: platform === "rocket" ? "linear-gradient(135deg,#ede9fe,#ddd6fe)" : "#fff4ed" }}
+                >
+                  {platform === "rocket" ? <RocketLogo size={22} /> : <Base44Logo size={22} />}
+                </div>
+                <p className="text-[13px] font-semibold text-[#1a1a1a] mb-1">No apps found</p>
+                <p className="text-[11px] text-[#9a8880] mb-3">
+                  {appsError ? appsError : `Couldn't list your ${platformLabel} projects automatically.`}
+                </p>
+                <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[12px]">Retry →</button>
               </div>
-              <p className="text-[13px] font-semibold text-[#1a1a1a] mb-1">
-                {appsError ? "Couldn't load apps" : "No apps found"}
-              </p>
-              <p className="text-[11px] text-[#9a8880] mb-3 max-w-[200px] mx-auto leading-relaxed">
-                {appsError
-                  ? appsError
-                  : `No ${platformLabel} projects yet. Create one and come back.`}
-              </p>
-              <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[13px]">Try again →</button>
+
+              {platform === "rocket" && (
+                <div className="border-t border-[#f0ece4] pt-4">
+                  <p className="text-[11px] font-bold text-[#9a8880] uppercase tracking-wide mb-2">Paste project URL instead</p>
+                  <p className="text-[10px] text-[#b5afa8] mb-2 leading-relaxed">
+                    Open your project on rocket.new, copy the URL from your browser, and paste it here.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      value={manualUrl}
+                      onChange={(e) => setManualUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleManualRocketUrl()}
+                      placeholder="https://rocket.new/chat/abc123…"
+                      className="flex-1 rounded-xl border border-[#f0ece4] bg-[#fafafa] px-3 py-2 text-[11px] font-mono outline-none focus:border-[#6366f1]/40 placeholder:text-[#c8b8a2]"
+                    />
+                    <button
+                      onClick={handleManualRocketUrl}
+                      disabled={manualLoading || !manualUrl.trim()}
+                      className="shrink-0 px-3 py-2 rounded-xl text-white text-[11px] font-bold flex items-center gap-1 disabled:opacity-50"
+                      style={{ background: "#6366f1" }}
+                    >
+                      {manualLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Load →"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <StaggerContainer className="space-y-2">
