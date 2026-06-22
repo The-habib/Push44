@@ -159,7 +159,7 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
 
 function LandingPage() {
   const { creds, isLoaded } = useApp();
-  const isConnected = isLoaded && !!(creds.base44Token && creds.githubToken);
+  const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
 
   return (
     <div className="min-h-screen bg-[#fffcf8] text-[#1a1a1a] overflow-x-hidden">

@@ -4,6 +4,8 @@ export interface Credentials {
   githubUsername: string;
   base44Token: string;
   base44Email: string;
+  rocketToken: string;
+  rocketEmail: string;
   defaultBranch: string;
   defaultRepo: string;
   defaultOwner: string;

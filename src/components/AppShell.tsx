@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { creds } = useApp();
   const displayName = creds.displayName || creds.base44Email || creds.githubUsername || "";
   const pageTitle = PAGE_TITLES[pathname] ?? "Push44";
-  const fullyConnected = !!(creds.base44Token && creds.githubToken);
+  const fullyConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>

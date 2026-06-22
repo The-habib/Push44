@@ -8,9 +8,10 @@ import {
   LogOut, Shield, Eye, EyeOff, Check, X, Loader2,
   ExternalLink, AlertCircle, Mail, Lock, GitBranch, ChevronRight,
 } from "lucide-react";
-import { Base44Logo, GitHubLogo } from "@/components/BrandLogos";
+import { Base44Logo, GitHubLogo, RocketLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
+import { rocketLogin, validateRocketToken } from "@/lib/rocket-api";
 import { getGitHubUser } from "@/lib/github-api";
 import { Toaster, toast } from "sonner";
 
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
       { title: "Settings · Push44" },
-      { name: "description", content: "Connect your Base44 account and GitHub personal access token to start pushing apps to GitHub." },
+      { name: "description", content: "Connect your Base44 or Rocket.new account and GitHub personal access token to start pushing apps to GitHub." },
     ],
   }),
   component: SettingsPage,
@@ -121,7 +122,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                     <motion.button key={t} onClick={() => { setTab(t); setError(""); }}
                       className="flex-1 py-2 rounded-lg text-[12px] font-bold relative" whileTap={{ scale: 0.97 }}>
                       {tab === t && (
-                        <motion.div layoutId="modal-tab" className="absolute inset-0 rounded-lg bg-white shadow-sm border border-[#f0ece4]"
+                        <motion.div layoutId="b44-modal-tab" className="absolute inset-0 rounded-lg bg-white shadow-sm border border-[#f0ece4]"
                           transition={{ type: "spring", stiffness: 400, damping: 30 }} />
                       )}
                       <span className={`relative z-10 ${tab === t ? "text-[#1a1a1a]" : "text-[#9a8880]"}`}>
@@ -189,9 +190,158 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
   );
 }
 
+function RocketModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
+  const [tab, setTab]         = useState<"token" | "login">("token");
+  const [email, setEmail]     = useState("");
+  const [pw, setPw]           = useState(""); const [showPw, setShowPw] = useState(false);
+  const [tok, setTok]         = useState(""); const [showTok, setShowTok] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+  const [done, setDone]       = useState(false);
+
+  const submit = async () => {
+    setError(""); setLoading(true);
+    try {
+      if (tab === "token") {
+        if (!tok.trim()) { setError("Paste your API token"); setLoading(false); return; }
+        const info = await validateRocketToken({ data: { token: tok.trim() } });
+        setDone(true); setTimeout(() => onSuccess(tok.trim(), info.email, info.name), 600);
+      } else {
+        if (!email.trim()) { setError("Enter your Rocket.new email"); setLoading(false); return; }
+        if (!pw) { setError("Enter your password"); setLoading(false); return; }
+        const r = await rocketLogin({ data: { email: email.trim(), password: pw } });
+        setDone(true); setTimeout(() => onSuccess(r.token, r.email, r.name), 600);
+      }
+    } catch (e: any) { setError(e.message ?? "Failed."); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        initial={{ y: 60, opacity: 0, scale: 0.96 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 60, opacity: 0, scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 340, damping: 28 }}
+      >
+        <div className="px-6 pt-6 pb-5 border-b border-[#f7f4f0]">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+              <RocketLogo size={24} white />
+            </div>
+            <div className="flex-1">
+              <div className="text-[15px] font-black text-[#1a1a1a]">Connect Rocket.new</div>
+              <div className="text-[11px] text-[#9a8880]">Access your Rocket.new projects</div>
+            </div>
+            <motion.button onClick={onClose}
+              className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
+              whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }}>
+              <X className="h-4 w-4" />
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <div className="flex items-start gap-2 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-3">
+            <Shield className="h-4 w-4 text-[#22c55e] shrink-0 mt-0.5" />
+            <p className="text-[11px] text-[#166534] font-medium leading-snug">
+              Your credentials go directly to Rocket.new — nothing is stored on our servers.
+            </p>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {done ? (
+              <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center gap-2 py-10">
+                <div className="h-16 w-16 rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                  <Check className="h-8 w-8 text-white" strokeWidth={3} />
+                </div>
+                <p className="text-[14px] font-bold text-[#1a1a1a] mt-1">Connected to Rocket.new!</p>
+              </motion.div>
+            ) : (
+              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="flex bg-[#faf7f3] rounded-xl p-1 mb-4">
+                  {(["token", "login"] as const).map((t) => (
+                    <motion.button key={t} onClick={() => { setTab(t); setError(""); }}
+                      className="flex-1 py-2 rounded-lg text-[12px] font-bold relative" whileTap={{ scale: 0.97 }}>
+                      {tab === t && (
+                        <motion.div layoutId="rocket-modal-tab" className="absolute inset-0 rounded-lg bg-white shadow-sm border border-[#f0ece4]"
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+                      )}
+                      <span className={`relative z-10 ${tab === t ? "text-[#1a1a1a]" : "text-[#9a8880]"}`}>
+                        {t === "token" ? "API Token" : "Email & Password"}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {tab === "token" ? (
+                    <motion.div key="tok" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-2">
+                      <p className="text-[11px] text-[#9a8880]">Get your API key from{" "}
+                        <a href="https://rocket.new/settings" target="_blank" rel="noreferrer" className="text-[#6366f1] font-semibold">rocket.new/settings</a>
+                      </p>
+                      <div className="relative">
+                        <input type={showTok ? "text" : "password"} placeholder="Paste API token here…" value={tok} onChange={(e) => setTok(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#6366f1]/40 pr-11" />
+                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                          {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="login" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-2.5">
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
+                        <input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-10 pr-4 py-3 text-[13px] outline-none focus:border-[#6366f1]/40 focus:bg-white transition-colors" />
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
+                        <input type={showPw ? "text" : "password"} placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-10 pr-11 py-3 text-[13px] outline-none focus:border-[#6366f1]/40 focus:bg-white transition-colors" />
+                        <button onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2] hover:text-[#9a8880]">
+                          {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 mt-3">
+                      <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+                      <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <MotionButton onClick={submit} disabled={loading}
+                  className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+                  style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RocketLogo size={18} white />}
+                  {loading ? "Connecting…" : "Connect Rocket.new"}
+                </MotionButton>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function SettingsPage() {
   const { creds, updateCreds, signOut, isLoaded } = useApp();
-  const [showModal, setShowModal] = useState(false);
+  const [showB44Modal, setShowB44Modal]   = useState(false);
+  const [showRocketModal, setShowRocketModal] = useState(false);
   const [ghToken, setGhToken]     = useState("");
   const [showGhTok, setShowGhTok] = useState(false);
   const [ghLoading, setGhLoading] = useState(false);
@@ -212,9 +362,10 @@ function SettingsPage() {
       .catch(() => setGhUser(null));
   }, [isLoaded, creds.githubToken]);
 
-  const b44Connected = !!creds.base44Token;
-  const ghConnected  = !!creds.githubToken && !!ghUser;
-  const displayName  = creds.displayName || creds.base44Email || creds.githubUsername || "";
+  const b44Connected    = !!creds.base44Token;
+  const rocketConnected = !!creds.rocketToken;
+  const ghConnected     = !!creds.githubToken && !!ghUser;
+  const displayName     = creds.displayName || creds.base44Email || creds.rocketEmail || creds.githubUsername || "";
 
   const connectGitHub = async () => {
     if (!ghToken.trim()) { toast.error("Enter your GitHub token"); return; }
@@ -235,10 +386,16 @@ function SettingsPage() {
       <Toaster position="top-center" richColors />
 
       <AnimatePresence>
-        {showModal && (
+        {showB44Modal && (
           <Base44Modal
-            onSuccess={(t, e, n) => { updateCreds({ base44Token: t, base44Email: e }); setShowModal(false); toast.success(`Connected as ${e || n}`); }}
-            onClose={() => setShowModal(false)}
+            onSuccess={(t, e, n) => { updateCreds({ base44Token: t, base44Email: e, displayName: n || e }); setShowB44Modal(false); toast.success(`Connected as ${e || n}`); }}
+            onClose={() => setShowB44Modal(false)}
+          />
+        )}
+        {showRocketModal && (
+          <RocketModal
+            onSuccess={(t, e, n) => { updateCreds({ rocketToken: t, rocketEmail: e, displayName: n || e }); setShowRocketModal(false); toast.success(`Connected as ${e || n}`); }}
+            onClose={() => setShowRocketModal(false)}
           />
         )}
       </AnimatePresence>
@@ -249,7 +406,6 @@ function SettingsPage() {
           className="relative overflow-hidden rounded-[24px] border border-[#f0ece4] mb-4"
           style={{ background: "linear-gradient(135deg,#fff8f3 0%,#fffcf8 60%,#fff 100%)" }}
         >
-          {/* orange accent stripe */}
           <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(to right,#f97316,#fb923c,transparent)" }} />
 
           <div className="flex items-center gap-4 px-5 pt-6 pb-5">
@@ -264,8 +420,10 @@ function SettingsPage() {
               {ghUser && (
                 <p className="text-[12px] text-[#9a8880] mt-0.5 truncate">@{ghUser.login} on GitHub</p>
               )}
-              <div className="flex items-center gap-4 mt-2.5">
+              <div className="flex items-center gap-3 mt-2.5 flex-wrap">
                 <StatusDot on={b44Connected} />
+                <span className="h-3 w-px bg-[#ede9e3]" />
+                <StatusDot on={rocketConnected} />
                 <span className="h-3 w-px bg-[#ede9e3]" />
                 <StatusDot on={ghConnected} />
               </div>
@@ -277,9 +435,8 @@ function SettingsPage() {
       {/* ── Connections card ── */}
       <FadeUp delay={0.06}>
         <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
-          {/* Section label */}
           <div className="px-5 pt-4 pb-2">
-            <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Connections</p>
+            <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Platforms</p>
           </div>
 
           {/* Base44 row */}
@@ -317,9 +474,54 @@ function SettingsPage() {
                   </motion.button>
                 ) : (
                   <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setShowModal(true)}
+                    onClick={() => setShowB44Modal(true)}
                     className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
                     style={{ background: "#f97316" }}>
+                    Connect
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Rocket.new row */}
+          <div className="px-5 py-3.5" style={{ borderTop: "1px solid #f7f4f0" }}>
+            <div className="flex items-center gap-3">
+              <div
+                className="h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
+              >
+                <RocketLogo size={18} white />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">Rocket.new</p>
+                <AnimatePresence mode="wait">
+                  {rocketConnected ? (
+                    <motion.p key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#9a8880] truncate mt-0.5">
+                      {creds.rocketEmail || "Authenticated"}
+                    </motion.p>
+                  ) : (
+                    <motion.p key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#c8b8a2] mt-0.5">
+                      Not connected
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+              <AnimatePresence mode="wait">
+                {rocketConnected ? (
+                  <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => { updateCreds({ rocketToken: "", rocketEmail: "" }); toast.success("Rocket.new disconnected"); }}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
+                    style={{ background: "#fef2f2", color: "#ef4444" }}>
+                    Disconnect
+                  </motion.button>
+                ) : (
+                  <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => setShowRocketModal(true)}
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
+                    style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
                     Connect
                   </motion.button>
                 )}
@@ -380,7 +582,6 @@ function SettingsPage() {
               </div>
             </div>
 
-            {/* GitHub token input — expands inline */}
             <AnimatePresence>
               {!ghConnected && expandGh && (
                 <motion.div
@@ -449,23 +650,24 @@ function SettingsPage() {
         </div>
       </FadeUp>
 
-      {/* ── Sign out + footer ── */}
+      {/* ── Sign out ── */}
       <FadeUp delay={0.18}>
         <MotionButton
-          onClick={() => { signOut(); setGhUser(null); toast.success("Signed out"); }}
-          className="w-full bg-white border border-[#f0ece4] text-[#9a8880] font-bold text-[13px] rounded-[18px] py-3.5 flex items-center justify-center gap-2 mb-4"
-          whileHover={{ borderColor: "#fca5a5", color: "#dc2626", background: "#fff8f8" }}
+          onClick={() => { signOut(); toast.success("Signed out"); }}
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-[18px] border border-[#f0ece4] bg-white text-[13px] font-bold text-[#9a8880] mb-3"
+          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+          whileHover={{ borderColor: "#fecaca", color: "#ef4444", background: "#fef2f2" }}
+          transition={{ duration: 0.18 }}
         >
           <LogOut className="h-4 w-4" />
-          Sign Out
+          Sign out of all accounts
         </MotionButton>
+      </FadeUp>
 
-        <div className="flex items-center justify-center gap-2 pb-2">
-          <Shield className="h-3 w-3 text-[#c8b8a2]" />
-          <p className="text-center text-[11px] text-[#c8b8a2] font-medium">
-            Credentials stored locally · never sent to any server · Push44 v2.0
-          </p>
-        </div>
+      <FadeUp delay={0.22}>
+        <p className="text-center text-[11px] text-[#c8b8a2] pb-4">
+          Push44 — your code stays yours
+        </p>
       </FadeUp>
     </AppShell>
   );

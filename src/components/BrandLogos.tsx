@@ -1,5 +1,61 @@
 import base44Logo from "@/assets/base44-logo-transparent.png";
 
+export function RocketLogo({
+  className = "",
+  size = 20,
+  white,
+}: {
+  className?: string;
+  size?: number;
+  white?: boolean;
+}) {
+  const color = white ? "#ffffff" : "#6366f1";
+  const accent = white ? "rgba(255,255,255,0.55)" : "#818cf8";
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      aria-label="Rocket.new"
+      fill="none"
+    >
+      <path
+        d="M12 2C12 2 7 6.5 7 13a5 5 0 0010 0C17 6.5 12 2 12 2Z"
+        fill={color}
+        opacity={0.15}
+      />
+      <path
+        d="M12 2C12 2 7.5 6.8 7.5 13a4.5 4.5 0 009 0C16.5 6.8 12 2 12 2Z"
+        stroke={color}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="2" fill={color} />
+      <path
+        d="M9 16.5C7.5 17.5 7 19.5 7 19.5s2-0.5 3-1.5"
+        stroke={accent}
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15 16.5C16.5 17.5 17 19.5 17 19.5s-2-0.5-3-1.5"
+        stroke={accent}
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.5 8.5 C10.5 8.5 11 9.5 12 9.5C13 9.5 13.5 8.5 13.5 8.5"
+        stroke={color}
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        fill="none"
+        opacity={0.6}
+      />
+    </svg>
+  );
+}
+
 export function Base44Logo({
   className = "",
   size,

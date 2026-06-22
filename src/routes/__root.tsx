@@ -85,7 +85,7 @@ function OnboardingGuard() {
     if (pathname === "/onboarding") return;
     if (pathname === "/") return;
 
-    if (creds.base44Token && creds.githubToken) {
+    if ((creds.base44Token || creds.rocketToken) && creds.githubToken) {
       markOnboardingDone();
       return;
     }
@@ -93,7 +93,7 @@ function OnboardingGuard() {
     if (!isOnboardingDone()) {
       navigate({ to: "/onboarding" });
     }
-  }, [isLoaded, pathname, creds.base44Token, creds.githubToken]);
+  }, [isLoaded, pathname, creds.base44Token, creds.rocketToken, creds.githubToken]);
 
   return <Outlet />;
 }

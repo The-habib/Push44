@@ -33,7 +33,7 @@ function Dashboard() {
   const [loadingRepos, setLR]   = useState(false);
   const [history, setHistory]   = useState(getHistory());
   const [greeting, setGreeting] = useState("");
-  const isConnected = !!(creds.base44Token && creds.githubToken);
+  const isConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
   const lastPush    = history[0];
   const firstName   = (creds.displayName || "").trim().split(/\s+/)[0] || "";
 
