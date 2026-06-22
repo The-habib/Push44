@@ -112,13 +112,13 @@ function PushPage() {
       <AppShell>
         <AnimatedCorner variant="push" />
         <div className="flex flex-col items-center justify-center min-h-[55vh] gap-4 text-center">
-          <div className="h-14 w-14 rounded-2xl bg-[#ede9fe] flex items-center justify-center">
-            <Lock className="h-7 w-7 text-[#8b5cf6]" />
+          <div className="h-14 w-14 rounded-2xl bg-[#fff4ed] flex items-center justify-center">
+            <Lock className="h-7 w-7 text-[#f97316]" />
           </div>
-          <h2 className="text-xl font-extrabold text-black">Not connected</h2>
-          <p className="text-[13px] text-black/50 max-w-[240px]">Connect your Base44 account and GitHub token in Settings.</p>
+          <h2 className="text-xl font-black text-[#1a1a1a]">Not connected</h2>
+          <p className="text-[13px] text-[#6b6360] max-w-[240px]">Connect your Base44 account and GitHub token in Settings.</p>
           <MotionButton onClick={() => navigate({ to: "/settings" })}
-            className="bg-[#8b5cf6] text-white font-bold px-6 py-3 rounded-2xl text-[13px]">
+            className="bg-[#f97316] text-white font-bold px-6 py-3 rounded-2xl text-[13px]">
             Go to Settings
           </MotionButton>
         </div>
@@ -131,25 +131,25 @@ function PushPage() {
       <AppShell>
         <AnimatedCorner variant="push" />
         <div className="flex flex-col items-center justify-center min-h-[55vh] gap-4 text-center">
-          <motion.div className="h-20 w-20 rounded-full bg-[#dcfce7] flex items-center justify-center"
+          <motion.div className="h-20 w-20 rounded-full bg-[#fff4ed] flex items-center justify-center"
             initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}>
-            <Check className="h-10 w-10 text-[#22c55e]" strokeWidth={3} />
+            <Check className="h-10 w-10 text-[#f97316]" strokeWidth={3} />
           </motion.div>
           <FadeUp delay={0.1}>
-            <h2 className="text-[24px] font-extrabold text-black">Pushed!</h2>
+            <h2 className="text-[24px] font-black text-[#1a1a1a]">Pushed!</h2>
           </FadeUp>
           <FadeUp delay={0.16}>
-            <p className="text-[13px] text-black/50">
+            <p className="text-[13px] text-[#6b6360]">
               {files.length} files → <strong>{selectedRepo?.full_name}</strong> on <strong>{branch}</strong>
             </p>
           </FadeUp>
           <FadeUp delay={0.22}>
-            <div className="font-mono text-xs bg-[#f7f6f1] px-4 py-2 rounded-xl text-black/60">commit {commitHash}</div>
+            <div className="font-mono text-xs bg-[#faf7f3] border border-[#f0ece4] px-4 py-2 rounded-xl text-[#6b6360]">commit {commitHash}</div>
           </FadeUp>
           {selectedRepo && (
             <FadeUp delay={0.28}>
               <a href={`${selectedRepo.html_url}/tree/${branch}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-1.5 text-[#8b5cf6] font-semibold text-[13px]">
+                className="flex items-center gap-1.5 text-[#f97316] font-semibold text-[13px]">
                 <GitHubLogo className="h-4 w-4" /> View on GitHub <ExternalLink className="h-3 w-3" />
               </a>
             </FadeUp>
@@ -172,19 +172,19 @@ function PushPage() {
       <Toaster position="top-center" richColors />
 
       <FadeUp>
-        <h1 className="text-[26px] font-extrabold text-black tracking-tight mb-1">Push to GitHub</h1>
-        <p className="text-[13px] text-black/45 mb-5">Select an app, pick a repo, and ship it.</p>
+        <h1 className="text-[26px] font-black text-[#1a1a1a] tracking-tight mb-1">Push to GitHub</h1>
+        <p className="text-[13px] text-[#9a8880] mb-5">Select an app, pick a repo, and ship it.</p>
       </FadeUp>
 
       {/* Step 1 */}
       <FadeUp delay={0.06}>
         <SectionCard title="Select Base44 App">
           {loadingApps ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-[#8b5cf6]" /></div>
+            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-[#f97316]" /></div>
           ) : apps.length === 0 ? (
-            <div className="text-center py-4 text-[13px] text-black/45">
+            <div className="text-center py-4 text-[13px] text-[#9a8880]">
               No apps found.{" "}
-              <button onClick={loadApps} className="text-[#8b5cf6] font-semibold">Retry</button>
+              <button onClick={loadApps} className="text-[#f97316] font-semibold">Retry</button>
             </div>
           ) : (
             <StaggerContainer className="space-y-2">
@@ -195,7 +195,7 @@ function PushPage() {
                     <motion.button
                       onClick={() => handleSelectApp(app)}
                       className="w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-colors"
-                      style={{ borderColor: active ? "#8b5cf6" : "#eeece6", background: active ? "#f5f2ff" : "#fff" }}
+                      style={{ borderColor: active ? "#f97316" : "#f0ece4", background: active ? "#fff4ed" : "#fff" }}
                       whileHover={{ x: 2 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 380, damping: 28 }}
@@ -205,8 +205,8 @@ function PushPage() {
                         <Base44Logo size={22} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-bold text-black truncate">{app.name}</div>
-                        <div className="text-[11px] text-black/35">
+                        <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{app.name}</div>
+                        <div className="text-[11px] text-[#9a8880]">
                           {new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                         </div>
                       </div>
@@ -214,7 +214,7 @@ function PushPage() {
                         {active && (
                           <motion.div initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }}
                             transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                            <Check className="h-4 w-4 text-[#8b5cf6]" strokeWidth={3} />
+                            <Check className="h-4 w-4 text-[#f97316]" strokeWidth={3} />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -228,8 +228,8 @@ function PushPage() {
           <AnimatePresence>
             {loadingFiles && selectedApp && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                className="flex items-center gap-2 mt-3 text-[12px] text-black/45 overflow-hidden">
-                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                className="flex items-center gap-2 mt-3 text-[12px] text-[#9a8880] overflow-hidden">
+                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0 text-[#f97316]" />
                 {wakingSandbox ? "Waking sandbox — takes ~30s…" : "Fetching files from Base44…"}
               </motion.div>
             )}
@@ -242,17 +242,17 @@ function PushPage() {
         <SectionCard title="Target Repository">
           {selectedRepo ? (
             <div>
-              <div className="flex items-center gap-3 border border-[#eee] rounded-xl p-3 mb-3">
+              <div className="flex items-center gap-3 border border-[#f0ece4] rounded-xl p-3 mb-3">
                 <div className="h-9 w-9 rounded-lg bg-[#1a1a1a] flex items-center justify-center">
                   <GitHubLogo className="h-4 w-4 text-white" />
                 </div>
-                <span className="flex-1 text-[13px] font-semibold text-black truncate">{selectedRepo.full_name}</span>
-                <button onClick={() => setSelectedRepo(null)} className="text-[11px] text-black/35 hover:text-black font-medium">Change</button>
+                <span className="flex-1 text-[13px] font-semibold text-[#1a1a1a] truncate">{selectedRepo.full_name}</span>
+                <button onClick={() => setSelectedRepo(null)} className="text-[11px] text-[#9a8880] hover:text-[#1a1a1a] font-medium">Change</button>
               </div>
               <div className="flex items-center gap-2">
-                <GitBranch className="h-3.5 w-3.5 text-black/35" />
+                <GitBranch className="h-3.5 w-3.5 text-[#c8b8a2]" />
                 <input value={branch} onChange={(e) => setBranch(e.target.value)}
-                  className="flex-1 text-[12px] font-mono bg-[#f7f6f1] rounded-lg px-3 py-2 outline-none border border-transparent focus:border-[#8b5cf6]/30"
+                  className="flex-1 text-[12px] font-mono bg-[#faf7f3] rounded-lg px-3 py-2 outline-none border border-[#f0ece4] focus:border-[#f97316]/40"
                   placeholder="branch" />
               </div>
             </div>
@@ -260,32 +260,32 @@ function PushPage() {
             <div className="space-y-2">
               <motion.button
                 onClick={() => setShowNewRepo(!showNewRepo)}
-                className="w-full flex items-center gap-3 p-3 rounded-2xl border-2 border-dashed border-[#e5e3dc] text-left"
-                whileHover={{ borderColor: "#8b5cf6" }}
+                className="w-full flex items-center gap-3 p-3 rounded-2xl border-2 border-dashed border-[#f0ece4] text-left"
+                whileHover={{ borderColor: "#f97316" }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.15 }}
               >
-                <div className="h-9 w-9 rounded-xl bg-[#f3f2ee] flex items-center justify-center">
-                  <Plus className="h-5 w-5 text-black" />
+                <div className="h-9 w-9 rounded-xl bg-[#faf7f3] flex items-center justify-center">
+                  <Plus className="h-5 w-5 text-[#1a1a1a]" />
                 </div>
-                <span className="text-[13px] font-bold text-black flex-1">Create new repository</span>
+                <span className="text-[13px] font-bold text-[#1a1a1a] flex-1">Create new repository</span>
                 <motion.div animate={{ rotate: showNewRepo ? 180 : 0 }} transition={{ type: "spring", stiffness: 400, damping: 28 }}>
-                  <ChevronDown className="h-4 w-4 text-black/35" />
+                  <ChevronDown className="h-4 w-4 text-[#c8b8a2]" />
                 </motion.div>
               </motion.button>
 
               <AnimatePresence>
                 {showNewRepo && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                    className="rounded-2xl border border-[#eee] p-3 space-y-2 overflow-hidden">
+                    className="rounded-2xl border border-[#f0ece4] p-3 space-y-2 overflow-hidden">
                     <input placeholder="repository-name" value={newRepoName}
                       onChange={(e) => setNewRepoName(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, "-"))}
-                      className="w-full rounded-xl border border-[#eee] bg-[#f7f6f1] px-4 py-2.5 text-[13px] font-mono outline-none focus:border-[#8b5cf6]/40" />
+                      className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-2.5 text-[13px] font-mono outline-none focus:border-[#f97316]/40" />
                     <div className="flex items-center gap-2">
                       {[true, false].map((priv) => (
                         <motion.button key={String(priv)} onClick={() => setIsPrivate(priv)}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-semibold border-2 transition-colors"
-                          style={{ borderColor: isPrivate === priv ? "#8b5cf6" : "#eee", background: isPrivate === priv ? "#f0ebff" : "#fff", color: isPrivate === priv ? "#7c3aed" : "#999" }}
+                          style={{ borderColor: isPrivate === priv ? "#f97316" : "#f0ece4", background: isPrivate === priv ? "#fff4ed" : "#fff", color: isPrivate === priv ? "#f97316" : "#9a8880" }}
                           whileTap={{ scale: 0.95 }}>
                           {priv && <Lock className="h-3 w-3" />}
                           {priv ? "Private" : "Public"}
@@ -298,20 +298,20 @@ function PushPage() {
               </AnimatePresence>
 
               {loadingRepos ? (
-                <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-[#8b5cf6]" /></div>
+                <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-[#f97316]" /></div>
               ) : (
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {repos.map((r) => (
                     <motion.button key={r.full_name}
                       onClick={() => { setSelectedRepo(r); setBranch(r.default_branch); }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-[#eee] text-left"
-                      whileHover={{ backgroundColor: "#fafaf7", x: 2 }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-[#f0ece4] text-left"
+                      whileHover={{ backgroundColor: "#fff4ed", x: 2 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 380, damping: 28 }}
                     >
-                      <GitHubLogo className="h-4 w-4 text-black/40 shrink-0" />
-                      <span className="text-[13px] font-medium text-black truncate flex-1">{r.full_name}</span>
-                      <span className="text-[10px] text-black/35 shrink-0">{r.default_branch}</span>
+                      <GitHubLogo className="h-4 w-4 text-[#9a8880] shrink-0" />
+                      <span className="text-[13px] font-medium text-[#1a1a1a] truncate flex-1">{r.full_name}</span>
+                      <span className="text-[10px] text-[#9a8880] shrink-0">{r.default_branch}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -333,9 +333,9 @@ function PushPage() {
                     initial={{ opacity: 0, x: -6 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: Math.min(i * 0.008, 0.3) }}>
-                    <span className="text-[#22c55e] font-bold font-mono text-[13px] w-4 shrink-0">+</span>
-                    <FileText className="h-3.5 w-3.5 text-black/30 shrink-0" />
-                    <span className="font-mono text-[11px] text-black/60 truncate">{f.path}</span>
+                    <span className="text-[#f97316] font-bold font-mono text-[13px] w-4 shrink-0">+</span>
+                    <FileText className="h-3.5 w-3.5 text-[#c8b8a2] shrink-0" />
+                    <span className="font-mono text-[11px] text-[#6b6360] truncate">{f.path}</span>
                   </motion.div>
                 ))}
               </div>
@@ -351,10 +351,10 @@ function PushPage() {
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
             <SectionCard title="Commit Message">
               <div className="relative">
-                <MessageSquare className="absolute left-3.5 top-3.5 h-4 w-4 text-black/30" />
+                <MessageSquare className="absolute left-3.5 top-3.5 h-4 w-4 text-[#c8b8a2]" />
                 <textarea value={commitMsg} onChange={(e) => setCommitMsg(e.target.value)}
                   rows={3} placeholder="Describe your changes…"
-                  className="w-full rounded-xl bg-[#f7f6f1] pl-9 pr-4 py-3 text-[13px] outline-none resize-none focus:ring-2 focus:ring-[#8b5cf6]/20" />
+                  className="w-full rounded-xl bg-[#faf7f3] pl-9 pr-4 py-3 text-[13px] outline-none resize-none border border-[#f0ece4] focus:border-[#f97316]/40" />
               </div>
             </SectionCard>
           </motion.div>
@@ -381,8 +381,8 @@ function PushPage() {
           onClick={handlePush}
           disabled={status === "pushing" || !selectedApp || !selectedRepo || files.length === 0 || loadingFiles}
           className="w-full rounded-3xl py-4 flex items-center justify-center gap-2.5 font-bold text-[15px] text-white mb-4 disabled:opacity-40"
-          style={{ background: "linear-gradient(135deg,#7c3aed,#8b5cf6)" }}
-          whileHover={{ scale: 1.015, boxShadow: "0 12px 40px rgba(139,92,246,0.35)" }}
+          style={{ background: "#f97316", boxShadow: "0 4px 20px rgba(249,115,22,0.35)" }}
+          whileHover={{ scale: 1.015, boxShadow: "0 8px 30px rgba(249,115,22,0.45)" }}
           whileTap={{ scale: 0.975 }}
           transition={{ type: "spring", stiffness: 400, damping: 26 }}
         >
@@ -392,7 +392,7 @@ function PushPage() {
           }
         </motion.button>
 
-        <div className="flex items-center justify-center gap-1.5 text-[11px] text-black/35 font-medium">
+        <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#9a8880] font-medium">
           <Lock className="h-3 w-3" /><span>Credentials never leave your browser</span>
         </div>
       </FadeUp>

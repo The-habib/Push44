@@ -31,7 +31,7 @@ export function AvatarBubble({ name, size = 36, fontSize = 14 }: { name: string;
   return (
     <div
       className="rounded-full flex items-center justify-center font-extrabold text-white shrink-0 select-none"
-      style={{ width: size, height: size, fontSize, background: "linear-gradient(135deg,#8b5cf6,#6d28d9)" }}
+      style={{ width: size, height: size, fontSize, background: "linear-gradient(135deg,#f97316,#ea580c)" }}
     >
       {initials}
     </div>
@@ -50,7 +50,7 @@ export function SectionCard({ title, action, children, className = "" }: {
     >
       {title && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-extrabold text-black text-[14px] tracking-tight">{title}</h3>
+          <h3 className="font-extrabold text-[#1a1a1a] text-[14px] tracking-tight">{title}</h3>
           {action}
         </div>
       )}
@@ -66,26 +66,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pageTitle = PAGE_TITLES[pathname] ?? "Push44";
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#f3f2ee" }}>
+    <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>
 
       {/* ── Desktop ─────────────────────────────────────── */}
       <div className="hidden md:flex min-h-screen">
 
         {/* Sidebar */}
-        <aside className="w-56 shrink-0 flex flex-col sticky top-0 h-screen border-r border-black/[0.07]"
-          style={{ background: "#fefefe" }}>
+        <aside className="w-56 shrink-0 flex flex-col sticky top-0 h-screen border-r border-[#f0ece4]"
+          style={{ background: "#fffcf8" }}>
 
           {/* Logo */}
           <Link to="/dashboard">
-            <div className="flex items-center gap-1.5 px-5 py-5 border-b border-black/[0.06] cursor-pointer group">
+            <div className="flex items-center gap-1.5 px-5 py-5 border-b border-[#f0ece4] cursor-pointer group">
               <motion.img
                 src={appLogo} alt="Push44"
                 className="h-8 w-8 rounded-xl object-cover"
                 whileHover={{ scale: 1.08 }}
                 transition={spring}
               />
-              <span className="text-[16px] font-extrabold text-black tracking-tight leading-none">
-                Push<span style={{ color: "#8b5cf6" }}>44</span>
+              <span className="text-[16px] font-black text-[#1a1a1a] tracking-tight leading-none">
+                Push<span className="text-[#f97316]">44</span>
               </span>
             </div>
           </Link>
@@ -101,17 +101,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <motion.div
                         layoutId="sidebar-pill"
                         className="absolute inset-0 rounded-[12px]"
-                        style={{ background: "#1a1a1a" }}
+                        style={{ background: "#f97316" }}
                         initial={false}
                         transition={spring}
                       />
                     )}
                     <Icon
                       className="relative z-10 h-[16px] w-[16px] shrink-0"
-                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.38)" }}
+                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.35)" }}
                       strokeWidth={active ? 2.5 : 2}
                     />
-                    <span className="relative z-10 text-[13px]" style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.5)" }}>
+                    <span className="relative z-10 text-[13px]" style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.45)" }}>
                       {label}
                     </span>
                   </div>
@@ -121,11 +121,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           {/* User footer */}
-          <div className="px-3 py-4 border-t border-black/[0.06]">
+          <div className="px-3 py-4 border-t border-[#f0ece4]">
             <Link to="/settings">
               <motion.div
                 className="flex items-center gap-2.5 rounded-[12px] px-2.5 py-2 cursor-pointer"
-                whileHover={{ background: "#f3f2ee" }}
+                whileHover={{ background: "#fff4ed" }}
                 transition={{ duration: 0.15 }}
               >
                 <div className="relative shrink-0">
@@ -133,8 +133,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-bold text-black truncate leading-tight">{creds.displayName || "Account"}</div>
-                  <div className="text-[10px] text-black/35 truncate">{creds.base44Email || creds.githubUsername || "Not connected"}</div>
+                  <div className="text-[12px] font-bold text-[#1a1a1a] truncate leading-tight">{creds.displayName || "Account"}</div>
+                  <div className="text-[10px] text-[#9a8880] truncate">{creds.base44Email || creds.githubUsername || "Not connected"}</div>
                 </div>
               </motion.div>
             </Link>
@@ -145,16 +145,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
 
           {/* Topbar */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-8 py-4 border-b border-black/[0.07]"
-            style={{ background: "rgba(243,242,238,0.92)", backdropFilter: "blur(12px)" }}>
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-8 py-4 border-b border-[#f0ece4]"
+            style={{ background: "rgba(250,247,243,0.92)", backdropFilter: "blur(12px)" }}>
             <div>
-              <h2 className="text-[16px] font-extrabold text-black tracking-tight">{pageTitle}</h2>
+              <h2 className="text-[16px] font-black text-[#1a1a1a] tracking-tight">{pageTitle}</h2>
             </div>
             <div className="flex items-center gap-2.5">
               <motion.a
                 href={creds.githubUsername ? `https://github.com/${creds.githubUsername}` : "https://github.com"}
                 target="_blank" rel="noreferrer"
-                className="h-8 w-8 rounded-xl bg-white border border-black/[0.07] flex items-center justify-center text-black/40"
+                className="h-8 w-8 rounded-xl bg-white border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
                 whileHover={{ scale: 1.06, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
                 transition={spring}
               >
@@ -163,7 +163,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link to="/settings">
                 <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={spring}>
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-[#faf7f3]" />
                 </motion.div>
               </Link>
             </div>
@@ -189,19 +189,19 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="md:hidden flex flex-col min-h-screen">
 
         {/* Mobile header */}
-        <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06]"
-          style={{ background: "#f3f2ee" }}>
+        <header className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#f0ece4]"
+          style={{ background: "#faf7f3" }}>
           <Link to="/dashboard" className="flex items-center gap-1.5">
             <motion.img src={appLogo} alt="Push44" className="h-9 w-9 rounded-2xl object-cover"
               whileTap={{ scale: 0.92 }} transition={spring} />
-            <span className="text-[18px] font-extrabold text-black tracking-tight leading-none">
-              Push<span style={{ color: "#8b5cf6" }}>44</span>
+            <span className="text-[18px] font-black text-[#1a1a1a] tracking-tight leading-none">
+              Push<span className="text-[#f97316]">44</span>
             </span>
           </Link>
           <Link to="/settings">
             <motion.div className="relative" whileTap={{ scale: 0.9 }} transition={spring}>
               <AvatarBubble name={displayName} size={38} fontSize={13} />
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#faf7f3]" />
             </motion.div>
           </Link>
         </header>
@@ -221,8 +221,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         {/* Bottom nav */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-black/[0.07] rounded-t-[22px] px-2 pt-2 pb-7"
-          style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", boxShadow: "0 -1px 0 rgba(0,0,0,0.06), 0 -8px 28px rgba(0,0,0,0.06)" }}>
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#f0ece4] rounded-t-[22px] px-2 pt-2 pb-7"
+          style={{ background: "rgba(255,252,248,0.97)", backdropFilter: "blur(20px)", boxShadow: "0 -1px 0 rgba(249,115,22,0.08), 0 -8px 28px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-around">
             {NAV.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
@@ -237,20 +237,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <motion.div
                         layoutId="mobile-pill"
                         className="absolute inset-0 rounded-[10px]"
-                        style={{ background: "#1a1a1a" }}
+                        style={{ background: "#f97316" }}
                         initial={false}
                         transition={spring}
                       />
                     )}
                     <Icon
                       className="relative z-10 h-[18px] w-[18px]"
-                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.32)" }}
+                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.3)" }}
                       strokeWidth={active ? 2.5 : 2}
                     />
                   </motion.div>
                   <span
                     className="text-[10px] font-bold leading-none tracking-tight"
-                    style={{ color: active ? "#000" : "rgba(0,0,0,0.3)" }}
+                    style={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)" }}
                   >
                     {label}
                   </span>

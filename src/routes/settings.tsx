@@ -25,7 +25,6 @@ function StatusDot({ on }: { on: boolean }) {
   );
 }
 
-
 function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
   const [tab, setTab]       = useState<"login" | "token">("login");
   const [email, setEmail]   = useState("");
@@ -55,9 +54,9 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
   return (
     <motion.div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <motion.div className="absolute inset-0 bg-black/25 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-3xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#f0ece4]"
         initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
       >
@@ -67,11 +66,11 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
             <Base44Logo size={24} white />
           </div>
           <div className="flex-1">
-            <div className="text-[15px] font-extrabold text-black">Connect Base44</div>
-            <div className="text-[12px] text-black/40">Sign in to access your apps</div>
+            <div className="text-[15px] font-black text-[#1a1a1a]">Connect Base44</div>
+            <div className="text-[12px] text-[#9a8880]">Sign in to access your apps</div>
           </div>
           <motion.button onClick={onClose}
-            className="h-8 w-8 rounded-xl bg-[#f3f2ee] flex items-center justify-center text-black/40"
+            className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
             whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }}>
             <X className="h-4 w-4" />
           </motion.button>
@@ -87,19 +86,19 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
             {done ? (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center gap-2 py-8">
-                <div className="h-14 w-14 rounded-full bg-[#dcfce7] flex items-center justify-center">
-                  <Check className="h-8 w-8 text-[#22c55e]" strokeWidth={3} />
+                <div className="h-14 w-14 rounded-full bg-[#fff4ed] flex items-center justify-center">
+                  <Check className="h-8 w-8 text-[#f97316]" strokeWidth={3} />
                 </div>
-                <p className="text-[14px] font-bold text-black">Connected!</p>
+                <p className="text-[14px] font-bold text-[#1a1a1a]">Connected!</p>
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex bg-[#f3f2ee] rounded-xl p-1 mb-4">
+                <div className="flex bg-[#faf7f3] rounded-xl p-1 mb-4">
                   {(["login", "token"] as const).map((t) => (
                     <motion.button key={t} onClick={() => { setTab(t); setError(""); }}
                       className="flex-1 py-2 rounded-lg text-[12px] font-bold relative" whileTap={{ scale: 0.97 }}>
-                      {tab === t && <motion.div layoutId="modal-tab" className="absolute inset-0 rounded-lg bg-white shadow-sm" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
-                      <span className={`relative z-10 ${tab === t ? "text-black" : "text-black/40"}`}>
+                      {tab === t && <motion.div layoutId="modal-tab" className="absolute inset-0 rounded-lg bg-white shadow-sm border border-[#f0ece4]" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                      <span className={`relative z-10 ${tab === t ? "text-[#1a1a1a]" : "text-[#9a8880]"}`}>
                         {t === "login" ? "Email & Password" : "Auth Token"}
                       </span>
                     </motion.button>
@@ -110,26 +109,26 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                   {tab === "login" ? (
                     <motion.div key="login" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-2.5">
                       <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/25" />
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
                         <input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
-                          className="w-full rounded-xl border border-[#eee] bg-[#f7f6f1] pl-10 pr-4 py-3 text-[13px] outline-none focus:border-[#f97316]/50" />
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-10 pr-4 py-3 text-[13px] outline-none focus:border-[#f97316]/50" />
                       </div>
                       <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/25" />
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
                         <input type={showPw ? "text" : "password"} placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
-                          className="w-full rounded-xl border border-[#eee] bg-[#f7f6f1] pl-10 pr-11 py-3 text-[13px] outline-none focus:border-[#f97316]/50" />
-                        <button onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/25">
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-10 pr-11 py-3 text-[13px] outline-none focus:border-[#f97316]/50" />
+                        <button onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
                           {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </motion.div>
                   ) : (
                     <motion.div key="token" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-2">
-                      <p className="text-[11px] text-black/40">Get your token from <a href="https://app.base44.com/settings" target="_blank" rel="noreferrer" className="text-[#f97316] font-semibold">app.base44.com/settings</a></p>
+                      <p className="text-[11px] text-[#9a8880]">Get your token from <a href="https://app.base44.com/settings" target="_blank" rel="noreferrer" className="text-[#f97316] font-semibold">app.base44.com/settings</a></p>
                       <div className="relative">
                         <input type={showTok ? "text" : "password"} placeholder="Paste token here…" value={tok} onChange={(e) => setTok(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
-                          className="w-full rounded-xl border border-[#eee] bg-[#f7f6f1] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#f97316]/50 pr-11" />
-                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/25">
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#f97316]/50 pr-11" />
+                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
                           {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
@@ -216,11 +215,11 @@ function SettingsPage() {
         <div className="flex items-center gap-4 mb-6">
           <div className="relative">
             <AvatarBubble name={creds.displayName || creds.base44Email || creds.githubUsername || ""} size={64} fontSize={22} />
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#22c55e] ring-2 ring-[#f3f2ee]" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#22c55e] ring-2 ring-[#faf7f3]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[20px] font-extrabold text-black truncate">{creds.displayName || creds.base44Email || "Settings"}</h1>
-            {ghUser && <p className="text-[12px] text-black/40 mt-0.5">@{ghUser.login} on GitHub</p>}
+            <h1 className="text-[20px] font-black text-[#1a1a1a] truncate">{creds.displayName || creds.base44Email || "Settings"}</h1>
+            {ghUser && <p className="text-[12px] text-[#9a8880] mt-0.5">@{ghUser.login} on GitHub</p>}
           </div>
         </div>
       </FadeUp>
@@ -238,14 +237,14 @@ function SettingsPage() {
           <AnimatePresence mode="wait">
             {b44Connected ? (
               <motion.div key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-3 bg-[#fff7ed] rounded-2xl p-3.5">
+                className="flex items-center gap-3 bg-[#fff4ed] rounded-2xl p-3.5 border border-[#f97316]/15">
                 <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
                   style={{ background: "linear-gradient(135deg,#f97316,#ea580c)" }}>
                   <Base44Logo size={24} white />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-black truncate">{creds.base44Email || "Connected"}</div>
-                  <div className="text-[11px] text-black/40">Authenticated via Base44</div>
+                  <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{creds.base44Email || "Connected"}</div>
+                  <div className="text-[11px] text-[#9a8880]">Authenticated via Base44</div>
                 </div>
                 <Check className="h-4 w-4 text-[#f97316]" strokeWidth={3} />
               </motion.div>
@@ -275,32 +274,32 @@ function SettingsPage() {
           <AnimatePresence mode="wait">
             {ghConnected && ghUser ? (
               <motion.div key="on" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-3 bg-[#f3f2ee] rounded-2xl p-3.5">
+                className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3.5 border border-[#f0ece4]">
                 <div className="h-10 w-10 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
                   <GitHubLogo className="h-5 w-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-black truncate">{ghUser.name || ghUser.login}</div>
-                  <div className="text-[11px] text-black/40">@{ghUser.login}</div>
+                  <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{ghUser.name || ghUser.login}</div>
+                  <div className="text-[11px] text-[#9a8880]">@{ghUser.login}</div>
                 </div>
                 <motion.a href={`https://github.com/${ghUser.login}`} target="_blank" rel="noreferrer"
-                  className="text-black/25" whileHover={{ scale: 1.2, color: "#1a1a1a" }}>
+                  className="text-[#c8b8a2]" whileHover={{ scale: 1.2, color: "#1a1a1a" }}>
                   <ExternalLink className="h-4 w-4" />
                 </motion.a>
               </motion.div>
             ) : (
               <motion.div key="off" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-                <p className="text-[12px] text-black/45 leading-relaxed">
+                <p className="text-[12px] text-[#9a8880] leading-relaxed">
                   Create a token at{" "}
                   <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noreferrer"
-                    className="text-[#8b5cf6] font-semibold">github.com/settings/tokens</a>{" "}
+                    className="text-[#f97316] font-semibold">github.com/settings/tokens</a>{" "}
                   with <strong>repo</strong> scope.
                 </p>
                 <div className="relative">
                   <input type={showGhTok ? "text" : "password"} placeholder="ghp_xxxxxxxxxxxx" value={ghToken}
                     onChange={(e) => setGhToken(e.target.value)} onKeyDown={(e) => e.key === "Enter" && connectGitHub()}
-                    className="w-full rounded-2xl border border-[#eee] bg-[#f7f6f1] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#1a1a1a]/30 pr-11" />
-                  <button onClick={() => setShowGhTok(!showGhTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/30">
+                    className="w-full rounded-2xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#f97316]/40 pr-11" />
+                  <button onClick={() => setShowGhTok(!showGhTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
                     {showGhTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -318,9 +317,9 @@ function SettingsPage() {
       {/* Defaults */}
       <FadeUp delay={0.17}>
         <SectionCard title="Push Defaults">
-          <label className="text-[11px] font-semibold text-black/40 mb-1.5 block uppercase tracking-wide">Default branch</label>
+          <label className="text-[11px] font-semibold text-[#9a8880] mb-1.5 block uppercase tracking-wide">Default branch</label>
           <input value={branch} onChange={(e) => setBranch(e.target.value)} onBlur={() => updateCreds({ defaultBranch: branch })}
-            placeholder="main" className="w-full rounded-xl border border-[#eee] bg-[#f7f6f1] px-4 py-3 text-[13px] outline-none focus:border-[#8b5cf6]/40" />
+            placeholder="main" className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] outline-none focus:border-[#f97316]/40" />
         </SectionCard>
       </FadeUp>
 
@@ -341,7 +340,7 @@ function SettingsPage() {
           className="w-full bg-white border-2 border-[#fca5a5] text-[#dc2626] font-bold text-[13px] rounded-2xl py-3.5 flex items-center justify-center gap-2 mb-3 shadow-sm">
           <LogOut className="h-4 w-4" />Sign Out
         </MotionButton>
-        <p className="text-center text-[11px] text-black/30 font-medium">Push44 · v2.0</p>
+        <p className="text-center text-[11px] text-[#9a8880] font-medium">Push44 · v2.0</p>
       </FadeUp>
     </AppShell>
   );

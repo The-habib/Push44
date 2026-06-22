@@ -47,10 +47,10 @@ function Dashboard() {
 
       {/* Greeting */}
       <FadeUp>
-        <p className="text-[11px] font-bold text-black/35 tracking-widest uppercase mb-1">
+        <p className="text-[11px] font-bold text-[#9a8880] tracking-widest uppercase mb-1">
           {greeting}{firstName ? `, ${firstName}` : ""}
         </p>
-        <h1 className="text-[26px] font-extrabold text-black tracking-tight mb-5">
+        <h1 className="text-[26px] font-black text-[#1a1a1a] tracking-tight mb-5">
           {isConnected ? "What are you shipping?" : "Let's get set up."}
         </h1>
       </FadeUp>
@@ -59,38 +59,33 @@ function Dashboard() {
       <FadeUp delay={0.06}>
         <div
           className="relative rounded-[28px] overflow-hidden mb-4 px-6 py-7"
-          style={{ background: "linear-gradient(145deg,#0d0d1f,#16213e)" }}
+          style={{ background: "#f97316" }}
         >
-          {/* subtle grid */}
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-            style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "26px 26px" }} />
+          {/* subtle texture */}
+          <div className="absolute inset-0 opacity-[0.07] pointer-events-none"
+            style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
           {/* glow */}
-          <motion.div className="absolute -top-16 -right-16 h-60 w-60 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle,#7c3aed55,transparent)" }}
-            animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} />
+          <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle,rgba(255,255,255,0.15),transparent)" }} />
 
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5 border border-white/10 bg-white/[0.07]">
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5 border border-white/20 bg-white/10">
               <motion.span
                 className="h-1.5 w-1.5 rounded-full"
-                style={{ background: isConnected ? "#dce99a" : "rgba(255,255,255,0.3)" }}
+                style={{ background: isConnected ? "#fff" : "rgba(255,255,255,0.4)" }}
                 animate={isConnected ? { scale: [1, 1.6, 1], opacity: [1, 0.5, 1] } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <span className="text-[11px] font-semibold tracking-widest uppercase text-white/50">
+              <span className="text-[11px] font-semibold tracking-widest uppercase text-white/70">
                 {isConnected ? "Base44 → GitHub" : "Not connected"}
               </span>
             </div>
 
-            <h2 className="text-[32px] font-extrabold leading-[1.05] tracking-tight text-white mb-2">
+            <h2 className="text-[32px] font-black leading-[1.05] tracking-tight text-white mb-2">
               Push your<br />
-              code to{" "}
-              <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg,#a78bfa,#dce99a)" }}>
-                GitHub
-              </span>
+              code to GitHub
             </h2>
-            <p className="text-[13px] text-white/40 mb-6">
+            <p className="text-[13px] text-white/60 mb-6">
               {isConnected
                 ? `${loadingApps ? "…" : apps.length} apps · ${loadingRepos ? "…" : repos.length} repos · ${history.length} pushes`
                 : "Connect Base44 and GitHub to start."}
@@ -98,8 +93,8 @@ function Dashboard() {
 
             <MotionButton
               onClick={() => navigate({ to: isConnected ? "/push" : "/settings" })}
-              className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-bold text-sm text-black"
-              style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}
+              className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-bold text-sm text-[#f97316] bg-white"
+              style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.12)" }}
             >
               <Zap className="h-4 w-4" strokeWidth={2.5} />
               {isConnected ? "Push Now" : "Get Started"}
@@ -108,7 +103,7 @@ function Dashboard() {
           </div>
 
           {/* faint GitHub mark */}
-          <div className="absolute right-5 bottom-5 pointer-events-none opacity-[0.05]">
+          <div className="absolute right-5 bottom-5 pointer-events-none opacity-[0.08]">
             <GitHubLogo size={100} className="text-white" />
           </div>
         </div>
@@ -137,14 +132,14 @@ function Dashboard() {
       {/* Stats */}
       <StaggerContainer className="grid grid-cols-3 gap-3 mb-4">
         {[
-          { label: "Apps",   value: apps.length,    loading: loadingApps && isConnected,  bg: "#f0ebff", accent: "#8b5cf6", Icon: LayoutGrid },
+          { label: "Apps",   value: apps.length,    loading: loadingApps && isConnected,  bg: "#fff4ed", accent: "#f97316", Icon: LayoutGrid },
           { label: "Repos",  value: repos.length,   loading: loadingRepos && isConnected, bg: "#f0fdf4", accent: "#22c55e", Icon: Archive    },
-          { label: "Pushes", value: history.length, loading: false,                       bg: "#fff7ed", accent: "#f97316", Icon: Clock      },
+          { label: "Pushes", value: history.length, loading: false,                       bg: "#faf7f3", accent: "#9a8880", Icon: Clock      },
         ].map(({ label, value, loading, bg, accent, Icon }) => (
           <StaggerItem key={label}>
             <motion.div
-              className="rounded-[18px] p-4 flex flex-col gap-3 border"
-              style={{ background: bg, borderColor: `${accent}22` }}
+              className="rounded-[18px] p-4 flex flex-col gap-3 border border-transparent"
+              style={{ background: bg }}
               whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }}
               transition={{ type: "spring", stiffness: 380, damping: 28 }}
             >
@@ -152,9 +147,9 @@ function Dashboard() {
                 <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2} />
               </div>
               <div>
-                <div className="text-[10px] font-bold text-black/35 uppercase tracking-wider mb-0.5">{label}</div>
-                <div className="text-[22px] font-extrabold text-black leading-none">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin text-black/25 mt-1" /> : value}
+                <div className="text-[10px] font-bold text-[#9a8880] uppercase tracking-wider mb-0.5">{label}</div>
+                <div className="text-[22px] font-black text-[#1a1a1a] leading-none">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#c8b8a2] mt-1" /> : value}
                 </div>
               </div>
             </motion.div>
@@ -165,11 +160,11 @@ function Dashboard() {
       {/* Last push */}
       {lastPush && (
         <FadeUp delay={0.18}>
-          <div className="bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055]">
+          <div className="bg-white rounded-[20px] p-5 mb-4 border border-[#f0ece4]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[13px] font-extrabold text-black">Last Push</span>
+              <span className="text-[13px] font-black text-[#1a1a1a]">Last Push</span>
               <MotionButton onClick={() => navigate({ to: "/history" })}
-                className="text-[11px] font-bold text-[#8b5cf6] bg-[#f0ebff] rounded-full px-3 py-1.5">
+                className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5">
                 History
               </MotionButton>
             </div>
@@ -185,10 +180,10 @@ function Dashboard() {
                     : <XCircle className="h-5 w-5 text-[#ef4444]" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-black truncate">{lastPush.appName}</div>
-                  <div className="text-[11px] text-black/50 truncate mt-0.5">{lastPush.repo}</div>
+                  <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{lastPush.appName}</div>
+                  <div className="text-[11px] text-[#6b6360] truncate mt-0.5">{lastPush.repo}</div>
                   {lastPush.commitHash && (
-                    <div className="text-[10px] font-mono text-black/35 mt-1.5 bg-black/5 rounded px-2 py-0.5 inline-block">
+                    <div className="text-[10px] font-mono text-[#9a8880] mt-1.5 bg-black/5 rounded px-2 py-0.5 inline-block">
                       {lastPush.commitHash.slice(0, 10)}
                     </div>
                   )}
@@ -198,12 +193,12 @@ function Dashboard() {
                     style={{ background: lastPush.status === "success" ? "#22c55e" : "#ef4444" }}>
                     {lastPush.status === "success" ? "✓ Pushed" : "✗ Failed"}
                   </div>
-                  <div className="text-[10px] text-black/35 mt-1.5">{formatRelativeTime(lastPush.timestamp)}</div>
+                  <div className="text-[10px] text-[#9a8880] mt-1.5">{formatRelativeTime(lastPush.timestamp)}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-black/5 text-[11px] text-black/45">
+              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-black/5 text-[11px] text-[#6b6360]">
                 <span><strong>{lastPush.filesCount}</strong> files</span>
-                <span className="h-1 w-1 rounded-full bg-black/15" />
+                <span className="h-1 w-1 rounded-full bg-[#c8b8a2]" />
                 <span className="flex items-center gap-1"><GitBranch className="h-3 w-3" />{lastPush.branch}</span>
               </div>
             </MotionCard>
@@ -214,27 +209,27 @@ function Dashboard() {
       {/* Recent repo */}
       {isConnected && repos.length > 0 && (
         <FadeUp delay={0.22}>
-          <div className="bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055]">
+          <div className="bg-white rounded-[20px] p-5 mb-4 border border-[#f0ece4]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[13px] font-extrabold text-black">Recent Repository</span>
+              <span className="text-[13px] font-black text-[#1a1a1a]">Recent Repository</span>
               <MotionButton onClick={() => navigate({ to: "/repositories" })}
-                className="text-[11px] font-bold text-[#8b5cf6] bg-[#f0ebff] rounded-full px-3 py-1.5">
+                className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5">
                 View all
               </MotionButton>
             </div>
-            <MotionCard className="flex items-center gap-3 bg-[#f9f8f4] rounded-2xl p-3">
+            <MotionCard className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3">
               <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
                 <GitHubLogo className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-bold text-black truncate">{repos[0].full_name}</div>
+                <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{repos[0].full_name}</div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <GitBranch className="h-3 w-3 text-black/30" />
-                  <span className="text-[11px] text-black/40">{repos[0].default_branch}</span>
+                  <GitBranch className="h-3 w-3 text-[#c8b8a2]" />
+                  <span className="text-[11px] text-[#9a8880]">{repos[0].default_branch}</span>
                 </div>
               </div>
               <MotionButton onClick={() => navigate({ to: "/push" })}
-                className="h-9 w-9 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
+                className="h-9 w-9 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0">
                 <ArrowRight className="h-4 w-4 text-white" strokeWidth={2.5} />
               </MotionButton>
             </MotionCard>
@@ -246,17 +241,17 @@ function Dashboard() {
       {isConnected && (
         <FadeUp delay={0.26}>
           <MotionCard
-            className="rounded-3xl p-5 flex items-center justify-between mb-2"
-            style={{ background: "linear-gradient(135deg,#1a1a2e,#0f3460)" }}
+            className="rounded-3xl p-5 flex items-center justify-between mb-2 border border-[#f0ece4]"
+            style={{ background: "#1c1917" }}
             onClick={() => navigate({ to: "/push" })}
           >
             <div>
-              <div className="text-[15px] font-extrabold text-white mb-0.5">Ready to ship?</div>
-              <div className="text-[12px] text-white/35">Push your latest app in seconds.</div>
+              <div className="text-[15px] font-black text-white mb-0.5">Ready to ship?</div>
+              <div className="text-[12px] text-white/40">Push your latest app in seconds.</div>
             </div>
             <MotionButton onClick={() => navigate({ to: "/push" })}
-              className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[13px] text-black"
-              style={{ background: "linear-gradient(135deg,#dce99a,#c5e352)" }}>
+              className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[13px] text-white"
+              style={{ background: "#f97316" }}>
               <Zap className="h-4 w-4" strokeWidth={2.5} />Push
             </MotionButton>
           </MotionCard>
