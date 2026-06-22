@@ -207,12 +207,12 @@ export async function listRocketApps({
     { url: `${BACK_BASE}/api/v1/recent-threads-projects/list`, body: {} },
   ];
 
-  let debugInfo = "";
+  let gotValidResponse = false;
 
   for (const ep of endpoints) {
     try {
       const d = await rocketPost(ep.url, data.token, ep.body);
-      debugInfo = JSON.stringify(d, null, 2).slice(0, 800);
+      gotValidResponse = true;
       const arr = deepFindArray(d);
       if (arr.length > 0) return arr.map(mapToRocketApp);
       // Got a valid decrypted response but empty array — stop trying
@@ -220,7 +220,8 @@ export async function listRocketApps({
     } catch { /* try next endpoint */ }
   }
 
-  throw new Error(`No projects found. Decrypted response: ${debugInfo || "(no response)"}`);
+  if (gotValidResponse) return [];
+  throw new Error("Could not reach Rocket.new. Check your token and try again.");
 }
 
 // ─── Files ───────────────────────────────────────────────────────────────────

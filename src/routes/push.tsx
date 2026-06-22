@@ -536,17 +536,22 @@ function PushPage() {
               Loading {platformLabel} apps…
             </div>
           ) : apps.length === 0 ? (
-            <div className="py-4 space-y-3">
-              <div className="text-center">
-                <p className="text-[13px] text-[#9a8880] mb-2">No apps found.</p>
-                <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[13px]">Try again →</button>
+            <div className="py-6 text-center">
+              <div
+                className="h-12 w-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                style={{ background: platform === "rocket" ? "linear-gradient(135deg,#ede9fe,#ddd6fe)" : "#fff4ed" }}
+              >
+                {platform === "rocket" ? <RocketLogo size={22} /> : <Base44Logo size={22} />}
               </div>
-              {appsError && (
-                <div className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3">
-                  <p className="text-[10px] font-bold text-[#991b1b] mb-1">Debug — API response:</p>
-                  <pre className="text-[10px] text-[#7f1d1d] whitespace-pre-wrap break-all leading-snug max-h-48 overflow-y-auto">{appsError}</pre>
-                </div>
-              )}
+              <p className="text-[13px] font-semibold text-[#1a1a1a] mb-1">
+                {appsError ? "Couldn't load apps" : "No apps found"}
+              </p>
+              <p className="text-[11px] text-[#9a8880] mb-3 max-w-[200px] mx-auto leading-relaxed">
+                {appsError
+                  ? appsError
+                  : `No ${platformLabel} projects yet. Create one and come back.`}
+              </p>
+              <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[13px]">Try again →</button>
             </div>
           ) : (
             <StaggerContainer className="space-y-2">
