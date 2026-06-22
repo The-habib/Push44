@@ -61,6 +61,64 @@ export async function createGitHubRepo({ data }: { data: { token: string; name: 
   };
 }
 
+export async function getRepoDetails({ data }: { data: { token: string; owner: string; repo: string } }) {
+  const r = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}`);
+  return {
+    id: r.id as number,
+    name: r.name as string,
+    full_name: r.full_name as string,
+    description: (r.description as string | null) ?? null,
+    private: r.private as boolean,
+    html_url: r.html_url as string,
+    default_branch: r.default_branch as string,
+    stargazers_count: r.stargazers_count as number,
+    forks_count: r.forks_count as number,
+    watchers_count: r.watchers_count as number,
+    open_issues_count: r.open_issues_count as number,
+    size: r.size as number,
+    language: (r.language as string | null) ?? null,
+    topics: (r.topics as string[]) ?? [],
+    license: (r.license?.spdx_id as string | null) ?? null,
+    created_at: r.created_at as string,
+    updated_at: r.updated_at as string,
+    pushed_at: r.pushed_at as string,
+  };
+}
+
+export async function getRepoLanguages({ data }: { data: { token: string; owner: string; repo: string } }) {
+  const langs = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/languages`);
+  const total = Object.values(langs as Record<string, number>).reduce((s: number, v) => s + (v as number), 0);
+  return Object.entries(langs as Record<string, number>).map(([name, bytes]) => ({
+    name,
+    bytes: bytes as number,
+    pct: total > 0 ? Math.round(((bytes as number) / total) * 1000) / 10 : 0,
+  }));
+}
+
+export async function getRepoCommits({ data }: { data: { token: string; owner: string; repo: string; per_page?: number } }) {
+  const commits = await ghFetch(
+    data.token,
+    `/repos/${data.owner}/${data.repo}/commits?per_page=${data.per_page ?? 8}`
+  );
+  return (commits as any[]).map((c) => ({
+    sha: c.sha as string,
+    message: (c.commit.message as string).split("\n")[0],
+    author: (c.commit.author?.name as string) ?? "Unknown",
+    date: c.commit.author?.date as string,
+    html_url: c.html_url as string,
+  }));
+}
+
+export async function getRepoContributors({ data }: { data: { token: string; owner: string; repo: string } }) {
+  const list = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/contributors?per_page=5`).catch(() => []);
+  return (list as any[]).map((c) => ({
+    login: c.login as string,
+    avatar_url: c.avatar_url as string,
+    contributions: c.contributions as number,
+    html_url: c.html_url as string,
+  }));
+}
+
 export interface FileEntry {
   path: string;
   content: string;
