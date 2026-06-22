@@ -8,11 +8,13 @@
 //   PROJECT    = https://project.rocket.new       (p in bundle)
 //   path prefixes: auth/v3 (h), api/v1 (m), web/v1 (f), web/v3 ($)
 //
-// Token format: "JWT <token>"  (NOT "Bearer")
+// Token format: "JWT <token>"  (NOT "Bearer") for appuser.dhiwise.com
+// back.rocket.new uses server-side sessions — must establish via loginToBack()
 // Responses may be AES-256-CBC encrypted.
 
 const AUTH_BASE    = "https://appuser.dhiwise.com";
 const BACK_BASE    = "https://back.rocket.new";
+const GATEWAY_BASE = "https://gateway.rocket.new";
 const APP_BASE     = "https://application.rocket.new";
 
 // AES-256-CBC key — hardcoded in the Rocket.new JS bundle (decryptObject function)
@@ -59,12 +61,50 @@ async function rocketDecrypt(data: any): Promise<any> {
   }
 }
 
+// ─── JWT decode ───────────────────────────────────────────────────────────────
+// Extract companyId/workspaceId from the JWT payload without any API call.
+function decodeJwtPayload(token: string): Record<string, any> | null {
+  try {
+    // Strip "JWT " or "Bearer " prefix if present
+    const raw = token.replace(/^(JWT|Bearer)\s+/i, "");
+    const parts = raw.split(".");
+    if (parts.length < 2) return null;
+    // Base64url → base64 → decode
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(b64.padEnd(b64.length + (4 - b64.length % 4) % 4, "="));
+    return JSON.parse(json);
+  } catch { return null; }
+}
+
 // ─── HTTP helpers ─────────────────────────────────────────────────────────────
 
-function jwtHeaders(token: string, companyId?: string): Record<string, string> {
+// Headers for appuser.dhiwise.com (auth service) — uses "JWT" prefix
+function authHeaders(token: string, extra?: Record<string, string>): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `JWT ${token}`,
+    pageURL: "https://rocket.new",
+    ...extra,
+  };
+}
+
+// Headers for back.rocket.new — tries Bearer first, falls back to JWT
+function backHeaders(token: string, companyId?: string): Record<string, string> {
+  const h: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+    pageURL: "https://rocket.new",
+  };
+  if (companyId) h.companyId = companyId;
+  return h;
+}
+
+// Alternative: JWT format for back.rocket.new
+function backHeadersJWT(token: string, companyId?: string): Record<string, string> {
   const h: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `JWT ${token}`,
+    pageURL: "https://rocket.new",
   };
   if (companyId) h.companyId = companyId;
   return h;
@@ -83,22 +123,51 @@ async function parseError(res: Response, fallback: string): Promise<string> {
   }
 }
 
-async function rocketPost(url: string, token: string, body: object = {}): Promise<any> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: jwtHeaders(token),
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(await parseError(res, `POST ${url} failed (${res.status})`));
-  const raw = await res.json();
-  return rocketDecrypt(raw);
-}
+// ─── Session establishment ────────────────────────────────────────────────────
+// back.rocket.new uses Sails.js server-side sessions.
+// We must call a login endpoint on back.rocket.new to create a session,
+// then use the returned token for all subsequent back.rocket.new calls.
 
-async function rocketGet(url: string, token: string): Promise<any> {
-  const res = await fetch(url, { method: "GET", headers: jwtHeaders(token) });
-  if (!res.ok) throw new Error(await parseError(res, `GET ${url} failed (${res.status})`));
-  const raw = await res.json();
-  return rocketDecrypt(raw);
+async function loginToBack(authToken: string): Promise<string | null> {
+  const log = (label: string, val: any) =>
+    console.warn(`[push44:login] ${label}`, JSON.stringify(val).slice(0, 400));
+
+  // Possible back.rocket.new login endpoints (Sails.js conventions)
+  const loginEndpoints = [
+    `${BACK_BASE}/api/v1/auth/user-login`,
+    `${BACK_BASE}/api/v1/auth/login`,
+    `${BACK_BASE}/api/v1/user/login`,
+    `${BACK_BASE}/api/v1/auth/sso-login`,
+    `${BACK_BASE}/api/v1/auth/token-login`,
+  ];
+
+  for (const url of loginEndpoints) {
+    // Try with JWT header
+    for (const headers of [
+      { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, pageURL: "https://rocket.new" },
+      { "Content-Type": "application/json", Authorization: `Bearer ${authToken}`, pageURL: "https://rocket.new" },
+    ]) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ token: authToken }),
+        });
+        const raw = await res.json().catch(() => null);
+        if (!raw) continue;
+        const d = await rocketDecrypt(raw);
+        log(`${res.status} login attempt ${url}`, d);
+        if (res.ok && d) {
+          const p = d.data ?? d;
+          const tok = p.token ?? p.access_token ?? p.sessionToken ?? p.backToken ?? p.jwt;
+          if (tok) { log("back session token obtained", "ok"); return String(tok); }
+        }
+      } catch { /* try next */ }
+    }
+  }
+
+  log("loginToBack", "no session established, proceeding with auth token directly");
+  return null;
 }
 
 // ─── OTP auth ────────────────────────────────────────────────────────────────
@@ -121,11 +190,16 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
   if (!res.ok) throw new Error(await parseError(res, `OTP verification failed (${res.status})`));
   const raw = await res.json();
   const d = await rocketDecrypt(raw);
+  console.warn("[push44:otp] full response", JSON.stringify(d).slice(0, 3000));
   const payload = d.data ?? d;
-  const token: string = payload.token ?? payload.access_token ?? payload.accessToken ?? payload.jwtToken ?? "";
+  // Capture ALL possible tokens from auth response
+  const token: string =
+    payload.token ?? payload.access_token ?? payload.accessToken ??
+    payload.jwtToken ?? payload.authToken ?? payload.jwt ?? "";
   if (!token) throw new Error("No token returned from Rocket.new. Check your OTP code.");
-  // companyId comes from the auth response (discovered via JS bundle reverse engineering)
-  const companyId: string = payload.companyId ?? payload.company_id ?? "";
+  const companyId: string =
+    payload.companyId ?? payload.company_id ??
+    payload.workspaceId ?? payload.workspace_id ?? "";
   const user = payload.user ?? payload;
   return {
     token,
@@ -138,29 +212,26 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
 // ─── Token validation ─────────────────────────────────────────────────────────
 
 export async function validateRocketToken({ data }: { data: { token: string } }) {
-  // Try the token-specific endpoint first (discovered in bundle: auth/v3/get-user-from-token-r)
   for (const url of [
     `${AUTH_BASE}/auth/v3/get-user-from-token-r`,
     `${AUTH_BASE}/web/v1/user/get-profile`,
   ]) {
     try {
-      const res = await fetch(url, { method: "GET", headers: jwtHeaders(data.token) });
+      const res = await fetch(url, { method: "GET", headers: authHeaders(data.token) });
       if (!res.ok) continue;
       const raw = await res.json();
       const d = await rocketDecrypt(raw);
-      // Log full profile to find companyId
-      console.warn("[push44] profile full", JSON.stringify(d).slice(0, 2000));
+      console.warn("[push44:validate] profile", JSON.stringify(d).slice(0, 3000));
       const payload = d.data ?? d;
       const user = payload.user ?? payload;
       const email = String(user.email ?? payload.email ?? "");
       const name  = String(user.name ?? user.full_name ?? user.username ?? user.displayName ?? payload.full_name ?? "");
-      // companyId: try payload directly, then user object, then workspace
       const companyId = String(
         payload.companyId ?? payload.company_id ??
         user.companyId ?? user.company_id ??
         user.defaultWorkspaceId ?? user.workspaceId ??
-        payload.defaultWorkspaceId ??
-        payload._id ?? ""  // fallback: user's own _id (often equals personal workspace companyId)
+        payload.defaultWorkspaceId ?? payload.workspaceId ?? ""
+        // Note: do NOT fall back to _id — the companyId must be a real workspace ID
       );
       if (email) return { email, name, companyId };
     } catch { /* try next */ }
@@ -181,12 +252,10 @@ function deepFindApps(v: any, depth = 0): any[] {
   if (depth > 5) return [];
   if (Array.isArray(v) && v.length > 0 && typeof v[0] === "object") return v;
   if (v && typeof v === "object") {
-    // Prefer known key names
     for (const key of ["chatThreads", "threads", "applications", "projects", "apps",
                        "playgroundProjects", "items", "results", "list", "records"]) {
       if (Array.isArray(v[key]) && v[key].length > 0) return v[key];
     }
-    // Recurse into wrapper keys
     for (const key of ["data", "payload", "result", "response", "body"]) {
       if (v[key] !== undefined) {
         const found = deepFindApps(v[key], depth + 1);
@@ -210,14 +279,14 @@ function mapToRocketApp(a: any): RocketApp {
 }
 
 export async function listRocketApps({ data }: { data: { token: string; companyId?: string } }): Promise<RocketApp[]> {
-  const token = data.token;
+  const authToken = data.token;
   let companyId = data.companyId ?? "";
   const seen = new Set<string>();
   const allApps: RocketApp[] = [];
   let reachable = false;
 
   const log = (label: string, val: any) =>
-    console.warn(`[push44] ${label}`, JSON.stringify(val).slice(0, 500));
+    console.warn(`[push44] ${label}`, JSON.stringify(val).slice(0, 600));
 
   function addApps(arr: any[]) {
     for (const item of arr) {
@@ -229,64 +298,178 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     }
   }
 
-  const hdrs = () => jwtHeaders(token, companyId || undefined);
+  // ── 0. Establish a session on back.rocket.new + resolve companyId from profile
+  const [backSession] = await Promise.all([
+    loginToBack(authToken),
+  ]);
 
-  async function tryPost(url: string, body: object, tag: string) {
-    try {
-      const res = await fetch(url, { method: "POST", headers: hdrs(), body: JSON.stringify(body) });
-      reachable = true;
-      const raw = await res.json().catch(() => null);
-      const d = raw ? await rocketDecrypt(raw) : null;
-      log(`${res.status} POST ${tag}`, d ?? raw);
-      if (!res.ok || !d) return null;
-      return d;
-    } catch (e: any) { log(`ERR POST ${tag}`, e?.message); return null; }
-  }
+  // The "active" token for back.rocket.new calls: use exchanged session if available, else auth token
+  const backToken = backSession ?? authToken;
+  log("backToken source", backSession ? "session-exchange" : "auth-token-direct");
 
-  async function tryGet(url: string, tag: string) {
-    try {
-      const res = await fetch(url, { method: "GET", headers: hdrs() });
-      reachable = true;
-      const raw = await res.json().catch(() => null);
-      const d = raw ? await rocketDecrypt(raw) : null;
-      log(`${res.status} GET ${tag}`, d ?? raw);
-      if (!res.ok || !d) return null;
-      return d;
-    } catch (e: any) { log(`ERR GET ${tag}`, e?.message); return null; }
-  }
-
-  // ── 0. Get full profile to find companyId if not provided
+  // ── Step 0a: Try extracting companyId from the JWT payload itself (no API call)
   if (!companyId) {
-    try {
-      const res = await fetch(`${AUTH_BASE}/web/v1/user/get-profile`, { method: "GET", headers: jwtHeaders(token) });
-      if (res.ok) {
+    const claims = decodeJwtPayload(authToken);
+    if (claims) {
+      console.warn("[push44] JWT claims", JSON.stringify(claims).slice(0, 1000));
+      companyId = String(
+        claims.companyId ?? claims.company_id ??
+        claims.workspaceId ?? claims.workspace_id ??
+        claims.cid ?? claims.wid ?? ""
+      );
+      if (companyId) log("companyId from JWT claims", companyId);
+    } else {
+      log("JWT decode", "token is not a JWT — opaque API key");
+    }
+  }
+
+  // ── Step 0b: Profile / company endpoints on auth server (do NOT fall back to _id)
+  if (!companyId) {
+    const profileUrls = [
+      `${AUTH_BASE}/auth/v3/get-user-from-token-r`,
+      `${AUTH_BASE}/web/v1/user/get-profile`,
+      `${AUTH_BASE}/web/v3/user/company-info`,
+      `${AUTH_BASE}/web/v3/company/get`,
+      `${AUTH_BASE}/web/v1/workspace/list`,
+      `${AUTH_BASE}/api/v1/company`,
+    ];
+    for (const url of profileUrls) {
+      try {
+        const res = await fetch(url, { method: "GET", headers: authHeaders(authToken) });
+        if (!res.ok) continue;
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
-        log("profile for companyId", d);
+        console.warn(`[push44] profile (${url.split("/").slice(-2).join("/")})`, JSON.stringify(d).slice(0, 4000));
         const u = d.data ?? d;
-        companyId = String(
-          u.companyId ?? u.company_id ?? u.defaultWorkspaceId ??
-          u.workspaceId ?? u._id ?? ""
+        const user = u.user ?? u;
+        const workspace = u.workspace ?? user.workspace ?? u.company ?? user.company;
+        // IMPORTANT: do NOT fall back to _id — it causes 401 on back.rocket.new
+        const candidate = String(
+          workspace?._id ?? workspace?.id ??
+          u.companyId ?? u.company_id ??
+          user.companyId ?? user.company_id ??
+          u.defaultWorkspaceId ?? u.workspaceId ??
+          user.defaultWorkspaceId ?? user.workspaceId ?? ""
         );
-        log("resolved companyId", companyId);
-      }
-    } catch { /* non-fatal */ }
-  }
-
-  // ── 1. Workspace list → get workspace IDs + companyId
-  let workspaceIds: string[] = [];
-  const ws = await tryGet(`${AUTH_BASE}/web/v3/workspace/list`, "workspace/list");
-  if (ws) {
-    const wsArr = deepFindApps(ws);
-    // Extract companyId from first workspace if still missing
-    if (!companyId && wsArr.length > 0) {
-      companyId = String(wsArr[0]?.companyId ?? wsArr[0]?._id ?? "");
+        if (candidate && candidate !== "undefined") {
+          companyId = candidate;
+          log("companyId resolved", companyId);
+          break;
+        }
+      } catch { /* try next */ }
     }
-    workspaceIds = wsArr.map((w: any) => String(w.companyId ?? w._id ?? w.id ?? "")).filter(Boolean);
-    log("workspaceIds", workspaceIds);
   }
 
-  // ── 2. chat-thread/search (the canonical app listing endpoint)
+  // ── Step 0c: Try to get companyId via back.rocket.new session exchange
+  // Send token in different body formats to see if we can get workspace context
+  if (!companyId) {
+    for (const [body, headers] of [
+      [{ jwtToken: authToken }, { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, pageURL: "https://rocket.new" }],
+      [{ accessToken: authToken }, { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, pageURL: "https://rocket.new" }],
+      [{ token: authToken }, { "Content-Type": "application/json", Authorization: `Bearer ${authToken}`, pageURL: "https://rocket.new" }],
+    ] as const) {
+      for (const url of [`${BACK_BASE}/api/v1/auth/user-login`, `${BACK_BASE}/api/v1/auth/sso`]) {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: headers as Record<string, string>,
+            body: JSON.stringify(body),
+          });
+          const raw = await res.json().catch(() => null);
+          const d = raw ? await rocketDecrypt(raw) : null;
+          if (d) log(`${res.status} session-exchange ${url.split("/").pop()}`, d);
+          if (res.ok && d) {
+            const p = d.data ?? d;
+            const cid = String(p.companyId ?? p.company_id ?? p.workspaceId ?? "");
+            if (cid && cid !== "undefined") { companyId = cid; log("companyId from session-exchange", cid); break; }
+          }
+        } catch { /* try next */ }
+      }
+      if (companyId) break;
+    }
+  }
+
+  // Helper closures — try both Bearer and JWT formats
+  async function tryPost(base: string, path: string, body: object, tag: string) {
+    for (const hdrs of [
+      backHeaders(backToken, companyId || undefined),
+      backHeadersJWT(backToken, companyId || undefined),
+      backHeaders(authToken, companyId || undefined),
+      backHeadersJWT(authToken, companyId || undefined),
+    ]) {
+      try {
+        const res = await fetch(`${base}${path}`, {
+          method: "POST",
+          headers: hdrs,
+          body: JSON.stringify(body),
+        });
+        reachable = true;
+        const raw = await res.json().catch(() => null);
+        const d = raw ? await rocketDecrypt(raw) : null;
+        log(`${res.status} POST ${tag}`, d ?? raw);
+        if (res.ok && d) return d;
+        // If 401, no point retrying with same token — break and try next token variant
+        if (res.status === 401) break;
+      } catch (e: any) { log(`ERR POST ${tag}`, e?.message); }
+    }
+    return null;
+  }
+
+  async function tryGet(base: string, path: string, tag: string) {
+    for (const hdrs of [
+      backHeaders(backToken, companyId || undefined),
+      backHeadersJWT(backToken, companyId || undefined),
+      backHeaders(authToken, companyId || undefined),
+      backHeadersJWT(authToken, companyId || undefined),
+    ]) {
+      try {
+        const res = await fetch(`${base}${path}`, { method: "GET", headers: hdrs });
+        reachable = true;
+        const raw = await res.json().catch(() => null);
+        const d = raw ? await rocketDecrypt(raw) : null;
+        log(`${res.status} GET ${tag}`, d ?? raw);
+        if (res.ok && d) return d;
+        if (res.status === 401) break;
+      } catch (e: any) { log(`ERR GET ${tag}`, e?.message); }
+    }
+    return null;
+  }
+
+  // ── 1. Workspace list — resolve companyId + workspaceIds
+  let workspaceIds: string[] = [];
+  // Try auth base first (no companyId header), then back/gateway
+  for (const [base, path] of [
+    [AUTH_BASE, "/web/v3/workspace/list"],
+    [BACK_BASE, "/api/v1/workspace/list"],
+    [GATEWAY_BASE, "/api/v1/workspace/list"],
+  ] as const) {
+    try {
+      const res = await fetch(`${base}${path}`, {
+        method: "GET",
+        // For auth base, use plain auth headers without companyId
+        headers: base === AUTH_BASE
+          ? authHeaders(authToken)
+          : backHeaders(backToken, companyId || undefined),
+      });
+      reachable = true;
+      const raw = await res.json().catch(() => null);
+      const d = raw ? await rocketDecrypt(raw) : null;
+      log(`${res.status} GET workspace/list [${base}]`, d);
+      if (res.ok && d) {
+        const wsArr = deepFindApps(d);
+        if (!companyId && wsArr.length > 0) {
+          companyId = String(wsArr[0]?.companyId ?? wsArr[0]?._id ?? "");
+        }
+        workspaceIds = wsArr
+          .map((w: any) => String(w.companyId ?? w._id ?? w.id ?? ""))
+          .filter(Boolean);
+        log("workspaceIds", workspaceIds);
+        break;
+      }
+    } catch { /* try next */ }
+  }
+
+  // ── 2. chat-thread/search — canonical app listing
   const searchBodies = [
     {},
     { search: "" },
@@ -294,59 +477,99 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     { page: 1, limit: 100, search: "" },
     { type: "all" },
     { isOwner: true },
-    { workspaceId: workspaceIds[0] ?? "" },
+    ...(workspaceIds[0] ? [{ workspaceId: workspaceIds[0] }] : []),
+    ...(companyId ? [{ companyId }] : []),
   ];
   for (const body of searchBodies) {
-    const d = await tryPost(`${BACK_BASE}/api/v1/chat-thread/search`, body, `chat-thread/search ${JSON.stringify(body)}`);
+    const d = await tryPost(BACK_BASE, "/api/v1/chat-thread/search", body, `chat-thread/search ${JSON.stringify(body)}`);
     if (d) {
       const arr = deepFindApps(d);
       if (arr.length > 0) { addApps(arr); break; }
     }
   }
+  // Also try gateway
+  if (allApps.length === 0) {
+    for (const body of [{}, { page: 1, limit: 100 }]) {
+      const d = await tryPost(GATEWAY_BASE, "/api/v1/chat-thread/search", body, `gw/chat-thread/search`);
+      if (d) { addApps(deepFindApps(d)); if (allApps.length > 0) break; }
+    }
+  }
 
   // ── 3. playground-project/list
-  for (const body of [{}, { page: 1, limit: 100 }]) {
-    const d = await tryPost(`${BACK_BASE}/api/v1/playground-project/list`, body, `playground-project/list ${JSON.stringify(body)}`);
-    if (d) addApps(deepFindApps(d));
-  }
-  const pgGet = await tryGet(`${BACK_BASE}/api/v1/playground-project/list`, "playground-project/list GET");
-  if (pgGet) addApps(deepFindApps(pgGet));
-
-  // ── 4. application/list v2 + v3
-  for (const url of [`${BACK_BASE}/api/v2/application/list`, `${BACK_BASE}/api/v3/application/list`]) {
-    for (const body of [{}, { page: 1, limit: 100 }, { type: "owned" }]) {
-      const d = await tryPost(url, body, `${url.split("/").slice(-3).join("/")} ${JSON.stringify(body)}`);
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const body of [{}, { page: 1, limit: 100 }]) {
+      const d = await tryPost(base, "/api/v1/playground-project/list", body, `playground-project/list`);
       if (d) addApps(deepFindApps(d));
+    }
+    const dg = await tryGet(base, "/api/v1/playground-project/list", "playground-project/list GET");
+    if (dg) addApps(deepFindApps(dg));
+  }
+
+  // ── 4. application/list v1/v2/v3
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const ver of ["v1", "v2", "v3"]) {
+      for (const body of [{}, { page: 1, limit: 100 }, { type: "owned" }]) {
+        const d = await tryPost(base, `/api/${ver}/application/list`, body, `${ver}/application/list`);
+        if (d) addApps(deepFindApps(d));
+      }
     }
   }
 
   // ── 5. recent-threads
-  const rt = await tryPost(`${BACK_BASE}/api/v1/recent-threads-projects/list`, {}, "recent-threads/list");
-  if (rt) addApps(deepFindApps(rt));
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    const rt = await tryPost(base, "/api/v1/recent-threads-projects/list", {}, "recent-threads/list");
+    if (rt) addApps(deepFindApps(rt));
+  }
 
   // ── 6. Per-workspace queries
   for (const wsId of workspaceIds.slice(0, 3)) {
-    for (const url of [
-      `${BACK_BASE}/api/v2/workspace/${wsId}/application/list`,
-      `${BACK_BASE}/api/v1/workspace/${wsId}/chat-thread/list`,
-    ]) {
-      const d = await tryPost(url, { page: 1, limit: 100 }, url.split("/").slice(-4).join("/"));
+    for (const [base, path] of [
+      [BACK_BASE, `/api/v2/workspace/${wsId}/application/list`],
+      [BACK_BASE, `/api/v1/workspace/${wsId}/chat-thread/list`],
+      [GATEWAY_BASE, `/api/v1/workspace/${wsId}/chat-thread/list`],
+    ] as const) {
+      const d = await tryPost(base, path, { page: 1, limit: 100 }, path.split("/").slice(-4).join("/"));
       if (d) addApps(deepFindApps(d));
     }
   }
 
   // ── 7. GET fallbacks
-  for (const url of [
-    `${BACK_BASE}/api/v1/chat-thread/list`,
-    `${BACK_BASE}/api/v1/application/list`,
-  ]) {
-    const d = await tryGet(url, url.split("/").slice(-3).join("/"));
-    if (d) addApps(deepFindApps(d));
+  for (const base of [BACK_BASE, GATEWAY_BASE]) {
+    for (const path of ["/api/v1/chat-thread/list", "/api/v1/application/list"]) {
+      const d = await tryGet(base, path, path);
+      if (d) addApps(deepFindApps(d));
+    }
+  }
+
+  // ── 8. APP_BASE endpoints
+  for (const path of ["/api/v1/application/list", "/api/v1/projects"]) {
+    try {
+      const res = await fetch(`${APP_BASE}${path}`, {
+        method: "GET",
+        headers: backHeaders(backToken, companyId || undefined),
+      });
+      if (res.ok) {
+        const raw = await res.json().catch(() => null);
+        const d = raw ? await rocketDecrypt(raw) : null;
+        log(`${res.status} GET app-base${path}`, d);
+        if (d) addApps(deepFindApps(d));
+      }
+    } catch { /* non-fatal */ }
   }
 
   log("FINAL app count", allApps.length);
 
   if (!reachable) throw new Error("Could not reach Rocket.new. Check your token and try again.");
+
+  // If we have no apps AND no workspace context (companyId), the pasted API key
+  // cannot list projects — the workspace ID is only available after OTP login.
+  if (allApps.length === 0 && !companyId) {
+    throw new Error(
+      "NEEDS_OTP_LOGIN: Your Rocket.new API key doesn't carry workspace info. " +
+      "Please reconnect using Login with Email (OTP) to list your projects."
+    );
+  }
+
   return allApps;
 }
 
@@ -364,42 +587,47 @@ export async function fetchRocketAppFiles({
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
 
-  // chat-thread/get — discovered: fetchThreadDetails = back.rocket.new/api/v1/chat-thread/get
-  const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/get`, {
-    method: "POST",
-    headers: jwtHeaders(token),
-    body: JSON.stringify({ threadId: appId }),
-  });
-
-  if (!res.ok) {
-    throw new Error(await parseError(res, `Failed to fetch project files (${res.status})`));
-  }
-
-  const raw = await res.json();
-  const d = await rocketDecrypt(raw);
-  const project = d.data ?? d;
-
-  const filesMap = project.files ?? project.code ?? project.sourceFiles;
-  if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
-    return Object.entries(filesMap as Record<string, string>).map(
-      ([path, content]): RocketFile => ({
-        path,
-        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
-      })
-    );
-  }
-
-  const filesArr: any[] = Array.isArray(filesMap)
-    ? filesMap
-    : Array.isArray(project.files ?? project)
-    ? (project.files ?? project)
-    : [];
-
-  if (filesArr.length > 0) {
-    return filesArr.map((f: any): RocketFile => ({
-      path: String(f.path ?? f.name ?? f.filename ?? ""),
-      content: typeof f.content === "string" ? f.content : JSON.stringify(f.content ?? f, null, 2),
-    }));
+  for (const [base, body] of [
+    [BACK_BASE, { threadId: appId }],
+    [BACK_BASE, { chatThreadId: appId }],
+    [GATEWAY_BASE, { threadId: appId }],
+  ] as const) {
+    try {
+      for (const hdrs of [
+        backHeaders(token),
+        backHeadersJWT(token),
+      ]) {
+        const res = await fetch(`${base}/api/v1/chat-thread/get`, {
+          method: "POST",
+          headers: hdrs,
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) continue;
+        const raw = await res.json();
+        const d = await rocketDecrypt(raw);
+        const project = d.data ?? d;
+        const filesMap = project.files ?? project.code ?? project.sourceFiles;
+        if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
+          return Object.entries(filesMap as Record<string, string>).map(
+            ([path, content]): RocketFile => ({
+              path,
+              content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+            })
+          );
+        }
+        const filesArr: any[] = Array.isArray(filesMap)
+          ? filesMap
+          : Array.isArray(project.files ?? project)
+          ? (project.files ?? project)
+          : [];
+        if (filesArr.length > 0) {
+          return filesArr.map((f: any): RocketFile => ({
+            path: String(f.path ?? f.name ?? f.filename ?? ""),
+            content: typeof f.content === "string" ? f.content : JSON.stringify(f.content ?? f, null, 2),
+          }));
+        }
+      }
+    } catch { /* try next */ }
   }
 
   throw new Error(

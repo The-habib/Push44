@@ -10,6 +10,7 @@ import {
   File, FileCode2, FileJson, Image, Braces,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
+import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
 import { listRocketApps, fetchRocketAppFiles } from "@/lib/rocket-api";
@@ -184,7 +185,7 @@ function PlatformToggle({
 }
 
 function PushPage() {
-  const { creds, isLoaded } = useApp();
+  const { creds, isLoaded, updateCreds } = useApp();
   const navigate = useNavigate();
 
   const [platform, setPlatform]         = useState<Platform>("base44");
@@ -208,6 +209,8 @@ function PushPage() {
   const [wakingSandbox, setWaking]      = useState(false);
   const [manualUrl, setManualUrl]       = useState("");
   const [manualLoading, setManualLoading] = useState(false);
+  const [showRocketModal, setShowRocketModal] = useState(false);
+  const [needsOtpLogin, setNeedsOtpLogin]    = useState(false);
 
   const hasBase44 = !!creds.base44Token;
   const hasRocket = !!creds.rocketToken;
@@ -239,9 +242,19 @@ function PushPage() {
       finally { setLA(false); }
     } else {
       if (!creds.rocketToken) return;
-      setLA(true);
-      try { setAppsError(""); setApps(await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } })); }
-      catch (e: any) { setAppsError(e.message ?? "Unknown error"); }
+      setLA(true); setNeedsOtpLogin(false);
+      try {
+        setAppsError("");
+        setApps(await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } }));
+      } catch (e: any) {
+        const msg: string = e.message ?? "Unknown error";
+        if (msg.startsWith("NEEDS_OTP_LOGIN")) {
+          setNeedsOtpLogin(true);
+          setAppsError("Your API key needs workspace info. Log in with Email OTP to continue.");
+        } else {
+          setAppsError(msg);
+        }
+      }
       finally { setLA(false); }
     }
   };
@@ -508,6 +521,21 @@ function PushPage() {
       <AnimatedCorner variant="push" />
       <Toaster position="top-center" richColors />
 
+      <AnimatePresence>
+        {showRocketModal && (
+          <RocketModal
+            defaultTab="otp"
+            onSuccess={(t, e, n, c) => {
+              updateCreds({ rocketToken: t, rocketEmail: e, rocketCompanyId: c, displayName: n || e });
+              setShowRocketModal(false);
+              setNeedsOtpLogin(false);
+              setTimeout(loadApps, 300);
+            }}
+            onClose={() => setShowRocketModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
       <FadeUp>
         <div className="mb-5">
           <p className="text-[11px] font-bold text-[#9a8880] tracking-widest uppercase mb-1">Deploy</p>
@@ -593,7 +621,17 @@ function PushPage() {
                 <p className="text-[11px] text-[#9a8880] mb-3">
                   {appsError ? appsError : `Couldn't list your ${platformLabel} projects automatically.`}
                 </p>
-                <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[12px]">Retry →</button>
+                {needsOtpLogin && platform === "rocket" ? (
+                  <button
+                    onClick={() => setShowRocketModal(true)}
+                    className="font-bold text-[12px] px-4 py-2 rounded-xl text-white"
+                    style={{ background: "#6366f1" }}
+                  >
+                    Log in with Email →
+                  </button>
+                ) : (
+                  <button onClick={loadApps} style={{ color: platformColor }} className="font-bold text-[12px]">Retry →</button>
+                )}
               </div>
 
               {platform === "rocket" && (
