@@ -17,7 +17,7 @@ import { Toaster, toast } from "sonner";
 
 export const Route = createFileRoute("/push")({ component: PushPage });
 
-interface App  { id: string; name: string; updated_at: string }
+interface App  { id: string; name: string; updated_at: string; icon?: string }
 interface Repo { full_name: string; default_branch: string; html_url: string }
 interface FileEntry { path: string; content: string }
 type PushStatus = "idle" | "pushing" | "done" | "error";
@@ -237,11 +237,30 @@ function PushPage() {
               <div className="h-1 w-full" style={{ background: "linear-gradient(90deg,#22c55e,#16a34a)" }} />
 
               <div className="px-5 py-4 space-y-3.5">
-                {/* App → Repo row */}
+                {/* App row */}
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
-                    <Base44Logo size={20} />
+                  <div className="h-10 w-10 rounded-xl shrink-0 overflow-hidden">
+                    {selectedApp?.icon ? (
+                      <img
+                        src={selectedApp.icon}
+                        alt={selectedApp.name}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          t.style.display = "none";
+                          if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="h-10 w-10 rounded-xl items-center justify-center"
+                      style={{
+                        background: "linear-gradient(135deg,#fb923c,#f97316)",
+                        display: selectedApp?.icon ? "none" : "flex",
+                      }}
+                    >
+                      <Base44Logo size={20} />
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] text-[#9a8880] font-medium uppercase tracking-wide mb-0.5">App pushed</div>
@@ -252,18 +271,24 @@ function PushPage() {
                 <div className="h-px bg-[#f5f2ee]" />
 
                 {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-0">
                   <div className="text-center">
-                    <div className="text-[18px] font-black text-[#1a1a1a]">{files.length}</div>
-                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Files</div>
+                    <div className="text-[17px] font-black text-[#1a1a1a]">{files.length}</div>
+                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Files</div>
                   </div>
                   <div className="text-center border-x border-[#f5f2ee]">
+                    <div className="text-[17px] font-black text-[#1a1a1a]">
+                      {(files.reduce((acc, f) => acc + f.content.split("\n").length, 0)).toLocaleString()}
+                    </div>
+                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Lines</div>
+                  </div>
+                  <div className="text-center border-r border-[#f5f2ee]">
                     <div className="text-[13px] font-black text-[#1a1a1a] truncate px-1">{branch}</div>
-                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Branch</div>
+                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Branch</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[13px] font-black text-[#1a1a1a] font-mono">{commitHash}</div>
-                    <div className="text-[10px] text-[#9a8880] font-medium uppercase tracking-wide">Commit</div>
+                    <div className="text-[12px] font-black text-[#1a1a1a] font-mono">{commitHash}</div>
+                    <div className="text-[9px] text-[#9a8880] font-bold uppercase tracking-wide">Commit</div>
                   </div>
                 </div>
 
