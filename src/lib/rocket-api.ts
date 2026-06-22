@@ -125,10 +125,21 @@ export async function listRocketApps({
   }
   const d = await res.json();
 
-  // Response may be { data: [...] } or { applications: [...] } or plain array
-  const raw: any[] = Array.isArray(d)
-    ? d
-    : (d.data ?? d.applications ?? d.projects ?? d.results ?? []);
+  // Unwrap nested structures: { data: { applications: [...] } } or { data: [...] } or plain array
+  const unwrap = (v: any): any[] => {
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === "object") {
+      // Try common array keys one level deep
+      for (const key of ["applications", "projects", "apps", "items", "results", "list", "threads"]) {
+        if (Array.isArray(v[key])) return v[key];
+      }
+      // recurse one level into data/payload
+      if (v.data !== undefined) return unwrap(v.data);
+      if (v.payload !== undefined) return unwrap(v.payload);
+    }
+    return [];
+  };
+  const raw = unwrap(d);
 
   return raw.map(
     (a: any): RocketApp => ({
