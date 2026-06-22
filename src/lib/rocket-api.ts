@@ -197,15 +197,18 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
     payload.token ?? payload.access_token ?? payload.accessToken ??
     payload.jwtToken ?? payload.authToken ?? payload.jwt ?? "";
   if (!token) throw new Error("No token returned from Rocket.new. Check your OTP code.");
+  const user = payload.user ?? payload;
+  // companyId may live at data.companyId OR data.user.companyId
   const companyId: string =
     payload.companyId ?? payload.company_id ??
-    payload.workspaceId ?? payload.workspace_id ?? "";
-  const user = payload.user ?? payload;
+    payload.workspaceId ?? payload.workspace_id ??
+    user.companyId ?? user.company_id ??
+    user.workspaceId ?? user.workspace_id ?? "";
   return {
     token,
     companyId,
     email: String(user.email ?? data.email),
-    name: String(user.name ?? user.full_name ?? user.username ?? user.displayName ?? data.email),
+    name: String(user.name ?? user.fullName ?? user.full_name ?? user.username ?? user.displayName ?? data.email),
   };
 }
 
@@ -328,9 +331,9 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     const profileUrls = [
       `${AUTH_BASE}/auth/v3/get-user-from-token-r`,
       `${AUTH_BASE}/web/v1/user/get-profile`,
+      `${AUTH_BASE}/web/v1/workspace/list`,      // confirmed working — companyId in list[0].companyId
       `${AUTH_BASE}/web/v3/user/company-info`,
       `${AUTH_BASE}/web/v3/company/get`,
-      `${AUTH_BASE}/web/v1/workspace/list`,
       `${AUTH_BASE}/api/v1/company`,
     ];
     for (const url of profileUrls) {
@@ -343,17 +346,21 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
         const u = d.data ?? d;
         const user = u.user ?? u;
         const workspace = u.workspace ?? user.workspace ?? u.company ?? user.company;
+        // list-style responses (e.g. workspace/list) have companyId in list[0]
+        const firstListItem = Array.isArray(u.list) && u.list.length > 0 ? u.list[0] : null;
         // IMPORTANT: do NOT fall back to _id — it causes 401 on back.rocket.new
         const candidate = String(
           workspace?._id ?? workspace?.id ??
           u.companyId ?? u.company_id ??
           user.companyId ?? user.company_id ??
+          firstListItem?.companyId ?? firstListItem?.company_id ??
+          firstListItem?.company?._id ??
           u.defaultWorkspaceId ?? u.workspaceId ??
           user.defaultWorkspaceId ?? user.workspaceId ?? ""
         );
         if (candidate && candidate !== "undefined") {
           companyId = candidate;
-          log("companyId resolved", companyId);
+          log("companyId resolved from profile", companyId);
           break;
         }
       } catch { /* try next */ }
@@ -438,8 +445,9 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
   // ── 1. Workspace list — resolve companyId + workspaceIds
   let workspaceIds: string[] = [];
   // Try auth base first (no companyId header), then back/gateway
+  // Confirmed working path: /web/v1/workspace/list on appuser.dhiwise.com
   for (const [base, path] of [
-    [AUTH_BASE, "/web/v3/workspace/list"],
+    [AUTH_BASE, "/web/v1/workspace/list"],
     [BACK_BASE, "/api/v1/workspace/list"],
     [GATEWAY_BASE, "/api/v1/workspace/list"],
   ] as const) {
