@@ -86,54 +86,23 @@ function BottomNav({ pathname }: { pathname: string }) {
   if (isFirst) navHasShown = true;
 
   return (
-    /*
-     * NO position:fixed here. This div is a shrink-0 flex child at the
-     * bottom of the h-[100dvh] column. It can never move independently
-     * of the viewport — it IS part of the viewport-height container.
-     * Address-bar show/hide resizes the container via 100dvh; the nav
-     * stays glued to the bottom edge without any jump.
-     *
-     * The gradient overlay extends above this element (bottom: 100%)
-     * to create a visual "fade into the floating pill" effect without
-     * affecting layout or clipping the scroll content.
-     */
     <div
-      className="shrink-0 relative flex justify-center px-4"
+      className="shrink-0 flex items-center justify-center px-5"
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 14px)",
-        paddingTop: 6,
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 18px)",
+        paddingTop: 8,
       }}
     >
-      {/* Gradient fade — bleeds above the nav to make the pill look
-          floating rather than glued to the viewport bottom edge */}
-      <div
-        className="absolute bottom-full left-0 right-0 h-16 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(250,247,243,0) 0%, rgba(250,247,243,0.96) 100%)",
-        }}
-      />
-
       <motion.div
         className="flex items-center w-full"
-        style={{
-          maxWidth: 480,
-          borderRadius: 30,
-          padding: "5px 5px",
-          background: "rgba(18, 16, 14, 0.93)",
-          backdropFilter: "blur(32px)",
-          WebkitBackdropFilter: "blur(32px)",
-          boxShadow: [
-            "0 0 0 1px rgba(255,255,255,0.09)",
-            "inset 0 1px 0 rgba(255,255,255,0.10)",
-            "0 4px 16px rgba(0,0,0,0.30)",
-            "0 12px 36px rgba(0,0,0,0.22)",
-            "0 28px 60px rgba(0,0,0,0.16)",
-          ].join(", "),
-        }}
-        initial={isFirst && !reduced ? { opacity: 0, y: 20, scale: 0.94 } : false}
+        style={{ maxWidth: 420 }}
+        initial={isFirst && !reduced ? { opacity: 0, y: 32, scale: 0.86 } : false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: EO, delay: 0.08 }}
+        transition={{
+          duration: 0.6,
+          ease: [0.34, 1.4, 0.64, 1],
+          delay: 0.05,
+        }}
       >
         {NAV.map(({ to, icon: Icon, label }) => {
           const active = pathname === to;
@@ -145,49 +114,60 @@ function BottomNav({ pathname }: { pathname: string }) {
               className="w-[20%] flex items-center justify-center shrink-0"
             >
               <motion.div
-                className="relative flex items-center justify-center h-11 w-full rounded-[22px] overflow-hidden"
-                whileTap={reduced ? {} : { scale: 0.84 }}
-                transition={ST}
+                className="relative flex items-center justify-center h-12 w-full overflow-hidden"
+                style={{ borderRadius: 26 }}
+                whileTap={reduced ? {} : { scale: 0.80, rotate: -1.5 }}
+                transition={{ type: "spring", stiffness: 700, damping: 22 }}
               >
-                {/* Sliding orange pill */}
+                {/* Orange sliding pill — only visual weight in the nav */}
                 {active && (
                   <motion.div
                     layoutId="fnav-pill"
-                    className="absolute inset-0 rounded-[22px]"
+                    className="absolute inset-0"
                     style={{
-                      background: "linear-gradient(135deg, #fb923c 0%, #f97316 40%, #ea580c 100%)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 12px rgba(249,115,22,0.5)",
+                      borderRadius: 26,
+                      background:
+                        "linear-gradient(140deg, #fb923c 0%, #f97316 45%, #ea580c 100%)",
+                      boxShadow:
+                        "0 8px 24px rgba(249,115,22,0.50), 0 3px 10px rgba(249,115,22,0.35), inset 0 1px 0 rgba(255,255,255,0.28)",
                     }}
                     initial={false}
-                    transition={SP}
+                    transition={{
+                      type: "spring",
+                      stiffness: 620,
+                      damping: 26,
+                      mass: 0.75,
+                    }}
                   />
                 )}
 
                 {/* Icon + label */}
-                <div className="relative z-10 flex items-center gap-[5px] px-1">
+                <div className="relative z-10 flex items-center gap-[5px] px-1.5">
                   <motion.span
                     style={{ display: "flex" }}
-                    animate={{ color: active ? "#fff" : "rgba(255,255,255,0.32)" }}
-                    transition={{ duration: 0.22, ease: EO }}
+                    animate={{
+                      color: active ? "#fff" : "rgba(26,26,26,0.42)",
+                      scale: active ? 1.1 : 1,
+                    }}
+                    transition={{ duration: 0.25, ease: EO }}
                   >
                     <Icon
-                      className="h-[19px] w-[19px] shrink-0"
-                      strokeWidth={active ? 2.5 : 1.7}
+                      className="h-5 w-5 shrink-0"
+                      strokeWidth={active ? 2.5 : 1.75}
                     />
                   </motion.span>
 
-                  {/* Label: opacity-only — no layout change avoids compositor
-                      reflows. Items stay fixed at w-[20%] always. */}
+                  {/* Label slides in from left on activation */}
                   <AnimatePresence initial={false}>
                     {active && (
                       <motion.span
                         key={label}
                         className="text-[11.5px] font-bold text-white whitespace-nowrap overflow-hidden"
                         style={{ lineHeight: 1 }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2, ease: EO }}
+                        initial={{ opacity: 0, x: -8, width: 0 }}
+                        animate={{ opacity: 1, x: 0, width: "auto" }}
+                        exit={{ opacity: 0, x: -6, width: 0 }}
+                        transition={{ duration: 0.26, ease: EO }}
                       >
                         {label}
                       </motion.span>
