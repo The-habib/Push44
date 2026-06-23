@@ -6,21 +6,19 @@ import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
 import type { ReactNode } from "react";
 
-const NAV: { to: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; label: string; center?: boolean }[] = [
+type NavItem = {
+  to: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+};
+
+const NAV: NavItem[] = [
   { to: "/dashboard",    icon: Home,        label: "Home"     },
+  { to: "/push",         icon: UploadCloud, label: "Push"     },
   { to: "/repositories", icon: Archive,     label: "Repos"    },
-  { to: "/push",         icon: UploadCloud, label: "Push",    center: true },
   { to: "/history",      icon: History,     label: "History"  },
   { to: "/settings",     icon: Settings,    label: "Settings" },
 ];
-
-const NAV_SIDEBAR = [
-  { to: "/dashboard",    icon: Home,        label: "Dashboard"   },
-  { to: "/push",         icon: UploadCloud, label: "Push"        },
-  { to: "/repositories", icon: Archive,     label: "Repositories"},
-  { to: "/history",      icon: History,     label: "History"     },
-  { to: "/settings",     icon: Settings,    label: "Settings"    },
-] as const;
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard":    "Dashboard",
@@ -30,33 +28,55 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings":     "Settings",
 };
 
-const SPRING_TAB   = { type: "spring", stiffness: 520, damping: 36 } as const;
-const SPRING_NAV   = { type: "spring", stiffness: 400, damping: 32 } as const;
-const SPRING_ICON  = { type: "spring", stiffness: 600, damping: 30 } as const;
+const SPRING_PILL = { type: "spring", stiffness: 480, damping: 38 } as const;
+const SPRING_TAP  = { type: "spring", stiffness: 600, damping: 32 } as const;
+const SPRING_NAV  = { type: "spring", stiffness: 400, damping: 32 } as const;
+const EASE_OUT    = [0.22, 1, 0.36, 1] as const;
 
-export function AvatarBubble({ name, size = 36, fontSize = 14 }: { name: string; size?: number; fontSize?: number }) {
+export function AvatarBubble({
+  name,
+  size = 36,
+  fontSize = 14,
+}: {
+  name: string;
+  size?: number;
+  fontSize?: number;
+}) {
   const initials = name.trim()
     ? name.trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
   return (
     <div
       className="rounded-full flex items-center justify-center font-extrabold text-white shrink-0 select-none"
-      style={{ width: size, height: size, fontSize, background: "linear-gradient(135deg,#f97316,#ea580c)" }}
+      style={{
+        width: size,
+        height: size,
+        fontSize,
+        background: "linear-gradient(135deg,#f97316,#ea580c)",
+      }}
     >
       {initials}
     </div>
   );
 }
 
-export function SectionCard({ title, action, children, className = "" }: {
-  title?: string; action?: ReactNode; children: ReactNode; className?: string;
+export function SectionCard({
+  title,
+  action,
+  children,
+  className = "",
+}: {
+  title?: string;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
 }) {
   return (
     <motion.section
       className={`bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055] ${className}`}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: EASE_OUT }}
     >
       {title && (
         <div className="flex items-center justify-between mb-4">
@@ -69,160 +89,102 @@ export function SectionCard({ title, action, children, className = "" }: {
   );
 }
 
-function BottomNavItem({
-  to,
-  icon: Icon,
-  label,
-  active,
-  center,
-}: {
-  to: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  label: string;
-  active: boolean;
-  center?: boolean;
-}) {
+/* ─── Bottom nav item ─────────────────────────────────────────────── */
+function BottomNavItem({ to, icon: Icon, label, active }: NavItem & { active: boolean }) {
   const reduced = useReducedMotion();
-
-  if (center) {
-    return (
-      <Link to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center relative -top-4">
-        <motion.div
-          className="relative flex items-center justify-center rounded-full"
-          style={{
-            width: 56,
-            height: 56,
-            background: "linear-gradient(145deg, #f97316, #ea580c)",
-          }}
-          animate={reduced ? {} : {
-            scale: active ? 1.08 : 1,
-            boxShadow: active
-              ? "0 8px 28px rgba(249,115,22,0.55), 0 2px 8px rgba(0,0,0,0.12)"
-              : "0 6px 20px rgba(249,115,22,0.38), 0 2px 8px rgba(0,0,0,0.1)",
-          }}
-          whileTap={reduced ? {} : { scale: 0.9 }}
-          transition={SPRING_TAB}
-        >
-          {active && (
-            <motion.div
-              className="absolute inset-0 rounded-full"
-              style={{ background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.28), transparent 65%)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            />
-          )}
-          <Icon
-            className="relative z-10 h-[22px] w-[22px] text-white"
-            strokeWidth={active ? 2.5 : 2}
-          />
-        </motion.div>
-        <motion.span
-          className="text-[9px] font-bold mt-1 leading-none tracking-tight"
-          animate={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)", opacity: active ? 1 : 0.7 }}
-          transition={{ duration: 0.2 }}
-        >
-          {label}
-        </motion.span>
-      </Link>
-    );
-  }
-
   return (
-    <Link to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-1 flex-1">
+    <Link
+      to={to}
+      aria-current={active ? "page" : undefined}
+      className="flex-1 flex flex-col items-center justify-center py-2 gap-[5px] min-w-0 relative select-none"
+    >
+      {/* Icon container */}
       <motion.div
-        className="relative flex items-center justify-center"
-        style={{ width: 44, height: 36 }}
-        whileTap={reduced ? {} : { scale: 0.85 }}
-        transition={SPRING_ICON}
+        className="relative flex items-center justify-center w-10 h-8 rounded-[10px]"
+        whileTap={reduced ? {} : { scale: 0.82 }}
+        transition={SPRING_TAP}
       >
+        {/* Sliding pill background */}
         {active && (
           <motion.div
-            layoutId="mobile-nav-pill"
+            layoutId="bottom-nav-pill"
             className="absolute inset-0 rounded-[10px]"
-            style={{ background: "rgba(249,115,22,0.12)" }}
+            style={{ background: "rgba(249,115,22,0.13)" }}
             initial={false}
-            transition={SPRING_TAB}
+            transition={SPRING_PILL}
           />
         )}
-        <motion.div
-          animate={reduced ? {} : {
-            scale: active ? 1.18 : 1,
-            y: active ? -1 : 0,
-          }}
-          transition={SPRING_ICON}
+
+        {/* Icon */}
+        <span
+          className="relative z-10 flex items-center justify-center transition-none"
+          style={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)" }}
         >
-          <span style={{ color: active ? "#f97316" : "rgba(0,0,0,0.28)", display: "flex" }}>
-            <Icon
-              className="h-[19px] w-[19px] relative z-10 transition-none"
-              strokeWidth={active ? 2.5 : 2}
-            />
-          </span>
-        </motion.div>
-        {active && (
           <motion.span
-            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] w-[3px] rounded-full bg-[#f97316]"
-            layoutId="mobile-nav-dot"
-            initial={false}
-            transition={SPRING_TAB}
-          />
-        )}
+            animate={reduced ? {} : { scale: active ? 1.12 : 1 }}
+            transition={SPRING_PILL}
+            className="flex"
+          >
+            <Icon
+              className="h-[19px] w-[19px]"
+              strokeWidth={active ? 2.5 : 1.9}
+            />
+          </motion.span>
+        </span>
       </motion.div>
 
-      <AnimatePresence mode="wait" initial={false}>
-        {active ? (
-          <motion.span
-            key="active-label"
-            className="text-[10px] font-bold leading-none tracking-tight text-[#f97316]"
-            initial={{ opacity: 0, y: 3, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -3, scale: 0.85 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {label}
-          </motion.span>
-        ) : (
-          <motion.span
-            key="inactive-label"
-            className="text-[10px] font-semibold leading-none tracking-tight"
-            style={{ color: "rgba(0,0,0,0.22)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
+      {/* Label */}
+      <span
+        className="text-[10px] leading-none font-semibold tracking-tight truncate max-w-full px-0.5"
+        style={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)", fontWeight: active ? 700 : 500 }}
+      >
+        {label}
+      </span>
+
+      {/* Active dot indicator */}
+      {active && (
+        <motion.span
+          layoutId="bottom-nav-dot"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-4 rounded-full"
+          style={{ background: "#f97316" }}
+          initial={false}
+          transition={SPRING_PILL}
+        />
+      )}
     </Link>
   );
 }
 
+/* ─── App Shell ───────────────────────────────────────────────────── */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { creds } = useApp();
+
   const displayName = creds.displayName || creds.base44Email || creds.githubUsername || "";
-  const pageTitle = PAGE_TITLES[pathname] ?? "Push44";
+  const pageTitle   = PAGE_TITLES[pathname] ?? "Push44";
   const fullyConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>
 
-      {/* ── Desktop ─────────────────────────────────────── */}
-      <div className="hidden md:flex min-h-screen">
+      {/* ════════════════════════════════════════════════════
+          DESKTOP / LARGE TABLET  ≥ 1024 px
+      ════════════════════════════════════════════════════ */}
+      <div className="hidden lg:flex min-h-screen">
 
         {/* Sidebar */}
-        <aside className="w-56 shrink-0 flex flex-col sticky top-0 h-screen border-r border-[#f0ece4]"
-          style={{ background: "#fffcf8" }}>
-
-          {/* Logo */}
+        <aside
+          className="w-60 shrink-0 flex flex-col sticky top-0 h-screen border-r border-[#f0ece4]"
+          style={{ background: "#fffcf8" }}
+        >
+          {/* Brand */}
           <Link to="/dashboard">
-            <div className="flex items-center gap-1 px-5 py-5 border-b border-[#f0ece4] cursor-pointer group">
+            <div className="flex items-center gap-2 px-5 py-[18px] border-b border-[#f0ece4] cursor-pointer">
               <motion.img
-                src={appLogo} alt="Push44"
-                className="h-8 w-8 rounded-xl object-cover"
-                whileHover={{ scale: 1.08 }}
+                src={appLogo}
+                alt="Push44"
+                className="h-8 w-8 rounded-xl object-cover shrink-0"
+                whileHover={{ scale: 1.07 }}
                 transition={SPRING_NAV}
               />
               <span className="text-[16px] font-black text-[#1a1a1a] tracking-tight leading-none">
@@ -231,33 +193,36 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </Link>
 
-          {/* Nav */}
+          {/* Nav items */}
           <nav className="flex-1 px-2.5 py-4 space-y-0.5" aria-label="Main navigation">
-            {NAV_SIDEBAR.map(({ to, icon: Icon, label }) => {
+            {NAV.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
               return (
                 <Link key={to} to={to} aria-current={active ? "page" : undefined}>
                   <motion.div
-                    className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-[12px] text-sm font-semibold cursor-pointer select-none"
+                    className="relative flex items-center gap-3 px-3 py-2.5 rounded-[12px] cursor-pointer select-none"
                     whileHover={active ? {} : { background: "rgba(249,115,22,0.06)" }}
                     whileTap={{ scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.14 }}
                   >
                     {active && (
                       <motion.div
                         layoutId="sidebar-pill"
-                        className="absolute inset-0 rounded-[12px]"
-                        style={{ background: "#f97316" }}
+                        className="absolute inset-0 rounded-[12px] bg-[#f97316]"
                         initial={false}
-                        transition={SPRING_TAB}
+                        transition={SPRING_PILL}
                       />
                     )}
-                    <Icon
-                      className="relative z-10 h-[16px] w-[16px] shrink-0"
-                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.35)" }}
-                      strokeWidth={active ? 2.5 : 2}
-                    />
-                    <span className="relative z-10 text-[13px]" style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.45)" }}>
+                    <span
+                      className="relative z-10 flex items-center shrink-0"
+                      style={{ color: active ? "#fff" : "rgba(0,0,0,0.38)" }}
+                    >
+                      <Icon className="h-[15px] w-[15px]" strokeWidth={active ? 2.5 : 2} />
+                    </span>
+                    <span
+                      className="relative z-10 text-[13px] font-semibold"
+                      style={{ color: active ? "#fff" : "rgba(0,0,0,0.5)" }}
+                    >
                       {label}
                     </span>
                   </motion.div>
@@ -267,41 +232,48 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           {/* User footer */}
-          <div className="px-3 py-4 border-t border-[#f0ece4]">
+          <div className="px-3 pb-5 pt-3 border-t border-[#f0ece4]">
             <Link to="/settings">
               <motion.div
                 className="flex items-center gap-2.5 rounded-[12px] px-2.5 py-2 cursor-pointer"
                 whileHover={{ background: "#fff4ed" }}
                 whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.14 }}
               >
                 <div className="relative shrink-0">
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
-                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`} />
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-bold text-[#1a1a1a] truncate leading-tight">{creds.displayName || "Account"}</div>
-                  <div className="text-[10px] text-[#9a8880] truncate">{creds.base44Email || creds.githubUsername || "Not connected"}</div>
+                  <div className="text-[12px] font-bold text-[#1a1a1a] truncate leading-tight">
+                    {creds.displayName || "Account"}
+                  </div>
+                  <div className="text-[10px] text-[#9a8880] truncate">
+                    {creds.base44Email || creds.githubUsername || "Not connected"}
+                  </div>
                 </div>
               </motion.div>
             </Link>
           </div>
         </aside>
 
-        {/* Main area */}
-        <div className="flex-1 flex flex-col min-w-0">
-
+        {/* Main */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Topbar */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-8 py-4 border-b border-[#f0ece4]"
-            style={{ background: "rgba(250,247,243,0.92)", backdropFilter: "blur(12px)" }}>
-            <div>
-              <h2 className="text-[16px] font-black text-[#1a1a1a] tracking-tight">{pageTitle}</h2>
-            </div>
+          <header
+            className="sticky top-0 z-20 flex items-center justify-between gap-4 px-8 py-[14px] border-b border-[#f0ece4]"
+            style={{ background: "rgba(250,247,243,0.93)", backdropFilter: "blur(14px)" }}
+          >
+            <h2 className="text-[16px] font-black text-[#1a1a1a] tracking-tight">{pageTitle}</h2>
             <div className="flex items-center gap-2.5">
               <motion.a
                 href={creds.githubUsername ? `https://github.com/${creds.githubUsername}` : "https://github.com"}
-                target="_blank" rel="noreferrer"
-                className="h-8 w-8 rounded-xl bg-white border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
+                target="_blank"
+                rel="noreferrer"
+                className="h-8 w-8 rounded-xl bg-white border border-[#f0ece4] flex items-center justify-center"
+                style={{ color: "#9a8880" }}
                 whileHover={{ scale: 1.06, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
                 transition={SPRING_NAV}
               >
@@ -310,20 +282,22 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link to="/settings">
                 <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={SPRING_NAV}>
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
-                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-[#faf7f3] ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`} />
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-[#faf7f3] ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
+                  />
                 </motion.div>
               </Link>
             </div>
           </header>
 
-          <main className="flex-1 max-w-xl w-full mx-auto px-6 py-7">
+          <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-7">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                transition={{ duration: 0.26, ease: EASE_OUT }}
               >
                 {children}
               </motion.div>
@@ -332,96 +306,87 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* ── Mobile ──────────────────────────────────────── */}
-      <div className="md:hidden flex flex-col min-h-screen">
+      {/* ════════════════════════════════════════════════════
+          MOBILE + TABLET  < 1024 px  (bottom nav layout)
+      ════════════════════════════════════════════════════ */}
+      <div className="lg:hidden flex flex-col min-h-screen">
 
-        {/* Floating pill header */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
-          <motion.div
-            className="pointer-events-auto w-full"
-            style={{ maxWidth: 480 }}
-            initial={{ opacity: 0, y: -14, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div
-              className="flex items-center justify-between px-2 py-1.5 rounded-full"
-              style={{
-                background: "rgba(255,252,248,0.88)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                boxShadow: "0 4px 24px rgba(0,0,0,0.09), 0 0 0 1px rgba(240,236,228,0.9), inset 0 1px 0 rgba(255,255,255,0.9)",
-              }}
+        {/* ── Top bar ─────────────────────────────────── */}
+        <header
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b border-[#f0ece4]/80"
+          style={{
+            background: "rgba(255,252,248,0.92)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
+        >
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <motion.img
+              src={appLogo}
+              alt="Push44"
+              className="h-8 w-8 rounded-[10px] object-cover shrink-0"
+              whileTap={{ scale: 0.9 }}
+              transition={SPRING_NAV}
+            />
+            <span className="text-[15px] font-black text-[#1a1a1a] tracking-tight leading-none">
+              Push<span style={{ color: "#f97316" }}>44</span>
+            </span>
+          </Link>
+
+          <Link to="/settings">
+            <motion.div
+              className="relative"
+              whileTap={{ scale: 0.88 }}
+              transition={SPRING_NAV}
             >
-              {/* Logo + wordmark */}
-              <Link to="/dashboard" className="flex items-center gap-1 pl-2 pr-3 py-1">
-                <motion.img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover"
-                  whileTap={{ scale: 0.9, rotate: -4 }} transition={SPRING_NAV} />
-                <span className="text-[14px] font-black text-[#1a1a1a] tracking-tight leading-none">
-                  Push<span style={{ color: "#f97316" }}>44</span>
-                </span>
-              </Link>
+              <AvatarBubble name={displayName} size={36} fontSize={13} />
+              <span
+                className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
+                style={{ boxShadow: "0 0 0 2px rgba(255,252,248,0.95)" }}
+              />
+            </motion.div>
+          </Link>
+        </header>
 
-              {/* Avatar */}
-              <Link to="/settings">
-                <motion.div className="relative mr-1" whileTap={{ scale: 0.88 }} transition={SPRING_NAV}>
-                  <AvatarBubble name={displayName} size={34} fontSize={12} />
-                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
-                    style={{ boxShadow: "0 0 0 2px rgba(255,252,248,0.9)" }} />
-                </motion.div>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-
-        <main className="flex-1 px-4 pt-20 pb-28">
+        {/* ── Page content ────────────────────────────── */}
+        {/* pt accounts for header (~56px), pb accounts for bottom nav (~68px) */}
+        <main className="flex-1 w-full max-w-2xl mx-auto px-4 pt-[64px] pb-[76px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: 5, filter: "blur(2px)" }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              transition={{ duration: 0.26, ease: EASE_OUT }}
             >
               {children}
             </motion.div>
           </AnimatePresence>
         </main>
 
-        {/* Bottom nav */}
-        <motion.nav
-          className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[24px]"
+        {/* ── Bottom nav ──────────────────────────────── */}
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#ede9e1]"
           aria-label="Main navigation"
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           style={{
-            background: "rgba(255,252,248,0.96)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            boxShadow: "0 -1px 0 rgba(0,0,0,0.06), 0 -12px 40px rgba(0,0,0,0.07)",
-            paddingBottom: "env(safe-area-inset-bottom, 8px)",
+            background: "rgba(255,252,248,0.97)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            paddingBottom: "env(safe-area-inset-bottom, 0px)",
           }}
         >
-          {/* Subtle top border highlight */}
-          <div className="absolute top-0 left-8 right-8 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.2), transparent)" }} />
-
-          <div className="flex items-end justify-around px-2 pt-2 pb-2">
-            {NAV.map(({ to, icon, label, center }) => {
-              const active = pathname === to;
-              return (
-                <BottomNavItem
-                  key={to}
-                  to={to}
-                  icon={icon}
-                  label={label}
-                  active={active}
-                  center={!!center}
-                />
-              );
-            })}
+          <div className="flex items-stretch h-[60px] max-w-2xl mx-auto px-1">
+            {NAV.map(({ to, icon, label }) => (
+              <BottomNavItem
+                key={to}
+                to={to}
+                icon={icon}
+                label={label}
+                active={pathname === to}
+              />
+            ))}
           </div>
-        </motion.nav>
+        </nav>
       </div>
     </div>
   );
