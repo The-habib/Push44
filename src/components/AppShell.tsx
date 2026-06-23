@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { GitHubLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 type NavItem = {
   to: string;
@@ -28,10 +28,18 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings":     "Settings",
 };
 
-const SP = { type: "spring", stiffness: 500, damping: 38 } as const;   // pill slide
-const ST = { type: "spring", stiffness: 600, damping: 30 } as const;   // tap
-const SN = { type: "spring", stiffness: 400, damping: 32 } as const;   // nav hover
-const EO = [0.22, 1, 0.36, 1] as const;                                 // ease-out
+const SP = { type: "spring", stiffness: 500, damping: 38 } as const;
+const ST = { type: "spring", stiffness: 600, damping: 30 } as const;
+const SN = { type: "spring", stiffness: 400, damping: 32 } as const;
+const EO = [0.22, 1, 0.36, 1] as const;
+
+// Directional slide variants — dir: 1 = forward (→), -1 = backward (←)
+const PAGE_X = 32; // px slide distance
+const pageVariants = {
+  initial: (dir: number) => ({ opacity: 0, x: dir * PAGE_X }),
+  animate: { opacity: 1, x: 0, transition: { duration: 0.26, ease: EO } },
+  exit:    (dir: number) => ({ opacity: 0, x: dir * -PAGE_X * 0.5, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }),
+};
 
 /* ─── shared ──────────────────────────────────────────────── */
 export function AvatarBubble({ name, size = 36, fontSize = 14 }: { name: string; size?: number; fontSize?: number }) {
@@ -159,10 +167,24 @@ function FloatingNav({ pathname }: { pathname: string }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { creds } = useApp();
+  const reduced = useReducedMotion();
 
   const displayName    = creds.displayName || creds.base44Email || creds.githubUsername || "";
   const pageTitle      = PAGE_TITLES[pathname] ?? "Push44";
   const fullyConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
+
+  // Track nav direction — compare current vs previous tab index
+  const prevPathRef = useRef(pathname);
+  const dirRef      = useRef(1);
+  if (prevPathRef.current !== pathname) {
+    const prevIdx = NAV.findIndex(n => n.to === prevPathRef.current);
+    const currIdx = NAV.findIndex(n => n.to === pathname);
+    if (prevIdx !== -1 && currIdx !== -1) {
+      dirRef.current = currIdx > prevIdx ? 1 : -1;
+    }
+    prevPathRef.current = pathname;
+  }
+  const direction = reduced ? 0 : dirRef.current;
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>
@@ -264,13 +286,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
 
           <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-7">
-            <AnimatePresence mode="wait" initial={false}>
+            <AnimatePresence mode="wait" initial={false} custom={direction}>
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22, ease: EO }}
+                custom={direction}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
                 {children}
               </motion.div>
@@ -316,13 +339,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Page content — padded away from fixed header and floating nav */}
         <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: 96 }}>
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.22, ease: EO }}
+              custom={direction}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
               {children}
             </motion.div>
