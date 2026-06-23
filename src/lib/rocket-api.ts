@@ -474,10 +474,12 @@ function extractFilesFromPayload(d: any): RocketFile[] | null {
   if (filesMap && typeof filesMap === "object" && !Array.isArray(filesMap)) {
     const entries = Object.entries(filesMap as Record<string, unknown>);
     if (entries.length > 0) {
-      return entries.map(([path, content]): RocketFile => ({
-        path,
-        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
-      }));
+      return entries
+        .filter(([path, content]) => path.trim() !== "" && content !== undefined && content !== null)
+        .map(([path, content]): RocketFile => ({
+          path,
+          content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+        }));
     }
   }
 
@@ -490,12 +492,14 @@ function extractFilesFromPayload(d: any): RocketFile[] | null {
     Array.isArray(d) ? d : [];
 
   if (filesArr.length > 0 && filesArr[0] && (filesArr[0].path || filesArr[0].name || filesArr[0].filename)) {
-    return filesArr.map((f: any): RocketFile => ({
-      path: String(f.path ?? f.name ?? f.filename ?? f.filePath ?? ""),
-      content: typeof f.content === "string" ? f.content
-        : typeof f.code === "string" ? f.code
-        : JSON.stringify(f.content ?? f.code ?? f, null, 2),
-    }));
+    return filesArr
+      .map((f: any): RocketFile => ({
+        path: String(f.path ?? f.name ?? f.filename ?? f.filePath ?? ""),
+        content: typeof f.content === "string" ? f.content
+          : typeof f.code === "string" ? f.code
+          : JSON.stringify(f.content ?? f.code ?? f, null, 2),
+      }))
+      .filter((f) => f.path.trim() !== "");
   }
 
   return null;

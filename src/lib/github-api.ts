@@ -36,17 +36,19 @@ export async function listGitHubRepos({ data }: { data: { token: string } }) {
     data.token,
     "/user/repos?sort=updated&per_page=100&type=all"
   );
-  return repos.map((r: any) => ({
-    id: r.id as number,
-    name: r.name as string,
-    full_name: r.full_name as string,
-    private: r.private as boolean,
-    default_branch: r.default_branch as string,
-    language: (r.language as string | null) ?? null,
-    stargazers_count: r.stargazers_count as number,
-    updated_at: r.updated_at as string,
-    html_url: r.html_url as string,
-  }));
+  return repos
+    .filter((r: any) => r?.full_name?.trim())
+    .map((r: any) => ({
+      id: r.id as number,
+      name: r.name as string,
+      full_name: r.full_name as string,
+      private: r.private as boolean,
+      default_branch: (r.default_branch as string) || "main",
+      language: (r.language as string | null) ?? null,
+      stargazers_count: r.stargazers_count as number,
+      updated_at: r.updated_at as string,
+      html_url: r.html_url as string,
+    }));
 }
 
 export async function createGitHubRepo({ data }: { data: { token: string; name: string; isPrivate: boolean } }) {

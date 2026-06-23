@@ -77,8 +77,9 @@ function fileIcon(path: string) {
 }
 
 function FileBrowser({ files }: { files: { path: string; content: string }[] }) {
-  const totalLines = files.reduce((acc, f) => acc + f.content.split("\n").length, 0);
-  const sorted = [...files].sort((a, b) => a.path.localeCompare(b.path));
+  const validFiles = files.filter(f => f.path?.trim() && f.content !== undefined && f.content !== null);
+  const totalLines = validFiles.reduce((acc, f) => acc + f.content.split("\n").length, 0);
+  const sorted = [...validFiles].sort((a, b) => a.path.localeCompare(b.path));
 
   return (
     <motion.div
@@ -96,7 +97,7 @@ function FileBrowser({ files }: { files: { path: string; content: string }[] }) 
               style={{ background: "#22c55e" }}>
               <Check className="h-3 w-3 text-white" strokeWidth={3} />
             </div>
-            <span className="text-[13px] font-black text-[#1a1a1a]">{files.length} files ready</span>
+            <span className="text-[13px] font-black text-[#1a1a1a]">{validFiles.length} files ready</span>
           </div>
           <span className="text-[11px] text-[#9a8880] font-medium">{totalLines.toLocaleString()} lines</span>
         </div>
@@ -673,7 +674,7 @@ function PushPage() {
             </div>
           ) : (
             <StaggerContainer className="space-y-2">
-              {apps.map((app) => {
+              {apps.filter(a => a.id?.trim() && a.name?.trim()).map((app) => {
                 const active = selectedApp?.id === app.id;
                 return (
                   <StaggerItem key={app.id}>

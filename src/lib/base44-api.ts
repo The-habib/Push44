@@ -73,20 +73,22 @@ export async function listBase44Apps({ data }: { data: { token: string } }): Pro
     console.log("[Push44] First app raw fields:", Object.keys(raw[0]));
     console.log("[Push44] First app raw object:", JSON.stringify(raw[0], null, 2));
   }
-  return raw.map(
-    (a: any): Base44App => ({
-      id: String(a.id ?? a._id ?? a.appId ?? ""),
-      name: String(a.name ?? a.title ?? a.app_name ?? "Unnamed App"),
-      updated_at: String(
-        a.updated_at ?? a.updatedAt ?? a.modified_at ?? new Date().toISOString()
-      ),
-      files_count: Number(a.files_count ?? a.filesCount ?? 0),
-      icon: a.icon ?? a.logo ?? a.app_icon ?? a.thumbnail ?? a.image
-        ?? a.icon_url ?? a.logoUrl ?? a.iconUrl ?? a.logo_url
-        ?? a.metadata?.icon ?? a.metadata?.logo ?? a.settings?.icon
-        ?? undefined,
-    })
-  );
+  return raw
+    .map(
+      (a: any): Base44App => ({
+        id: String(a.id ?? a._id ?? a.appId ?? ""),
+        name: String(a.name ?? a.title ?? a.app_name ?? "Unnamed App"),
+        updated_at: String(
+          a.updated_at ?? a.updatedAt ?? a.modified_at ?? new Date().toISOString()
+        ),
+        files_count: Number(a.files_count ?? a.filesCount ?? 0),
+        icon: a.icon ?? a.logo ?? a.app_icon ?? a.thumbnail ?? a.image
+          ?? a.icon_url ?? a.logoUrl ?? a.iconUrl ?? a.logo_url
+          ?? a.metadata?.icon ?? a.metadata?.logo ?? a.settings?.icon
+          ?? undefined,
+      })
+    )
+    .filter((a) => a.id.trim() !== "");
 }
 
 export interface Base44File {
@@ -146,10 +148,12 @@ export async function fetchBase44AppFiles({ data }: { data: { token: string; app
   const d = await b44Fetch(`/apps/${appId}/sandbox/files`, undefined, token);
   const filesObj: Record<string, string> = d?.files ?? {};
 
-  return Object.entries(filesObj).map(
-    ([path, content]): Base44File => ({
-      path,
-      content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
-    })
-  );
+  return Object.entries(filesObj)
+    .filter(([path, content]) => path.trim() !== "" && content !== undefined && content !== null)
+    .map(
+      ([path, content]): Base44File => ({
+        path,
+        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+      })
+    );
 }
