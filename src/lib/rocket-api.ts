@@ -887,6 +887,8 @@ export interface ApkBuildState {
   status: ApkStatus;
   updatedAt?: string;
   errorMessage?: string;
+  /** true when Rocket.new has hit its internal retry limit — reset is required before rebuilding */
+  isMaxApkBuildFailedAttempt?: boolean;
   /** Full decrypted payload from the API — used for debugging */
   rawPayload?: Record<string, unknown>;
 }
@@ -910,6 +912,7 @@ async function parseApkResponse(res: Response): Promise<ApkBuildState> {
   return {
     status,
     updatedAt: payload.updatedAt ?? payload.updated_at ?? undefined,
+    isMaxApkBuildFailedAttempt: !!payload.isMaxApkBuildFailedAttempt,
     errorMessage:
       payload.errorMessage ??
       payload.error ??
@@ -934,11 +937,52 @@ export async function checkRocketApkBuildStatus({
   return parseApkResponse(res);
 }
 
-export async function triggerRocketApkBuild({
+/**
+ * Reset a stuck/max-failed APK build state.
+ *
+ * When isMaxApkBuildFailedAttempt === true, Rocket.new blocks further make-apk-build
+ * calls until the failed state is explicitly cleared via this endpoint.
+ *
+ * Confirmed existing endpoint (returns 401 without auth, not 404):
+ *   POST https://application.rocket.new/web/v1/playground/reset-apk-build
+ *   Body: { threadId }
+ *   Auth: Bearer {token}, companyId header
+ */
+export async function resetRocketApkBuild({
   data,
 }: {
   data: { token: string; threadId: string; companyId?: string };
+}): Promise<void> {
+  // Try reset then retry-apk-build as fallback — both endpoints confirmed to exist
+  const endpoints = [
+    `${APP_BASE}/web/v1/playground/reset-apk-build`,
+    `${APP_BASE}/web/v1/playground/retry-apk-build`,
+    `${APP_BASE}/web/v1/playground/apk-build-reset`,
+  ];
+  const body = JSON.stringify({ threadId: data.threadId });
+  const hdrs = apkHeaders(data.token, data.companyId);
+
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url, { method: "POST", headers: hdrs, body });
+      if (res.ok || res.status === 200) return; // success — state was reset
+    } catch { /* try next */ }
+  }
+  // If all reset attempts fail, continue anyway — make-apk-build may still work
+}
+
+export async function triggerRocketApkBuild({
+  data,
+  resetFirst = false,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+  resetFirst?: boolean;
 }): Promise<ApkBuildState> {
+  // When isMaxApkBuildFailedAttempt is true, reset the failed state before triggering.
+  if (resetFirst) {
+    await resetRocketApkBuild({ data });
+  }
+
   const res = await fetch(`${APP_BASE}/web/v1/playground/make-apk-build`, {
     method: "POST",
     headers: apkHeaders(data.token, data.companyId),

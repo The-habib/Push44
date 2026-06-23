@@ -18,7 +18,7 @@ import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
 import {
   listRocketApps, fetchRocketAppFiles,
   checkRocketApkBuildStatus, triggerRocketApkBuild, downloadRocketApk,
-  APK_STATUS, type ApkBuildState,
+  APK_STATUS, type ApkBuildState, resetRocketApkBuild,
 } from "@/lib/rocket-api";
 import {
   listGitHubRepos, createGitHubRepo, pushFilesToGitHub,
@@ -634,6 +634,7 @@ function ApkBuildPanel({
 }) {
   const [build, setBuild]       = useState<ApkBuildState | null>(null);
   const [loading, setLoading]   = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [downloading, setDL]    = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [pollLog, setPollLog]   = useState<PollEvent[]>([]);
@@ -700,10 +701,22 @@ function ApkBuildPanel({
     setElapsed(0);
     setPollLog([]);
     try {
-      const state = await triggerRocketApkBuild({ data: { token, threadId, companyId } });
+      // When Rocket.new has hit its internal retry limit, we must call the reset
+      // endpoint first to clear the failed state before triggering a new build.
+      const needsReset = !!(build?.isMaxApkBuildFailedAttempt);
+      if (needsReset) {
+        setResetting(true);
+        await resetRocketApkBuild({ data: { token, threadId, companyId } });
+        setResetting(false);
+      }
+      const state = await triggerRocketApkBuild({
+        data: { token, threadId, companyId },
+        resetFirst: false, // already handled above with UI feedback
+      });
       setBuild(state);
       setPollLog([{ time: Date.now(), status: state.status, errorMessage: state.errorMessage, rawPayload: state.rawPayload ?? null }]);
     } catch (e: any) {
+      setResetting(false);
       setFetchError(e.message ?? "Failed to start build");
     } finally {
       setLoading(false);
@@ -853,10 +866,22 @@ function ApkBuildPanel({
                 {isQueueRejected ? "Queue Rejected" : "Build Failed"}
               </span>
               <span className="ml-auto text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#fee2e2] text-[#ef4444] border border-[#fecaca]">
-                status {build?.status} · {APK_STATUS_NAME[build!.status]}
+                STATUS {build?.status} · {APK_STATUS_NAME[build!.status]}
               </span>
             </div>
             <div className="px-4 py-3 space-y-2">
+              {/* Max failed attempt banner */}
+              {build?.isMaxApkBuildFailedAttempt && (
+                <div className="flex items-start gap-2 rounded-xl bg-[#fef9c3] border border-[#fde68a] px-3 py-2.5">
+                  <AlertTriangle className="h-3.5 w-3.5 text-[#b45309] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[10px] font-black text-[#92400e] uppercase tracking-wider mb-0.5">Max retry limit reached</div>
+                    <p className="text-[11px] text-[#92400e] leading-relaxed">
+                      Rocket.new has blocked further automatic retries. Clicking <strong>Rebuild APK</strong> will automatically reset this state and trigger a fresh build.
+                    </p>
+                  </div>
+                </div>
+              )}
               {/* What this means */}
               <p className="text-[11px] text-[#7f1d1d] leading-relaxed">
                 {isQueueRejected
@@ -897,11 +922,13 @@ function ApkBuildPanel({
               cursor: isBuilding ? "not-allowed" : "pointer",
             }}
           >
-            {loading
-              ? <><Loader2 className="h-4 w-4 animate-spin" />Starting…</>
-              : isBuilding
-                ? <><Loader2 className="h-4 w-4 animate-spin" />Building…</>
-                : <><Smartphone className="h-4 w-4" />{isFailed ? "Rebuild APK" : isComplete ? "Rebuild APK" : "Build APK"}</>}
+            {resetting
+              ? <><Loader2 className="h-4 w-4 animate-spin" />Resetting…</>
+              : loading
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Starting…</>
+                : isBuilding
+                  ? <><Loader2 className="h-4 w-4 animate-spin" />Building…</>
+                  : <><Smartphone className="h-4 w-4" />{isFailed ? "Rebuild APK" : isComplete ? "Rebuild APK" : "Build APK"}</>}
           </MotionButton>
           {!isBuilding && (
             <MotionButton
