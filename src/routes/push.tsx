@@ -851,12 +851,36 @@ function PushPage() {
         )}
 
         {/* Loading / waking state */}
-        {loadingFiles && (
+        {loadingFiles && !wakingSandbox && (
           <div className="mt-3 flex items-center gap-2.5 rounded-2xl px-4 py-3 bg-[#fff4ed] border border-[#fed7aa]">
             <Loader2 className="h-4 w-4 animate-spin text-[#f97316]" />
             <span className="text-[13px] font-semibold text-[#9a3412]">
-              {rocketStage === "pinging" ? "Pinging container…" : rocketStage === "listing" ? "Getting file list…" : rocketStage === "downloading" ? "Downloading files…" : wakingSandbox ? "Waking up sandbox…" : "Fetching files…"}
+              {rocketStage === "pinging" ? "Pinging container…" : rocketStage === "listing" ? "Getting file list…" : rocketStage === "downloading" ? "Downloading files…" : "Fetching files…"}
             </span>
+          </div>
+        )}
+
+        {/* Sandbox slow to wake — offer manual open link */}
+        {loadingFiles && wakingSandbox && selectedApp && (
+          <div className="mt-3 rounded-2xl p-4 bg-[#fff4ed] border border-[#fed7aa]">
+            <div className="flex items-center gap-2.5 mb-2">
+              <Loader2 className="h-4 w-4 animate-spin text-[#f97316] shrink-0" />
+              <span className="text-[13px] font-bold text-[#9a3412]">Waking up sandbox…</span>
+            </div>
+            <p className="text-[11px] text-[#c2410c]/80 mb-3 leading-relaxed">
+              The sandbox for <strong>{selectedApp.name}</strong> is taking longer than usual. Open the app in Base44 to wake it manually, then come back.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <a
+                href={`https://app.base44.com/apps/${selectedApp.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-bold text-white rounded-xl px-3 py-2"
+                style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}
+              >
+                Open in Base44 →
+              </a>
+            </div>
           </div>
         )}
 
