@@ -85,70 +85,134 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 function Navbar({ isConnected }: { isConnected: boolean }) {
   const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 120);
-    const fn = () => setScrolled(window.scrollY > 24);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => { clearTimeout(t); window.removeEventListener("scroll", fn); };
+    // Slight delay so the entrance animation is perceptible on first load
+    const t = setTimeout(() => setVisible(true), 100);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
+  const NAV_LINKS = [
+    { label: "How it works", href: "#how-it-works" },
+    { label: "FAQ", href: "#faq" },
+  ];
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
+    /*
+     * pointer-events-none on the positioning wrapper so the fixed layer
+     * doesn't eat clicks on content below. pointer-events-auto on the
+     * actual pill restores click-ability where needed.
+     *
+     * IMPORTANT: overflow-x-hidden must NOT be set on any ancestor of this
+     * element — it causes position:fixed to be relative to that ancestor
+     * in some browsers (especially Safari/iOS), breaking the floating effect.
+     * The LandingPage root div uses overflow-x-clip (layout-only clip,
+     * does not create a containing block for fixed children).
+     */
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-5 pt-3 sm:pt-4 pointer-events-none">
       <motion.div
         className="pointer-events-auto w-full"
-        style={{ maxWidth: 480 }}
-        initial={{ opacity: 0, y: -16, scale: 0.96 }}
-        animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -16, scale: visible ? 1 : 0.96 }}
-        transition={{ duration: 0.45, ease }}
+        style={{ maxWidth: 820 }}
+        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+        animate={{
+          opacity: visible ? 1 : 0,
+          y: visible ? 0 : -20,
+          scale: visible ? 1 : 0.95,
+        }}
+        transition={{ duration: 0.5, ease }}
       >
-        {/* Pill shell */}
+        {/* Floating pill shell */}
         <motion.div
-          className="flex items-center justify-between px-2 py-1.5 rounded-full"
+          className="flex items-center justify-between rounded-full"
+          style={{
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            padding: "5px 5px 5px 8px",
+          }}
           animate={{
             background: scrolled
-              ? "rgba(255,252,248,0.88)"
-              : "rgba(255,252,248,0.72)",
+              ? "rgba(255,252,248,0.92)"
+              : "rgba(255,252,248,0.78)",
             boxShadow: scrolled
-              ? "0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(249,115,22,0.14), inset 0 1px 0 rgba(255,255,255,0.8)"
-              : "0 4px 20px rgba(0,0,0,0.08), 0 0 0 1px rgba(240,236,228,0.9), inset 0 1px 0 rgba(255,255,255,0.9)",
+              ? [
+                  "0 0 0 1px rgba(249,115,22,0.18)",
+                  "0 8px 32px rgba(0,0,0,0.13)",
+                  "0 2px 8px rgba(0,0,0,0.08)",
+                  "inset 0 1px 0 rgba(255,255,255,0.85)",
+                ].join(", ")
+              : [
+                  "0 0 0 1px rgba(224,216,204,0.95)",
+                  "0 4px 20px rgba(0,0,0,0.07)",
+                  "inset 0 1px 0 rgba(255,255,255,0.95)",
+                ].join(", "),
           }}
-          transition={{ duration: 0.3 }}
-          style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
+          transition={{ duration: 0.35, ease }}
         >
           {/* Logo + wordmark */}
-          <Link to="/" className="flex items-center gap-1.5 pl-2 pr-3 py-1">
-            <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover" />
+          <Link to="/" className="flex items-center gap-1.5 py-1 pr-2 shrink-0">
+            <motion.img
+              src={appLogo}
+              alt="Push44"
+              className="h-7 w-7 rounded-[9px] object-cover"
+              whileHover={{ scale: 1.1, rotate: -4 }}
+              whileTap={{ scale: 0.9 }}
+              transition={spring}
+            />
             <span className="text-[14px] font-black tracking-tight text-[#1a1a1a] leading-none">
               Push<span style={{ color: "#f97316" }}>44</span>
             </span>
           </Link>
 
-          {/* Desktop links */}
-          <div className="hidden sm:flex items-center gap-0.5">
-            {[{ label: "How it works", href: "#how-it-works" }, { label: "FAQ", href: "#faq" }].map(({ label, href }) => (
-              <a key={label} href={href}
-                className="px-3 py-1.5 text-[12px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-full hover:bg-black/5">
+          {/* Desktop nav links — hidden on small screens */}
+          <div className="hidden sm:flex items-center gap-0.5 flex-1 justify-center">
+            {NAV_LINKS.map(({ label, href }) => (
+              <motion.a
+                key={label}
+                href={href}
+                className="relative px-3.5 py-2 text-[12.5px] font-semibold text-[#6b6360] rounded-full"
+                whileHover={{ color: "#1a1a1a", background: "rgba(0,0,0,0.055)" }}
+                transition={{ duration: 0.15 }}
+              >
                 {label}
-              </a>
+              </motion.a>
             ))}
-            <a href="https://github.com/The-habib/Push44" target="_blank" rel="noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-[#6b6360] hover:text-[#1a1a1a] transition-colors rounded-full hover:bg-black/5">
-              <GitHubLogo className="h-3 w-3" />
+            <motion.a
+              href="https://github.com/The-habib/Push44"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold text-[#6b6360] rounded-full"
+              whileHover={{ color: "#1a1a1a", background: "rgba(0,0,0,0.055)" }}
+              transition={{ duration: 0.15 }}
+            >
+              <GitHubLogo className="h-3.5 w-3.5" />
               GitHub
-            </a>
+            </motion.a>
           </div>
 
-          {/* CTA */}
-          <Link to={isConnected ? "/dashboard" : "/onboarding"}>
+          {/* CTA button */}
+          <Link to={isConnected ? "/dashboard" : "/onboarding"} className="shrink-0">
             <motion.button
-              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-bold text-white"
-              style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", boxShadow: "0 2px 10px rgba(249,115,22,0.4)" }}
-              whileHover={{ scale: 1.04, boxShadow: "0 4px 16px rgba(249,115,22,0.55)" }}
-              whileTap={{ scale: 0.96 }}
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-bold text-white"
+              style={{
+                background: "linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%)",
+                boxShadow: "0 2px 12px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 4px 20px rgba(249,115,22,0.6), inset 0 1px 0 rgba(255,255,255,0.2)",
+              }}
+              whileTap={{ scale: 0.95 }}
               transition={spring}
             >
               {isConnected ? "Dashboard" : "Get Started"}
-              <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+              <motion.span
+                animate={{ x: [0, 2, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
+              >
+                <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+              </motion.span>
             </motion.button>
           </Link>
         </motion.div>
@@ -162,7 +226,7 @@ function LandingPage() {
   const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
 
   return (
-    <div className="min-h-screen bg-[#fffcf8] text-[#1a1a1a] overflow-x-hidden">
+    <div className="min-h-screen bg-[#fffcf8] text-[#1a1a1a]" style={{ overflowX: "clip" }}>
 
       <script
         type="application/ld+json"

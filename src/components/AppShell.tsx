@@ -92,30 +92,48 @@ function BottomNav({ pathname }: { pathname: string }) {
      * of the viewport — it IS part of the viewport-height container.
      * Address-bar show/hide resizes the container via 100dvh; the nav
      * stays glued to the bottom edge without any jump.
+     *
+     * The gradient overlay extends above this element (bottom: 100%)
+     * to create a visual "fade into the floating pill" effect without
+     * affecting layout or clipping the scroll content.
      */
     <div
-      className="shrink-0 flex justify-center px-4"
+      className="shrink-0 relative flex justify-center px-4"
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
-        paddingTop: 8,
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 14px)",
+        paddingTop: 6,
       }}
     >
+      {/* Gradient fade — bleeds above the nav to make the pill look
+          floating rather than glued to the viewport bottom edge */}
+      <div
+        className="absolute bottom-full left-0 right-0 h-16 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(250,247,243,0) 0%, rgba(250,247,243,0.96) 100%)",
+        }}
+      />
+
       <motion.div
         className="flex items-center w-full"
         style={{
           maxWidth: 480,
-          borderRadius: 28,
-          padding: "6px 6px",
-          background: "rgba(28, 25, 23, 0.88)",
-          backdropFilter: "blur(28px)",
-          WebkitBackdropFilter: "blur(28px)",
-          boxShadow:
-            "0 20px 60px rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)",
+          borderRadius: 30,
+          padding: "5px 5px",
+          background: "rgba(18, 16, 14, 0.93)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
+          boxShadow: [
+            "0 0 0 1px rgba(255,255,255,0.09)",
+            "inset 0 1px 0 rgba(255,255,255,0.10)",
+            "0 4px 16px rgba(0,0,0,0.30)",
+            "0 12px 36px rgba(0,0,0,0.22)",
+            "0 28px 60px rgba(0,0,0,0.16)",
+          ].join(", "),
         }}
-        // Entrance: only on very first render, not on remount or route change
-        initial={isFirst && !reduced ? { opacity: 0, y: 12 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EO, delay: 0.1 }}
+        initial={isFirst && !reduced ? { opacity: 0, y: 20, scale: 0.94 } : false}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: EO, delay: 0.08 }}
       >
         {NAV.map(({ to, icon: Icon, label }) => {
           const active = pathname === to;
@@ -127,43 +145,49 @@ function BottomNav({ pathname }: { pathname: string }) {
               className="w-[20%] flex items-center justify-center shrink-0"
             >
               <motion.div
-                className="relative flex items-center justify-center h-11 w-full rounded-[20px] overflow-hidden"
-                whileTap={reduced ? {} : { scale: 0.88 }}
+                className="relative flex items-center justify-center h-11 w-full rounded-[22px] overflow-hidden"
+                whileTap={reduced ? {} : { scale: 0.84 }}
                 transition={ST}
               >
-                {/* Sliding orange pill — layoutId is stable because the nav
-                    bar position is now fixed by the flex column, not by CSS
-                    fixed positioning. Measurements are always accurate. */}
+                {/* Sliding orange pill */}
                 {active && (
                   <motion.div
                     layoutId="fnav-pill"
-                    className="absolute inset-0 rounded-[20px]"
-                    style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
+                    className="absolute inset-0 rounded-[22px]"
+                    style={{
+                      background: "linear-gradient(135deg, #fb923c 0%, #f97316 40%, #ea580c 100%)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 12px rgba(249,115,22,0.5)",
+                    }}
                     initial={false}
                     transition={SP}
                   />
                 )}
 
-                {/* Icon + label — label uses opacity only (no maxWidth/width
-                    CSS layout properties that would trigger reflows on every
-                    animation frame and cause compositor layer invalidation) */}
+                {/* Icon + label */}
                 <div className="relative z-10 flex items-center gap-[5px] px-1">
-                  <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.38)", display: "flex" }}>
+                  <motion.span
+                    style={{ display: "flex" }}
+                    animate={{ color: active ? "#fff" : "rgba(255,255,255,0.32)" }}
+                    transition={{ duration: 0.22, ease: EO }}
+                  >
                     <Icon
                       className="h-[19px] w-[19px] shrink-0"
-                      strokeWidth={active ? 2.4 : 1.8}
+                      strokeWidth={active ? 2.5 : 1.7}
                     />
-                  </span>
+                  </motion.span>
+
+                  {/* Label: opacity-only — no layout change avoids compositor
+                      reflows. Items stay fixed at w-[20%] always. */}
                   <AnimatePresence initial={false}>
                     {active && (
                       <motion.span
                         key={label}
-                        className="text-[12px] font-bold text-white whitespace-nowrap overflow-hidden"
+                        className="text-[11.5px] font-bold text-white whitespace-nowrap overflow-hidden"
                         style={{ lineHeight: 1 }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.18, ease: EO }}
+                        transition={{ duration: 0.2, ease: EO }}
                       >
                         {label}
                       </motion.span>
@@ -355,29 +379,42 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* ── Header — in-flow, always at the top of the column ── */}
         <header
-          className="shrink-0 flex items-center justify-between px-4 border-b border-[#ede9e1]/70"
+          className="shrink-0 flex items-center justify-between px-4"
           style={{
             height: 56,
-            background: "rgba(255,252,248,0.95)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
+            background: "rgba(250,247,243,0.92)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            boxShadow: "0 1px 0 rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
           }}
         >
           <Link to="/dashboard" className="flex items-center gap-2">
-            <motion.img src={appLogo} alt="Push44"
+            <motion.img
+              src={appLogo}
+              alt="Push44"
               className="h-8 w-8 rounded-[10px] object-cover shrink-0"
-              whileTap={{ scale: 0.88 }} transition={ST} />
+              whileHover={{ scale: 1.06, rotate: -3 }}
+              whileTap={{ scale: 0.88 }}
+              transition={ST}
+            />
             <span className="text-[15px] font-black text-[#1a1a1a] tracking-tight leading-none">
               Push<span style={{ color: "#f97316" }}>44</span>
             </span>
           </Link>
 
           <Link to="/settings">
-            <motion.div className="relative" whileTap={{ scale: 0.88 }} transition={ST}>
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.88 }}
+              transition={ST}
+            >
               <AvatarBubble name={displayName} size={36} fontSize={13} />
-              <span
+              <motion.span
                 className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
-                style={{ boxShadow: "0 0 0 2px rgba(255,252,248,1)" }}
+                style={{ boxShadow: "0 0 0 2px rgba(250,247,243,1)" }}
+                animate={{ scale: fullyConnected ? [1, 1.3, 1] : 1 }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 4 }}
               />
             </motion.div>
           </Link>
