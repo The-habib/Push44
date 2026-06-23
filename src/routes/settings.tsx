@@ -362,12 +362,19 @@ function SettingsPage() {
           </div>
 
           {/* Rocket.new row */}
-          <div className="px-5 py-3.5" style={{ borderTop: "1px solid #f7f4f0" }}>
+          <div
+            className="px-5 py-3.5 transition-colors"
+            style={{
+              borderTop: "1px solid #f7f4f0",
+              background: rocketConnected ? "linear-gradient(90deg,#f5f3ff,transparent 70%)" : undefined,
+            }}
+          >
             <div className="flex items-center gap-3">
               <div
-                className="h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0"
-                style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
+                className="h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0 relative overflow-hidden"
+                style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)" }}
               >
+                <div className="absolute inset-0 rounded-[11px]" style={{ background: "radial-gradient(circle at 35% 35%,rgba(255,255,255,0.2),transparent 65%)" }} />
                 <RocketLogo size={18} white />
               </div>
               <div className="flex-1 min-w-0">
@@ -375,7 +382,7 @@ function SettingsPage() {
                 <AnimatePresence mode="wait">
                   {rocketConnected ? (
                     <motion.p key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="text-[11px] text-[#9a8880] truncate mt-0.5">
+                      className="text-[11px] truncate mt-0.5 font-medium" style={{ color: "#6366f1" }}>
                       {creds.rocketEmail || "Authenticated"}
                     </motion.p>
                   ) : (
@@ -398,7 +405,7 @@ function SettingsPage() {
                   <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     onClick={() => setShowRocketModal(true)}
                     className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
-                    style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                    style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)", boxShadow: "0 2px 8px rgba(99,102,241,0.3)" }}>
                     Connect
                   </motion.button>
                 )}

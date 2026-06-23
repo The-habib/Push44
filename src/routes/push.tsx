@@ -140,41 +140,47 @@ function PlatformToggle({
   hasBase44: boolean;
   hasRocket: boolean;
 }) {
-  const opts: { value: Platform; label: string; color: string; grad: string }[] = [
-    { value: "base44", label: "Base44",     color: "#f97316", grad: "linear-gradient(135deg,#f97316,#ea580c)" },
-    { value: "rocket", label: "Rocket.new", color: "#6366f1", grad: "linear-gradient(135deg,#6366f1,#4f46e5)" },
-  ];
-
   return (
     <div className="flex bg-[#f5f2ee] rounded-2xl p-1 mb-4 gap-1">
-      {opts.map(({ value, label, grad }) => {
+      {(["base44", "rocket"] as Platform[]).map((value) => {
         const active = platform === value;
         const connected = value === "base44" ? hasBase44 : hasRocket;
+        const label = value === "base44" ? "Base44" : "Rocket.new";
+        const activeGrad = value === "base44"
+          ? "linear-gradient(135deg,#fb923c,#f97316)"
+          : "linear-gradient(135deg,#818cf8,#4f46e5)";
         return (
           <motion.button
             key={value}
             onClick={() => onChange(value)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold relative"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold relative overflow-hidden"
             whileTap={{ scale: 0.97 }}
           >
             {active && (
               <motion.div
                 layoutId="platform-tab"
                 className="absolute inset-0 rounded-xl shadow-sm"
-                style={{ background: value === "rocket" ? "#6366f1" : "#f97316" }}
+                style={{ background: activeGrad }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            {active && value === "rocket" && (
+              <motion.div
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,255,255,0.15),transparent 65%)" }}
+                layoutId="platform-tab-gloss"
               />
             )}
             <span className="relative z-10 flex items-center gap-1.5">
               {value === "base44"
                 ? <Base44Logo size={14} white={active} />
-                : <RocketLogo size={14} white={active} />
+                : <RocketLogo size={15} white={active} />
               }
               <span className={active ? "text-white" : "text-[#9a8880]"}>{label}</span>
               {connected && (
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: active ? "rgba(255,255,255,0.7)" : "#22c55e" }}
+                  style={{ background: active ? "rgba(255,255,255,0.75)" : "#22c55e" }}
                 />
               )}
             </span>
@@ -379,7 +385,7 @@ function PushPage() {
   if (status === "done") {
     const platformColor = platform === "rocket" ? "#6366f1" : "#f97316";
     const platformGrad  = platform === "rocket"
-      ? "linear-gradient(135deg,#6366f1,#4f46e5)"
+      ? "linear-gradient(135deg,#818cf8,#4f46e5)"
       : "linear-gradient(135deg,#fb923c,#f97316)";
 
     return (
@@ -705,14 +711,15 @@ function PushPage() {
                           />
                         ) : null}
                         <div
-                          className="h-9 w-9 rounded-xl flex items-center justify-center"
+                          className="h-9 w-9 rounded-xl flex items-center justify-center relative overflow-hidden"
                           style={{
                             background: platform === "rocket"
-                              ? "linear-gradient(135deg,#6366f1,#4f46e5)"
+                              ? "linear-gradient(135deg,#818cf8,#4f46e5)"
                               : "linear-gradient(135deg,#fb923c,#f97316)",
                             display: app.icon ? "none" : "flex",
                           }}
                         >
+                          <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 35% 35%,rgba(255,255,255,0.18),transparent 65%)" }} />
                           {platform === "rocket"
                             ? <RocketLogo size={18} white />
                             : <Base44Logo size={18} white />
@@ -766,17 +773,28 @@ function PushPage() {
                 initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden mt-3"
               >
-                <div className="rounded-2xl border border-[#e0d9f7] bg-[#f5f3ff] p-4">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
-                      <RocketLogo size={16} white />
+                <div
+                  className="rounded-2xl p-4 relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(135deg,#f5f3ff 0%,#eef2ff 100%)",
+                    border: "1px solid #c7d2fe",
+                    boxShadow: "0 4px 20px rgba(99,102,241,0.1)",
+                  }}
+                >
+                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg,#818cf8,#6366f1,#4f46e5)" }} />
+                  <div className="flex items-start gap-3 mb-4">
+                    <div
+                      className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden"
+                      style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)" }}
+                    >
+                      <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 35% 35%,rgba(255,255,255,0.2),transparent 65%)" }} />
+                      <RocketLogo size={20} white />
                     </div>
                     <div className="flex-1">
-                      <div className="text-[13px] font-black text-[#3730a3] mb-0.5">Container is sleeping</div>
-                      <div className="text-[11px] text-[#6366f1]/70 leading-relaxed">
-                        <span className="font-semibold">{containerDown.appName}</span> needs to be open in Rocket.new
-                        so its container wakes up. Open it, wait a few seconds, then tap Try again.
+                      <div className="text-[13px] font-black mb-0.5" style={{ color: "#3730a3" }}>Container is sleeping</div>
+                      <div className="text-[11px] leading-relaxed" style={{ color: "rgba(99,102,241,0.75)" }}>
+                        <span className="font-semibold" style={{ color: "#4f46e5" }}>{containerDown.appName}</span> needs to be
+                        opened in Rocket.new so its container wakes up. Then tap Try again.
                       </div>
                     </div>
                   </div>
@@ -784,10 +802,13 @@ function PushPage() {
                     <a
                       href={`https://rocket.new/${containerDown.appId}`}
                       target="_blank" rel="noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-bold text-white"
-                      style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-bold text-white"
+                      style={{
+                        background: "linear-gradient(135deg,#818cf8,#4f46e5)",
+                        boxShadow: "0 3px 12px rgba(99,102,241,0.35)",
+                      }}
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      <ExternalLink className="h-3.5 w-3.5" />
                       Open in Rocket.new
                     </a>
                     <button
@@ -795,7 +816,8 @@ function PushPage() {
                         setContainerDown(null);
                         if (selectedApp) handleSelectApp(selectedApp);
                       }}
-                      className="flex-1 py-2 rounded-xl text-[12px] font-bold border-2 border-[#6366f1]/30 text-[#6366f1] bg-white"
+                      className="flex-1 py-2.5 rounded-xl text-[12px] font-bold transition-colors"
+                      style={{ border: "1.5px solid #c7d2fe", color: "#6366f1", background: "rgba(255,255,255,0.8)" }}
                     >
                       Try again
                     </button>

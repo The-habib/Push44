@@ -9,49 +9,92 @@ export function RocketLogo({
   size?: number;
   white?: boolean;
 }) {
-  const color = white ? "#ffffff" : "#6366f1";
-  const accent = white ? "rgba(255,255,255,0.55)" : "#818cf8";
+  if (white) {
+    return (
+      <svg
+        viewBox="0 0 32 32"
+        width={size}
+        height={size}
+        className={className}
+        aria-label="Rocket.new"
+        fill="none"
+      >
+        <path
+          d="M16 3C16 3 10 8.5 10 17a6 6 0 0012 0C22 8.5 16 3 16 3Z"
+          fill="rgba(255,255,255,0.25)"
+        />
+        <path
+          d="M16 3C16 3 10.5 8.8 10.5 17a5.5 5.5 0 0011 0C21.5 8.8 16 3 16 3Z"
+          stroke="white"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <circle cx="16" cy="17" r="2.5" fill="white" />
+        <path
+          d="M12.5 21C11 22.2 10.5 24.5 10.5 24.5s2.5-0.6 3.5-2"
+          stroke="rgba(255,255,255,0.65)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <path
+          d="M19.5 21C21 22.2 21.5 24.5 21.5 24.5s-2.5-0.6-3.5-2"
+          stroke="rgba(255,255,255,0.65)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <ellipse cx="16" cy="25" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.35)" />
+      </svg>
+    );
+  }
+
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="0 0 32 32"
       width={size}
       height={size}
       className={className}
       aria-label="Rocket.new"
       fill="none"
     >
+      <defs>
+        <linearGradient id="rkt-body" x1="16" y1="3" x2="16" y2="23" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="100%" stopColor="#4f46e5" />
+        </linearGradient>
+        <linearGradient id="rkt-flame" x1="16" y1="22" x2="16" y2="27" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#f97316" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.6" />
+        </linearGradient>
+      </defs>
       <path
-        d="M12 2C12 2 7 6.5 7 13a5 5 0 0010 0C17 6.5 12 2 12 2Z"
-        fill={color}
-        opacity={0.15}
+        d="M16 3C16 3 10 8.5 10 17a6 6 0 0012 0C22 8.5 16 3 16 3Z"
+        fill="url(#rkt-body)"
+        opacity={0.18}
       />
       <path
-        d="M12 2C12 2 7.5 6.8 7.5 13a4.5 4.5 0 009 0C16.5 6.8 12 2 12 2Z"
-        stroke={color}
-        strokeWidth="1.6"
+        d="M16 3C16 3 10.5 8.8 10.5 17a5.5 5.5 0 0011 0C21.5 8.8 16 3 16 3Z"
+        stroke="url(#rkt-body)"
+        strokeWidth="1.8"
         strokeLinejoin="round"
-      />
-      <circle cx="12" cy="13" r="2" fill={color} />
-      <path
-        d="M9 16.5C7.5 17.5 7 19.5 7 19.5s2-0.5 3-1.5"
-        stroke={accent}
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M15 16.5C16.5 17.5 17 19.5 17 19.5s-2-0.5-3-1.5"
-        stroke={accent}
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M10.5 8.5 C10.5 8.5 11 9.5 12 9.5C13 9.5 13.5 8.5 13.5 8.5"
-        stroke={color}
-        strokeWidth="1.2"
-        strokeLinecap="round"
         fill="none"
-        opacity={0.6}
       />
+      <circle cx="16" cy="17" r="2.5" fill="#6366f1" />
+      <circle cx="16" cy="17" r="1.2" fill="white" opacity={0.5} />
+      <path
+        d="M12.5 21C11 22.2 10.5 24.5 10.5 24.5s2.5-0.6 3.5-2"
+        stroke="#818cf8"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M19.5 21C21 22.2 21.5 24.5 21.5 24.5s-2.5-0.6-3.5-2"
+        stroke="#818cf8"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <ellipse cx="16" cy="25.5" rx="2.2" ry="1.4" fill="url(#rkt-flame)" />
+      <ellipse cx="16" cy="24.5" rx="1.2" ry="0.8" fill="#fb923c" opacity={0.6} />
     </svg>
   );
 }

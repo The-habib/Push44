@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Loader2, Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Check, X, Loader2, Mail, AlertCircle, Eye, EyeOff, Zap } from "lucide-react";
 import { RocketLogo } from "@/components/BrandLogos";
 import { MotionButton } from "@/components/PageTransition";
 import { rocketRequestOTP, rocketVerifyOTP, validateRocketToken } from "@/lib/rocket-api";
@@ -55,34 +55,56 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
   return (
     <motion.div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <motion.div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden"
+        style={{ boxShadow: "0 24px 64px rgba(99,102,241,0.18), 0 4px 16px rgba(0,0,0,0.08)" }}
         initial={{ y: 60, opacity: 0, scale: 0.96 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
       >
-        <div className="px-6 pt-6 pb-5 border-b border-[#f7f4f0]">
+        {/* Purple gradient header strip */}
+        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg,#818cf8,#6366f1,#4f46e5,transparent)" }} />
+
+        {/* Header */}
+        <div
+          className="px-6 pt-5 pb-5 border-b border-[#eef0ff]"
+          style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#eef2ff 60%,#fff 100%)" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
-              <RocketLogo size={24} white />
+            <div
+              className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)" }}
+            >
+              <div
+                className="absolute inset-0 rounded-2xl"
+                style={{ background: "radial-gradient(circle at 35% 35%,rgba(255,255,255,0.22),transparent 65%)" }}
+              />
+              <RocketLogo size={26} white />
             </div>
             <div className="flex-1">
-              <div className="text-[15px] font-black text-[#1a1a1a]">Connect Rocket.new</div>
-              <div className="text-[11px] text-[#9a8880]">Access your Rocket.new projects</div>
+              <div className="flex items-center gap-1.5">
+                <div className="text-[15px] font-black text-[#1a1a1a]">Connect</div>
+                <div className="text-[15px] font-black" style={{ color: "#6366f1" }}>Rocket.new</div>
+              </div>
+              <div className="text-[11px] font-medium mt-0.5" style={{ color: "#6366f1", opacity: 0.7 }}>
+                Access your Flutter &amp; web projects
+              </div>
             </div>
             <motion.button onClick={onClose}
-              className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
-              whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }}>
+              className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "rgba(99,102,241,0.1)", color: "#6366f1" }}
+              whileHover={{ scale: 1.08, background: "rgba(99,102,241,0.18)" }}
+              whileTap={{ scale: 0.9 }}>
               <X className="h-4 w-4" />
             </motion.button>
           </div>
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          <div className="flex items-start gap-2 bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl p-3">
+          {/* Privacy notice */}
+          <div className="flex items-start gap-2 rounded-2xl p-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
             <div className="h-4 w-4 rounded-full bg-[#22c55e] flex items-center justify-center shrink-0 mt-0.5">
               <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
             </div>
@@ -94,16 +116,25 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
           <AnimatePresence mode="wait">
             {done ? (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center gap-2 py-10">
-                <div className="h-16 w-16 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
-                  <Check className="h-8 w-8 text-white" strokeWidth={3} />
+                className="flex flex-col items-center gap-3 py-10">
+                <div
+                  className="h-18 w-18 rounded-full flex items-center justify-center relative"
+                  style={{
+                    background: "linear-gradient(135deg,#818cf8,#4f46e5)",
+                    boxShadow: "0 8px 32px rgba(99,102,241,0.45)",
+                    width: 72, height: 72,
+                  }}>
+                  <Check className="h-9 w-9 text-white" strokeWidth={3} />
                 </div>
-                <p className="text-[14px] font-bold text-[#1a1a1a] mt-1">Connected to Rocket.new!</p>
+                <div className="text-center">
+                  <p className="text-[15px] font-black text-[#1a1a1a]">Connected!</p>
+                  <p className="text-[12px] mt-0.5" style={{ color: "#6366f1" }}>Rocket.new is ready to push</p>
+                </div>
               </motion.div>
             ) : (
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex bg-[#faf7f3] rounded-xl p-1 mb-4">
+                {/* Tab switcher */}
+                <div className="flex rounded-xl p-1 mb-4 gap-1" style={{ background: "#eef2ff" }}>
                   {(["otp", "token"] as const).map((t) => (
                     <motion.button key={t}
                       onClick={() => { setTab(t); setError(""); setOtpSent(false); setOtpCode(""); }}
@@ -111,10 +142,12 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                       whileTap={{ scale: 0.97 }}>
                       {tab === t && (
                         <motion.div layoutId="rocket-modal-tab"
-                          className="absolute inset-0 rounded-lg bg-white shadow-sm border border-[#f0ece4]"
+                          className="absolute inset-0 rounded-lg shadow-sm"
+                          style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
                           transition={{ type: "spring", stiffness: 400, damping: 30 }} />
                       )}
-                      <span className={`relative z-10 ${tab === t ? "text-[#1a1a1a]" : "text-[#9a8880]"}`}>
+                      <span className={`relative z-10 flex items-center justify-center gap-1.5 ${tab === t ? "text-white" : "text-[#6366f1]"}`}>
+                        {t === "otp" ? <Mail className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
                         {t === "otp" ? "Email Code" : "API Token"}
                       </span>
                     </motion.button>
@@ -124,22 +157,26 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                 <AnimatePresence mode="wait">
                   {tab === "otp" ? (
                     <motion.div key="otp" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-3">
-                      <div className="flex items-center gap-2 mb-1">
+                      {/* Step indicators */}
+                      <div className="flex items-center gap-2 mb-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black"
-                            style={{ background: "#6366f1", color: "#fff" }}>1</div>
-                          <span className="text-[11px] font-semibold text-[#9a8880]">Enter email</span>
+                          <div className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black text-white"
+                            style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)" }}>1</div>
+                          <span className="text-[11px] font-semibold text-[#6366f1]">Enter email</span>
                         </div>
-                        <div className="flex-1 h-px bg-[#f0ece4]" />
+                        <div className="flex-1 h-px" style={{ background: "linear-gradient(to right,#c7d2fe,#e0e7ff)" }} />
                         <div className="flex items-center gap-1.5">
                           <div className="h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black"
-                            style={{ background: otpSent ? "#6366f1" : "#f0ece4", color: otpSent ? "#fff" : "#9a8880" }}>2</div>
-                          <span className="text-[11px] font-semibold text-[#9a8880]">Enter code</span>
+                            style={{
+                              background: otpSent ? "linear-gradient(135deg,#818cf8,#4f46e5)" : "#e0e7ff",
+                              color: otpSent ? "#fff" : "#a5b4fc",
+                            }}>2</div>
+                          <span className="text-[11px] font-semibold" style={{ color: otpSent ? "#6366f1" : "#a5b4fc" }}>Enter code</span>
                         </div>
                       </div>
 
                       <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#a5b4fc" }} />
                         <input
                           type="email"
                           placeholder="your@email.com"
@@ -147,7 +184,13 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                           onChange={(e) => { setEmail(e.target.value); if (otpSent) { setOtpSent(false); setOtpCode(""); } }}
                           onKeyDown={(e) => { if (e.key === "Enter" && !otpSent) handleSendOTP(); }}
                           disabled={otpSent}
-                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-10 pr-4 py-3 text-[13px] outline-none focus:border-[#6366f1]/40 focus:bg-white transition-colors disabled:opacity-60"
+                          className="w-full rounded-xl border pl-10 pr-4 py-3 text-[13px] outline-none transition-colors disabled:opacity-60"
+                          style={{
+                            borderColor: "#e0e7ff",
+                            background: "#f5f3ff",
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = "#818cf8"}
+                          onBlur={(e) => e.target.style.borderColor = "#e0e7ff"}
                         />
                       </div>
 
@@ -159,14 +202,15 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                               <p className="text-[11px] text-[#9a8880]">
                                 Check your inbox — code sent to <strong className="text-[#1a1a1a]">{email}</strong>.{" "}
                                 <button onClick={() => { setOtpSent(false); setOtpCode(""); setError(""); }}
-                                  className="text-[#6366f1] font-semibold hover:underline">Change</button>
+                                  className="font-semibold hover:underline" style={{ color: "#6366f1" }}>Change</button>
                               </p>
                               <input
-                                type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code"
+                                type="text" inputMode="numeric" autoComplete="one-time-code" placeholder="• • • • • •"
                                 value={otpCode}
                                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                 onKeyDown={(e) => { if (e.key === "Enter") handleVerifyOTP(); }}
-                                className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[18px] font-mono tracking-[0.3em] text-center outline-none focus:border-[#6366f1]/40 focus:bg-white transition-colors"
+                                className="w-full rounded-xl border px-4 py-3 text-[20px] font-mono tracking-[0.5em] text-center outline-none transition-colors"
+                                style={{ borderColor: "#c7d2fe", background: "#f5f3ff", color: "#4f46e5" }}
                                 autoFocus
                               />
                             </div>
@@ -177,24 +221,24 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                       {!otpSent ? (
                         <MotionButton onClick={handleSendOTP} disabled={loading}
                           className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
-                          style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                          style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)", boxShadow: "0 4px 16px rgba(99,102,241,0.35)" }}>
                           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                          {loading ? "Sending code…" : "Send code"}
+                          {loading ? "Sending code…" : "Send code →"}
                         </MotionButton>
                       ) : (
                         <MotionButton onClick={handleVerifyOTP} disabled={loading || otpCode.length < 4}
                           className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
-                          style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                          style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)", boxShadow: "0 4px 16px rgba(99,102,241,0.35)" }}>
                           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" strokeWidth={3} />}
                           {loading ? "Verifying…" : "Verify & connect"}
                         </MotionButton>
                       )}
                     </motion.div>
                   ) : (
-                    <motion.div key="tok" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-2">
-                      <div className="bg-[#eef2ff] rounded-xl p-3 space-y-1.5">
-                        <p className="text-[11px] font-bold text-[#3730a3]">How to get your token:</p>
-                        <ol className="text-[11px] text-[#4338ca] space-y-1 list-none">
+                    <motion.div key="tok" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-3">
+                      <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#eef2ff", border: "1px solid #c7d2fe" }}>
+                        <p className="text-[11px] font-bold" style={{ color: "#3730a3" }}>How to get your API token:</p>
+                        <ol className="text-[11px] space-y-1 list-none" style={{ color: "#4338ca" }}>
                           <li>1. Open <a href="https://rocket.new" target="_blank" rel="noreferrer" className="font-bold underline">rocket.new</a> and log in</li>
                           <li>2. Go to <a href="https://rocket.new/settings" target="_blank" rel="noreferrer" className="font-bold underline">rocket.new/settings</a></li>
                           <li>3. Find <strong>"API Key"</strong> or <strong>"Access Token"</strong> and copy it</li>
@@ -204,15 +248,18 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                         <input
                           type={showTok ? "text" : "password"} placeholder="Paste API token here…"
                           value={tok} onChange={(e) => setTok(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleToken()}
-                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#6366f1]/40 pr-11"
+                          className="w-full rounded-xl border px-4 py-3 text-[13px] font-mono outline-none pr-11 transition-colors"
+                          style={{ borderColor: "#e0e7ff", background: "#f5f3ff" }}
+                          onFocus={(e) => e.target.style.borderColor = "#818cf8"}
+                          onBlur={(e) => e.target.style.borderColor = "#e0e7ff"}
                         />
-                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "#a5b4fc" }}>
                           {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                       <MotionButton onClick={handleToken} disabled={loading}
-                        className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
-                        style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                        className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{ background: "linear-gradient(135deg,#818cf8,#4f46e5)", boxShadow: "0 4px 16px rgba(99,102,241,0.35)" }}>
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RocketLogo size={18} white />}
                         {loading ? "Connecting…" : "Connect Rocket.new"}
                       </MotionButton>
@@ -223,7 +270,8 @@ export function RocketModal({ onSuccess, onClose, defaultTab = "token" }: Props)
                 <AnimatePresence>
                   {error && (
                     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 mt-3">
+                      className="flex items-start gap-2 rounded-xl p-3 mt-3"
+                      style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
                       <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
                       <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
                     </motion.div>
