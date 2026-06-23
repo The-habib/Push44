@@ -6,13 +6,15 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Shield, Eye, EyeOff, Check, X, Loader2,
-  ExternalLink, AlertCircle, Mail, Lock, GitBranch, ChevronRight,
+  ExternalLink, AlertCircle, Mail, Lock, GitBranch,
+  CheckCircle2, XCircle, Wifi,
 } from "lucide-react";
 import { Base44Logo, GitHubLogo, RocketLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
-import { base44Login, validateBase44Token } from "@/lib/base44-api";
+import { base44Login, validateBase44Token, listBase44Apps } from "@/lib/base44-api";
 import { RocketModal } from "@/components/RocketModal";
 import { getGitHubUser } from "@/lib/github-api";
+import { listRocketApps } from "@/lib/rocket-api";
 import { Toaster, toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
@@ -28,17 +30,35 @@ export const Route = createFileRoute("/settings")({
 function StatusDot({ on }: { on: boolean }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ background: on ? "#22c55e" : "#d1d5db" }}
-      />
-      <span
-        className="text-[11px] font-semibold"
-        style={{ color: on ? "#16a34a" : "#9ca3af" }}
-      >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: on ? "#22c55e" : "#d1d5db" }} />
+      <span className="text-[11px] font-semibold" style={{ color: on ? "#16a34a" : "#9ca3af" }}>
         {on ? "Connected" : "Not connected"}
       </span>
     </span>
+  );
+}
+
+type TestResult = "idle" | "loading" | "ok" | "fail";
+
+function TestButton({ result, onClick }: { result: TestResult; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      disabled={result === "loading"}
+      className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-[10px] shrink-0 border transition-colors"
+      style={{
+        background: result === "ok" ? "#f0fdf4" : result === "fail" ? "#fef2f2" : "#faf7f3",
+        borderColor: result === "ok" ? "#bbf7d0" : result === "fail" ? "#fecaca" : "#f0ece4",
+        color: result === "ok" ? "#16a34a" : result === "fail" ? "#ef4444" : "#9a8880",
+      }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {result === "loading" && <Loader2 className="h-3 w-3 animate-spin" />}
+      {result === "ok"      && <CheckCircle2 className="h-3 w-3" />}
+      {result === "fail"    && <XCircle className="h-3 w-3" />}
+      {result === "idle"    && <Wifi className="h-3 w-3" />}
+      {result === "loading" ? "Testing…" : result === "ok" ? "OK" : result === "fail" ? "Failed" : "Test"}
+    </motion.button>
   );
 }
 
@@ -188,10 +208,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                           <p className="text-[11px] text-[#991b1b]/80 leading-relaxed mb-2">
                             Signed up with Google? Email & Password login won't work — use your API token instead.
                           </p>
-                          <button
-                            onClick={() => { setTab("token"); setError(""); }}
-                            className="text-[11px] font-bold text-[#ef4444] underline underline-offset-2"
-                          >
+                          <button onClick={() => { setTab("token"); setError(""); }} className="text-[11px] font-bold text-[#ef4444] underline underline-offset-2">
                             Switch to Auth Token →
                           </button>
                         </div>
@@ -217,7 +234,7 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
 
 function SettingsPage() {
   const { creds, updateCreds, signOut, isLoaded } = useApp();
-  const [showB44Modal, setShowB44Modal]   = useState(false);
+  const [showB44Modal, setShowB44Modal]       = useState(false);
   const [showRocketModal, setShowRocketModal] = useState(false);
   const [ghToken, setGhToken]     = useState("");
   const [showGhTok, setShowGhTok] = useState(false);
@@ -225,6 +242,11 @@ function SettingsPage() {
   const [ghUser, setGhUser]       = useState<{ login: string; name: string } | null>(null);
   const [branch, setBranch]       = useState("main");
   const [expandGh, setExpandGh]   = useState(false);
+
+  // Test connection states
+  const [b44Test,     setB44Test]     = useState<TestResult>("idle");
+  const [rocketTest,  setRocketTest]  = useState<TestResult>("idle");
+  const [ghTest,      setGhTest]      = useState<TestResult>("idle");
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -255,6 +277,48 @@ function SettingsPage() {
       toast.success(`GitHub connected as @${user.login}`);
     } catch (e: any) { toast.error(e.message ?? "Invalid token"); }
     finally { setGhLoading(false); }
+  };
+
+  const testBase44 = async () => {
+    if (!creds.base44Token) return;
+    setB44Test("loading");
+    try {
+      await listBase44Apps({ data: { token: creds.base44Token } });
+      setB44Test("ok");
+      toast.success("Base44 connection is working");
+    } catch (e: any) {
+      setB44Test("fail");
+      toast.error("Base44 test failed: " + (e.message ?? "Unknown error"));
+    }
+    setTimeout(() => setB44Test("idle"), 4000);
+  };
+
+  const testRocket = async () => {
+    if (!creds.rocketToken) return;
+    setRocketTest("loading");
+    try {
+      await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } });
+      setRocketTest("ok");
+      toast.success("Rocket.new connection is working");
+    } catch (e: any) {
+      setRocketTest("fail");
+      toast.error("Rocket.new test failed: " + (e.message ?? "Unknown error"));
+    }
+    setTimeout(() => setRocketTest("idle"), 4000);
+  };
+
+  const testGitHub = async () => {
+    if (!creds.githubToken) return;
+    setGhTest("loading");
+    try {
+      const u = await getGitHubUser({ data: { token: creds.githubToken } });
+      setGhTest("ok");
+      toast.success(`GitHub OK — logged in as @${u.login}`);
+    } catch (e: any) {
+      setGhTest("fail");
+      toast.error("GitHub test failed: " + (e.message ?? "Unknown error"));
+    }
+    setTimeout(() => setGhTest("idle"), 4000);
   };
 
   return (
@@ -341,23 +405,28 @@ function SettingsPage() {
                   )}
                 </AnimatePresence>
               </div>
-              <AnimatePresence mode="wait">
-                {b44Connected ? (
-                  <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => { updateCreds({ base44Token: "", base44Email: "" }); toast.success("Base44 disconnected"); }}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
-                    style={{ background: "#fef2f2", color: "#ef4444" }}>
-                    Disconnect
-                  </motion.button>
-                ) : (
-                  <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setShowB44Modal(true)}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
-                    style={{ background: "#f97316" }}>
-                    Connect
-                  </motion.button>
+              <div className="flex items-center gap-2 shrink-0">
+                {b44Connected && (
+                  <TestButton result={b44Test} onClick={testBase44} />
                 )}
-              </AnimatePresence>
+                <AnimatePresence mode="wait">
+                  {b44Connected ? (
+                    <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => { updateCreds({ base44Token: "", base44Email: "" }); toast.success("Base44 disconnected"); }}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
+                      style={{ background: "#fef2f2", color: "#ef4444" }}>
+                      Disconnect
+                    </motion.button>
+                  ) : (
+                    <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setShowB44Modal(true)}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
+                      style={{ background: "#f97316" }}>
+                      Connect
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
@@ -393,23 +462,28 @@ function SettingsPage() {
                   )}
                 </AnimatePresence>
               </div>
-              <AnimatePresence mode="wait">
-                {rocketConnected ? (
-                  <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => { updateCreds({ rocketToken: "", rocketEmail: "", rocketCompanyId: "" }); toast.success("Rocket.new disconnected"); }}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
-                    style={{ background: "#fef2f2", color: "#ef4444" }}>
-                    Disconnect
-                  </motion.button>
-                ) : (
-                  <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setShowRocketModal(true)}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
-                    style={{ background: "linear-gradient(135deg,#9810fa,#7008e7)", boxShadow: "0 2px 8px rgba(127,34,254,0.3)" }}>
-                    Connect
-                  </motion.button>
+              <div className="flex items-center gap-2 shrink-0">
+                {rocketConnected && (
+                  <TestButton result={rocketTest} onClick={testRocket} />
                 )}
-              </AnimatePresence>
+                <AnimatePresence mode="wait">
+                  {rocketConnected ? (
+                    <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => { updateCreds({ rocketToken: "", rocketEmail: "", rocketCompanyId: "" }); toast.success("Rocket.new disconnected"); }}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
+                      style={{ background: "#fef2f2", color: "#ef4444" }}>
+                      Disconnect
+                    </motion.button>
+                  ) : (
+                    <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setShowRocketModal(true)}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
+                      style={{ background: "linear-gradient(135deg,#9810fa,#7008e7)", boxShadow: "0 2px 8px rgba(127,34,254,0.3)" }}>
+                      Connect
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
@@ -437,14 +511,17 @@ function SettingsPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {ghConnected && ghUser && (
-                  <motion.a
-                    href={`https://github.com/${ghUser.login}`} target="_blank" rel="noreferrer"
-                    className="h-7 w-7 rounded-[9px] bg-[#faf7f3] border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
-                    whileHover={{ scale: 1.08, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
-                    transition={{ type: "spring", stiffness: 360, damping: 28 }}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </motion.a>
+                  <>
+                    <TestButton result={ghTest} onClick={testGitHub} />
+                    <motion.a
+                      href={`https://github.com/${ghUser.login}`} target="_blank" rel="noreferrer"
+                      className="h-7 w-7 rounded-[9px] bg-[#faf7f3] border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
+                      whileHover={{ scale: 1.08, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
+                      transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </motion.a>
+                  </>
                 )}
                 <AnimatePresence mode="wait">
                   {ghConnected ? (

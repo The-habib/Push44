@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, GitCommit, GitBranch, Clock, History as HistoryIcon,
   AlertCircle, Trash2, ExternalLink, TrendingUp, Zap, Search,
-  Download, Filter, X, FileText, Flame,
+  Download, X, Flame, RefreshCw,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
 import { getHistory, clearHistory, formatRelativeTime, getPushStreak, type PushRecord } from "@/lib/storage";
@@ -74,6 +74,15 @@ function HistoryPage() {
     const a    = document.createElement("a");
     a.href = url; a.download = `push44-history-${Date.now()}.json`; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleRepush = (e: PushRecord) => {
+    try {
+      sessionStorage.setItem("p44_platform", e.platform ?? "base44");
+      sessionStorage.setItem("p44_repush_appName", e.appName);
+      if (e.repo) sessionStorage.setItem("p44_repo", JSON.stringify({ full_name: e.repo, default_branch: e.branch, html_url: `https://github.com/${e.repo}` }));
+    } catch {}
+    navigate({ to: "/push" });
   };
 
   const platformIcon = (platform?: string) => {
@@ -290,10 +299,11 @@ function HistoryPage() {
                               <div className="text-[11px] text-[#9a8880] italic truncate">"{e.commitMessage}"</div>
 
                               {/* Diff pills */}
-                              {ok && (e.newCount !== undefined || e.modifiedCount !== undefined) && (
+                              {ok && (e.newCount !== undefined || e.modifiedCount !== undefined || e.deletedCount !== undefined) && (
                                 <div className="flex gap-1.5 mt-1.5 flex-wrap">
                                   {(e.newCount ?? 0) > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#f0fdf4] text-[#22c55e] border border-[#bbf7d0]">+{e.newCount}</span>}
                                   {(e.modifiedCount ?? 0) > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#fffbeb] text-[#d97706] border border-[#fde68a]">~{e.modifiedCount}</span>}
+                                  {(e.deletedCount ?? 0) > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#fef2f2] text-[#ef4444] border border-[#fecaca]">−{e.deletedCount}</span>}
                                 </div>
                               )}
 
@@ -309,12 +319,26 @@ function HistoryPage() {
                                 <span className="text-[10px] font-semibold text-[#9a8880] bg-[#f5f2ee] rounded-lg px-2 py-0.5">
                                   {e.filesCount} files
                                 </span>
-                                {e.commitHash && (
-                                  <a href={`https://github.com/${e.repo}/commit/${e.commitHash}`} target="_blank" rel="noreferrer"
-                                    className="ml-auto flex items-center gap-1 text-[10px] font-semibold text-[#9a8880] hover:text-[#f97316] transition-colors">
-                                    View <ExternalLink className="h-2.5 w-2.5" />
-                                  </a>
-                                )}
+
+                                {/* Action buttons */}
+                                <div className="ml-auto flex items-center gap-1.5">
+                                  {ok && (
+                                    <motion.button
+                                      onClick={() => handleRepush(e)}
+                                      className="flex items-center gap-1 text-[10px] font-bold text-[#f97316] bg-[#fff4ed] rounded-lg px-2 py-0.5 border border-[#fde0c8]"
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
+                                      <RefreshCw className="h-2.5 w-2.5" />Re-push
+                                    </motion.button>
+                                  )}
+                                  {e.commitHash && (
+                                    <a href={`https://github.com/${e.repo}/commit/${e.commitHash}`} target="_blank" rel="noreferrer"
+                                      className="flex items-center gap-1 text-[10px] font-semibold text-[#9a8880] hover:text-[#f97316] transition-colors">
+                                      View <ExternalLink className="h-2.5 w-2.5" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                               {!ok && e.error && (
                                 <div className="mt-2 text-[11px] text-[#ef4444] bg-[#fef2f2] rounded-lg px-2.5 py-1.5 font-medium">{e.error}</div>

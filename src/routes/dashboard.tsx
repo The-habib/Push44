@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import {
   ArrowRight, Clock, GitBranch, Loader2, AlertTriangle,
   Zap, LayoutGrid, Archive, CheckCircle2, XCircle,
-  Rocket, Flame, GitCommit, ExternalLink, Lock,
+  Rocket, Flame, GitCommit, ExternalLink, Lock, RefreshCw,
 } from "lucide-react";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
@@ -614,6 +614,75 @@ function Dashboard() {
               </div>
             </div>
           </div>
+        </FadeUp>
+      )}
+
+      {/* ── Quick re-push tile ──────────────────────── */}
+      {lastPush && lastPush.status === "success" && (
+        <FadeUp delay={0.19}>
+          <motion.div
+            className="rounded-[24px] border mb-4 overflow-hidden"
+            style={{ background: "linear-gradient(135deg,#fff8f2 0%,#fffaf5 100%)", borderColor: "#f0ece4" }}
+            whileHover={{ y: -2, boxShadow: "0 8px 28px rgba(249,115,22,0.12)" }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+          >
+            <div className="px-5 py-4 flex items-center gap-4">
+              {/* Icon */}
+              <div
+                className="h-12 w-12 rounded-[16px] flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", boxShadow: "0 4px 16px rgba(249,115,22,0.28)" }}
+              >
+                <RefreshCw className="h-5 w-5 text-white" />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-black text-[#f97316] uppercase tracking-wider">Quick re-push</span>
+                  {lastPush.platform === "rocket"
+                    ? <RocketLogo size={11} />
+                    : <Base44Logo size={11} />}
+                </div>
+                <div className="text-[14px] font-black text-[#1a1a1a] truncate leading-tight">{lastPush.appName}</div>
+                <div className="text-[11px] text-[#9a8880] truncate mt-0.5 font-medium">{lastPush.repo}</div>
+              </div>
+
+              {/* CTA */}
+              <MotionButton
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem("p44_platform", lastPush.platform ?? "base44");
+                    sessionStorage.setItem("p44_repush_appName", lastPush.appName);
+                    if (lastPush.repo) {
+                      sessionStorage.setItem("p44_repo", JSON.stringify({
+                        full_name: lastPush.repo,
+                        default_branch: lastPush.branch,
+                        html_url: `https://github.com/${lastPush.repo}`,
+                      }));
+                    }
+                  } catch {}
+                  navigate({ to: "/push" });
+                }}
+                className="flex items-center gap-1.5 text-white text-[12px] font-bold px-3.5 py-2.5 rounded-[14px] shrink-0"
+                style={{
+                  background: "linear-gradient(135deg,#f97316,#ea580c)",
+                  boxShadow: "0 3px 14px rgba(249,115,22,0.32)",
+                }}
+              >
+                Push again <ArrowRight className="h-3.5 w-3.5" />
+              </MotionButton>
+            </div>
+
+            {/* Bottom strip */}
+            <div className="px-5 py-2.5 border-t border-[#f5f0ea] flex items-center gap-3 text-[10px] text-[#b8a898] font-medium">
+              <GitBranch className="h-3 w-3" />
+              <span>{lastPush.branch}</span>
+              <span className="h-1 w-1 rounded-full bg-[#e8e3db]" />
+              <span>{lastPush.filesCount} files last push</span>
+              <span className="h-1 w-1 rounded-full bg-[#e8e3db]" />
+              <span>{formatRelativeTime(lastPush.timestamp)}</span>
+            </div>
+          </motion.div>
         </FadeUp>
       )}
 
