@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GitBranch, Search, Star, Loader2, Lock, Globe,
@@ -540,26 +541,22 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
 function ReposPage() {
   const { creds, isLoaded } = useApp();
   const navigate = useNavigate();
-  const [repos, setRepos]       = useState<any[]>([]);
-  const [loading, setLoading]   = useState(false);
   const [query, setQuery]       = useState("");
   const [selected, setSelected] = useState<any>(null);
   const [filter, setFilter]     = useState<"all" | "public" | "private">("all");
 
   const isConnected = !!creds.githubToken;
 
-  useEffect(() => {
-    if (!isLoaded || !isConnected) return;
-    load();
-  }, [isLoaded, isConnected]);
+  const { data: repos = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ["github-repos", creds.githubToken],
+    queryFn: () => listGitHubRepos({ data: { token: creds.githubToken! } }),
+    enabled: !!creds.githubToken && !!isLoaded && isConnected,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+  });
 
-  const load = useCallback(async () => {
-    if (!creds.githubToken) return;
-    setLoading(true);
-    try { setRepos(await listGitHubRepos({ data: { token: creds.githubToken } })); }
-    catch {}
-    finally { setLoading(false); }
-  }, [creds.githubToken]);
+  const load = useCallback(() => { refetch(); }, [refetch]);
 
   const filtered = repos.filter(r => {
     if (filter === "public" && r.private) return false;

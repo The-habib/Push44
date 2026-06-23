@@ -421,12 +421,16 @@ function PushPage() {
   const { creds, isLoaded } = useApp();
   const navigate = useNavigate();
 
-  const [platform, setPlatform]         = useState<Platform>("base44");
+  const [platform, setPlatform]         = useState<Platform>(() => {
+    try { return (sessionStorage.getItem("p44_platform") as Platform) || "base44"; } catch { return "base44"; }
+  });
   const [apps, setApps]                 = useState<App[]>([]);
   const [appsError, setAppsError]       = useState("");
   const [repos, setRepos]               = useState<Repo[]>([]);
   const [selectedApp, setSelectedApp]   = useState<App | null>(null);
-  const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
+  const [selectedRepo, setSelectedRepo] = useState<Repo | null>(() => {
+    try { const s = sessionStorage.getItem("p44_repo"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
   const [newRepoName, setNewRepoName]   = useState("");
   const [newRepoDesc, setNewRepoDesc]   = useState("");
   const [isPrivate, setIsPrivate]       = useState(true);
@@ -468,6 +472,14 @@ function PushPage() {
     if (!hasBase44 && hasRocket) setPlatform("rocket");
     if (isConnected) loadRepos();
   }, [isLoaded, isConnected]);
+
+  useEffect(() => {
+    try { sessionStorage.setItem("p44_platform", platform); } catch {}
+  }, [platform]);
+
+  useEffect(() => {
+    try { sessionStorage.setItem("p44_repo", JSON.stringify(selectedRepo)); } catch {}
+  }, [selectedRepo]);
 
   useEffect(() => {
     if (!isLoaded || !isConnected) return;
