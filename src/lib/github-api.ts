@@ -177,8 +177,19 @@ export interface FileEntry {
   content: string;
 }
 
-export async function pushFilesToGitHub({ data }: { data: { token: string; owner: string; repo: string; branch: string; files: FileEntry[]; commitMessage: string; onProgress?: (done: number, total: number) => void } }) {
-  const { token, owner, repo, branch, files, commitMessage, onProgress } = data;
+export async function pushFilesToGitHub({ data }: {
+  data: {
+    token: string;
+    owner: string;
+    repo: string;
+    branch: string;
+    files: FileEntry[];
+    filesToDelete?: string[];
+    commitMessage: string;
+    onProgress?: (done: number, total: number) => void;
+  }
+}) {
+  const { token, owner, repo, branch, files, filesToDelete = [], commitMessage, onProgress } = data;
   const repoPath = `/repos/${owner}/${repo}`;
   let baseTreeSha: string | null = null;
   let parentCommitSha: string | null = null;
@@ -207,6 +218,11 @@ export async function pushFilesToGitHub({ data }: { data: { token: string; owner
     );
     treeItems.push(...blobs);
     onProgress?.(Math.min(i + BATCH, files.length), files.length);
+  }
+
+  // Deletions: null sha removes the file from the tree
+  for (const path of filesToDelete) {
+    treeItems.push({ path, mode: "100644", type: "blob", sha: null });
   }
 
   const treeBody: any = { tree: treeItems };

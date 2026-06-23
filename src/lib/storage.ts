@@ -24,17 +24,18 @@ export interface PushRecord {
   stagedCount?: number;
   newCount?: number;
   modifiedCount?: number;
+  deletedCount?: number;
   status: "success" | "failed";
   error?: string;
   timestamp: number;
 }
 
 export interface FileSnapshot {
-  files: { path: string; hash: string }[];
+  files: { path: string; hash: string; content: string; truncated?: boolean }[];
   timestamp: number;
 }
 
-export type DiffStatus = "new" | "modified" | "unchanged";
+export type DiffStatus = "new" | "modified" | "unchanged" | "deleted";
 
 const CREDS_KEY      = "push44_credentials";
 const HISTORY_KEY    = "push44_history";
@@ -100,11 +101,21 @@ function getSnapshots(): Record<string, FileSnapshot> {
   catch { return {}; }
 }
 
+const MAX_CONTENT_BYTES = 100_000;
+
 export function saveAppSnapshot(appId: string, files: { path: string; content: string }[]): void {
   try {
     const all = getSnapshots();
     all[appId] = {
-      files: files.map(f => ({ path: f.path, hash: simpleHash(f.content) })),
+      files: files.map(f => {
+        const truncated = f.content.length > MAX_CONTENT_BYTES;
+        return {
+          path: f.path,
+          hash: simpleHash(f.content),
+          content: truncated ? f.content.slice(0, MAX_CONTENT_BYTES) : f.content,
+          ...(truncated ? { truncated: true } : {}),
+        };
+      }),
       timestamp: Date.now(),
     };
     localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(all));
@@ -123,6 +134,21 @@ export function deleteAppSnapshot(appId: string): void {
   } catch {}
 }
 
+export function getSnapshotFileContent(appId: string, path: string): string | null {
+  const snapshot = getAppSnapshot(appId);
+  if (!snapshot) return null;
+  return snapshot.files.find(f => f.path === path)?.content ?? null;
+}
+
+export function getDeletedPaths(
+  currentFiles: { path: string }[],
+  snapshot: FileSnapshot | null
+): string[] {
+  if (!snapshot) return [];
+  const currentPaths = new Set(currentFiles.map(f => f.path));
+  return snapshot.files.filter(f => !currentPaths.has(f.path)).map(f => f.path);
+}
+
 export function computeFileDiff(
   files: { path: string; content: string }[],
   snapshot: FileSnapshot | null
@@ -133,12 +159,19 @@ export function computeFileDiff(
     return result;
   }
   const snapshotMap = new Map(snapshot.files.map(f => [f.path, f.hash]));
+  const currentPaths = new Set(files.map(f => f.path));
+
   for (const f of files) {
     const hash = simpleHash(f.content);
     if (!snapshotMap.has(f.path)) result.set(f.path, "new");
     else if (snapshotMap.get(f.path) !== hash) result.set(f.path, "modified");
     else result.set(f.path, "unchanged");
   }
+
+  for (const [path] of snapshotMap) {
+    if (!currentPaths.has(path)) result.set(path, "deleted");
+  }
+
   return result;
 }
 
