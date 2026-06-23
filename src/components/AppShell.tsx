@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { GitHubLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 type NavItem = {
   to: string;
@@ -33,8 +33,7 @@ const ST = { type: "spring", stiffness: 600, damping: 30 } as const;
 const SN = { type: "spring", stiffness: 400, damping: 32 } as const;
 const EO = [0.22, 1, 0.36, 1] as const;
 
-// Directional slide variants — dir: 1 = forward (→), -1 = backward (←)
-const PAGE_X = 18; // px slide distance
+const PAGE_X = 18;
 const pageVariants = {
   initial: (dir: number) => ({ opacity: 0, x: dir * PAGE_X }),
   animate: { opacity: 1, x: 0, transition: { duration: 0.26, ease: EO } },
@@ -77,33 +76,32 @@ export function SectionCard({ title, action, children, className = "" }: {
   );
 }
 
-/* ─── floating bottom nav ────────────────────────────────── */
-// Module-level flag so the entrance animation only plays on true first mount,
-// never on remount (e.g. crossing the lg breakpoint mid-session).
-let navHasAnimated = false;
+/* ─── bottom nav (in-flow, never position:fixed) ─────────── */
+// Module-level flag — entrance animation plays only on true first mount.
+let navHasShown = false;
 
-function FloatingNav({ pathname }: { pathname: string }) {
+function BottomNav({ pathname }: { pathname: string }) {
   const reduced = useReducedMotion();
-  const isFirst = !navHasAnimated;
-  if (isFirst) navHasAnimated = true;
+  const isFirst = !navHasShown;
+  if (isFirst) navHasShown = true;
 
   return (
-    /* Outer positioning wrapper — lg:hidden so it self-hides on desktop.
-       translateZ(0) puts the nav on its own GPU compositor layer, isolating
-       it from page-transition layer reorders that can cause 1-frame flickers. */
+    /*
+     * NO position:fixed here. This div is a shrink-0 flex child at the
+     * bottom of the h-[100dvh] column. It can never move independently
+     * of the viewport — it IS part of the viewport-height container.
+     * Address-bar show/hide resizes the container via 100dvh; the nav
+     * stays glued to the bottom edge without any jump.
+     */
     <div
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
+      className="shrink-0 flex justify-center px-4"
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 20px)",
-        paddingLeft: 16,
-        paddingRight: 16,
-        transform: "translateZ(0)",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
+        paddingTop: 8,
       }}
     >
-
-      {/* The floating pill bar */}
       <motion.div
-        className="pointer-events-auto flex items-center w-full"
+        className="flex items-center w-full"
         style={{
           maxWidth: 480,
           borderRadius: 28,
@@ -114,9 +112,10 @@ function FloatingNav({ pathname }: { pathname: string }) {
           boxShadow:
             "0 20px 60px rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}
-        initial={isFirst && !reduced ? { y: 100, opacity: 0, scale: 0.92 } : false}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ duration: 0.55, ease: EO, delay: 0.05 }}
+        // Entrance: only on very first render, not on remount or route change
+        initial={isFirst && !reduced ? { opacity: 0, y: 12 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EO, delay: 0.1 }}
       >
         {NAV.map(({ to, icon: Icon, label }) => {
           const active = pathname === to;
@@ -132,7 +131,9 @@ function FloatingNav({ pathname }: { pathname: string }) {
                 whileTap={reduced ? {} : { scale: 0.88 }}
                 transition={ST}
               >
-                {/* Sliding orange pill background */}
+                {/* Sliding orange pill — layoutId is stable because the nav
+                    bar position is now fixed by the flex column, not by CSS
+                    fixed positioning. Measurements are always accurate. */}
                 {active && (
                   <motion.div
                     layoutId="fnav-pill"
@@ -143,7 +144,9 @@ function FloatingNav({ pathname }: { pathname: string }) {
                   />
                 )}
 
-                {/* Icon + expanding label */}
+                {/* Icon + label — label uses opacity only (no maxWidth/width
+                    CSS layout properties that would trigger reflows on every
+                    animation frame and cause compositor layer invalidation) */}
                 <div className="relative z-10 flex items-center gap-[5px] px-1">
                   <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.38)", display: "flex" }}>
                     <Icon
@@ -151,18 +154,16 @@ function FloatingNav({ pathname }: { pathname: string }) {
                       strokeWidth={active ? 2.4 : 1.8}
                     />
                   </span>
-
-                  {/* Label: width-clips in/out so the pill expands smoothly */}
                   <AnimatePresence initial={false}>
                     {active && (
                       <motion.span
                         key={label}
                         className="text-[12px] font-bold text-white whitespace-nowrap overflow-hidden"
                         style={{ lineHeight: 1 }}
-                        initial={{ opacity: 0, maxWidth: 0 }}
-                        animate={{ opacity: 1, maxWidth: 72 }}
-                        exit={{ opacity: 0, maxWidth: 0 }}
-                        transition={{ duration: 0.24, ease: EO }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18, ease: EO }}
                       >
                         {label}
                       </motion.span>
@@ -188,7 +189,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pageTitle      = PAGE_TITLES[pathname] ?? "Push44";
   const fullyConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
 
-  // Track nav direction — compare current vs previous tab index
+  // Track nav direction
   const prevPathRef = useRef(pathname);
   const dirRef      = useRef(1);
   if (prevPathRef.current !== pathname) {
@@ -201,8 +202,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
   const direction = reduced ? 0 : dirRef.current;
 
+  // Reset scroll to top on every route change so new pages always start at
+  // the top (also prevents Android Chrome from keeping the address bar hidden
+  // when navigating to a shorter page)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname]);
+
   return (
-    <div className="min-h-[100dvh] w-full" style={{ background: "#faf7f3" }}>
+    <div className="w-full" style={{ background: "#faf7f3" }}>
 
       {/* ═══════════════════════════════════════════
           DESKTOP ≥ 1024px  — sidebar layout
@@ -318,16 +327,38 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       {/* ═══════════════════════════════════════════
-          MOBILE + TABLET < 1024px  — floating nav
+          MOBILE + TABLET < 1024px
+          
+          KEY ARCHITECTURE: h-[100dvh] flex column.
+          
+          • h-[100dvh] = always EXACTLY the visual viewport height.
+            When the Android Chrome address bar shows/hides, 100dvh
+            resizes with it. The container and all its children resize
+            together — no element ever moves independently.
+            
+          • Header and BottomNav are shrink-0 flex children.
+            They are physically anchored to the top and bottom of
+            the container. They CANNOT jump or shift — they have no
+            independent position; they just ARE the top/bottom rows
+            of the flex column.
+            
+          • Only the middle scroll area moves its internal content.
+            overflow-hidden on the outer wrapper clips page transition
+            animations. overflow-y-auto on the inner scroller allows
+            normal page scrolling.
+            
+          • NO position:fixed anywhere on mobile. This eliminates the
+            entire class of "fixed element jumps when address bar
+            shows/hides" bugs permanently.
       ═══════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col min-h-[100dvh]">
+      <div className="lg:hidden h-[100dvh] flex flex-col overflow-hidden">
 
-        {/* Top header bar */}
+        {/* ── Header — in-flow, always at the top of the column ── */}
         <header
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 border-b border-[#ede9e1]/70"
+          className="shrink-0 flex items-center justify-between px-4 border-b border-[#ede9e1]/70"
           style={{
             height: 56,
-            background: "rgba(255,252,248,0.93)",
+            background: "rgba(255,252,248,0.95)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
           }}
@@ -352,29 +383,46 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
         </header>
 
-        {/* Page content — padded away from fixed header and floating nav */}
-        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))", overflowX: "clip" }}>
-          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-            <motion.div
-              key={pathname}
-              custom={direction}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </main>
+        {/* ── Scroll area — outer clips x-animations, inner scrolls ── */}
+        <div className="flex-1 relative overflow-hidden">
+          {/*
+           * This inner div IS the scroll container. position:absolute inset-0
+           * makes it fill the outer div exactly. overflow-y:auto provides
+           * native scroll. overflowX:clip contains the ±18px page x-animations
+           * so they never affect layout outside this div.
+           */}
+          <div
+            ref={scrollRef}
+            className="absolute inset-0 overflow-y-auto"
+            style={{ overflowX: "clip" }}
+          >
+            <div className="w-full max-w-2xl mx-auto px-4 pt-3 pb-4">
+              {/*
+               * mode="wait": old page fully exits (80ms) before new page
+               * enters. Avoids both pages being in flow simultaneously
+               * inside the scroll container, which would cause a brief
+               * double-height state and possible scroll jump.
+               */}
+              <AnimatePresence mode="wait" initial={false} custom={direction}>
+                <motion.div
+                  key={pathname}
+                  custom={direction}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom nav — in-flow, always at the bottom of the column ── */}
+        <BottomNav pathname={pathname} />
 
       </div>
-
-      {/* Floating nav — sibling of the flex column, NOT inside it.
-          This decouples it from any layout reflows caused by AnimatePresence
-          mode="popLayout" collapsing the flex column's in-flow content height.
-          FloatingNav's own outer div has lg:hidden + translateZ(0). */}
-      <FloatingNav pathname={pathname} />
     </div>
   );
 }
