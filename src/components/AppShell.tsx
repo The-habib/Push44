@@ -78,13 +78,28 @@ export function SectionCard({ title, action, children, className = "" }: {
 }
 
 /* ─── floating bottom nav ────────────────────────────────── */
+// Module-level flag so the entrance animation only plays on true first mount,
+// never on remount (e.g. crossing the lg breakpoint mid-session).
+let navHasAnimated = false;
+
 function FloatingNav({ pathname }: { pathname: string }) {
   const reduced = useReducedMotion();
+  const isFirst = !navHasAnimated;
+  if (isFirst) navHasAnimated = true;
 
   return (
-    /* Outer positioning wrapper */
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 20px)", paddingLeft: 16, paddingRight: 16 }}>
+    /* Outer positioning wrapper — lg:hidden so it self-hides on desktop.
+       translateZ(0) puts the nav on its own GPU compositor layer, isolating
+       it from page-transition layer reorders that can cause 1-frame flickers. */
+    <div
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 20px)",
+        paddingLeft: 16,
+        paddingRight: 16,
+        transform: "translateZ(0)",
+      }}
+    >
 
       {/* The floating pill bar */}
       <motion.div
@@ -99,7 +114,7 @@ function FloatingNav({ pathname }: { pathname: string }) {
           boxShadow:
             "0 20px 60px rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}
-        initial={{ y: 100, opacity: 0, scale: 0.92 }}
+        initial={isFirst && !reduced ? { y: 100, opacity: 0, scale: 0.92 } : false}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.55, ease: EO, delay: 0.05 }}
       >
@@ -192,7 +207,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ═══════════════════════════════════════════
           DESKTOP ≥ 1024px  — sidebar layout
       ═══════════════════════════════════════════ */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:flex min-h-[100dvh]">
 
         {/* Sidebar */}
         <aside className="w-60 shrink-0 flex flex-col sticky top-0 h-screen border-r border-[#f0ece4]"
@@ -338,7 +353,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Page content — padded away from fixed header and floating nav */}
-        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))", overflowX: "clip" }}>
           <AnimatePresence mode="popLayout" initial={false} custom={direction}>
             <motion.div
               key={pathname}
@@ -353,9 +368,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </AnimatePresence>
         </main>
 
-        {/* Floating pill bottom nav */}
-        <FloatingNav pathname={pathname} />
       </div>
+
+      {/* Floating nav — sibling of the flex column, NOT inside it.
+          This decouples it from any layout reflows caused by AnimatePresence
+          mode="popLayout" collapsing the flex column's in-flow content height.
+          FloatingNav's own outer div has lg:hidden + translateZ(0). */}
+      <FloatingNav pathname={pathname} />
     </div>
   );
 }
