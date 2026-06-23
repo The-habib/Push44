@@ -510,42 +510,51 @@ function extractFilesFromPayload(d: any): RocketFile[] | null {
 
 const APP_CODE_BASE = "https://appcodeformat.dhiwise.com";
 
-/** Recursively flatten a directory tree into a list of file paths. */
-function flattenDirTree(node: any, prefix = ""): string[] {
+/**
+ * Recursively flatten a directory tree into a list of file paths.
+ *
+ * Handles the confirmed Rocket.new format:
+ *   { name, path, type: "file"|"directory", children: [...] }
+ * where `path` is the absolute path from the project root (e.g. "/lib/main.dart").
+ * Also handles other common tree formats as fallback.
+ */
+function flattenDirTree(node: any): string[] {
   if (!node || typeof node !== "object") return [];
 
-  // Flat array of strings → these are file paths directly
+  // ── Confirmed Rocket.new format: { type, path, children }
+  // Each node has path = absolute path like "/lib/main.dart"
+  if (typeof node.type === "string" && typeof node.path === "string") {
+    if (node.type === "file") {
+      // Strip leading slash — file-content endpoint expects relative paths
+      const p = String(node.path).replace(/^\/+/, "");
+      return p ? [p] : [];
+    }
+    if (node.type === "directory" || node.type === "folder") {
+      return Array.isArray(node.children) ? node.children.flatMap(flattenDirTree) : [];
+    }
+  }
+
+  // ── Array of nodes
   if (Array.isArray(node)) {
     return node.flatMap((item: any): string[] => {
       if (typeof item === "string") return [item];
-      if (item?.path && typeof item.path === "string") return [item.path];
-      if (item?.name) {
-        const name = String(item.name);
-        const full = prefix + name;
-        if (item.type === "file" || (!item.children && !item.items)) return [full];
-        const children = item.children ?? item.items ?? [];
-        return flattenDirTree(children, full + "/");
-      }
-      return flattenDirTree(item, prefix);
+      // Recurse into any object — handles { type, path, children } or other formats
+      return flattenDirTree(item);
     });
   }
 
-  // Nested object: { type, name, children } style tree
-  if (node.type === "file") return [(prefix + String(node.name ?? "")).replace(/\/+$/, "")].filter(Boolean);
-  if ((node.type === "directory" || node.type === "folder") && node.children) {
-    const dir = prefix + (node.name ? String(node.name) + "/" : "");
-    return flattenDirTree(node.children, dir);
-  }
+  // ── Fallback: object with `data`/`result`/`payload` wrapper
+  const p = node.data ?? node.result ?? node.payload;
+  if (p !== undefined) return flattenDirTree(p);
 
-  // Plain object where keys are filenames and values are sub-trees or null/true
+  // ── Fallback: plain object where keys are filenames, values are sub-trees or null
   const paths: string[] = [];
   for (const [key, value] of Object.entries(node)) {
-    if (key === "data" || key === "payload" || key === "result") {
-      paths.push(...flattenDirTree(value as any, prefix));
-    } else if (value === null || value === true || value === false || typeof value === "string") {
-      paths.push(prefix + key);
+    if (value === null || value === true || value === false || typeof value === "string") {
+      paths.push(key);
     } else if (typeof value === "object") {
-      paths.push(...flattenDirTree(value as any, prefix + key + "/"));
+      const sub = flattenDirTree(value as any);
+      paths.push(...sub.map((f: string) => key + "/" + f));
     }
   }
   return paths;
@@ -554,12 +563,18 @@ function flattenDirTree(node: any, prefix = ""): string[] {
 /** Extract file content string from an S3 file-content response. */
 function extractContent(d: any): string | null {
   if (!d) return null;
-  const p = d.data ?? d.result ?? d.payload ?? d;
-  if (typeof p === "string") return p;
-  const c = p.content ?? p.code ?? p.fileContent ?? p.body ?? p.text;
+  // Unwrap standard API envelope first: { code:"OK", data: <content> }
+  const p = d.data ?? d.result ?? d.payload;
+  if (p !== undefined) {
+    if (typeof p === "string") return p;
+    // Avoid matching d.code:"OK" — only look for real content fields inside p
+    const c = p.content ?? p.fileContent ?? p.body ?? p.text ?? p.code ?? p.data;
+    if (typeof c === "string") return c;
+    if (c !== undefined && c !== null) return JSON.stringify(c, null, 2);
+  }
+  // Direct fields on d (no envelope)
+  const c = d.content ?? d.fileContent ?? d.body ?? d.text;
   if (typeof c === "string") return c;
-  if (c !== undefined && c !== null) return JSON.stringify(c, null, 2);
-  if (typeof p.data === "string") return p.data;
   return null;
 }
 
@@ -638,7 +653,8 @@ export async function fetchRocketAppFiles({
       if (!raw) continue;
       const d = await rocketDecrypt(raw);
       log("project-structure response", d);
-      const extracted = flattenDirTree(d.data ?? d.result ?? d.payload ?? d);
+      // Pass the root node directly — flattenDirTree handles { type, path, children } format
+      const extracted = flattenDirTree(d);
       if (extracted.length > 0) {
         filePaths = extracted.filter(p => p && !p.endsWith("/"));
         workingHeaders = hdrs;
@@ -663,10 +679,14 @@ export async function fetchRocketAppFiles({
               headers: workingHeaders!,
               body: JSON.stringify({ applicationId, file: filePath }),
             });
-            if (!res.ok) return null;
+            if (!res.ok) {
+              if (filePath === filePaths[0]) log("file-content first-file status", { filePath, status: res.status });
+              return null;
+            }
             const raw = await res.json().catch(() => null);
             if (!raw) return null;
             const d = await rocketDecrypt(raw);
+            if (filePath === filePaths[0]) log("file-content first-file response", d);
             const content = extractContent(d);
             if (content === null) return null;
             return { path: filePath, content } as RocketFile;
