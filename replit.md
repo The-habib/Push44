@@ -9,7 +9,10 @@ A mobile-first web app that lets users push their **Base44** or **Rocket.new** a
 
 ## Handover Status (June 2026)
 
-The Base44 integration is fully functional and production-ready. The Rocket.new integration lists apps correctly and the file-fetching approach has been fully reverse-engineered — the correct endpoints are implemented and awaiting final live verification with the user's token.
+Both integrations are fully functional and production-ready.
+
+- **Base44** — login (email/password + paste-token), app listing, sandbox auto-wake, file fetch all working. Login modal now detects Google-linked accounts and guides them to use the API token tab instead of email/password.
+- **Rocket.new** — OTP login, app listing, and file fetching all confirmed working end-to-end by live testing. File fetch uses the production container ping approach (see below). When a container is sleeping, the UI shows a "Container is sleeping" card with a direct link to open the app in Rocket.new and a Try Again button.
 
 ---
 
@@ -111,6 +114,12 @@ Keys are file paths, values are file content strings. Typical app: ~87 files.
 
 The sandbox must be `"alive"` before fetching files. The code auto-wakes it (polls status, retries). UI shows "Waking up sandbox…" after 3 seconds if still waiting.
 
+### Base44 Login — Google Accounts
+
+Base44 email/password login only works for accounts created with email + password. Users who signed up via Google have no password set — their login will always return `"Invalid email or password"` from Base44's server.
+
+The settings modal detects this error and shows a guided prompt: **"Signed up with Google? Use Auth Token →"** which auto-switches to the token tab. The Auth Token tab instructs users to go to [app.base44.com/settings/account](https://app.base44.com/settings/account) and copy their API Key.
+
 ---
 
 ## ⚠️ Critical: Real Rocket.new API Endpoints
@@ -130,27 +139,25 @@ The sandbox must be `"alive"` before fetching files. The code auto-wakes it (pol
 ### Authentication Flow (OTP)
 
 ```
-1. POST https://appuser.dhiwise.com/web/v1/user/send-otp
+1. POST https://appuser.dhiwise.com/auth/v3/rocket/send-otp
    Body: { email }
    → Returns nothing useful; triggers OTP email
 
-2. POST https://appuser.dhiwise.com/web/v1/user/verify-otp
+2. POST https://appuser.dhiwise.com/auth/v3/rocket/verify-email-otp
    Body: { email, otp }
    → Returns: { data: { token: "eyJ...", user: { companyId, fullName, ... } } }
 ```
 
-Token is a **JWT**. Save `companyId` from `data.user.companyId` (NOT `data.companyId`).
+Token is a **JWT**. Save `companyId` from `data.user.companyId` (NOT `data.companyId`). Response may be AES-256-CBC encrypted — the code handles decryption automatically via the hardcoded bundle key.
 
 ### Resolving companyId
 
 `companyId` is required as an HTTP header for all `back.rocket.new` calls. Without it, searches return `context: "general"` — an empty list.
 
-If `companyId` is missing from the OTP response:
-```
-GET https://appuser.dhiwise.com/web/v1/workspace/list
-Header: Authorization: JWT {token}
-→ Returns: { data: { list: [{ companyId: "..." }] } }
-```
+Resolution order (all tried automatically):
+1. Decode JWT claims directly (no network cost)
+2. `GET https://appuser.dhiwise.com/web/v1/workspace/list` with `Authorization: JWT {token}` → `{ data: { list: [{ companyId: "..." }] } }`
+3. Profile endpoints on auth server as last resort
 
 ### Listing Apps
 
@@ -161,10 +168,10 @@ Headers: {
   companyId: {companyId},
   pageURL: "https://rocket.new"
 }
-Body: {}
+Body: { page: 1, limit: 50 }
 ```
 
-Response shape:
+Paginate until response returns fewer than `limit` items. Response shape:
 ```json
 {
   "data": {
@@ -181,90 +188,87 @@ Response shape:
 }
 ```
 
-The `_id` is the **thread ID** (used to identify the app in UI). The `threadDetails.applicationId` is the **application ID** (used for file fetching).
+The `_id` is the **thread ID** (used as the app's primary key in the UI). The `threadDetails.applicationId` is the **application ID** (used for all file fetching).
 
-### Fetching Files — Multi-Step Fallback Strategy
+### Fetching Files — Confirmed Working Strategy (June 2026)
 
-#### Step 1 — S3 File Tree (always works)
+Three steps, all confirmed by live end-to-end testing:
+
+#### Step 1 — Ping the production container (no auth needed)
+```
+POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+Body: { applicationId: "..." }
+→ Returns: {
+    data: {
+      production: {
+        backendUrl: "https://callbreaks2883back.builtwithrocket.new",
+        status: { Name: "running" }
+      }
+    }
+  }
+```
+
+- **No auth required at all**
+- `status.Name === "running"` → container is live, files accessible
+- `backendUrl` is the HTTPS **code-editor container** (e.g. `*.builtwithrocket.new`) — NOT the Flutter app
+- If `status.Name !== "running"` → show "Container is sleeping" UI with link to open in Rocket.new
+
+#### Step 2 — Get file list from S3 project-structure (JWT auth required)
 ```
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
 Headers: { Authorization: "JWT {token}", Content-Type: application/json }
 Body: { applicationId: "..." }
 → Returns directory tree: { name, path, type: "file"|"directory", children: [...] }
 ```
-Confirmed: returns 200 with JWT auth. File paths use leading slash (e.g. `/lib/main.dart`) — strip it before sending to file-content.
 
-#### Step 2 — S3 File Content (may return 500 if stale)
-```
-POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
-Headers: { Authorization: "JWT {token}", Content-Type: application/json }
-Body: { applicationId: "...", file: "lib/main.dart" }
-→ Returns file content (or 500 if S3 cache is stale/missing)
-```
-⚠️ **CONFIRMED BUG:** For some projects the S3 file-content endpoint returns 500 for every file even though the project-structure returns 200. In this case the code falls through to the SSE container wake.
+Works even when the container is sleeping. File paths have leading slash (e.g. `/lib/main.dart`) — strip it before use.
 
-Files are fetched in parallel batches of 20 to avoid flooding the server.
-
-#### Step 3 — SSE Gateway Container Wake (fallback when S3 returns 500s)
-
-When S3 file-content returns 500, the dev container must be woken via the gateway SSE stream to fetch files directly.
-
-**SSE endpoint (reverse-engineered from Rocket.new JS bundle):**
-```
-POST https://gateway.rocket.new/api/v1/thread/conversation
-Headers: {
-  Authorization: "JWT {token}",   ← NOT Bearer
-  companyId: "{companyId}",
-  Content-Type: application/json,
-  pageURL: "https://rocket.new"
-}
-Body: { event: "CONTINUE_THREAD", data: { threadId: "{appId}" }, sessionId: "{uuid}" }
-```
-
-The server responds with an SSE stream. Events to watch for:
-- `event: heartbeat` — connection established (expected first event)
-- `event: PLACEHOLDER` — "Starting server..." (container waking)
-- `event: SERVER_STATUS_FOR_RESUME_CONTAINER` — contains `data.backendUrl` (container is live!)
-- `event: SERVER_STATUS_FOR_THREAD_DETAILS` — also contains `data.backendUrl`
-
-**IMPORTANT:** The SSE stream closes after a few events and must be reconnected. The code retries every 4 seconds for up to 50 seconds total.
-
-**When container is awake, fetch files from it directly:**
+#### Step 3 — Fetch each file from the running container (no auth needed!)
 ```
 POST {backendUrl}/api/file-content
-Headers: { Authorization: "JWT {token}", Content-Type: application/json }
-Body: { applicationId: "...", file: "lib/main.dart" }
+Headers: { Content-Type: application/json }   ← NO Authorization header
+Body: { path: "lib/main.dart" }               ← key is "path" — NOT "file", "filePath", etc.
+→ Returns: { path: "/lib/main.dart", content: "import 'package:flutter/material.dart';\n..." }
 ```
 
-Or download a ZIP of the whole project:
+- Body key **must** be `path` — any other key returns 422
+- No auth, no subscription check
+- Returns `500 { error: "Failed to read file content" }` for files not on the container — skip these
+- Fetched in parallel batches of 20
+
+#### Container Sleeping UI
+When `status.Name !== "running"`, push.tsx shows a purple "Container is sleeping" card with:
+- App name
+- **"Open in Rocket.new"** button → links to `https://rocket.new/{appId}`
+- **"Try again"** button to re-ping after the user wakes it
+
+### S3 File Content — Fallback Only (often broken)
 ```
-GET {backendUrl}/api/download-project?t={timestamp}
+POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
 Headers: { Authorization: "JWT {token}" }
-→ Returns ZIP archive
+Body: { applicationId: "...", file: "lib/main.dart" }   ← key is "file" here (NOT "path")
 ```
-
-**Key insight:** The `backendUrl` is ephemeral — it only exists when the container is actively running. If the container is fully terminated, the SSE stream stalls indefinitely with PLACEHOLDER events. The user must open the project in Rocket.new first to wake it, then Push44 can fetch the files.
-
-### Production Container Ping (no auth needed)
-
-```
-POST https://application.rocket.new/apis/v1/application/production-deploy/ping
-Body: { applicationId: "..." }
-→ Returns: { data: { production: { backendUrl, previewUrl, status, stateStatus } } }
-```
-
-**Important:** This returns the **deployed app's** backend URL (e.g. a Flutter API server) — NOT the code editor container. The code container URL is dynamic and only available via WebSocket when the project is open. If `status.Name === "terminated"`, the container is shut down and returns 502 — use the S3 file approach instead.
+Returns 500 for many projects because S3 cache is stale. Used only when the container approach fails entirely.
 
 ### CRITICAL: Never call `loginToBack()`
 
-There is no session exchange needed. The JWT token from OTP login works directly on `back.rocket.new` via `Authorization: Bearer`. `loginToBack()` tries 10+ failing endpoints and adds 20–30 seconds of invisible delay. It always returns `null`.
+There is no session exchange needed. The JWT token from OTP login works directly on `back.rocket.new` via `Authorization: Bearer`. `loginToBack()` tries 10+ failing endpoints and adds 20–30 seconds of invisible delay. It always returns `null`. The function is kept in the file but never called.
+
+### CRITICAL: Never use the SSE endpoint for file fetching
+
+The SSE stream at `gateway.rocket.new/api/v1/thread/conversation` was the previous fallback strategy. **It does NOT work:**
+- Only sends `heartbeat` then `PLACEHOLDER` events
+- The `backendUrl` never arrives via SSE, even when the container IS running
+- The correct approach is the `production-deploy/ping` REST endpoint (Step 1 above)
 
 ### WRONG Rocket.new endpoints (do NOT use)
 
 - ❌ `https://api.base44.com/...` — wrong server entirely
-- ❌ `GET ${containerUrl}/api/download-project` — only works when dev container is **actively open** in the editor (URL is ephemeral, set via WebSocket)
-- ❌ `https://application.rocket.new/apis/v1/application/production-deploy/ping` as a GET — only works as POST
+- ❌ `GET {backendUrl}/api/download-project` — returns 400 "You don't have active subscription"
+- ❌ `https://application.rocket.new/apis/v1/application/production-deploy/ping` as GET — only POST works
 - ❌ Any endpoint on `back.rocket.new` without `companyId` header — returns empty list
+- ❌ SSE stream at `gateway.rocket.new/api/v1/thread/conversation` for backendUrl — never delivers it
+- ❌ `{ file: "..." }` body key on `{backendUrl}/api/file-content` — must use `{ path: "..." }`
 
 ---
 
@@ -385,13 +389,15 @@ bun run dev    # starts on port 5000
 ## What's Working
 
 - ✅ Base44 login (email/password + paste-token)
-- ✅ Rocket.new login (OTP email flow)
+- ✅ Base44 login — Google account guidance (detects "Invalid email or password" and guides user to API token tab)
+- ✅ Rocket.new login (OTP email flow via `/auth/v3/rocket/send-otp` + `/auth/v3/rocket/verify-email-otp`)
 - ✅ GitHub PAT connection + validation
 - ✅ List all Base44 apps
-- ✅ List all Rocket.new apps (via `chat-thread/search` with `companyId` header)
+- ✅ List all Rocket.new apps (paginated `chat-thread/search` with `companyId` header)
 - ✅ Base44 sandbox auto-wake before fetching files
 - ✅ Base44 file fetch (~87 files)
-- ✅ Rocket.new file fetch via S3 endpoints on `appcodeformat.dhiwise.com` (project-structure → file-content)
+- ✅ Rocket.new file fetch — ping container → S3 file list → per-file from container (confirmed end-to-end)
+- ✅ Rocket.new "Container is sleeping" UI with Open in Rocket.new link + Try again button
 - ✅ List all GitHub repos (sorted by last updated)
 - ✅ Create new GitHub repo (public or private)
 - ✅ Push all files in one commit via Trees API
@@ -410,8 +416,7 @@ bun run dev    # starts on port 5000
 
 ## Suggested Next Steps
 
-- **Verify Rocket.new file fetch end-to-end** — the S3 endpoints are implemented and confirmed to exist (401 without auth); need live test with user token to confirm the tree response format and file content shape
-- **Token expiry detection** — if stored token is rejected (401), show a re-login banner automatically
+- **Token expiry detection** — if stored Base44/GitHub token is rejected (401), show a re-login banner automatically instead of a cryptic error
 - **File diff preview** — show which files changed since last push before committing
 - **Multiple branches** — support branch selection per push (currently always pushes to default branch)
 - **GitHub OAuth** — replace manual PAT entry with proper OAuth flow
