@@ -135,6 +135,12 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                 <AnimatePresence mode="wait">
                   {tab === "login" ? (
                     <motion.div key="l" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-2.5">
+                      <p className="text-[11px] text-[#b8a898]">
+                        Only works for email/password accounts.{" "}
+                        <button onClick={() => { setTab("token"); setError(""); }} className="text-[#f97316] font-semibold">
+                          Signed up with Google? Use Auth Token →
+                        </button>
+                      </p>
                       <div className="relative">
                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c8b8a2]" />
                         <input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -151,8 +157,12 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                     </motion.div>
                   ) : (
                     <motion.div key="t" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="space-y-2">
-                      <p className="text-[11px] text-[#9a8880]">Get your token from{" "}
-                        <a href="https://app.base44.com/settings" target="_blank" rel="noreferrer" className="text-[#f97316] font-semibold">app.base44.com/settings</a>
+                      <p className="text-[11px] text-[#9a8880]">
+                        Find your API key in{" "}
+                        <a href="https://app.base44.com/settings/account" target="_blank" rel="noreferrer" className="text-[#f97316] font-semibold">
+                          Base44 Settings → Account
+                        </a>
+                        {" "}under <span className="font-semibold">API Key</span>.
                       </p>
                       <div className="relative">
                         <input type={showTok ? "text" : "password"} placeholder="Paste token here…" value={tok} onChange={(e) => setTok(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -168,9 +178,24 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
                 <AnimatePresence>
                   {error && (
                     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="flex items-start gap-2 bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 mt-3">
-                      <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
-                      <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                      className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 mt-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+                        <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                      </div>
+                      {(error.toLowerCase().includes("invalid email or password") || error.toLowerCase().includes("invalid email")) && (
+                        <div className="mt-2.5 pt-2.5 border-t border-[#fecaca]/60">
+                          <p className="text-[11px] text-[#991b1b]/80 leading-relaxed mb-2">
+                            Signed up with Google? Email & Password login won't work — use your API token instead.
+                          </p>
+                          <button
+                            onClick={() => { setTab("token"); setError(""); }}
+                            className="text-[11px] font-bold text-[#ef4444] underline underline-offset-2"
+                          >
+                            Switch to Auth Token →
+                          </button>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
