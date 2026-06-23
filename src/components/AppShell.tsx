@@ -263,13 +263,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-7" style={{ position: "relative" }}>
-            <AnimatePresence mode="popLayout">
+          <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-7">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0, transition: { duration: 0.28, ease: EO } }}
-                exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.16 } }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22, ease: EO }}
               >
                 {children}
               </motion.div>
@@ -314,13 +315,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Page content — padded away from fixed header and floating nav */}
-        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: 96, position: "relative" }}>
-          <AnimatePresence mode="popLayout">
+        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: 96 }}>
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0, transition: { duration: 0.28, ease: EO } }}
-              exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.16 } }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: EO }}
             >
               {children}
             </motion.div>
