@@ -1,4 +1,5 @@
 import base44Logo from "@/assets/base44-logo-transparent.png";
+import rocketLogo from "@/assets/rocket-logo.png";
 
 export function RocketLogo({
   className = "",
@@ -9,22 +10,16 @@ export function RocketLogo({
   size?: number;
   white?: boolean;
 }) {
-  const fill = white ? "white" : "#0f172a";
-
   return (
-    <svg
-      viewBox="0 0 24 28"
+    <img
+      src={rocketLogo}
+      alt="Rocket.new"
       width={size}
-      height={size * (28 / 24)}
-      className={className}
-      aria-label="Rocket.new"
-      fill="none"
-    >
-      <path
-        d="M12 1 L22 27 Q12 21.5 2 27 Z"
-        fill={fill}
-      />
-    </svg>
+      height={size}
+      className={`object-contain ${className}`}
+      style={white ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }}
+      draggable={false}
+    />
   );
 }
 

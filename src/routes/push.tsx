@@ -330,11 +330,11 @@ function TokenExpiredBanner({ type, onFix }: { type: "github" | "platform"; onFi
   );
 }
 
-const ROCKET_COLOR   = "#7c3aed";
-const ROCKET_GRAD    = "linear-gradient(135deg,#7c3aed,#5b21b6)";
+const ROCKET_COLOR   = "#7f22fe";
+const ROCKET_GRAD    = "linear-gradient(135deg,#9810fa,#7008e7)";
 const ROCKET_LIGHT   = "#f5f3ff";
-const ROCKET_BORDER  = "#ddd6fe";
-const ROCKET_TEXT    = "#5b21b6";
+const ROCKET_BORDER  = "#ede9fe";
+const ROCKET_TEXT    = "#6e11b0";
 
 function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platform; size?: number }) {
   const isUrl   = typeof icon === "string" && (icon.startsWith("http") || icon.startsWith("data:"));
