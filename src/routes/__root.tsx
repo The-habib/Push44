@@ -11,6 +11,9 @@ import { useEffect } from "react";
 
 import { AppProvider, useApp } from "../contexts/AppContext";
 import { isOnboardingDone, markOnboardingDone } from "../lib/storage";
+import { AppShell } from "../components/AppShell";
+
+const APP_ROUTES = ["/dashboard", "/push", "/repositories", "/history", "/settings"];
 
 function NotFoundComponent() {
   return (
@@ -94,6 +97,14 @@ function OnboardingGuard() {
       navigate({ to: "/onboarding" });
     }
   }, [isLoaded, pathname, creds.base44Token, creds.rocketToken, creds.githubToken]);
+
+  if (APP_ROUTES.includes(pathname)) {
+    return (
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    );
+  }
 
   return <Outlet />;
 }

@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect, useCallback } from "react";
@@ -572,7 +571,7 @@ function ReposPage() {
 
   if (!isConnected) {
     return (
-      <AppShell>
+      <>
         <AnimatedCorner variant="repos" />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center">
           <div className="h-20 w-20 rounded-[28px] bg-[#f5f5f5] flex items-center justify-center">
@@ -586,12 +585,12 @@ function ReposPage() {
             Go to Settings →
           </MotionButton>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <AnimatedCorner variant="repos" />
       <AnimatePresence>
         {selected && (
@@ -693,6 +692,6 @@ function ReposPage() {
           )}
         </StaggerContainer>
       )}
-    </AppShell>
+    </>
   );
 }

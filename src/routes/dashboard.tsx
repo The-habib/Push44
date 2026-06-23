@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionCard, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect } from "react";
@@ -72,7 +71,7 @@ function Dashboard() {
   const maxPushes = Math.max(...weekData.map(d => d.pushes), 1);
 
   return (
-    <AppShell>
+    <>
       <AnimatedCorner variant="dashboard" />
 
       {/* Greeting */}
@@ -351,6 +350,6 @@ function Dashboard() {
           </MotionCard>
         </FadeUp>
       )}
-    </AppShell>
+    </>
   );
 }

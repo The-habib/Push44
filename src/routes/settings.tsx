@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, AvatarBubble } from "@/components/AppShell";
+import { AvatarBubble } from "@/components/AppShell";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect } from "react";
@@ -258,7 +258,7 @@ function SettingsPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <AnimatedCorner variant="settings" />
       <Toaster position="top-center" richColors />
 
@@ -553,6 +553,6 @@ function SettingsPage() {
           Push44 — your code stays yours
         </p>
       </FadeUp>
-    </AppShell>
+    </>
   );
 }

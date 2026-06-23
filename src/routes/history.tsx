@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect, useMemo } from "react";
@@ -84,7 +83,7 @@ function HistoryPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <AnimatedCorner variant="history" />
 
       <FadeUp>
@@ -321,6 +320,6 @@ function HistoryPage() {
           </div>
         </FadeUp>
       )}
-    </AppShell>
+    </>
   );
 }

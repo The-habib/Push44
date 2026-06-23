@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect } from "react";
@@ -625,7 +624,7 @@ function PushPage() {
 
   if (!isConnected) {
     return (
-      <AppShell>
+      <>
         <AnimatedCorner variant="push" />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center">
           <motion.div className="h-20 w-20 rounded-[28px] bg-[#fff4ed] flex items-center justify-center" animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
@@ -639,7 +638,7 @@ function PushPage() {
             Go to Settings <motion.span animate={{ x: [0, 3, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>→</motion.span>
           </MotionButton>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -647,7 +646,7 @@ function PushPage() {
     const platformGrad  = platform === "rocket" ? ROCKET_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
     const platformColor = platform === "rocket" ? ROCKET_COLOR : "#f97316";
     return (
-      <AppShell>
+      <>
         <AnimatedCorner variant="push" />
         <div className="flex flex-col min-h-[72vh] pt-4 pb-2">
           <FadeUp>
@@ -731,12 +730,12 @@ function PushPage() {
             </div>
           </FadeUp>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <Toaster richColors position="top-center" />
       <AnimatedCorner variant="push" />
       {showRocketModal && (
@@ -1048,6 +1047,6 @@ function PushPage() {
           </>
         )}
       </SectionShell>
-    </AppShell>
+    </>
   );
 }
