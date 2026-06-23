@@ -889,9 +889,14 @@ function PushPage() {
 
               {loadingRepos ? (
                 <div className="flex justify-center py-6"><Loader2 className="h-4 w-4 animate-spin text-[#f97316]" /></div>
+              ) : repos.filter(r => r.full_name?.trim()).length === 0 ? (
+                <div className="text-center py-4 text-[12px] text-[#9a8880]">No repositories found</div>
               ) : (
-                <div className="max-h-52 overflow-y-auto space-y-1.5 pr-0.5">
-                  {repos.map((r) => (
+                <div
+                  className="overflow-y-auto space-y-1.5"
+                  style={{ maxHeight: "13rem", paddingRight: "2px" }}
+                >
+                  {repos.filter(r => r.full_name?.trim()).map((r) => (
                     <motion.button key={r.full_name}
                       onClick={() => { setSelectedRepo(r); setBranch(r.default_branch); }}
                       className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-[#f0ece4] text-left bg-white"
@@ -901,7 +906,9 @@ function PushPage() {
                     >
                       <GitHubLogo className="h-4 w-4 text-[#9a8880] shrink-0" />
                       <span className="text-[13px] font-medium text-[#1a1a1a] truncate flex-1">{r.full_name}</span>
-                      <span className="text-[10px] font-mono text-[#9a8880] shrink-0 bg-[#faf7f3] px-2 py-0.5 rounded">{r.default_branch}</span>
+                      {r.default_branch && (
+                        <span className="text-[10px] font-mono text-[#9a8880] shrink-0 bg-[#faf7f3] px-2 py-0.5 rounded">{r.default_branch}</span>
+                      )}
                     </motion.button>
                   ))}
                 </div>
