@@ -1,9 +1,69 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode, CSSProperties } from "react";
 
-const ease = [0.25, 0.46, 0.45, 0.94] as const;
+export const EASE_OUT    = [0.22, 1, 0.36, 1]          as const;
+export const EASE_INOUT  = [0.45, 0, 0.55, 1]          as const;
+export const EASE_SPRING = { type: "spring", stiffness: 420, damping: 34 } as const;
+export const EASE_SPRING_SOFT = { type: "spring", stiffness: 280, damping: 28 } as const;
+export const EASE_SPRING_SNAPPY = { type: "spring", stiffness: 540, damping: 38 } as const;
 
 export function FadeUp({
+  children,
+  delay = 0,
+  className = "",
+  distance = 16,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  distance?: number;
+}) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: reduced ? 0 : distance }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: EASE_OUT }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function BlurFade({
+  children,
+  delay = 0,
+  className = "",
+  direction = "up",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  direction?: "up" | "down" | "left" | "right";
+}) {
+  const reduced = useReducedMotion();
+  const dist = 18;
+  const initial = reduced ? {} : {
+    up:    { y: dist },
+    down:  { y: -dist },
+    left:  { x: dist },
+    right: { x: -dist },
+  }[direction];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: reduced ? "blur(0px)" : "blur(6px)", ...initial }}
+      animate={{ opacity: 1, filter: "blur(0px)", x: 0, y: 0 }}
+      transition={{ duration: 0.55, delay, ease: EASE_OUT }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function PopIn({
   children,
   delay = 0,
   className = "",
@@ -12,11 +72,42 @@ export function FadeUp({
   delay?: number;
   className?: string;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay, ease }}
+      initial={{ opacity: 0, scale: reduced ? 1 : 0.82 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 520, damping: 28, delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function SlideIn({
+  children,
+  delay = 0,
+  className = "",
+  from = "right",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  from?: "left" | "right" | "bottom";
+}) {
+  const reduced = useReducedMotion();
+  const dist = 28;
+  const initial = reduced ? {} : {
+    left:   { x: -dist, opacity: 0 },
+    right:  { x:  dist, opacity: 0 },
+    bottom: { y:  dist, opacity: 0 },
+  }[from];
+  return (
+    <motion.div
+      initial={initial}
+      animate={{ x: 0, y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 360, damping: 30, delay }}
       className={className}
     >
       {children}
@@ -27,15 +118,19 @@ export function FadeUp({
 export function StaggerContainer({
   children,
   className = "",
+  stagger = 0.07,
+  delayChildren = 0.04,
 }: {
   children: ReactNode;
   className?: string;
+  stagger?: number;
+  delayChildren?: number;
 }) {
   return (
     <motion.div
       initial="hidden"
       animate="visible"
-      variants={{ visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }}
+      variants={{ visible: { transition: { staggerChildren: stagger, delayChildren } } }}
       className={className}
     >
       {children}
@@ -53,8 +148,8 @@ export function StaggerItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 12 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease } },
+        hidden: { opacity: 0, y: 14, filter: "blur(4px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.42, ease: EASE_OUT } },
       }}
       className={className}
     >
@@ -72,11 +167,12 @@ export function ScaleIn({
   delay?: number;
   className?: string;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.94 }}
+      initial={{ opacity: 0, scale: reduced ? 1 : 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay, ease }}
+      transition={{ duration: 0.45, delay, ease: EASE_OUT }}
       className={className}
     >
       {children}
@@ -98,11 +194,14 @@ export function MotionCard({
   return (
     <motion.div
       className={className}
-      style={style}
+      style={{ willChange: "transform", ...style }}
       onClick={onClick}
-      whileHover={{ y: -2, boxShadow: "0 8px 28px rgba(0,0,0,0.09)" }}
-      whileTap={{ scale: 0.99 }}
-      transition={{ type: "spring", stiffness: 380, damping: 28 }}
+      whileHover={{
+        y: -3,
+        boxShadow: "0 12px 36px rgba(0,0,0,0.11)",
+        transition: { type: "spring", stiffness: 480, damping: 30 },
+      }}
+      whileTap={{ scale: 0.985, transition: { type: "spring", stiffness: 600, damping: 32 } }}
     >
       {children}
     </motion.div>
@@ -128,12 +227,11 @@ export function MotionButton({
     <motion.button
       type={type}
       className={className}
-      style={style}
+      style={{ willChange: "transform", ...style }}
       onClick={onClick}
       disabled={disabled}
-      whileHover={disabled ? {} : { scale: 1.02, y: -1 }}
-      whileTap={disabled ? {} : { scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 450, damping: 28 }}
+      whileHover={disabled ? {} : { scale: 1.03, y: -1.5, transition: { type: "spring", stiffness: 500, damping: 30 } }}
+      whileTap={disabled ? {} : { scale: 0.96, transition: { type: "spring", stiffness: 600, damping: 32 } }}
     >
       {children}
     </motion.button>
