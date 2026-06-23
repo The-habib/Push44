@@ -17,7 +17,7 @@ export function RocketLogo({
       width={size}
       height={size}
       className={`object-contain ${className}`}
-      style={white ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }}
+      style={white ? { filter: "invert(1)" } : undefined}
       draggable={false}
     />
   );
