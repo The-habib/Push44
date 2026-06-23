@@ -887,6 +887,8 @@ export interface ApkBuildState {
   status: ApkStatus;
   updatedAt?: string;
   errorMessage?: string;
+  /** Full decrypted payload from the API — used for debugging */
+  rawPayload?: Record<string, unknown>;
 }
 
 function apkHeaders(token: string, companyId?: string): Record<string, string> {
@@ -908,7 +910,13 @@ async function parseApkResponse(res: Response): Promise<ApkBuildState> {
   return {
     status,
     updatedAt: payload.updatedAt ?? payload.updated_at ?? undefined,
-    errorMessage: payload.errorMessage ?? payload.error ?? undefined,
+    errorMessage:
+      payload.errorMessage ??
+      payload.error ??
+      payload.message ??
+      payload.reason ??
+      undefined,
+    rawPayload: payload as Record<string, unknown>,
   };
 }
 
