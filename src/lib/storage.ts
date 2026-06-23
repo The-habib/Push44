@@ -41,6 +41,7 @@ const CREDS_KEY      = "push44_credentials";
 const HISTORY_KEY    = "push44_history";
 const SNAPSHOTS_KEY  = "push44_snapshots";
 const ONBOARDING_KEY = "push44_onboarded";
+const PUSH_PREFS_KEY = "push44_push_prefs";
 
 if (typeof localStorage !== "undefined") {
   const oldCreds   = localStorage.getItem("b44push_credentials");
@@ -82,6 +83,32 @@ export function addHistory(record: PushRecord): void {
 }
 
 export function clearHistory(): void { localStorage.removeItem(HISTORY_KEY); }
+
+// ── Push page preferences (platform, last repo, branch, etc.) ─────────────────
+
+export interface PushPrefs {
+  platform?: "base44" | "rocket";
+  lastRepo?: { full_name: string; default_branch: string; html_url: string } | null;
+  branch?: string;
+  isPrivate?: boolean;
+  repushAppName?: string | null;
+}
+
+export function getPushPrefs(): PushPrefs {
+  try { const raw = localStorage.getItem(PUSH_PREFS_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch { return {}; }
+}
+
+export function savePushPrefs(prefs: Partial<PushPrefs>): void {
+  try {
+    const existing = getPushPrefs();
+    localStorage.setItem(PUSH_PREFS_KEY, JSON.stringify({ ...existing, ...prefs }));
+  } catch {}
+}
+
+export function clearPushPrefs(): void {
+  try { localStorage.removeItem(PUSH_PREFS_KEY); } catch {}
+}
 
 export function isOnboardingDone(): boolean {
   try { return localStorage.getItem(ONBOARDING_KEY) === "true"; }

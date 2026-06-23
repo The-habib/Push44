@@ -9,7 +9,7 @@ import {
   Download, X, Flame, RefreshCw,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
-import { getHistory, clearHistory, formatRelativeTime, getPushStreak, type PushRecord } from "@/lib/storage";
+import { getHistory, clearHistory, formatRelativeTime, getPushStreak, savePushPrefs, type PushRecord } from "@/lib/storage";
 
 export const Route = createFileRoute("/history")({
   head: () => ({
@@ -77,11 +77,11 @@ function HistoryPage() {
   };
 
   const handleRepush = (e: PushRecord) => {
-    try {
-      sessionStorage.setItem("p44_platform", e.platform ?? "base44");
-      sessionStorage.setItem("p44_repush_appName", e.appName);
-      if (e.repo) sessionStorage.setItem("p44_repo", JSON.stringify({ full_name: e.repo, default_branch: e.branch, html_url: `https://github.com/${e.repo}` }));
-    } catch {}
+    savePushPrefs({
+      platform: e.platform ?? "base44",
+      repushAppName: e.appName,
+      lastRepo: e.repo ? { full_name: e.repo, default_branch: e.branch, html_url: `https://github.com/${e.repo}` } : null,
+    });
     navigate({ to: "/push" });
   };
 

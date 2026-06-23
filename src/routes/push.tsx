@@ -26,7 +26,7 @@ import {
 } from "@/lib/github-api";
 import {
   addHistory, getAppSnapshot, saveAppSnapshot, computeFileDiff,
-  getDeletedPaths, getSnapshotFileContent,
+  getDeletedPaths, getSnapshotFileContent, getPushPrefs, savePushPrefs,
   type DiffStatus,
 } from "@/lib/storage";
 import { Toaster, toast } from "sonner";
@@ -1012,19 +1012,19 @@ function PushPage() {
   const navigate = useNavigate();
 
   const [platform, setPlatform]         = useState<Platform>(() => {
-    try { return (sessionStorage.getItem("p44_platform") as Platform) || "base44"; } catch { return "base44"; }
+    try { return (getPushPrefs().platform as Platform) || "base44"; } catch { return "base44"; }
   });
   const [apps, setApps]                 = useState<App[]>([]);
   const [appsError, setAppsError]       = useState("");
   const [repos, setRepos]               = useState<Repo[]>([]);
   const [selectedApp, setSelectedApp]   = useState<App | null>(null);
   const [selectedRepo, setSelectedRepo] = useState<Repo | null>(() => {
-    try { const s = sessionStorage.getItem("p44_repo"); return s ? JSON.parse(s) : null; } catch { return null; }
+    try { return getPushPrefs().lastRepo ?? null; } catch { return null; }
   });
   const [newRepoName, setNewRepoName]   = useState("");
   const [newRepoDesc, setNewRepoDesc]   = useState("");
-  const [isPrivate, setIsPrivate]       = useState(true);
-  const [branch, setBranch]             = useState("main");
+  const [isPrivate, setIsPrivate]       = useState(() => getPushPrefs().isPrivate ?? true);
+  const [branch, setBranch]             = useState(() => getPushPrefs().branch || "main");
   const [commitMsg, setCommitMsg]       = useState("");
   const [files, setFiles]               = useState<FileEntry[]>([]);
   const [diffMap, setDiffMap]           = useState<Map<string, DiffStatus>>(new Map());
@@ -1057,9 +1057,9 @@ function PushPage() {
   const step2done   = !!selectedRepo;
   const stagedFiles = files.filter(f => stagedPaths.has(f.path));
 
-  // Auto-select app from re-push sessionStorage
+  // Auto-select app from re-push prefs (localStorage)
   const [repushAppName] = useState<string | null>(() => {
-    try { return sessionStorage.getItem("p44_repush_appName"); } catch { return null; }
+    try { return getPushPrefs().repushAppName ?? null; } catch { return null; }
   });
 
   useEffect(() => {
@@ -1071,12 +1071,20 @@ function PushPage() {
   }, [isLoaded, isConnected]);
 
   useEffect(() => {
-    try { sessionStorage.setItem("p44_platform", platform); } catch {}
+    savePushPrefs({ platform });
   }, [platform]);
 
   useEffect(() => {
-    try { sessionStorage.setItem("p44_repo", JSON.stringify(selectedRepo)); } catch {}
+    savePushPrefs({ lastRepo: selectedRepo });
   }, [selectedRepo]);
+
+  useEffect(() => {
+    savePushPrefs({ branch });
+  }, [branch]);
+
+  useEffect(() => {
+    savePushPrefs({ isPrivate });
+  }, [isPrivate]);
 
   useEffect(() => {
     if (!isLoaded || !isConnected) return;
@@ -1089,7 +1097,7 @@ function PushPage() {
     if (!repushAppName || apps.length === 0) return;
     const target = apps.find(a => a.name === repushAppName);
     if (target && !selectedApp) {
-      try { sessionStorage.removeItem("p44_repush_appName"); } catch {}
+      savePushPrefs({ repushAppName: null });
       handleSelectApp(target);
     }
   }, [apps, repushAppName]);

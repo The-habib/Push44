@@ -17,7 +17,7 @@ import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
 import {
-  getHistory, formatRelativeTime, getPushStreak, getWeeklyActivity,
+  getHistory, formatRelativeTime, getPushStreak, getWeeklyActivity, savePushPrefs,
 } from "@/lib/storage";
 import { SkeletonStatCard, SkeletonRepoCard } from "@/components/Skeleton";
 
@@ -650,17 +650,15 @@ function Dashboard() {
               {/* CTA */}
               <MotionButton
                 onClick={() => {
-                  try {
-                    sessionStorage.setItem("p44_platform", lastPush.platform ?? "base44");
-                    sessionStorage.setItem("p44_repush_appName", lastPush.appName);
-                    if (lastPush.repo) {
-                      sessionStorage.setItem("p44_repo", JSON.stringify({
-                        full_name: lastPush.repo,
-                        default_branch: lastPush.branch,
-                        html_url: `https://github.com/${lastPush.repo}`,
-                      }));
-                    }
-                  } catch {}
+                  savePushPrefs({
+                    platform: lastPush.platform ?? "base44",
+                    repushAppName: lastPush.appName,
+                    lastRepo: lastPush.repo ? {
+                      full_name: lastPush.repo,
+                      default_branch: lastPush.branch,
+                      html_url: `https://github.com/${lastPush.repo}`,
+                    } : null,
+                  });
                   navigate({ to: "/push" });
                 }}
                 className="flex items-center gap-1.5 text-white text-[12px] font-bold px-3.5 py-2.5 rounded-[14px] shrink-0"
