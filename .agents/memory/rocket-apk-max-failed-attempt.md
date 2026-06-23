@@ -32,6 +32,24 @@ In `triggerRocketApkBuild`, when `build.isMaxApkBuildFailedAttempt === true`:
 
 `parseApkResponse` must read `payload.isMaxApkBuildFailedAttempt` and surface it on `ApkBuildState`.
 
+## Build Log Endpoints (all return 401 = exist, confirmed)
+
+Multiple log endpoints exist on `https://application.rocket.new`:
+- `/web/v3/playground/apk-build-log` (tried first — likely most current)
+- `/web/v1/playground/apk-build-log`
+- `/web/v1/playground/apk-build-logs`
+- `/web/v3/playground/apk-build-logs`
+- `/web/v1/playground/build-logs`
+
+Response shapes handled in `extractLogLines()`:
+- `{ data: { log: "multiline string" } }`
+- `{ data: { logs: ["line1", ...] } }`
+- `{ data: { output/buildLog/buildOutput/stdout: "..." } }`
+- Array items with `.message` or `.line` fields
+
+Polling: every 5s while `isBuilding`, one final fetch on complete/failed.
+Auto-scroll: `logEndRef` scrollIntoView on new lines when terminal is expanded.
+
 ## Other Confirmed APK Endpoints (all return 401 = exist, not 404)
 
 All on `https://application.rocket.new`:

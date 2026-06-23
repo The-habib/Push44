@@ -992,6 +992,79 @@ export async function triggerRocketApkBuild({
   return parseApkResponse(res);
 }
 
+/**
+ * Fetch live build log lines from a running APK build.
+ *
+ * Tries multiple confirmed-existing endpoints in order and returns
+ * an array of log line strings. Returns [] if none yield data.
+ *
+ * Confirmed endpoints (all return 401 w/o auth, not 404):
+ *   POST https://application.rocket.new/web/v1/playground/apk-build-log
+ *   POST https://application.rocket.new/web/v3/playground/apk-build-log
+ *   POST https://application.rocket.new/web/v1/playground/apk-build-logs
+ *
+ * Response shapes handled:
+ *   { data: { log: "line1\nline2\n..." } }
+ *   { data: { logs: ["line1", "line2"] } }
+ *   { data: { output: "..." } }
+ *   { data: { buildLog: "..." } }
+ *   { data: string }  (raw string)
+ */
+export async function fetchRocketApkBuildLog({
+  data,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+}): Promise<string[]> {
+  const endpoints = [
+    `${APP_BASE}/web/v3/playground/apk-build-log`,
+    `${APP_BASE}/web/v1/playground/apk-build-log`,
+    `${APP_BASE}/web/v1/playground/apk-build-logs`,
+    `${APP_BASE}/web/v3/playground/apk-build-logs`,
+    `${APP_BASE}/web/v1/playground/build-logs`,
+  ];
+  const body = JSON.stringify({ threadId: data.threadId });
+  const hdrs = apkHeaders(data.token, data.companyId);
+
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url, { method: "POST", headers: hdrs, body });
+      if (!res.ok) continue;
+      const raw = await res.json().catch(() => null);
+      if (!raw) continue;
+      const d = await rocketDecrypt(raw);
+      const lines = extractLogLines(d);
+      if (lines.length > 0) return lines;
+    } catch { /* try next */ }
+  }
+  return [];
+}
+
+/** Extract log lines from any response shape Rocket.new might return. */
+function extractLogLines(d: any): string[] {
+  if (!d) return [];
+  const payload = d.data ?? d.result ?? d.payload ?? d;
+
+  // Ordered field search for the log content
+  const raw =
+    payload.log ?? payload.logs ?? payload.output ?? payload.buildLog ??
+    payload.buildOutput ?? payload.logOutput ?? payload.content ??
+    payload.text ?? payload.stdout ?? payload.stderr ?? null;
+
+  if (typeof raw === "string" && raw.trim()) {
+    return raw.split("\n").map((l: string) => l.trimEnd()).filter((l: string) => l.length > 0);
+  }
+  if (Array.isArray(raw)) {
+    return raw
+      .map((l: any) => (typeof l === "string" ? l : typeof l?.message === "string" ? l.message : typeof l?.line === "string" ? l.line : JSON.stringify(l)))
+      .filter((l: string) => l.trim().length > 0);
+  }
+  // Fallback: payload itself is a string
+  if (typeof payload === "string" && payload.trim()) {
+    return payload.split("\n").map((l: string) => l.trimEnd()).filter((l: string) => l.length > 0);
+  }
+  return [];
+}
+
 export async function downloadRocketApk({
   data,
 }: {

@@ -18,7 +18,7 @@ import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
 import {
   listRocketApps, fetchRocketAppFiles,
   checkRocketApkBuildStatus, triggerRocketApkBuild, downloadRocketApk,
-  APK_STATUS, type ApkBuildState, resetRocketApkBuild,
+  APK_STATUS, type ApkBuildState, resetRocketApkBuild, fetchRocketApkBuildLog,
 } from "@/lib/rocket-api";
 import {
   listGitHubRepos, createGitHubRepo, pushFilesToGitHub,
@@ -632,18 +632,22 @@ function ApkBuildPanel({
   companyId?: string;
   appName: string;
 }) {
-  const [build, setBuild]       = useState<ApkBuildState | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [build, setBuild]         = useState<ApkBuildState | null>(null);
+  const [loading, setLoading]     = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [downloading, setDL]    = useState(false);
+  const [downloading, setDL]      = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [pollLog, setPollLog]   = useState<PollEvent[]>([]);
-  const [showLog, setShowLog]   = useState(false);
-  const [showRaw, setShowRaw]   = useState(false);
-  const [elapsed, setElapsed]   = useState(0);
-  const [copied, setCopied]     = useState(false);
+  const [pollLog, setPollLog]     = useState<PollEvent[]>([]);
+  const [showLog, setShowLog]     = useState(false);
+  const [showRaw, setShowRaw]     = useState(false);
+  const [elapsed, setElapsed]     = useState(0);
+  const [copied, setCopied]       = useState(false);
+  const [buildLogs, setBuildLogs] = useState<string[]>([]);
+  const [showBuildLog, setShowBuildLog] = useState(true);
+  const logEndRef    = useRef<HTMLDivElement | null>(null);
   const buildStartRef = useRef<number | null>(null);
   const pollTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const logTimer      = useRef<ReturnType<typeof setTimeout> | null>(null);
   const elapsedTimer  = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isBuilding = !!(build && (build.status === APK_STATUS.IN_QUEUE || build.status === APK_STATUS.IN_PROCESS));
@@ -682,12 +686,41 @@ function ApkBuildPanel({
     }
   }, [token, threadId, companyId]);
 
-  // Auto-poll every 5 s while building
+  // Auto-poll status every 5 s while building
   useEffect(() => {
     if (!isBuilding) return;
     pollTimer.current = setTimeout(() => doCheckStatus(true), 5000);
     return () => { if (pollTimer.current) clearTimeout(pollTimer.current); };
   }, [build, isBuilding, doCheckStatus]);
+
+  // Auto-poll build logs every 5 s while building
+  const doFetchLogs = useCallback(async () => {
+    if (logTimer.current) clearTimeout(logTimer.current);
+    try {
+      const lines = await fetchRocketApkBuildLog({ data: { token, threadId, companyId } });
+      if (lines.length > 0) setBuildLogs(lines);
+    } catch { /* silently ignore log fetch failures */ }
+  }, [token, threadId, companyId]);
+
+  useEffect(() => {
+    if (!isBuilding) return;
+    logTimer.current = setTimeout(doFetchLogs, 4000);
+    return () => { if (logTimer.current) clearTimeout(logTimer.current); };
+  }, [buildLogs, isBuilding, doFetchLogs]);
+
+  // On build complete/failed, do one final log fetch
+  useEffect(() => {
+    if (isComplete || isFailed) {
+      doFetchLogs();
+    }
+  }, [isComplete, isFailed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-scroll terminal to bottom when new lines arrive
+  useEffect(() => {
+    if (showBuildLog && logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [buildLogs, showBuildLog]);
 
   // Initial status check on mount
   useEffect(() => {
@@ -700,6 +733,7 @@ function ApkBuildPanel({
     buildStartRef.current = Date.now();
     setElapsed(0);
     setPollLog([]);
+    setBuildLogs([]);
     try {
       // When Rocket.new has hit its internal retry limit, we must call the reset
       // endpoint first to clear the failed state before triggering a new build.
@@ -828,6 +862,87 @@ function ApkBuildPanel({
           <div className="flex items-center gap-1.5 text-[10px] text-[#9a8880]">
             <Clock className="h-3 w-3" />
             <span>Last updated: {new Date(build.updatedAt).toLocaleString()}</span>
+          </div>
+        )}
+
+        {/* ── Build log terminal ──────────────────────────────────────── */}
+        {(buildLogs.length > 0 || isBuilding) && (
+          <div className="rounded-2xl border border-[#2a2a2e] overflow-hidden">
+            {/* Terminal header */}
+            <button
+              onClick={() => setShowBuildLog(o => !o)}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left"
+              style={{ background: "#18181b" }}
+            >
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <div className="flex gap-1">
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                </div>
+                <span className="text-[10px] font-mono text-[#6b7280] ml-1 truncate">
+                  flutter build apk — {appName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {isBuilding && buildLogs.length === 0 && (
+                  <span className="text-[9px] font-mono text-[#6b7280] animate-pulse">waiting for output…</span>
+                )}
+                {buildLogs.length > 0 && (
+                  <span className="text-[9px] font-mono text-[#6b7280]">{buildLogs.length} lines</span>
+                )}
+                <ChevronRight
+                  className="h-3.5 w-3.5 text-[#6b7280] transition-transform"
+                  style={{ transform: showBuildLog ? "rotate(90deg)" : "rotate(0deg)" }}
+                />
+              </div>
+            </button>
+
+            {/* Terminal body */}
+            <AnimatePresence>
+              {showBuildLog && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div
+                    className="max-h-64 overflow-y-auto px-3.5 py-2.5 space-y-0.5 font-mono text-[10px] leading-relaxed"
+                    style={{ background: "#0d0d0f" }}
+                  >
+                    {buildLogs.length === 0 && isBuilding && (
+                      <div className="flex items-center gap-2 text-[#4b5563]">
+                        <Loader2 className="h-3 w-3 animate-spin text-[#7c3aed]" />
+                        <span>Waiting for build output…</span>
+                      </div>
+                    )}
+                    {buildLogs.map((line, i) => {
+                      const isErr  = /error|failed|exception|fatal/i.test(line) && !/\d+ error\(s\): 0/i.test(line);
+                      const isWarn = /warning|warn/i.test(line);
+                      const isOk   = /success|✓|built|complete|finished/i.test(line);
+                      const isDim  = /^\s*(#|\[|\s*$)/.test(line) || line.startsWith("   ");
+                      const color  = isErr ? "#f87171" : isOk ? "#4ade80" : isWarn ? "#fb923c" : isDim ? "#4b5563" : "#d1d5db";
+                      return (
+                        <div key={i} style={{ color }} className="break-all whitespace-pre-wrap">
+                          {line}
+                        </div>
+                      );
+                    })}
+                    {isBuilding && buildLogs.length > 0 && (
+                      <div className="flex items-center gap-1.5 pt-1 text-[#7c3aed]">
+                        <motion.span
+                          animate={{ opacity: [1, 0, 1] }}
+                          transition={{ repeat: Infinity, duration: 1.0 }}
+                        >▊</motion.span>
+                      </div>
+                    )}
+                    <div ref={logEndRef} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
