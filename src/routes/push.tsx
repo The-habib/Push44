@@ -19,6 +19,7 @@ import {
   listRocketApps, fetchRocketAppFiles,
   checkRocketApkBuildStatus, triggerRocketApkBuild, downloadRocketApk,
   APK_STATUS, type ApkBuildState, resetRocketApkBuild, fetchRocketApkBuildLog,
+  generateRocketKeystore,
 } from "@/lib/rocket-api";
 import {
   listGitHubRepos, createGitHubRepo, pushFilesToGitHub,
@@ -642,8 +643,9 @@ function ApkBuildPanel({
   const [showRaw, setShowRaw]     = useState(false);
   const [elapsed, setElapsed]     = useState(0);
   const [copied, setCopied]       = useState(false);
-  const [buildLogs, setBuildLogs] = useState<string[]>([]);
+  const [buildLogs, setBuildLogs]   = useState<string[]>([]);
   const [showBuildLog, setShowBuildLog] = useState(true);
+  const [keystoreStep, setKeystoreStep] = useState(false);
   const logEndRef    = useRef<HTMLDivElement | null>(null);
   const buildStartRef = useRef<number | null>(null);
   const pollTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -697,10 +699,12 @@ function ApkBuildPanel({
   const doFetchLogs = useCallback(async () => {
     if (logTimer.current) clearTimeout(logTimer.current);
     try {
-      const lines = await fetchRocketApkBuildLog({ data: { token, threadId, companyId } });
+      const lines = await fetchRocketApkBuildLog({
+        data: { token, threadId, companyId, buildId: build?.buildId },
+      });
       if (lines.length > 0) setBuildLogs(lines);
     } catch { /* silently ignore log fetch failures */ }
-  }, [token, threadId, companyId]);
+  }, [token, threadId, companyId, build?.buildId]);
 
   useEffect(() => {
     if (!isBuilding) return;
@@ -730,19 +734,28 @@ function ApkBuildPanel({
   const handleBuild = async () => {
     setFetchError("");
     setLoading(true);
+    setKeystoreStep(false);
     buildStartRef.current = Date.now();
     setElapsed(0);
     setPollLog([]);
     setBuildLogs([]);
     try {
-      // When Rocket.new has hit its internal retry limit, we must call the reset
-      // endpoint first to clear the failed state before triggering a new build.
+      // Step 1 — Generate signing keystore (required for fresh accounts).
+      // Without an Android signing keystore, APK signing fails silently.
+      // This endpoint is idempotent: if keystore already exists it returns 400/409 (we treat as success).
+      setKeystoreStep(true);
+      await generateRocketKeystore({ data: { token, threadId, companyId } });
+      setKeystoreStep(false);
+
+      // Step 2 — Reset failed state if Rocket.new hit its internal retry limit.
       const needsReset = !!(build?.isMaxApkBuildFailedAttempt);
       if (needsReset) {
         setResetting(true);
         await resetRocketApkBuild({ data: { token, threadId, companyId } });
         setResetting(false);
       }
+
+      // Step 3 — Trigger the build.
       const state = await triggerRocketApkBuild({
         data: { token, threadId, companyId },
         resetFirst: false, // already handled above with UI feedback
@@ -751,6 +764,7 @@ function ApkBuildPanel({
       setPollLog([{ time: Date.now(), status: state.status, errorMessage: state.errorMessage, rawPayload: state.rawPayload ?? null }]);
     } catch (e: any) {
       setResetting(false);
+      setKeystoreStep(false);
       setFetchError(e.message ?? "Failed to start build");
     } finally {
       setLoading(false);
@@ -866,7 +880,7 @@ function ApkBuildPanel({
         )}
 
         {/* ── Build log terminal ──────────────────────────────────────── */}
-        {(buildLogs.length > 0 || isBuilding) && (
+        {(buildLogs.length > 0 || isBuilding || (isFailed && elapsed > 0)) && (
           <div className="rounded-2xl border border-[#2a2a2e] overflow-hidden">
             {/* Terminal header */}
             <button
@@ -886,7 +900,7 @@ function ApkBuildPanel({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {isBuilding && buildLogs.length === 0 && (
-                  <span className="text-[9px] font-mono text-[#6b7280] animate-pulse">waiting for output…</span>
+                  <span className="text-[9px] font-mono text-[#6b7280] animate-pulse">polling…</span>
                 )}
                 {buildLogs.length > 0 && (
                   <span className="text-[9px] font-mono text-[#6b7280]">{buildLogs.length} lines</span>
@@ -912,10 +926,32 @@ function ApkBuildPanel({
                     className="max-h-64 overflow-y-auto px-3.5 py-2.5 space-y-0.5 font-mono text-[10px] leading-relaxed"
                     style={{ background: "#0d0d0f" }}
                   >
-                    {buildLogs.length === 0 && isBuilding && (
+                    {buildLogs.length === 0 && isBuilding && elapsed < 20 && (
                       <div className="flex items-center gap-2 text-[#4b5563]">
                         <Loader2 className="h-3 w-3 animate-spin text-[#7c3aed]" />
-                        <span>Waiting for build output…</span>
+                        <span>Polling Rocket.new build log API…</span>
+                      </div>
+                    )}
+                    {buildLogs.length === 0 && isBuilding && elapsed >= 20 && (
+                      <div className="space-y-1.5 py-1">
+                        <div className="text-[#4b5563]">$ flutter build apk --release</div>
+                        <div className="text-[#6b7280] flex items-center gap-1.5">
+                          <Loader2 className="h-3 w-3 animate-spin text-[#7c3aed]" />
+                          <span>Build running on Rocket.new servers…</span>
+                        </div>
+                        <div className="text-[#374151] pt-1 border-t border-[#1f2937]">
+                          <span className="text-[#6b7280]"># </span>
+                          Rocket.new doesn't stream logs in real time — output will appear when available
+                        </div>
+                      </div>
+                    )}
+                    {buildLogs.length === 0 && !isBuilding && (
+                      <div className="space-y-1 py-1 text-[#4b5563]">
+                        <div className="text-[#374151]">$ flutter build apk --release</div>
+                        <div className="text-[#ef4444]">Process exited — no log output returned by Rocket.new API</div>
+                        <div className="text-[#6b7280] pt-1">
+                          Check the raw payload below for error details from the build server.
+                        </div>
                       </div>
                     )}
                     {buildLogs.map((line, i) => {
@@ -1037,13 +1073,15 @@ function ApkBuildPanel({
               cursor: isBuilding ? "not-allowed" : "pointer",
             }}
           >
-            {resetting
-              ? <><Loader2 className="h-4 w-4 animate-spin" />Resetting…</>
-              : loading
-                ? <><Loader2 className="h-4 w-4 animate-spin" />Starting…</>
-                : isBuilding
-                  ? <><Loader2 className="h-4 w-4 animate-spin" />Building…</>
-                  : <><Smartphone className="h-4 w-4" />{isFailed ? "Rebuild APK" : isComplete ? "Rebuild APK" : "Build APK"}</>}
+            {keystoreStep
+              ? <><Loader2 className="h-4 w-4 animate-spin" />Generating keystore…</>
+              : resetting
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Resetting…</>
+                : loading
+                  ? <><Loader2 className="h-4 w-4 animate-spin" />Starting…</>
+                  : isBuilding
+                    ? <><Loader2 className="h-4 w-4 animate-spin" />Building…</>
+                    : <><Smartphone className="h-4 w-4" />{isFailed ? "Rebuild APK" : isComplete ? "Rebuild APK" : "Build APK"}</>}
           </MotionButton>
           {!isBuilding && (
             <MotionButton

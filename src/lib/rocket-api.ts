@@ -889,6 +889,8 @@ export interface ApkBuildState {
   errorMessage?: string;
   /** true when Rocket.new has hit its internal retry limit — reset is required before rebuilding */
   isMaxApkBuildFailedAttempt?: boolean;
+  /** Build ID returned by the API — passed to log endpoints */
+  buildId?: string;
   /** Full decrypted payload from the API — used for debugging */
   rawPayload?: Record<string, unknown>;
 }
@@ -909,18 +911,77 @@ async function parseApkResponse(res: Response): Promise<ApkBuildState> {
   const d = await rocketDecrypt(raw);
   const payload = d.data ?? d;
   const status: ApkStatus = payload.status ?? APK_STATUS.IDLE;
+  console.warn("[push44:apk] response payload keys:", Object.keys(payload || {}));
+  console.warn("[push44:apk] status:", status, "isMaxApkBuildFailedAttempt:", payload.isMaxApkBuildFailedAttempt, "errorMessage:", payload.errorMessage ?? payload.error ?? payload.message ?? payload.reason ?? payload.errorMsg);
   return {
     status,
     updatedAt: payload.updatedAt ?? payload.updated_at ?? undefined,
     isMaxApkBuildFailedAttempt: !!payload.isMaxApkBuildFailedAttempt,
+    buildId:
+      payload.buildId ?? payload.id ?? payload._id ?? payload.build_id ?? undefined,
     errorMessage:
       payload.errorMessage ??
       payload.error ??
       payload.message ??
       payload.reason ??
+      payload.errorMsg ??
+      payload.failReason ??
       undefined,
     rawPayload: payload as Record<string, unknown>,
   };
+}
+
+/**
+ * Generate (or re-generate) the Android signing keystore for this thread.
+ *
+ * This is a REQUIRED pre-build step for fresh Rocket.new accounts.
+ * Without a keystore, the APK signing step fails and the build returns
+ * status FAILED with isMaxApkBuildFailedAttempt=true after retries.
+ *
+ * Endpoint confirmed existing in bundle: back.rocket.new/api/v1/chat-thread/generate-keystore
+ * Auth: Bearer token + companyId header (same as all back.rocket.new calls).
+ */
+export async function generateRocketKeystore({
+  data,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+}): Promise<void> {
+  const hdrs: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${data.token}`,
+    pageURL: "https://rocket.new",
+  };
+  if (data.companyId) hdrs.companyId = data.companyId;
+
+  // Try POST with threadId body first, then bare POST (some generate endpoints ignore body)
+  const bodies = [
+    JSON.stringify({ threadId: data.threadId }),
+    JSON.stringify({ threadId: data.threadId, type: "debug" }),
+    JSON.stringify({}),
+  ];
+
+  for (const body of bodies) {
+    try {
+      const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/generate-keystore`, {
+        method: "POST",
+        headers: hdrs,
+        body,
+      });
+      const rawText = await res.text().catch(() => "");
+      console.warn("[push44:keystore] generate-keystore", {
+        status: res.status,
+        body: body.slice(0, 80),
+        response: rawText.slice(0, 200),
+      });
+      // 200 or 201 = success, keystore generated
+      if (res.ok) return;
+      // 400 = keystore already exists — that's fine
+      if (res.status === 400 || res.status === 409) return;
+    } catch (e: any) {
+      console.warn("[push44:keystore] generate-keystore error", e?.message);
+    }
+  }
+  // If it fails, proceed anyway — the build might work with an existing keystore
 }
 
 export async function checkRocketApkBuildStatus({
@@ -995,25 +1056,27 @@ export async function triggerRocketApkBuild({
 /**
  * Fetch live build log lines from a running APK build.
  *
- * Tries multiple confirmed-existing endpoints in order and returns
- * an array of log line strings. Returns [] if none yield data.
+ * All 5 endpoints confirmed to exist (return 401 without auth, not 404).
+ * Tries multiple body shapes since the exact required format is undocumented.
+ * Returns [] if all attempts yield empty data (log not yet available).
  *
- * Confirmed endpoints (all return 401 w/o auth, not 404):
- *   POST https://application.rocket.new/web/v1/playground/apk-build-log
- *   POST https://application.rocket.new/web/v3/playground/apk-build-log
- *   POST https://application.rocket.new/web/v1/playground/apk-build-logs
+ * Confirmed endpoints (all on application.rocket.new, return 401 w/o auth):
+ *   POST /web/v3/playground/apk-build-log
+ *   POST /web/v1/playground/apk-build-log
+ *   POST /web/v1/playground/apk-build-logs
+ *   POST /web/v3/playground/apk-build-logs
+ *   POST /web/v1/playground/build-logs
  *
  * Response shapes handled:
  *   { data: { log: "line1\nline2\n..." } }
  *   { data: { logs: ["line1", "line2"] } }
- *   { data: { output: "..." } }
- *   { data: { buildLog: "..." } }
+ *   { data: { output/buildLog/buildOutput/stdout: "..." } }
  *   { data: string }  (raw string)
  */
 export async function fetchRocketApkBuildLog({
   data,
 }: {
-  data: { token: string; threadId: string; companyId?: string };
+  data: { token: string; threadId: string; companyId?: string; buildId?: string };
 }): Promise<string[]> {
   const endpoints = [
     `${APP_BASE}/web/v3/playground/apk-build-log`,
@@ -1022,19 +1085,27 @@ export async function fetchRocketApkBuildLog({
     `${APP_BASE}/web/v3/playground/apk-build-logs`,
     `${APP_BASE}/web/v1/playground/build-logs`,
   ];
-  const body = JSON.stringify({ threadId: data.threadId });
   const hdrs = apkHeaders(data.token, data.companyId);
 
+  // Try multiple body formats — the API docs don't specify which is correct
+  const bodies = [
+    JSON.stringify({ threadId: data.threadId }),
+    ...(data.buildId ? [JSON.stringify({ buildId: data.buildId, threadId: data.threadId })] : []),
+    JSON.stringify({ id: data.threadId }),
+  ];
+
   for (const url of endpoints) {
-    try {
-      const res = await fetch(url, { method: "POST", headers: hdrs, body });
-      if (!res.ok) continue;
-      const raw = await res.json().catch(() => null);
-      if (!raw) continue;
-      const d = await rocketDecrypt(raw);
-      const lines = extractLogLines(d);
-      if (lines.length > 0) return lines;
-    } catch { /* try next */ }
+    for (const body of bodies) {
+      try {
+        const res = await fetch(url, { method: "POST", headers: hdrs, body });
+        if (!res.ok) continue;
+        const raw = await res.json().catch(() => null);
+        if (!raw) continue;
+        const d = await rocketDecrypt(raw);
+        const lines = extractLogLines(d);
+        if (lines.length > 0) return lines;
+      } catch { /* try next */ }
+    }
   }
   return [];
 }

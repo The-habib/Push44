@@ -32,23 +32,44 @@ In `triggerRocketApkBuild`, when `build.isMaxApkBuildFailedAttempt === true`:
 
 `parseApkResponse` must read `payload.isMaxApkBuildFailedAttempt` and surface it on `ApkBuildState`.
 
-## Build Log Endpoints (all return 401 = exist, confirmed)
+## Build Log Endpoints (all return 401 = exist, NOT 404)
 
-Multiple log endpoints exist on `https://application.rocket.new`:
-- `/web/v3/playground/apk-build-log` (tried first — likely most current)
+All 5 log endpoints confirmed to exist on `https://application.rocket.new`:
+- `/web/v3/playground/apk-build-log`
 - `/web/v1/playground/apk-build-log`
 - `/web/v1/playground/apk-build-logs`
 - `/web/v3/playground/apk-build-logs`
 - `/web/v1/playground/build-logs`
 
-Response shapes handled in `extractLogLines()`:
-- `{ data: { log: "multiline string" } }`
-- `{ data: { logs: ["line1", ...] } }`
-- `{ data: { output/buildLog/buildOutput/stdout: "..." } }`
-- Array items with `.message` or `.line` fields
-
+**NONE of these appear in the official bundle URL constants** — they are undocumented.
+They may return empty data if the build fails before producing output.
+`fetchRocketApkBuildLog` tries multiple body formats (`{threadId}`, `{buildId, threadId}`, `{id}`) to maximize chances.
 Polling: every 5s while `isBuilding`, one final fetch on complete/failed.
 Auto-scroll: `logEndRef` scrollIntoView on new lines when terminal is expanded.
+
+## Required Pre-Build Step: generateKeystore
+
+**Fresh accounts fail to build APKs because no signing keystore is created.**
+The `generateKeystore` endpoint on `back.rocket.new` is confirmed to exist (returns 401 w/o auth):
+- `POST https://back.rocket.new/api/v1/chat-thread/generate-keystore`
+- Headers: `Authorization: Bearer {token}`, `companyId`, `pageURL: "https://rocket.new"`
+- Body: `{ threadId }` (tries multiple variants)
+- Idempotent: returns 400/409 if keystore already exists (treat as success)
+- Non-fatal: if all attempts fail, proceed with build anyway
+
+`generateRocketKeystore()` is called first in `handleBuild` before reset/trigger steps.
+UI shows "Generating keystore…" during this step.
+
+## Bundle Analysis (June 2026)
+
+Reverse-engineered from `assets.rocket.new/_next/static/chunks/*.js` (27 chunks).
+Official APK URL constants are ONLY these 4 endpoints:
+- `fetchDeployStatus`: `application.rocket.new/web/v1/playground/apk-build-status`
+- `buildApplication`: `application.rocket.new/web/v1/playground/make-apk-build`
+- `downloadApplication`: `application.rocket.new/web/v1/playground/download-apk`
+- `generateKeystore`: `back.rocket.new/api/v1/chat-thread/generate-keystore`
+
+`DEPLOY_PROGRESS` constants in bundle: `{IN_PROCESS:2, IN_QUEUE:1, COMPLETED:3, FAILED:4, IDLE:6, QUEUE_BUILD_REJECTED:5}` — matches `APK_STATUS` in our code.
 
 ## Other Confirmed APK Endpoints (all return 401 = exist, not 404)
 
