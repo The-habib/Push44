@@ -209,8 +209,10 @@ function PushPage() {
   const [wakingSandbox, setWaking]      = useState(false);
   const [manualUrl, setManualUrl]       = useState("");
   const [manualLoading, setManualLoading] = useState(false);
-  const [showRocketModal, setShowRocketModal] = useState(false);
-  const [needsOtpLogin, setNeedsOtpLogin]    = useState(false);
+  const [showRocketModal, setShowRocketModal]   = useState(false);
+  const [needsOtpLogin, setNeedsOtpLogin]       = useState(false);
+  const [containerDown, setContainerDown]       = useState<{ appId: string; appName: string } | null>(null);
+  const [rocketStage, setRocketStage]           = useState<"pinging" | "listing" | "downloading" | "">("");
 
   const hasBase44 = !!creds.base44Token;
   const hasRocket = !!creds.rocketToken;
@@ -271,17 +273,26 @@ function PushPage() {
 
   const handleSelectApp = async (app: App) => {
     setSelectedApp(app); setFiles([]); setCommitMsg(`Push ${app.name} to GitHub`);
-    setLF(true); setWaking(false);
+    setLF(true); setWaking(false); setContainerDown(null); setRocketStage("");
     const t = setTimeout(() => setWaking(true), 3000);
     try {
       if (platform === "base44") {
         setFiles(await fetchBase44AppFiles({ data: { token: creds.base44Token!, appId: app.id } }));
       } else {
-        setFiles(await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId, companyId: creds.rocketCompanyId } }));
+        setRocketStage("pinging");
+        const files = await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId, companyId: creds.rocketCompanyId } });
+        setRocketStage("");
+        setFiles(files);
+      }
+    } catch (e: any) {
+      const msg: string = e.message ?? "";
+      if (platform === "rocket" && msg.startsWith("Your Rocket.new project container is not running")) {
+        setContainerDown({ appId: app.id, appName: app.name });
+      } else {
+        toast.error("Failed to fetch files: " + msg);
       }
     }
-    catch (e: any) { toast.error("Failed to fetch files: " + e.message); }
-    finally { clearTimeout(t); setLF(false); setWaking(false); }
+    finally { clearTimeout(t); setLF(false); setWaking(false); setRocketStage(""); }
   };
 
   const handleCreateRepo = async () => {
@@ -737,9 +748,58 @@ function PushPage() {
                 <span>
                   {platform === "base44"
                     ? (wakingSandbox ? "Waking sandbox — takes ~30s…" : "Fetching files from Base44…")
+                    : rocketStage === "pinging" ? "Checking container status…"
+                    : rocketStage === "listing"  ? "Getting file list…"
+                    : rocketStage === "downloading" ? "Downloading files…"
                     : "Fetching files from Rocket.new…"
                   }
                 </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Container sleeping prompt */}
+          <AnimatePresence>
+            {containerDown && platform === "rocket" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mt-3"
+              >
+                <div className="rounded-2xl border border-[#e0d9f7] bg-[#f5f3ff] p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}>
+                      <RocketLogo size={16} white />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[13px] font-black text-[#3730a3] mb-0.5">Container is sleeping</div>
+                      <div className="text-[11px] text-[#6366f1]/70 leading-relaxed">
+                        <span className="font-semibold">{containerDown.appName}</span> needs to be open in Rocket.new
+                        so its container wakes up. Open it, wait a few seconds, then tap Try again.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <a
+                      href={`https://rocket.new/${containerDown.appId}`}
+                      target="_blank" rel="noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-bold text-white"
+                      style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)" }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Open in Rocket.new
+                    </a>
+                    <button
+                      onClick={() => {
+                        setContainerDown(null);
+                        if (selectedApp) handleSelectApp(selectedApp);
+                      }}
+                      className="flex-1 py-2 rounded-xl text-[12px] font-bold border-2 border-[#6366f1]/30 text-[#6366f1] bg-white"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
