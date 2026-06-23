@@ -3,3 +3,4 @@
 - [Vite Import Protection](vite-import-protection.md) — @lovable.dev/vite-tanstack-config blocks **/server/** path imports; never put createServerFn in server/ subdirectory
 - [GitHub Trees API Push](github-trees-push.md) — bulk push pattern: blobs → tree → commit → update ref; handle empty repo (no HEAD) separately
 - [Rocket.new API Patterns](rocket-api-patterns.md) — confirmed working: ping→file-list→container fetch; companyId header required; SSE never delivers backendUrl
+- [File Snapshot Diff](file-snapshot-diff.md) — push44 stores per-app snapshots (simpleHash) in push44_snapshots; computeFileDiff returns new/modified/unchanged Map after each push

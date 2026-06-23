@@ -7,12 +7,14 @@ import { motion } from "framer-motion";
 import {
   ArrowRight, Clock, GitBranch, Loader2, AlertTriangle,
   Zap, LayoutGrid, Archive, CheckCircle2, XCircle, Rocket,
+  Flame, TrendingUp, GitCommit,
 } from "lucide-react";
-import { GitHubLogo } from "@/components/BrandLogos";
+import { BarChart, Bar, ResponsiveContainer, Tooltip, Cell } from "recharts";
+import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
-import { getHistory, formatRelativeTime } from "@/lib/storage";
+import { getHistory, formatRelativeTime, getPushStreak, getWeeklyActivity } from "@/lib/storage";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -27,30 +29,47 @@ export const Route = createFileRoute("/dashboard")({
 function Dashboard() {
   const { creds, isLoaded } = useApp();
   const navigate = useNavigate();
-  const [apps, setApps]         = useState<any[]>([]);
-  const [repos, setRepos]       = useState<any[]>([]);
-  const [loadingApps, setLA]    = useState(false);
-  const [loadingRepos, setLR]   = useState(false);
-  const [history, setHistory]   = useState(getHistory());
-  const [greeting, setGreeting] = useState("");
-  const isConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
-  const lastPush    = history[0];
-  const firstName   = (creds.displayName || "").trim().split(/\s+/)[0] || "";
+  const [apps, setApps]           = useState<any[]>([]);
+  const [repos, setRepos]         = useState<any[]>([]);
+  const [loadingApps, setLA]      = useState(false);
+  const [loadingRepos, setLR]     = useState(false);
+  const [history, setHistory]     = useState(getHistory());
+  const [greeting, setGreeting]   = useState("");
+  const [streak, setStreak]       = useState(0);
+  const [weekData, setWeekData]   = useState<{ day: string; pushes: number; files: number }[]>([]);
+
+  const isConnected   = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
+  const hasGitHub     = !!creds.githubToken;
+  const hasBase44     = !!creds.base44Token;
+  const hasRocket     = !!creds.rocketToken;
+  const lastPush      = history[0];
+  const firstName     = (creds.displayName || "").trim().split(/\s+/)[0] || "";
+  const successPushes = history.filter(h => h.status === "success");
+  const weekPushes    = weekData.reduce((s, d) => s + d.pushes, 0);
+  const weekFiles     = weekData.reduce((s, d) => s + d.files, 0);
 
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+    const hist = getHistory();
+    setHistory(hist);
+    setStreak(getPushStreak());
+    setWeekData(getWeeklyActivity());
   }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
     setHistory(getHistory());
     if (!isConnected) return;
-    setLA(true);
-    listBase44Apps({ data: { token: creds.base44Token! } }).then(setApps).catch(() => {}).finally(() => setLA(false));
+    if (hasBase44) {
+      setLA(true);
+      listBase44Apps({ data: { token: creds.base44Token! } }).then(setApps).catch(() => {}).finally(() => setLA(false));
+    }
     setLR(true);
     listGitHubRepos({ data: { token: creds.githubToken! } }).then(setRepos).catch(() => {}).finally(() => setLR(false));
   }, [isLoaded, isConnected]);
+
+  const maxPushes = Math.max(...weekData.map(d => d.pushes), 1);
 
   return (
     <AppShell>
@@ -71,28 +90,16 @@ function Dashboard() {
       {/* Hero card */}
       <FadeUp delay={0.06}>
         <div className="relative rounded-[28px] overflow-hidden mb-4 px-6 py-7" style={{ background: "#f97316" }}>
-          {/* dot grid texture */}
-          <div className="absolute inset-0 opacity-[0.07] pointer-events-none"
-            style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-          {/* radial glow */}
-          <div className="absolute -top-8 -right-8 h-52 w-52 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle,rgba(255,255,255,0.18),transparent 70%)" }} />
-          <div className="absolute -bottom-12 -left-8 h-44 w-44 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle,rgba(255,255,255,0.08),transparent 70%)" }} />
-
+          <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
+          <div className="absolute -top-8 -right-8 h-52 w-52 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle,rgba(255,255,255,0.18),transparent 70%)" }} />
+          <div className="absolute -bottom-12 -left-8 h-44 w-44 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle,rgba(255,255,255,0.08),transparent 70%)" }} />
           <div className="relative z-10">
-            {/* Status pill */}
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5 border border-white/20 bg-white/10">
-              <motion.span
-                className="h-1.5 w-1.5 rounded-full bg-white"
-                animate={isConnected ? { scale: [1, 1.6, 1], opacity: [1, 0.4, 1] } : { opacity: 0.4 }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
+              <motion.span className="h-1.5 w-1.5 rounded-full bg-white" animate={isConnected ? { scale: [1, 1.6, 1], opacity: [1, 0.4, 1] } : { opacity: 0.4 }} transition={{ duration: 2, repeat: Infinity }} />
               <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">
-                {isConnected ? "Base44 → GitHub" : "Not connected"}
+                {isConnected ? (hasBase44 && hasRocket ? "Base44 + Rocket.new → GitHub" : hasRocket ? "Rocket.new → GitHub" : "Base44 → GitHub") : "Not connected"}
               </span>
             </div>
-
             <h2 className="text-[30px] sm:text-[34px] font-black leading-[1.08] tracking-tight text-white mb-2">
               Push your<br />code to GitHub
             </h2>
@@ -101,7 +108,6 @@ function Dashboard() {
                 ? `${loadingApps ? "…" : apps.length} apps · ${loadingRepos ? "…" : repos.length} repos · ${history.length} pushes`
                 : "Connect your accounts to start pushing."}
             </p>
-
             <MotionButton
               onClick={() => navigate({ to: isConnected ? "/push" : "/settings" })}
               className="inline-flex items-center gap-2 rounded-[14px] px-5 py-3 font-bold text-sm text-[#f97316] bg-white"
@@ -112,8 +118,6 @@ function Dashboard() {
               <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
             </MotionButton>
           </div>
-
-          {/* Faint GitHub watermark */}
           <div className="absolute right-4 bottom-4 pointer-events-none" style={{ opacity: 0.07 }}>
             <GitHubLogo size={110} className="text-white" />
           </div>
@@ -128,9 +132,7 @@ function Dashboard() {
             style={{ background: "#fff7ed", borderColor: "#fed7aa" }}
             onClick={() => navigate({ to: "/settings" })}
           >
-            <div className="h-9 w-9 rounded-xl bg-[#f97316]/15 flex items-center justify-center shrink-0">
-              <AlertTriangle className="h-5 w-5 text-[#f97316]" />
-            </div>
+            <div className="h-9 w-9 rounded-xl bg-[#f97316]/15 flex items-center justify-center shrink-0"><AlertTriangle className="h-5 w-5 text-[#f97316]" /></div>
             <div className="flex-1 min-w-0">
               <div className="text-[13px] font-bold text-[#9a3412]">Setup required</div>
               <div className="text-[11px] text-[#c2410c]/70 mt-0.5">Connect Base44 and GitHub to start.</div>
@@ -140,6 +142,32 @@ function Dashboard() {
         </FadeUp>
       )}
 
+      {/* Connection health */}
+      <FadeUp delay={0.08}>
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            { label: "Base44", connected: hasBase44, Icon: Base44Logo, color: "#f97316", bg: "#fff4ed" },
+            { label: "Rocket.new", connected: hasRocket, Icon: RocketLogo, color: "#6366f1", bg: "#eff0ff" },
+            { label: "GitHub", connected: hasGitHub, Icon: GitHubLogo, color: "#1a1a1a", bg: "#f5f5f5" },
+          ].map(({ label, connected, Icon, color, bg }) => (
+            <motion.div
+              key={label}
+              onClick={() => navigate({ to: "/settings" })}
+              className="rounded-[18px] p-3 flex flex-col items-center gap-1.5 border cursor-pointer"
+              style={{ background: connected ? bg : "#faf7f3", borderColor: connected ? `${color}30` : "#f0ece4" }}
+              whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            >
+              <div className="h-7 w-7 flex items-center justify-center">
+                <Icon size={20} className={connected ? "" : "opacity-30"} style={{ color: connected ? color : undefined }} />
+              </div>
+              <span className="text-[9px] font-bold" style={{ color: connected ? color : "#c8b8a2" }}>{label}</span>
+              <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-[#22c55e]" : "bg-[#d4ccc4]"}`} />
+            </motion.div>
+          ))}
+        </div>
+      </FadeUp>
+
       {/* Stats */}
       <StaggerContainer className="grid grid-cols-3 gap-3 mb-4">
         {[
@@ -148,12 +176,7 @@ function Dashboard() {
           { label: "Pushes", value: history.length, loading: false,                       bg: "#faf7f3", accent: "#9a8880", Icon: Clock      },
         ].map(({ label, value, loading, bg, accent, Icon }) => (
           <StaggerItem key={label}>
-            <motion.div
-              className="rounded-[20px] p-4 flex flex-col gap-3"
-              style={{ background: bg }}
-              whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }}
-              transition={{ type: "spring", stiffness: 380, damping: 28 }}
-            >
+            <motion.div className="rounded-[20px] p-4 flex flex-col gap-3" style={{ background: bg }} whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }} transition={{ type: "spring", stiffness: 380, damping: 28 }}>
               <div className="h-8 w-8 rounded-[10px] flex items-center justify-center" style={{ background: `${accent}20` }}>
                 <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2} />
               </div>
@@ -168,18 +191,70 @@ function Dashboard() {
         ))}
       </StaggerContainer>
 
+      {/* Weekly Activity Chart */}
+      {history.length > 0 && (
+        <FadeUp delay={0.15}>
+          <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-4">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#f7f4f0]">
+              <div>
+                <span className="text-[14px] font-black text-[#1a1a1a]">This week</span>
+                <div className="text-[11px] text-[#9a8880] mt-0.5">{weekPushes} push{weekPushes !== 1 ? "es" : ""} · {weekFiles.toLocaleString()} files</div>
+              </div>
+              <div className="flex items-center gap-2">
+                {streak > 0 && (
+                  <div className="flex items-center gap-1 bg-[#fff4ed] rounded-full px-2.5 py-1 border border-[#fed7aa]">
+                    <Flame className="h-3 w-3 text-[#f97316]" />
+                    <span className="text-[11px] font-bold text-[#f97316]">{streak}d streak</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-4 pt-3 pb-2">
+              <div style={{ height: 72 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weekData} barSize={20} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+                    <Tooltip
+                      cursor={false}
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const d = payload[0].payload;
+                        return (
+                          <div className="bg-[#1a1a1a] rounded-xl px-2.5 py-1.5 text-center shadow-xl">
+                            <div className="text-[12px] font-black text-white">{d.pushes}</div>
+                            <div className="text-[9px] text-white/50 font-bold">{d.day}</div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="pushes" radius={[6, 6, 0, 0]}>
+                      {weekData.map((entry, index) => (
+                        <Cell
+                          key={index}
+                          fill={entry.pushes > 0 ? "#f97316" : "#f0ece4"}
+                          opacity={entry.pushes === maxPushes && entry.pushes > 0 ? 1 : entry.pushes > 0 ? 0.6 : 1}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-between px-1 mt-1">
+                {weekData.map((d, i) => (
+                  <span key={i} className="text-[9px] font-bold text-[#c8b8a2] w-[20px] text-center">{d.day.slice(0, 1)}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </FadeUp>
+      )}
+
       {/* Last push */}
       {lastPush && (
         <FadeUp delay={0.18}>
           <div className="bg-white rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#f7f4f0]">
               <span className="text-[14px] font-black text-[#1a1a1a]">Last Push</span>
-              <MotionButton
-                onClick={() => navigate({ to: "/history" })}
-                className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5"
-              >
-                History →
-              </MotionButton>
+              <MotionButton onClick={() => navigate({ to: "/history" })} className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5">History →</MotionButton>
             </div>
             <div className="px-4 py-3">
               <MotionCard
@@ -187,24 +262,21 @@ function Dashboard() {
                 style={{ background: lastPush.status === "success" ? "#f9fffe" : "#fef2f2", border: `1px solid ${lastPush.status === "success" ? "#d1fae5" : "#fecaca"}` }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0"
-                    style={{ background: lastPush.status === "success" ? "#dcfce7" : "#fee2e2" }}>
-                    {lastPush.status === "success"
-                      ? <CheckCircle2 className="h-5 w-5 text-[#22c55e]" />
-                      : <XCircle className="h-5 w-5 text-[#ef4444]" />}
+                  <div className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: lastPush.status === "success" ? "#dcfce7" : "#fee2e2" }}>
+                    {lastPush.status === "success" ? <CheckCircle2 className="h-5 w-5 text-[#22c55e]" /> : <XCircle className="h-5 w-5 text-[#ef4444]" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{lastPush.appName}</div>
                     <div className="text-[11px] text-[#6b6360] truncate mt-0.5">{lastPush.repo}</div>
                     {lastPush.commitHash && (
-                      <div className="text-[10px] font-mono text-[#9a8880] mt-1.5 bg-black/5 rounded-md px-2 py-0.5 inline-block">
-                        {lastPush.commitHash.slice(0, 10)}
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <GitCommit className="h-3 w-3 text-[#9a8880]" />
+                        <span className="text-[10px] font-mono text-[#9a8880]">{lastPush.commitHash.slice(0, 10)}</span>
                       </div>
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
-                      style={{ background: lastPush.status === "success" ? "#22c55e" : "#ef4444" }}>
+                    <div className="text-[10px] font-bold px-2 py-1 rounded-full text-white" style={{ background: lastPush.status === "success" ? "#22c55e" : "#ef4444" }}>
                       {lastPush.status === "success" ? "✓ OK" : "✗ Fail"}
                     </div>
                     <div className="text-[10px] text-[#9a8880] mt-1.5">{formatRelativeTime(lastPush.timestamp)}</div>
@@ -214,6 +286,12 @@ function Dashboard() {
                   <span><strong className="text-[#1a1a1a]">{lastPush.filesCount}</strong> files</span>
                   <span className="h-1 w-1 rounded-full bg-[#d4ccc4]" />
                   <span className="flex items-center gap-1"><GitBranch className="h-3 w-3" />{lastPush.branch}</span>
+                  {lastPush.commitHash && (
+                    <>
+                      <span className="h-1 w-1 rounded-full bg-[#d4ccc4]" />
+                      <a href={`https://github.com/${lastPush.repo}/commit/${lastPush.commitHash}`} target="_blank" rel="noreferrer" className="ml-auto text-[#9a8880] hover:text-[#f97316] transition-colors font-semibold">View →</a>
+                    </>
+                  )}
                 </div>
               </MotionCard>
             </div>
@@ -226,33 +304,27 @@ function Dashboard() {
         <FadeUp delay={0.22}>
           <div className="bg-white rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#f7f4f0]">
-              <span className="text-[14px] font-black text-[#1a1a1a]">Recent Repo</span>
-              <MotionButton
-                onClick={() => navigate({ to: "/repositories" })}
-                className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5"
-              >
-                View all →
-              </MotionButton>
+              <span className="text-[14px] font-black text-[#1a1a1a]">Recent Repos</span>
+              <MotionButton onClick={() => navigate({ to: "/repositories" })} className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5">View all →</MotionButton>
             </div>
-            <div className="px-4 py-3">
-              <MotionCard className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3.5">
-                <div className="h-11 w-11 rounded-2xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
-                  <GitHubLogo className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{repos[0].full_name}</div>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <GitBranch className="h-3 w-3 text-[#c8b8a2]" />
-                    <span className="text-[11px] text-[#9a8880]">{repos[0].default_branch}</span>
+            <div className="px-4 py-3 space-y-2">
+              {repos.slice(0, 3).map((repo, i) => (
+                <MotionCard key={repo.full_name} className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3.5">
+                  <div className="h-9 w-9 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
+                    <GitHubLogo className="h-4 w-4 text-white" />
                   </div>
-                </div>
-                <MotionButton
-                  onClick={() => navigate({ to: "/push" })}
-                  className="h-9 w-9 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0"
-                >
-                  <ArrowRight className="h-4 w-4 text-white" strokeWidth={2.5} />
-                </MotionButton>
-              </MotionCard>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-bold text-[#1a1a1a] truncate">{repo.full_name}</div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <GitBranch className="h-2.5 w-2.5 text-[#c8b8a2]" />
+                      <span className="text-[10px] text-[#9a8880]">{repo.default_branch}</span>
+                    </div>
+                  </div>
+                  <MotionButton onClick={() => navigate({ to: "/push" })} className="h-8 w-8 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0">
+                    <ArrowRight className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                  </MotionButton>
+                </MotionCard>
+              ))}
             </div>
           </div>
         </FadeUp>
@@ -273,11 +345,7 @@ function Dashboard() {
               </div>
               <div className="text-[12px] text-white/35">Push your latest app in seconds.</div>
             </div>
-            <MotionButton
-              onClick={() => navigate({ to: "/push" })}
-              className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[13px] text-white shrink-0"
-              style={{ background: "#f97316" }}
-            >
+            <MotionButton onClick={() => navigate({ to: "/push" })} className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[13px] text-white shrink-0" style={{ background: "#f97316" }}>
               <Zap className="h-4 w-4" strokeWidth={2.5} />Push
             </MotionButton>
           </MotionCard>

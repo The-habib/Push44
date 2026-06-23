@@ -16,7 +16,9 @@ async function ghFetch(token: string, path: string, opts?: RequestInit) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message ?? `GitHub API error ${res.status}`);
+    const msg = err.message ?? `GitHub API error ${res.status}`;
+    if (res.status === 401 || res.status === 403) throw Object.assign(new Error(msg), { status: res.status });
+    throw new Error(msg);
   }
   return res.json();
 }
@@ -32,10 +34,7 @@ export async function getGitHubUser({ data }: { data: { token: string } }) {
 }
 
 export async function listGitHubRepos({ data }: { data: { token: string } }) {
-  const repos = await ghFetch(
-    data.token,
-    "/user/repos?sort=updated&per_page=100&type=all"
-  );
+  const repos = await ghFetch(data.token, "/user/repos?sort=updated&per_page=100&type=all");
   return repos
     .filter((r: any) => r?.full_name?.trim())
     .map((r: any) => ({
@@ -51,10 +50,10 @@ export async function listGitHubRepos({ data }: { data: { token: string } }) {
     }));
 }
 
-export async function createGitHubRepo({ data }: { data: { token: string; name: string; isPrivate: boolean } }) {
+export async function createGitHubRepo({ data }: { data: { token: string; name: string; isPrivate: boolean; description?: string } }) {
   const repo = await ghFetch(data.token, "/user/repos", {
     method: "POST",
-    body: JSON.stringify({ name: data.name, private: data.isPrivate, auto_init: true }),
+    body: JSON.stringify({ name: data.name, private: data.isPrivate, auto_init: true, description: data.description ?? "" }),
   });
   return {
     full_name: repo.full_name as string,
@@ -72,6 +71,8 @@ export async function getRepoDetails({ data }: { data: { token: string; owner: s
     description: (r.description as string | null) ?? null,
     private: r.private as boolean,
     html_url: r.html_url as string,
+    clone_url: r.clone_url as string,
+    ssh_url: r.ssh_url as string,
     default_branch: r.default_branch as string,
     stargazers_count: r.stargazers_count as number,
     forks_count: r.forks_count as number,
@@ -97,10 +98,10 @@ export async function getRepoLanguages({ data }: { data: { token: string; owner:
   }));
 }
 
-export async function getRepoCommits({ data }: { data: { token: string; owner: string; repo: string; per_page?: number } }) {
+export async function getRepoCommits({ data }: { data: { token: string; owner: string; repo: string; per_page?: number; page?: number } }) {
   const commits = await ghFetch(
     data.token,
-    `/repos/${data.owner}/${data.repo}/commits?per_page=${data.per_page ?? 8}`
+    `/repos/${data.owner}/${data.repo}/commits?per_page=${data.per_page ?? 10}&page=${data.page ?? 1}`
   );
   return (commits as any[]).map((c) => ({
     sha: c.sha as string,
@@ -119,6 +120,56 @@ export async function getRepoContributors({ data }: { data: { token: string; own
     contributions: c.contributions as number,
     html_url: c.html_url as string,
   }));
+}
+
+export async function listRepoBranches({ data }: { data: { token: string; owner: string; repo: string } }) {
+  const branches = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/branches?per_page=100`).catch(() => []);
+  return (branches as any[]).map((b) => ({
+    name: b.name as string,
+    sha: b.commit?.sha as string ?? "",
+    protected: b.protected as boolean ?? false,
+  }));
+}
+
+export async function createRepoBranch({ data }: { data: { token: string; owner: string; repo: string; branchName: string; fromBranch: string } }) {
+  const ref = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/git/refs/heads/${data.fromBranch}`);
+  const sha = ref.object.sha as string;
+  await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/git/refs`, {
+    method: "POST",
+    body: JSON.stringify({ ref: `refs/heads/${data.branchName}`, sha }),
+  });
+  return { name: data.branchName, sha };
+}
+
+export async function deleteRepoBranch({ data }: { data: { token: string; owner: string; repo: string; branchName: string } }) {
+  const res = await fetch(`${GH}/repos/${data.owner}/${data.repo}/git/refs/heads/${data.branchName}`, {
+    method: "DELETE",
+    headers: ghHeaders(data.token),
+  });
+  if (!res.ok) throw new Error(`Failed to delete branch: ${res.statusText}`);
+}
+
+export async function getCommitFiles({ data }: { data: { token: string; owner: string; repo: string; sha: string } }) {
+  const commit = await ghFetch(data.token, `/repos/${data.owner}/${data.repo}/commits/${data.sha}`);
+  return {
+    sha: commit.sha as string,
+    message: commit.commit.message as string,
+    author: commit.commit.author?.name as string ?? "Unknown",
+    date: commit.commit.author?.date as string,
+    html_url: commit.html_url as string,
+    stats: {
+      additions: (commit.stats?.additions as number) ?? 0,
+      deletions: (commit.stats?.deletions as number) ?? 0,
+      total: (commit.stats?.total as number) ?? 0,
+    },
+    files: ((commit.files as any[]) ?? []).map((f: any) => ({
+      filename: f.filename as string,
+      status: f.status as "added" | "modified" | "removed" | "renamed",
+      additions: f.additions as number,
+      deletions: f.deletions as number,
+      changes: f.changes as number,
+    })),
+  };
 }
 
 export interface FileEntry {
@@ -141,15 +192,21 @@ export async function pushFilesToGitHub({ data }: { data: { token: string; owner
     // Branch or repo may be empty — will create fresh
   }
 
-  const treeItems = await Promise.all(
-    files.map(async (f) => {
-      const blob = await ghFetch(token, `${repoPath}/git/blobs`, {
-        method: "POST",
-        body: JSON.stringify({ content: f.content, encoding: "utf-8" }),
-      });
-      return { path: f.path, mode: "100644", type: "blob", sha: blob.sha as string };
-    })
-  );
+  const BATCH = 10;
+  const treeItems: any[] = [];
+  for (let i = 0; i < files.length; i += BATCH) {
+    const batch = files.slice(i, i + BATCH);
+    const blobs = await Promise.all(
+      batch.map(async (f) => {
+        const blob = await ghFetch(token, `${repoPath}/git/blobs`, {
+          method: "POST",
+          body: JSON.stringify({ content: f.content, encoding: "utf-8" }),
+        });
+        return { path: f.path, mode: "100644", type: "blob", sha: blob.sha as string };
+      })
+    );
+    treeItems.push(...blobs);
+  }
 
   const treeBody: any = { tree: treeItems };
   if (baseTreeSha) treeBody.base_tree = baseTreeSha;
