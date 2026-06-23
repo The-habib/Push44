@@ -84,7 +84,7 @@ function FloatingNav({ pathname }: { pathname: string }) {
   return (
     /* Outer positioning wrapper */
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)", paddingLeft: 16, paddingRight: 16 }}>
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 20px)", paddingLeft: 16, paddingRight: 16 }}>
 
       {/* The floating pill bar */}
       <motion.div
@@ -187,7 +187,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const direction = reduced ? 0 : dirRef.current;
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#faf7f3" }}>
+    <div className="min-h-[100dvh] w-full" style={{ background: "#faf7f3" }}>
 
       {/* ═══════════════════════════════════════════
           DESKTOP ≥ 1024px  — sidebar layout
@@ -305,7 +305,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* ═══════════════════════════════════════════
           MOBILE + TABLET < 1024px  — floating nav
       ═══════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col min-h-screen">
+      <div className="lg:hidden flex flex-col min-h-[100dvh]">
 
         {/* Top header bar */}
         <header
