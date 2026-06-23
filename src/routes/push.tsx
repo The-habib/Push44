@@ -7,14 +7,18 @@ import {
   Cloud, GitBranch, FileText, Lock, MessageSquare, Loader2,
   Plus, Check, AlertCircle, ExternalLink, ChevronDown,
   File, FileCode2, FileJson, Image, Braces, AlertTriangle,
-  Minus, UploadCloud, RefreshCw, Archive,
+  Minus, UploadCloud, RefreshCw, Archive, Smartphone, Download,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { FileDiffViewer } from "@/components/FileDiffViewer";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
-import { listRocketApps, fetchRocketAppFiles } from "@/lib/rocket-api";
+import {
+  listRocketApps, fetchRocketAppFiles,
+  checkRocketApkBuildStatus, triggerRocketApkBuild, downloadRocketApk,
+  APK_STATUS, type ApkBuildState,
+} from "@/lib/rocket-api";
 import {
   listGitHubRepos, createGitHubRepo, pushFilesToGitHub,
   listRepoBranches, createRepoBranch,
@@ -546,6 +550,250 @@ function PlatformToggle({ platform, onChange, hasBase44, hasRocket }: { platform
   );
 }
 
+function calcApkProgress(state: ApkBuildState): number {
+  if (state.status === APK_STATUS.IN_QUEUE) return 5;
+  if (state.status === APK_STATUS.COMPLETED) return 100;
+  if (state.status === APK_STATUS.IN_PROCESS && state.updatedAt) {
+    const start = new Date(state.updatedAt).getTime();
+    const end   = start + 6 * 60 * 1000;
+    const now   = Date.now();
+    if (now >= end) return 95;
+    const elapsed = now - start;
+    const total   = end - start;
+    return Math.max(5, Math.min(95, Math.round((elapsed / total) * 95)));
+  }
+  return 0;
+}
+
+function ApkBuildPanel({
+  threadId, token, companyId, appName,
+}: {
+  threadId: string;
+  token: string;
+  companyId?: string;
+  appName: string;
+}) {
+  const [build, setBuild] = useState<ApkBuildState | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [downloading, setDL]    = useState(false);
+  const [error, setError]       = useState("");
+  const [progress, setProgress] = useState(0);
+
+  const isBuilding = build && (build.status === APK_STATUS.IN_QUEUE || build.status === APK_STATUS.IN_PROCESS);
+  const isComplete = build?.status === APK_STATUS.COMPLETED;
+  const isFailed   = build && (build.status === APK_STATUS.FAILED || build.status === APK_STATUS.QUEUE_BUILD_REJECTED);
+
+  const checkStatus = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const state = await checkRocketApkBuildStatus({ data: { token, threadId, companyId } });
+      setBuild(state);
+      setProgress(calcApkProgress(state));
+    } catch (e: any) {
+      if (!silent) setError(e.message ?? "Failed to check build status");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkStatus();
+  }, [threadId]);
+
+  useEffect(() => {
+    if (!isBuilding) return;
+    const tick = () => {
+      setProgress(calcApkProgress(build!));
+    };
+    const progressTimer = setInterval(tick, 1000);
+    const pollTimer     = setTimeout(() => checkStatus(true), 5000);
+    return () => { clearInterval(progressTimer); clearTimeout(pollTimer); };
+  }, [build]);
+
+  const handleBuild = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const state = await triggerRocketApkBuild({ data: { token, threadId, companyId } });
+      setBuild(state);
+      setProgress(calcApkProgress(state));
+    } catch (e: any) {
+      setError(e.message ?? "Failed to start build");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setError("");
+    setDL(true);
+    try {
+      const url = await downloadRocketApk({ data: { token, threadId, companyId } });
+      window.open(url, "_blank", "noreferrer");
+    } catch (e: any) {
+      setError(e.message ?? "Failed to get download link");
+    } finally {
+      setDL(false);
+    }
+  };
+
+  const statusLabel = () => {
+    if (!build || build.status === APK_STATUS.IDLE) return "No build yet";
+    if (build.status === APK_STATUS.IN_QUEUE)         return "Queued — building soon…";
+    if (build.status === APK_STATUS.IN_PROCESS)       return "Building APK…";
+    if (build.status === APK_STATUS.COMPLETED)        return "Build complete — ready to download";
+    if (build.status === APK_STATUS.FAILED)           return "Build failed";
+    if (build.status === APK_STATUS.QUEUE_BUILD_REJECTED) return "Build rejected — try again";
+    return "Unknown";
+  };
+
+  const statusColor = () => {
+    if (isComplete) return "#22c55e";
+    if (isFailed)   return "#ef4444";
+    if (isBuilding) return ROCKET_COLOR;
+    return "#9a8880";
+  };
+
+  return (
+    <motion.div
+      className="bg-white rounded-[24px] border mb-3 overflow-hidden"
+      style={{ borderColor: isBuilding ? `${ROCKET_COLOR}40` : isComplete ? "rgba(34,197,94,0.25)" : isFailed ? "rgba(239,68,68,0.2)" : "#f0ece4" }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f7f4f0]">
+        <div
+          className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: isComplete ? "#22c55e" : isBuilding ? ROCKET_GRAD : isFailed ? "#ef4444" : "#f0ece4" }}
+        >
+          {isComplete
+            ? <Check className="h-3 w-3 text-white" strokeWidth={3} />
+            : isBuilding
+              ? <Loader2 className="h-3 w-3 text-white animate-spin" />
+              : <Smartphone className="h-3 w-3" style={{ color: isFailed ? "#fff" : "#9a8880" }} />}
+        </div>
+        <span className="text-[14px] font-black text-[#1a1a1a]">Build APK</span>
+        {build && build.status !== APK_STATUS.IDLE && (
+          <span
+            className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full border"
+            style={{
+              color: statusColor(),
+              background: isComplete ? "#f0fdf4" : isFailed ? "#fef2f2" : isBuilding ? ROCKET_LIGHT : "#faf7f3",
+              borderColor: isComplete ? "#bbf7d0" : isFailed ? "#fecaca" : isBuilding ? ROCKET_BORDER : "#f0ece4",
+            }}
+          >
+            {statusLabel()}
+          </span>
+        )}
+      </div>
+
+      <div className="px-5 py-4 space-y-4">
+        {/* Description */}
+        <p className="text-[12px] text-[#9a8880] leading-relaxed">
+          Build a native Android APK for <strong className="text-[#1a1a1a]">{appName}</strong> directly from Rocket.new.
+          The build runs on Rocket.new's servers — no local setup needed.
+        </p>
+
+        {/* Progress bar */}
+        {isBuilding && (
+          <div className="space-y-1.5">
+            <div className="w-full h-1.5 rounded-full bg-[#f0ece4] overflow-hidden">
+              <motion.div
+                className="h-1.5 rounded-full"
+                style={{ background: ROCKET_GRAD }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#9a8880]">
+                {build?.status === APK_STATUS.IN_QUEUE ? "In queue…" : "Compiling…"}
+              </span>
+              <span className="text-[11px] font-bold" style={{ color: ROCKET_COLOR }}>{progress}%</span>
+            </div>
+          </div>
+        )}
+
+        {/* Complete download */}
+        {isComplete && (
+          <div className="flex items-center gap-3 rounded-2xl px-4 py-3 border" style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}>
+            <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#22c55e" }}>
+              <Download className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[12px] font-bold text-[#166534]">APK ready</div>
+              <div className="text-[10px] text-[#166534]/70">Tap to download and install on your Android device</div>
+            </div>
+            <MotionButton
+              onClick={handleDownload}
+              disabled={downloading}
+              className="text-[11px] font-bold text-white rounded-xl px-3 py-2 shrink-0"
+              style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)" }}
+            >
+              {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Download APK"}
+            </MotionButton>
+          </div>
+        )}
+
+        {/* Error */}
+        {(error || (isFailed && build?.errorMessage)) && (
+          <div className="flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 bg-[#fef2f2] border border-[#fecaca]">
+            <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+            <span className="text-[12px] text-[#ef4444] font-semibold">{error || build?.errorMessage}</span>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          {/* Primary: Build / Rebuild */}
+          <MotionButton
+            onClick={handleBuild}
+            disabled={loading || !!isBuilding}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-bold text-white"
+            style={{
+              background: isBuilding ? "#c4b5fd" : ROCKET_GRAD,
+              boxShadow: isBuilding ? "none" : "0 4px 16px rgba(127,34,254,0.3)",
+              cursor: isBuilding ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading
+              ? <><Loader2 className="h-4 w-4 animate-spin" />Starting…</>
+              : isBuilding
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Building…</>
+                : <><Smartphone className="h-4 w-4" />{isFailed ? "Rebuild APK" : isComplete ? "Build new APK" : "Build APK"}</>}
+          </MotionButton>
+
+          {/* Secondary: Download (also shown here for easy access) */}
+          {isComplete && (
+            <MotionButton
+              onClick={handleDownload}
+              disabled={downloading}
+              className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl text-[13px] font-bold border"
+              style={{ color: "#22c55e", borderColor: "#bbf7d0", background: "#f0fdf4" }}
+            >
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            </MotionButton>
+          )}
+
+          {/* Refresh status */}
+          {!isBuilding && (
+            <MotionButton
+              onClick={() => checkStatus()}
+              disabled={loading}
+              className="flex items-center justify-center px-3.5 py-3 rounded-2xl border border-[#f0ece4] bg-[#faf7f3]"
+              title="Refresh build status"
+            >
+              <RefreshCw className={`h-4 w-4 text-[#9a8880] ${loading ? "animate-spin" : ""}`} />
+            </MotionButton>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function PushPage() {
   const { creds, isLoaded } = useApp();
   const navigate = useNavigate();
@@ -901,6 +1149,19 @@ function PushPage() {
             </div>
           </FadeUp>
 
+          {/* APK Build Panel — on success screen for Rocket.new pushes */}
+          {platform === "rocket" && selectedApp && creds.rocketToken && (
+            <FadeUp delay={0.32}>
+              <ApkBuildPanel
+                key={selectedApp.id}
+                threadId={selectedApp.id}
+                token={creds.rocketToken}
+                companyId={creds.rocketCompanyId}
+                appName={selectedApp.name}
+              />
+            </FadeUp>
+          )}
+
           <FadeUp delay={0.24}>
             <div className="space-y-2.5">
               {selectedRepo && (
@@ -1105,6 +1366,19 @@ function PushPage() {
           )}
         </AnimatePresence>
       </SectionShell>
+
+      {/* APK Build Panel — Rocket.new only, shown after files are fetched */}
+      <AnimatePresence>
+        {platform === "rocket" && selectedApp && files.length > 0 && !loadingFiles && creds.rocketToken && (
+          <ApkBuildPanel
+            key={selectedApp.id}
+            threadId={selectedApp.id}
+            token={creds.rocketToken}
+            companyId={creds.rocketCompanyId}
+            appName={selectedApp.name}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Step 2: Select Repo + Branch */}
       <SectionShell step={2} label="Select repository & branch" active={step1done && !step2done} done={step2done}>

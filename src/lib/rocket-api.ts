@@ -841,3 +841,120 @@ export async function fetchRocketAppFiles({
     "The container is running but returned no files. Try again in a few seconds."
   );
 }
+
+// ─── APK Build ────────────────────────────────────────────────────────────────
+//
+// Confirmed endpoints (reverse-engineered from Rocket.new JS bundle, June 2026):
+//
+//   APP_BASE = https://application.rocket.new
+//
+//   Check build status:
+//     POST ${APP_BASE}/web/v1/playground/apk-build-status
+//     Body: { threadId }
+//     Auth: Bearer {token}, companyId header
+//     Returns: { code:"OK", data: { status: 1|2|3|4|5|6, updatedAt, ... } }
+//
+//   Trigger APK build:
+//     POST ${APP_BASE}/web/v1/playground/make-apk-build
+//     Body: { threadId }
+//     Auth: Bearer {token}, companyId header
+//     Returns: same shape as status check
+//
+//   Download APK (when status === COMPLETED=3):
+//     POST ${APP_BASE}/web/v1/playground/download-apk
+//     Body: { threadId }
+//     Auth: Bearer {token}, companyId header
+//     Returns: { code:"OK", data: { url: "https://..." } }
+//
+// DEPLOY_PROGRESS enum values (from bundle chunk 0p~gd92karc24.js):
+//   IN_QUEUE: 1, IN_PROCESS: 2, COMPLETED: 3, FAILED: 4, QUEUE_BUILD_REJECTED: 5, IDLE: 6
+//
+// Polling: when IN_QUEUE or IN_PROCESS, poll every 5 seconds.
+// Progress calculation: IN_QUEUE → 5%, IN_PROCESS → derived from updatedAt (6-min window, max 95%).
+
+export const APK_STATUS = {
+  IN_QUEUE: 1,
+  IN_PROCESS: 2,
+  COMPLETED: 3,
+  FAILED: 4,
+  QUEUE_BUILD_REJECTED: 5,
+  IDLE: 6,
+} as const;
+
+export type ApkStatus = typeof APK_STATUS[keyof typeof APK_STATUS];
+
+export interface ApkBuildState {
+  status: ApkStatus;
+  updatedAt?: string;
+  errorMessage?: string;
+}
+
+function apkHeaders(token: string, companyId?: string): Record<string, string> {
+  const h: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+    pageURL: "https://rocket.new",
+  };
+  if (companyId) h.companyId = companyId;
+  return h;
+}
+
+async function parseApkResponse(res: Response): Promise<ApkBuildState> {
+  const raw = await res.json().catch(() => null);
+  if (!raw) throw new Error(`APK API error (${res.status})`);
+  const d = await rocketDecrypt(raw);
+  const payload = d.data ?? d;
+  const status: ApkStatus = payload.status ?? APK_STATUS.IDLE;
+  return {
+    status,
+    updatedAt: payload.updatedAt ?? payload.updated_at ?? undefined,
+    errorMessage: payload.errorMessage ?? payload.error ?? undefined,
+  };
+}
+
+export async function checkRocketApkBuildStatus({
+  data,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+}): Promise<ApkBuildState> {
+  const res = await fetch(`${APP_BASE}/web/v1/playground/apk-build-status`, {
+    method: "POST",
+    headers: apkHeaders(data.token, data.companyId),
+    body: JSON.stringify({ threadId: data.threadId }),
+  });
+  if (!res.ok) throw new Error(`Failed to check APK build status (${res.status})`);
+  return parseApkResponse(res);
+}
+
+export async function triggerRocketApkBuild({
+  data,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+}): Promise<ApkBuildState> {
+  const res = await fetch(`${APP_BASE}/web/v1/playground/make-apk-build`, {
+    method: "POST",
+    headers: apkHeaders(data.token, data.companyId),
+    body: JSON.stringify({ threadId: data.threadId }),
+  });
+  if (!res.ok) throw new Error(`Failed to trigger APK build (${res.status})`);
+  return parseApkResponse(res);
+}
+
+export async function downloadRocketApk({
+  data,
+}: {
+  data: { token: string; threadId: string; companyId?: string };
+}): Promise<string> {
+  const res = await fetch(`${APP_BASE}/web/v1/playground/download-apk`, {
+    method: "POST",
+    headers: apkHeaders(data.token, data.companyId),
+    body: JSON.stringify({ threadId: data.threadId }),
+  });
+  if (!res.ok) throw new Error(`Failed to get APK download URL (${res.status})`);
+  const raw = await res.json().catch(() => null);
+  if (!raw) throw new Error("Empty response from download-apk endpoint");
+  const d = await rocketDecrypt(raw);
+  const url: string = d.data?.url ?? d.url ?? "";
+  if (!url) throw new Error("No download URL returned from Rocket.new");
+  return url;
+}
