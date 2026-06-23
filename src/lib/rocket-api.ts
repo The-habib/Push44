@@ -578,13 +578,146 @@ function extractContent(d: any): string | null {
   return null;
 }
 
+// ── SSE-based container wake ──────────────────────────────────────────────────
+// When the S3 file-content endpoint returns 500s (stale cache), we can try to
+// wake the dev container via the gateway SSE stream and fetch files directly.
+//
+// Stream: POST https://gateway.rocket.new/api/v1/thread/conversation
+// Auth:   JWT {token}  (NOT Bearer)
+// Body:   { event: "CONTINUE_THREAD", data: { threadId }, sessionId }
+//
+// The server sends SSE events. We watch for SERVER_STATUS_FOR_RESUME_CONTAINER
+// or SERVER_STATUS_FOR_THREAD_DETAILS events which carry data.backendUrl.
+// The stream may close and need reconnecting — we retry for up to `timeoutMs`.
+
+async function wakeRocketContainer(
+  token: string,
+  companyId: string,
+  threadId: string,
+  timeoutMs = 50_000,
+  onProgress?: (msg: string) => void
+): Promise<string | null> {
+  const log = (label: string, val?: any) =>
+    console.warn(`[push44:wake] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 400) : "");
+
+  const sessionId = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+
+  const deadline = Date.now() + timeoutMs;
+  const SSE_URL = `${GATEWAY_BASE}/api/v1/thread/conversation`;
+
+  const hdrsVariants = [
+    { "Content-Type": "application/json", Authorization: `JWT ${token}`, companyId, pageURL: "https://rocket.new" },
+    { "Content-Type": "application/json", Authorization: `Bearer ${token}`, companyId, pageURL: "https://rocket.new" },
+  ];
+
+  // Events that carry the container backendUrl
+  const CONTAINER_EVENTS = new Set([
+    "SERVER_STATUS_FOR_RESUME_CONTAINER",
+    "SERVER_STATUS_FOR_THREAD_DETAILS",
+    "THREAD_DETAILS",
+    "SERVER_STATUS",
+  ]);
+
+  let attempt = 0;
+  while (Date.now() < deadline) {
+    attempt++;
+    const hdrs = hdrsVariants[attempt % 2 === 0 ? 0 : 1];
+
+    for (const eventAction of ["CONTINUE_THREAD", "RESUME_CONTAINER"]) {
+      if (Date.now() >= deadline) break;
+      try {
+        log(`attempt ${attempt} action=${eventAction}`);
+        onProgress?.("Waking Rocket.new dev container…");
+
+        const res = await fetch(SSE_URL, {
+          method: "POST",
+          headers: hdrs,
+          body: JSON.stringify({
+            event: eventAction,
+            data: { threadId },
+            sessionId,
+          }),
+        });
+
+        if (!res.ok || !res.body) {
+          log(`stream ${res.status} for ${eventAction}`);
+          continue;
+        }
+
+        // Read the SSE stream line-by-line
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let currentEvent = "";
+        const streamDeadline = Math.min(Date.now() + 15_000, deadline);
+
+        while (Date.now() < streamDeadline) {
+          const { done, value } = await Promise.race([
+            reader.read(),
+            new Promise<{ done: true; value: undefined }>((resolve) =>
+              setTimeout(() => resolve({ done: true, value: undefined }), streamDeadline - Date.now())
+            ),
+          ]);
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("event:")) {
+              currentEvent = trimmed.slice(6).trim();
+            } else if (trimmed.startsWith("data:")) {
+              const rawData = trimmed.slice(5).trim();
+              log(`SSE event=${currentEvent}`, rawData.slice(0, 200));
+
+              if (CONTAINER_EVENTS.has(currentEvent)) {
+                try {
+                  const parsed = JSON.parse(rawData);
+                  const payload = parsed.data ?? parsed;
+                  const backendUrl: string =
+                    payload.backendUrl ?? payload.backend_url ??
+                    payload.containerUrl ?? payload.container_url ??
+                    payload.serverUrl ?? payload.server_url ??
+                    payload.url ?? "";
+                  if (backendUrl) {
+                    log("container backendUrl", backendUrl);
+                    reader.cancel();
+                    return backendUrl;
+                  }
+                } catch { /* malformed JSON in SSE event — skip */ }
+              }
+              // Reset event type after each data line
+              currentEvent = "";
+            }
+          }
+        }
+        reader.cancel();
+      } catch (e: any) { log(`stream error attempt=${attempt}`, e?.message); }
+    }
+
+    // Brief pause before next reconnect attempt
+    if (Date.now() < deadline) {
+      onProgress?.("Still waking container, retrying…");
+      await new Promise((r) => setTimeout(r, 4_000));
+    }
+  }
+
+  log("container wake timed out");
+  return null;
+}
+
 export async function fetchRocketAppFiles({
   data,
 }: {
-  data: { token: string; appId: string; applicationId?: string };
+  data: { token: string; appId: string; applicationId?: string; companyId?: string };
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
   let applicationId = data.applicationId ?? "";
+  const companyId = data.companyId ?? "";
 
   const log = (label: string, val: any) =>
     console.warn(`[push44:files] ${label}`, JSON.stringify(val).slice(0, 800));
@@ -701,10 +834,99 @@ export async function fetchRocketAppFiles({
       log("files fetched", results.length);
       return results;
     }
-    log("file-content fetch returned 0 files — falling through to fallbacks", {});
+    log("file-content fetch returned 0 files — falling through to SSE container wake", {});
   }
 
-  // ── Step 3: Fallback — try other known endpoints with both applicationId and appId.
+  // ── Step 3: SSE-based container wake → live container file fetch.
+  // When S3 returns 500s (stale/missing cache), the only way to get files is
+  // to wake the dev container and fetch directly from it.
+  // wakeRocketContainer connects to gateway.rocket.new SSE stream, sends
+  // CONTINUE_THREAD / RESUME_CONTAINER and waits for a backendUrl in the
+  // SERVER_STATUS_FOR_RESUME_CONTAINER event (up to 50 s).
+  if (appId) {
+    log("trying SSE container wake", { appId, companyId: companyId || "(none)" });
+    const containerUrl = await wakeRocketContainer(token, companyId, appId);
+
+    if (containerUrl) {
+      log("container is live at", containerUrl);
+
+      // If we have file paths from S3, fetch from container using those.
+      if (filePaths.length > 0) {
+        const containerHdrs = [
+          { "Content-Type": "application/json", Authorization: `JWT ${token}` },
+          { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        ];
+        for (const hdrs of containerHdrs) {
+          const BATCH = 20;
+          const results: RocketFile[] = [];
+          for (let i = 0; i < filePaths.length; i += BATCH) {
+            const batch = filePaths.slice(i, i + BATCH);
+            const batchResults = await Promise.allSettled(
+              batch.map(async (filePath) => {
+                try {
+                  const res = await fetch(`${containerUrl}/api/file-content`, {
+                    method: "POST",
+                    headers: hdrs,
+                    body: JSON.stringify({ applicationId, file: filePath }),
+                  });
+                  if (!res.ok) return null;
+                  const raw = await res.json().catch(() => null);
+                  if (!raw) return null;
+                  const d = await rocketDecrypt(raw);
+                  const content = extractContent(d);
+                  if (content === null) return null;
+                  return { path: filePath, content } as RocketFile;
+                } catch { return null; }
+              })
+            );
+            for (const r of batchResults) {
+              if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
+            }
+          }
+          if (results.length > 0) {
+            log("container file-content fetched", results.length);
+            return results;
+          }
+        }
+      }
+
+      // No file paths from S3 — try ZIP download from live container
+      try {
+        const zipRes = await fetch(
+          `${containerUrl}/api/download-project?t=${Date.now()}`,
+          { method: "GET", headers: { Authorization: `JWT ${token}` } }
+        );
+        if (zipRes.ok) {
+          // Import JSZip dynamically to unzip the project archive
+          const JSZip = (await import("jszip")).default;
+          const buf = await zipRes.arrayBuffer();
+          const zip = await JSZip.loadAsync(buf);
+          const files: RocketFile[] = [];
+          await Promise.all(
+            Object.entries(zip.files).map(async ([path, entry]) => {
+              if (entry.dir) return;
+              // Strip a leading project-root folder if present (e.g. "my-app/src/…" → "src/…")
+              const parts = path.split("/");
+              const rel = parts.length > 1 && !path.startsWith("src/") && !path.startsWith("lib/")
+                ? parts.slice(1).join("/")
+                : path;
+              if (!rel) return;
+              const content = await entry.async("string");
+              files.push({ path: rel, content });
+            })
+          );
+          if (files.length > 0) {
+            log("ZIP download from container fetched", files.length);
+            return files;
+          }
+        }
+      } catch (e: any) { log("container ZIP download error", e?.message); }
+    } else {
+      log("container wake timed out — container may need to be opened in Rocket.new first");
+    }
+  }
+
+  // ── Step 4: Fallback — try other known REST endpoints.
   const allIds = [...new Set([applicationId, appId].filter(Boolean))];
   for (const id of allIds) {
     for (const hdrs of s3Headers) {
@@ -730,7 +952,7 @@ export async function fetchRocketAppFiles({
   }
 
   throw new Error(
-    "Could not extract source files from this Rocket.new project. " +
-    "The project may not have generated any code yet, or code access requires the project to be rebuilt."
+    "Could not fetch files from this Rocket.new project. " +
+    "The dev container appears to be asleep — try opening the project in Rocket.new first, then push again."
   );
 }

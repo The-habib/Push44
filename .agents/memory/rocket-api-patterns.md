@@ -69,9 +69,35 @@ Confirmed: returns 401 without auth, 200 with JWT token.
 
 ### Alternative: download ZIP (only when dev container is ACTIVE)
 ```
-GET ${editorBackendURL}/api/download-project?t={timestamp}
+GET ${containerBackendUrl}/api/download-project?t={timestamp}
+Headers: { Authorization: "JWT {token}" }
 ```
-`editorBackendURL` is dynamic — set via WebSocket events when project is open. NOT accessible without the running container.
+`containerBackendUrl` is obtained from the SSE gateway stream (see below). NOT accessible without the running container.
+
+### Step 3 — SSE Gateway Container Wake (fallback when S3 file-content returns 500)
+
+**CONFIRMED BUG:** S3 `file-content` returns 500 for every file on some projects even though `project-structure` returns 200. When this happens, must wake the dev container via SSE to fetch files directly.
+
+```
+POST https://gateway.rocket.new/api/v1/thread/conversation
+Headers: {
+  Authorization: "JWT {token}",   ← NOT Bearer
+  companyId: "{companyId}",
+  Content-Type: "application/json",
+  pageURL: "https://rocket.new"
+}
+Body: { event: "CONTINUE_THREAD", data: { threadId: "{appId (= thread _id)}" }, sessionId: "{uuid}" }
+```
+
+SSE events:
+- `heartbeat` — connection established
+- `PLACEHOLDER` — "Starting server..." (container waking, stream will close, reconnect)
+- `SERVER_STATUS_FOR_RESUME_CONTAINER` → `data.backendUrl` ← **this is the container URL**
+- `SERVER_STATUS_FOR_THREAD_DETAILS` → also has `data.backendUrl`
+
+**Why:** Stream closes after 1–2 events when container is sleeping; must reconnect every 4s for up to 50s. `companyId` header is required on the gateway call too. Auth must be `JWT` not `Bearer`.
+
+**Key constraint:** `backendUrl` only exists when container is actively running. If fully terminated, stream stalls indefinitely with PLACEHOLDER. User must open project in Rocket.new first to wake it.
 
 ## Production deploy ping (no auth needed!)
 

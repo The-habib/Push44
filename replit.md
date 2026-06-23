@@ -183,29 +183,67 @@ Response shape:
 
 The `_id` is the **thread ID** (used to identify the app in UI). The `threadDetails.applicationId` is the **application ID** (used for file fetching).
 
-### Fetching Files — S3 Approach (confirmed working endpoint)
+### Fetching Files — Multi-Step Fallback Strategy
 
-Rocket.new stores code in S3 via `appcodeformat.dhiwise.com`. This works even when the container is sleeping or terminated.
-
-**Step 1 — Get file tree:**
+#### Step 1 — S3 File Tree (always works)
 ```
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
 Headers: { Authorization: "JWT {token}", Content-Type: application/json }
 Body: { applicationId: "..." }
-→ Returns directory tree (format varies — code handles multiple formats)
+→ Returns directory tree: { name, path, type: "file"|"directory", children: [...] }
 ```
+Confirmed: returns 200 with JWT auth. File paths use leading slash (e.g. `/lib/main.dart`) — strip it before sending to file-content.
 
-**Step 2 — Fetch each file:**
+#### Step 2 — S3 File Content (may return 500 if stale)
 ```
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
 Headers: { Authorization: "JWT {token}", Content-Type: application/json }
 Body: { applicationId: "...", file: "lib/main.dart" }
-→ Returns file content
+→ Returns file content (or 500 if S3 cache is stale/missing)
 ```
-
-Both endpoints return `401` without auth (confirming they exist). Auth format: try `JWT {token}` first, then `Bearer {token}`.
+⚠️ **CONFIRMED BUG:** For some projects the S3 file-content endpoint returns 500 for every file even though the project-structure returns 200. In this case the code falls through to the SSE container wake.
 
 Files are fetched in parallel batches of 20 to avoid flooding the server.
+
+#### Step 3 — SSE Gateway Container Wake (fallback when S3 returns 500s)
+
+When S3 file-content returns 500, the dev container must be woken via the gateway SSE stream to fetch files directly.
+
+**SSE endpoint (reverse-engineered from Rocket.new JS bundle):**
+```
+POST https://gateway.rocket.new/api/v1/thread/conversation
+Headers: {
+  Authorization: "JWT {token}",   ← NOT Bearer
+  companyId: "{companyId}",
+  Content-Type: application/json,
+  pageURL: "https://rocket.new"
+}
+Body: { event: "CONTINUE_THREAD", data: { threadId: "{appId}" }, sessionId: "{uuid}" }
+```
+
+The server responds with an SSE stream. Events to watch for:
+- `event: heartbeat` — connection established (expected first event)
+- `event: PLACEHOLDER` — "Starting server..." (container waking)
+- `event: SERVER_STATUS_FOR_RESUME_CONTAINER` — contains `data.backendUrl` (container is live!)
+- `event: SERVER_STATUS_FOR_THREAD_DETAILS` — also contains `data.backendUrl`
+
+**IMPORTANT:** The SSE stream closes after a few events and must be reconnected. The code retries every 4 seconds for up to 50 seconds total.
+
+**When container is awake, fetch files from it directly:**
+```
+POST {backendUrl}/api/file-content
+Headers: { Authorization: "JWT {token}", Content-Type: application/json }
+Body: { applicationId: "...", file: "lib/main.dart" }
+```
+
+Or download a ZIP of the whole project:
+```
+GET {backendUrl}/api/download-project?t={timestamp}
+Headers: { Authorization: "JWT {token}" }
+→ Returns ZIP archive
+```
+
+**Key insight:** The `backendUrl` is ephemeral — it only exists when the container is actively running. If the container is fully terminated, the SSE stream stalls indefinitely with PLACEHOLDER events. The user must open the project in Rocket.new first to wake it, then Push44 can fetch the files.
 
 ### Production Container Ping (no auth needed)
 

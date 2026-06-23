@@ -277,7 +277,7 @@ function PushPage() {
       if (platform === "base44") {
         setFiles(await fetchBase44AppFiles({ data: { token: creds.base44Token!, appId: app.id } }));
       } else {
-        setFiles(await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId } }));
+        setFiles(await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId, companyId: creds.rocketCompanyId } }));
       }
     }
     catch (e: any) { toast.error("Failed to fetch files: " + e.message); }
