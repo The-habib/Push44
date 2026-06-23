@@ -1,17 +1,25 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, UploadCloud, Archive, History, Settings } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { GitHubLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
 import type { ReactNode } from "react";
 
-const NAV = [
-  { to: "/dashboard",    icon: Home,        label: "Dashboard" },
-  { to: "/push",         icon: UploadCloud, label: "Push"      },
-  { to: "/repositories", icon: Archive,     label: "Repos"     },
-  { to: "/history",      icon: History,     label: "History"   },
-  { to: "/settings",     icon: Settings,    label: "Settings"  },
+const NAV: { to: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; label: string; center?: boolean }[] = [
+  { to: "/dashboard",    icon: Home,        label: "Home"     },
+  { to: "/repositories", icon: Archive,     label: "Repos"    },
+  { to: "/push",         icon: UploadCloud, label: "Push",    center: true },
+  { to: "/history",      icon: History,     label: "History"  },
+  { to: "/settings",     icon: Settings,    label: "Settings" },
+];
+
+const NAV_SIDEBAR = [
+  { to: "/dashboard",    icon: Home,        label: "Dashboard"   },
+  { to: "/push",         icon: UploadCloud, label: "Push"        },
+  { to: "/repositories", icon: Archive,     label: "Repositories"},
+  { to: "/history",      icon: History,     label: "History"     },
+  { to: "/settings",     icon: Settings,    label: "Settings"    },
 ] as const;
 
 const PAGE_TITLES: Record<string, string> = {
@@ -22,7 +30,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings":     "Settings",
 };
 
-const spring = { type: "spring", stiffness: 360, damping: 30 } as const;
+const SPRING_TAB   = { type: "spring", stiffness: 520, damping: 36 } as const;
+const SPRING_NAV   = { type: "spring", stiffness: 400, damping: 32 } as const;
+const SPRING_ICON  = { type: "spring", stiffness: 600, damping: 30 } as const;
 
 export function AvatarBubble({ name, size = 36, fontSize = 14 }: { name: string; size?: number; fontSize?: number }) {
   const initials = name.trim()
@@ -44,9 +54,9 @@ export function SectionCard({ title, action, children, className = "" }: {
   return (
     <motion.section
       className={`bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055] ${className}`}
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       {title && (
         <div className="flex items-center justify-between mb-4">
@@ -56,6 +66,136 @@ export function SectionCard({ title, action, children, className = "" }: {
       )}
       {children}
     </motion.section>
+  );
+}
+
+function BottomNavItem({
+  to,
+  icon: Icon,
+  label,
+  active,
+  center,
+}: {
+  to: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  active: boolean;
+  center?: boolean;
+}) {
+  const reduced = useReducedMotion();
+
+  if (center) {
+    return (
+      <Link to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center relative -top-4">
+        <motion.div
+          className="relative flex items-center justify-center rounded-full"
+          style={{
+            width: 56,
+            height: 56,
+            background: "linear-gradient(145deg, #f97316, #ea580c)",
+          }}
+          animate={reduced ? {} : {
+            scale: active ? 1.08 : 1,
+            boxShadow: active
+              ? "0 8px 28px rgba(249,115,22,0.55), 0 2px 8px rgba(0,0,0,0.12)"
+              : "0 6px 20px rgba(249,115,22,0.38), 0 2px 8px rgba(0,0,0,0.1)",
+          }}
+          whileTap={reduced ? {} : { scale: 0.9 }}
+          transition={SPRING_TAB}
+        >
+          {active && (
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.28), transparent 65%)" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+          )}
+          <Icon
+            className="relative z-10 h-[22px] w-[22px] text-white"
+            strokeWidth={active ? 2.5 : 2}
+          />
+        </motion.div>
+        <motion.span
+          className="text-[9px] font-bold mt-1 leading-none tracking-tight"
+          animate={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)", opacity: active ? 1 : 0.7 }}
+          transition={{ duration: 0.2 }}
+        >
+          {label}
+        </motion.span>
+      </Link>
+    );
+  }
+
+  return (
+    <Link to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-1 flex-1">
+      <motion.div
+        className="relative flex items-center justify-center"
+        style={{ width: 44, height: 36 }}
+        whileTap={reduced ? {} : { scale: 0.85 }}
+        transition={SPRING_ICON}
+      >
+        {active && (
+          <motion.div
+            layoutId="mobile-nav-pill"
+            className="absolute inset-0 rounded-[10px]"
+            style={{ background: "rgba(249,115,22,0.12)" }}
+            initial={false}
+            transition={SPRING_TAB}
+          />
+        )}
+        <motion.div
+          animate={reduced ? {} : {
+            scale: active ? 1.18 : 1,
+            y: active ? -1 : 0,
+          }}
+          transition={SPRING_ICON}
+        >
+          <span style={{ color: active ? "#f97316" : "rgba(0,0,0,0.28)", display: "flex" }}>
+            <Icon
+              className="h-[19px] w-[19px] relative z-10 transition-none"
+              strokeWidth={active ? 2.5 : 2}
+            />
+          </span>
+        </motion.div>
+        {active && (
+          <motion.span
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] w-[3px] rounded-full bg-[#f97316]"
+            layoutId="mobile-nav-dot"
+            initial={false}
+            transition={SPRING_TAB}
+          />
+        )}
+      </motion.div>
+
+      <AnimatePresence mode="wait" initial={false}>
+        {active ? (
+          <motion.span
+            key="active-label"
+            className="text-[10px] font-bold leading-none tracking-tight text-[#f97316]"
+            initial={{ opacity: 0, y: 3, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -3, scale: 0.85 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {label}
+          </motion.span>
+        ) : (
+          <motion.span
+            key="inactive-label"
+            className="text-[10px] font-semibold leading-none tracking-tight"
+            style={{ color: "rgba(0,0,0,0.22)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </Link>
   );
 }
 
@@ -83,7 +223,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 src={appLogo} alt="Push44"
                 className="h-8 w-8 rounded-xl object-cover"
                 whileHover={{ scale: 1.08 }}
-                transition={spring}
+                transition={SPRING_NAV}
               />
               <span className="text-[16px] font-black text-[#1a1a1a] tracking-tight leading-none">
                 Push<span className="text-[#f97316]">44</span>
@@ -93,18 +233,23 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Nav */}
           <nav className="flex-1 px-2.5 py-4 space-y-0.5" aria-label="Main navigation">
-            {NAV.map(({ to, icon: Icon, label }) => {
+            {NAV_SIDEBAR.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
               return (
                 <Link key={to} to={to} aria-current={active ? "page" : undefined}>
-                  <div className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-[12px] text-sm font-semibold cursor-pointer select-none transition-colors group">
+                  <motion.div
+                    className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-[12px] text-sm font-semibold cursor-pointer select-none"
+                    whileHover={active ? {} : { background: "rgba(249,115,22,0.06)" }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                  >
                     {active && (
                       <motion.div
                         layoutId="sidebar-pill"
                         className="absolute inset-0 rounded-[12px]"
                         style={{ background: "#f97316" }}
                         initial={false}
-                        transition={spring}
+                        transition={SPRING_TAB}
                       />
                     )}
                     <Icon
@@ -115,7 +260,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <span className="relative z-10 text-[13px]" style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.45)" }}>
                       {label}
                     </span>
-                  </div>
+                  </motion.div>
                 </Link>
               );
             })}
@@ -127,6 +272,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <motion.div
                 className="flex items-center gap-2.5 rounded-[12px] px-2.5 py-2 cursor-pointer"
                 whileHover={{ background: "#fff4ed" }}
+                whileTap={{ scale: 0.97 }}
                 transition={{ duration: 0.15 }}
               >
                 <div className="relative shrink-0">
@@ -157,12 +303,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 target="_blank" rel="noreferrer"
                 className="h-8 w-8 rounded-xl bg-white border border-[#f0ece4] flex items-center justify-center text-[#9a8880]"
                 whileHover={{ scale: 1.06, background: "#1a1a1a", color: "#fff", borderColor: "#1a1a1a" }}
-                transition={spring}
+                transition={SPRING_NAV}
               >
                 <GitHubLogo className="h-3.5 w-3.5" />
               </motion.a>
               <Link to="/settings">
-                <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={spring}>
+                <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={SPRING_NAV}>
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
                   <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-[#faf7f3] ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`} />
                 </motion.div>
@@ -174,10 +320,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+                initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
                 {children}
               </motion.div>
@@ -196,12 +342,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             style={{ maxWidth: 480 }}
             initial={{ opacity: 0, y: -14, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
             <div
               className="flex items-center justify-between px-2 py-1.5 rounded-full"
               style={{
-                background: "rgba(255,252,248,0.82)",
+                background: "rgba(255,252,248,0.88)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
                 boxShadow: "0 4px 24px rgba(0,0,0,0.09), 0 0 0 1px rgba(240,236,228,0.9), inset 0 1px 0 rgba(255,255,255,0.9)",
@@ -210,7 +356,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {/* Logo + wordmark */}
               <Link to="/dashboard" className="flex items-center gap-1 pl-2 pr-3 py-1">
                 <motion.img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover"
-                  whileTap={{ scale: 0.9 }} transition={spring} />
+                  whileTap={{ scale: 0.9, rotate: -4 }} transition={SPRING_NAV} />
                 <span className="text-[14px] font-black text-[#1a1a1a] tracking-tight leading-none">
                   Push<span style={{ color: "#f97316" }}>44</span>
                 </span>
@@ -218,7 +364,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
               {/* Avatar */}
               <Link to="/settings">
-                <motion.div className="relative mr-1" whileTap={{ scale: 0.88 }} transition={spring}>
+                <motion.div className="relative mr-1" whileTap={{ scale: 0.88 }} transition={SPRING_NAV}>
                   <AvatarBubble name={displayName} size={34} fontSize={12} />
                   <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
                     style={{ boxShadow: "0 0 0 2px rgba(255,252,248,0.9)" }} />
@@ -232,10 +378,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: 5, filter: "blur(2px)" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
               {children}
             </motion.div>
@@ -243,45 +389,39 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         {/* Bottom nav */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#f0ece4] rounded-t-[22px] px-2 pt-2 pb-7"
+        <motion.nav
+          className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[24px]"
           aria-label="Main navigation"
-          style={{ background: "rgba(255,252,248,0.97)", backdropFilter: "blur(20px)", boxShadow: "0 -1px 0 rgba(249,115,22,0.08), 0 -8px 28px rgba(0,0,0,0.06)" }}>
-          <div className="flex items-center justify-around">
-            {NAV.map(({ to, icon: Icon, label }) => {
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            background: "rgba(255,252,248,0.96)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            boxShadow: "0 -1px 0 rgba(0,0,0,0.06), 0 -12px 40px rgba(0,0,0,0.07)",
+            paddingBottom: "env(safe-area-inset-bottom, 8px)",
+          }}
+        >
+          {/* Subtle top border highlight */}
+          <div className="absolute top-0 left-8 right-8 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.2), transparent)" }} />
+
+          <div className="flex items-end justify-around px-2 pt-2 pb-2">
+            {NAV.map(({ to, icon, label, center }) => {
               const active = pathname === to;
               return (
-                <Link key={to} to={to} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-1 py-1 px-3">
-                  <motion.div
-                    className="relative h-9 w-10 flex items-center justify-center rounded-[10px]"
-                    whileTap={{ scale: 0.84 }}
-                    transition={spring}
-                  >
-                    {active && (
-                      <motion.div
-                        layoutId="mobile-pill"
-                        className="absolute inset-0 rounded-[10px]"
-                        style={{ background: "#f97316" }}
-                        initial={false}
-                        transition={spring}
-                      />
-                    )}
-                    <Icon
-                      className="relative z-10 h-[18px] w-[18px]"
-                      style={{ color: active ? "#ffffff" : "rgba(0,0,0,0.3)" }}
-                      strokeWidth={active ? 2.5 : 2}
-                    />
-                  </motion.div>
-                  <span
-                    className="text-[10px] font-bold leading-none tracking-tight"
-                    style={{ color: active ? "#f97316" : "rgba(0,0,0,0.3)" }}
-                  >
-                    {label}
-                  </span>
-                </Link>
+                <BottomNavItem
+                  key={to}
+                  to={to}
+                  icon={icon}
+                  label={label}
+                  active={active}
+                  center={!!center}
+                />
               );
             })}
           </div>
-        </nav>
+        </motion.nav>
       </div>
     </div>
   );
