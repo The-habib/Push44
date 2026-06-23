@@ -290,8 +290,8 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
   const authToken = data.token;
   let companyId = data.companyId ?? "";
 
-  const log = (label: string, val: any) =>
-    console.warn(`[push44] ${label}`, JSON.stringify(val).slice(0, 800));
+  const log = (label: string, val?: any) =>
+    console.warn(`[push44] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 800) : "");
 
   // ── Step 1: Resolve companyId — needed as a header for all back.rocket.new calls.
   // (loginToBack is intentionally skipped — it makes 10+ failing requests and adds 20-30s delay.)
@@ -389,53 +389,60 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     }
   }
 
-  // Try chat-thread/search first (confirmed working with companyId header)
-  for (const body of [{}, { search: "" }, { page: 1, limit: 100 }]) {
-    try {
-      const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/search`, {
-        method: "POST",
-        headers: threadHeaders,
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
+  // Fetch all pages from chat-thread/search (confirmed working with companyId header).
+  // Rocket.new returns a paginated list — we must keep fetching until we get an empty page.
+  const PAGE_LIMIT = 50;
+
+  async function fetchAllPages(
+    url: string,
+    headers: Record<string, string>,
+    authVariant: "Bearer" | "JWT"
+  ): Promise<boolean> {
+    let page = 1;
+    let gotAny = false;
+    while (true) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { ...headers, Authorization: `${authVariant} ${authToken}` },
+          body: JSON.stringify({ page, limit: PAGE_LIMIT }),
+        });
+        if (!res.ok) break;
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
-        log(`chat-thread/search ${JSON.stringify(body)}`, d);
+        log(`chat-thread/search page=${page} (${authVariant})`, { count: deepFindApps(d).length });
         const arr = deepFindApps(d);
-        if (arr.length > 0) { addApps(arr); break; }
-      }
-    } catch { /* try next body */ }
+        if (arr.length === 0) break;
+        addApps(arr);
+        gotAny = true;
+        if (arr.length < PAGE_LIMIT) break; // last page
+        page++;
+      } catch { break; }
+    }
+    return gotAny;
+  }
+
+  // Try back.rocket.new with Bearer auth (primary, confirmed working)
+  const baseHeaders = { "Content-Type": "application/json", companyId, pageURL: "https://rocket.new" };
+  let gotResults = await fetchAllPages(`${BACK_BASE}/api/v1/chat-thread/search`, baseHeaders, "Bearer");
+
+  // Try JWT format if Bearer returned nothing
+  if (!gotResults) {
+    gotResults = await fetchAllPages(`${BACK_BASE}/api/v1/chat-thread/search`, baseHeaders, "JWT");
   }
 
   // Fallback: gateway
-  if (allApps.length === 0) {
+  if (!gotResults) {
     try {
       const res = await fetch(`${GATEWAY_BASE}/api/v1/chat-thread/search`, {
         method: "POST",
-        headers: { ...threadHeaders, Authorization: `Bearer ${authToken}` },
-        body: JSON.stringify({ page: 1, limit: 100 }),
+        headers: { ...baseHeaders, Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ page: 1, limit: PAGE_LIMIT }),
       });
       if (res.ok) {
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
         log("gw/chat-thread/search", d);
-        addApps(deepFindApps(d));
-      }
-    } catch { /* ignore */ }
-  }
-
-  // Fallback: JWT auth format
-  if (allApps.length === 0) {
-    try {
-      const res = await fetch(`${BACK_BASE}/api/v1/chat-thread/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `JWT ${authToken}`, companyId, pageURL: "https://rocket.new" },
-        body: JSON.stringify({}),
-      });
-      if (res.ok) {
-        const raw = await res.json();
-        const d = await rocketDecrypt(raw);
-        log("chat-thread/search (JWT)", d);
         addApps(deepFindApps(d));
       }
     } catch { /* ignore */ }
@@ -590,11 +597,85 @@ function extractContent(d: any): string | null {
 // or SERVER_STATUS_FOR_THREAD_DETAILS events which carry data.backendUrl.
 // The stream may close and need reconnecting — we retry for up to `timeoutMs`.
 
+// Helper: drain an SSE stream looking for any key that looks like a container backendUrl.
+// Returns the URL or null. Cancels the reader after `limitMs` or on URL found.
+async function drainSSEForBackendUrl(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  limitMs: number,
+  logFn: (label: string, val?: any) => void,
+  streamLabel: string
+): Promise<string | null> {
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let currentEvent = "";
+  const deadline = Date.now() + limitMs;
+
+  const CONTAINER_EVENTS = new Set([
+    "SERVER_STATUS_FOR_RESUME_CONTAINER",
+    "SERVER_STATUS_FOR_THREAD_DETAILS",
+    "THREAD_DETAILS",
+    "SERVER_STATUS",
+    "CONTAINER_STATUS",
+  ]);
+
+  try {
+    while (Date.now() < deadline) {
+      const remaining = deadline - Date.now();
+      const { done, value } = await Promise.race([
+        reader.read(),
+        new Promise<{ done: true; value: undefined }>((r) => setTimeout(() => r({ done: true, value: undefined }), remaining)),
+      ]);
+      if (done) break;
+      if (!value) continue;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("event:")) {
+          currentEvent = trimmed.slice(6).trim();
+        } else if (trimmed.startsWith("data:")) {
+          const rawData = trimmed.slice(5).trim();
+          try {
+            const parsed = JSON.parse(rawData);
+            // Format A: explicit SSE event type
+            // Format B: event name embedded in JSON payload
+            const innerEvent: string = String(parsed.event ?? parsed.type ?? "");
+            const effectiveEvent = CONTAINER_EVENTS.has(currentEvent) ? currentEvent
+              : CONTAINER_EVENTS.has(innerEvent) ? innerEvent : "";
+
+            logFn(`[${streamLabel}] ev=${currentEvent || "msg"} inner=${innerEvent || "-"}`, rawData.slice(0, 180));
+
+            // Look for backendUrl in either format
+            const payload = effectiveEvent ? (parsed.data ?? parsed) : parsed;
+            const backendUrl: string =
+              payload.backendUrl ?? payload.backend_url ??
+              payload.containerUrl ?? payload.container_url ??
+              payload.serverUrl ?? payload.server_url ??
+              (parsed.data?.backendUrl) ?? (parsed.data?.backend_url) ?? "";
+
+            if (backendUrl && backendUrl.startsWith("http")) {
+              logFn(`[${streamLabel}] backendUrl found`, backendUrl);
+              reader.cancel();
+              return backendUrl;
+            }
+          } catch { /* malformed JSON */ }
+          currentEvent = "";
+        }
+      }
+    }
+  } catch { /* stream error */ }
+  reader.cancel().catch(() => {});
+  return null;
+}
+
 async function wakeRocketContainer(
   token: string,
   companyId: string,
   threadId: string,
-  timeoutMs = 50_000,
+  timeoutMs = 120_000,
   onProgress?: (msg: string) => void
 ): Promise<string | null> {
   const log = (label: string, val?: any) =>
@@ -605,104 +686,72 @@ async function wakeRocketContainer(
     : Math.random().toString(36).slice(2);
 
   const deadline = Date.now() + timeoutMs;
-  const SSE_URL = `${GATEWAY_BASE}/api/v1/thread/conversation`;
 
-  const hdrsVariants = [
-    { "Content-Type": "application/json", Authorization: `JWT ${token}`, companyId, pageURL: "https://rocket.new" },
-    { "Content-Type": "application/json", Authorization: `Bearer ${token}`, companyId, pageURL: "https://rocket.new" },
-  ];
+  const jwtHdrs = { "Content-Type": "application/json", Authorization: `JWT ${token}`, companyId, pageURL: "https://rocket.new" };
+  const bearerHdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}`, companyId, pageURL: "https://rocket.new" };
 
-  // Events that carry the container backendUrl
-  const CONTAINER_EVENTS = new Set([
-    "SERVER_STATUS_FOR_RESUME_CONTAINER",
-    "SERVER_STATUS_FOR_THREAD_DETAILS",
-    "THREAD_DETAILS",
-    "SERVER_STATUS",
-  ]);
+  // ── Phase 1: Trigger the container wake via conversation SSE.
+  // Send RESUME_CONTAINER once to tell the server to start the container.
+  // We don't wait for a URL here — just fire-and-forget the wake signal.
+  for (const [hdrs, action] of [[jwtHdrs, "RESUME_CONTAINER"], [bearerHdrs, "CONTINUE_THREAD"]] as const) {
+    try {
+      const res = await fetch(`${GATEWAY_BASE}/api/v1/thread/conversation`, {
+        method: "POST",
+        headers: hdrs,
+        body: JSON.stringify({ event: action, data: { threadId }, sessionId }),
+      });
+      log(`wake trigger ${action} → ${res.status}`);
+      if (res.body) {
+        // Read briefly to confirm receipt, then move on
+        const reader = res.body.getReader();
+        const url = await drainSSEForBackendUrl(reader, 5_000, log, `conv-${action}`);
+        if (url) return url;
+      }
+    } catch (e: any) { log(`wake trigger error`, e?.message); }
+  }
+
+  // ── Phase 2: Listen on the persistent SSE channel for container status events.
+  // The Rocket.new editor uses this persistent channel to receive container URL
+  // when the container finishes starting (SERVER_STATUS_FOR_RESUME_CONTAINER).
+  log("starting persistent SSE listen loop");
+  onProgress?.("Waking container, waiting for it to start…");
 
   let attempt = 0;
+  const ENDPOINTS = [
+    { url: `${GATEWAY_BASE}/api/v1/connection/persistent`, method: "GET" as const, hdrs: jwtHdrs, body: undefined },
+    { url: `${GATEWAY_BASE}/api/v1/connection/persistent`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ threadId, sessionId }) },
+    { url: `${GATEWAY_BASE}/api/v1/thread/conversation`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ event: "CONTINUE_THREAD", data: { threadId }, sessionId }) },
+    { url: `${GATEWAY_BASE}/api/v1/thread/conversation`, method: "POST" as const, hdrs: bearerHdrs, body: JSON.stringify({ event: "RESUME_CONTAINER", data: { threadId }, sessionId }) },
+    { url: `${GATEWAY_BASE}/api/v1/thread/consume-stream`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ threadId, sessionId }) },
+    { url: `${GATEWAY_BASE}/api/v1/thread/consume-stream`, method: "GET" as const, hdrs: jwtHdrs, body: undefined },
+  ];
+
   while (Date.now() < deadline) {
     attempt++;
-    const hdrs = hdrsVariants[attempt % 2 === 0 ? 0 : 1];
+    const ep = ENDPOINTS[attempt % ENDPOINTS.length];
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
 
-    for (const eventAction of ["CONTINUE_THREAD", "RESUME_CONTAINER"]) {
-      if (Date.now() >= deadline) break;
-      try {
-        log(`attempt ${attempt} action=${eventAction}`);
-        onProgress?.("Waking Rocket.new dev container…");
+    try {
+      log(`persistent attempt ${attempt}`, `${ep.method} ${ep.url}`);
+      const res = await fetch(ep.url, {
+        method: ep.method,
+        headers: ep.hdrs,
+        ...(ep.body ? { body: ep.body } : {}),
+      });
+      log(`persistent ${ep.method} ${ep.url.split("/").pop()} → ${res.status}`);
 
-        const res = await fetch(SSE_URL, {
-          method: "POST",
-          headers: hdrs,
-          body: JSON.stringify({
-            event: eventAction,
-            data: { threadId },
-            sessionId,
-          }),
-        });
+      if (res.ok && res.body) {
+        const listenMs = Math.min(20_000, deadline - Date.now());
+        const url = await drainSSEForBackendUrl(res.body.getReader(), listenMs, log, `p${attempt}`);
+        if (url) return url;
+      }
+    } catch (e: any) { log(`persistent error attempt=${attempt}`, e?.message); }
 
-        if (!res.ok || !res.body) {
-          log(`stream ${res.status} for ${eventAction}`);
-          continue;
-        }
-
-        // Read the SSE stream line-by-line
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let currentEvent = "";
-        const streamDeadline = Math.min(Date.now() + 15_000, deadline);
-
-        while (Date.now() < streamDeadline) {
-          const { done, value } = await Promise.race([
-            reader.read(),
-            new Promise<{ done: true; value: undefined }>((resolve) =>
-              setTimeout(() => resolve({ done: true, value: undefined }), streamDeadline - Date.now())
-            ),
-          ]);
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith("event:")) {
-              currentEvent = trimmed.slice(6).trim();
-            } else if (trimmed.startsWith("data:")) {
-              const rawData = trimmed.slice(5).trim();
-              log(`SSE event=${currentEvent}`, rawData.slice(0, 200));
-
-              if (CONTAINER_EVENTS.has(currentEvent)) {
-                try {
-                  const parsed = JSON.parse(rawData);
-                  const payload = parsed.data ?? parsed;
-                  const backendUrl: string =
-                    payload.backendUrl ?? payload.backend_url ??
-                    payload.containerUrl ?? payload.container_url ??
-                    payload.serverUrl ?? payload.server_url ??
-                    payload.url ?? "";
-                  if (backendUrl) {
-                    log("container backendUrl", backendUrl);
-                    reader.cancel();
-                    return backendUrl;
-                  }
-                } catch { /* malformed JSON in SSE event — skip */ }
-              }
-              // Reset event type after each data line
-              currentEvent = "";
-            }
-          }
-        }
-        reader.cancel();
-      } catch (e: any) { log(`stream error attempt=${attempt}`, e?.message); }
-    }
-
-    // Brief pause before next reconnect attempt
     if (Date.now() < deadline) {
-      onProgress?.("Still waking container, retrying…");
-      await new Promise((r) => setTimeout(r, 4_000));
+      const waited = Math.round((Date.now() - (deadline - timeoutMs)) / 1000);
+      onProgress?.(`Container starting… (${waited}s elapsed, up to ${Math.round(timeoutMs / 1000)}s)`);
+      await new Promise((r) => setTimeout(r, 3_000));
     }
   }
 
@@ -719,8 +768,8 @@ export async function fetchRocketAppFiles({
   let applicationId = data.applicationId ?? "";
   const companyId = data.companyId ?? "";
 
-  const log = (label: string, val: any) =>
-    console.warn(`[push44:files] ${label}`, JSON.stringify(val).slice(0, 800));
+  const log = (label: string, val?: any) =>
+    console.warn(`[push44:files] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 800) : "");
 
   log("fetching files", { appId, applicationId });
 
@@ -799,27 +848,71 @@ export async function fetchRocketAppFiles({
   }
 
   if (filePaths.length > 0 && workingHeaders) {
-    // Fetch all files in parallel (batches of 20 to avoid flooding)
+    // Fetch all files in parallel (batches of 20 to avoid flooding).
+    // Try the path both WITH and WITHOUT a leading slash — some apps need "/css/main.css",
+    // others need "css/main.css". Use whichever gets a 200 for the first file.
+    const firstFile = filePaths[0];
+    let resolvedHeaders = workingHeaders;
+    let useLeadingSlash = false;
+
+    // Probe first file with and without slash to find which works
+    for (const trySlash of [false, true]) {
+      for (const hdrs of s3Headers) {
+        const fileParam = trySlash ? `/${firstFile}` : firstFile;
+        try {
+          const probe = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+            method: "POST",
+            headers: hdrs,
+            body: JSON.stringify({ applicationId, file: fileParam }),
+          });
+          log(`file-content probe slash=${trySlash}`, { status: probe.status, file: fileParam });
+          if (probe.ok) {
+            resolvedHeaders = hdrs;
+            useLeadingSlash = trySlash;
+            break;
+          }
+        } catch { /* try next */ }
+      }
+      if (resolvedHeaders !== workingHeaders || useLeadingSlash) break;
+    }
+
     const BATCH = 20;
     const results: RocketFile[] = [];
+
+    // Fetch from the probe result for the first file so we don't re-fetch it
+    const probeFile = useLeadingSlash ? `/${firstFile}` : firstFile;
+    try {
+      const probeRes = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+        method: "POST",
+        headers: resolvedHeaders,
+        body: JSON.stringify({ applicationId, file: probeFile }),
+      });
+      if (probeRes.ok) {
+        const raw = await probeRes.json().catch(() => null);
+        if (raw) {
+          const d = await rocketDecrypt(raw);
+          const content = extractContent(d);
+          if (content !== null) results.push({ path: firstFile, content });
+        }
+      }
+    } catch { /* ignore */ }
+
     for (let i = 0; i < filePaths.length; i += BATCH) {
-      const batch = filePaths.slice(i, i + BATCH);
+      const batch = filePaths.slice(i, i + BATCH).filter(p => p !== firstFile);
+      if (batch.length === 0) continue;
       const batchResults = await Promise.allSettled(
         batch.map(async (filePath) => {
+          const fileParam = useLeadingSlash ? `/${filePath}` : filePath;
           try {
             const res = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
               method: "POST",
-              headers: workingHeaders!,
-              body: JSON.stringify({ applicationId, file: filePath }),
+              headers: resolvedHeaders,
+              body: JSON.stringify({ applicationId, file: fileParam }),
             });
-            if (!res.ok) {
-              if (filePath === filePaths[0]) log("file-content first-file status", { filePath, status: res.status });
-              return null;
-            }
+            if (!res.ok) return null;
             const raw = await res.json().catch(() => null);
             if (!raw) return null;
             const d = await rocketDecrypt(raw);
-            if (filePath === filePaths[0]) log("file-content first-file response", d);
             const content = extractContent(d);
             if (content === null) return null;
             return { path: filePath, content } as RocketFile;

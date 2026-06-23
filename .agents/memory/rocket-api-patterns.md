@@ -109,6 +109,16 @@ Response: { data: { production: { backendUrl, previewUrl, status, ... } } }
 The `production.backendUrl` is the DEPLOYED app's backend (not the code editor container).
 The production container may be terminated (`status.Name: "terminated"`) which causes 502 on file endpoints.
 
+## Only 2 apps showing — pagination fix
+
+`chat-thread/search` with body `{}` returns only the first page (2 apps). Must send `{ page, limit: 50 }` and paginate until response has fewer than `limit` items. The `fetchAllPages()` helper in `listRocketApps` handles this now.
+
+**Why:** Rocket.new paginates the chat-thread list — the first page only returns ~2 threads. The old code broke after the first successful page.
+
+## log() crash fix
+
+Both `listRocketApps` and `fetchRocketAppFiles` had `log(label, val)` defined as `JSON.stringify(val).slice(0, N)`. `JSON.stringify(undefined)` returns JS `undefined` (not a string), so `.slice()` threw "Cannot read properties of undefined". Fix: always check `val !== undefined` before stringifying.
+
 ## CRITICAL: Never use loginToBack()
 
 `loginToBack()` tries 10+ endpoints that all fail. It adds 20-30 seconds of invisible delay before app listing or file fetching starts. It always returns `null`. The auth token itself (`Bearer {token}`) works directly on back.rocket.new — no session exchange needed.
