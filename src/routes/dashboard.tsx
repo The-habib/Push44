@@ -211,7 +211,7 @@ function Dashboard() {
             </div>
             <div className="px-4 pt-3 pb-2">
               <div style={{ height: 72 }}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1}>
                   <BarChart data={weekData} barSize={20} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
                     <Tooltip
                       cursor={false}

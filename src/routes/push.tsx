@@ -330,27 +330,86 @@ function TokenExpiredBanner({ type, onFix }: { type: "github" | "platform"; onFi
   );
 }
 
+const ROCKET_COLOR   = "#7c3aed";
+const ROCKET_GRAD    = "linear-gradient(135deg,#7c3aed,#5b21b6)";
+const ROCKET_LIGHT   = "#f5f3ff";
+const ROCKET_BORDER  = "#ddd6fe";
+const ROCKET_TEXT    = "#5b21b6";
+
+function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platform; size?: number }) {
+  const isUrl   = typeof icon === "string" && (icon.startsWith("http") || icon.startsWith("data:"));
+  const isEmoji = typeof icon === "string" && icon.length > 0 && icon.length <= 4 && !isUrl;
+
+  if (isUrl) {
+    return (
+      <div
+        className="rounded-xl shrink-0 overflow-hidden border border-black/[0.06] bg-[#f5f2ee]"
+        style={{ width: size, height: size }}
+        aria-hidden="true"
+      >
+        <img src={icon} alt="" width={size} height={size} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+
+  if (isEmoji) {
+    return (
+      <div
+        className="rounded-xl shrink-0 flex items-center justify-center border border-black/[0.05]"
+        style={{
+          width: size, height: size,
+          background: platform === "rocket" ? ROCKET_LIGHT : "#fff4ed",
+          fontSize: Math.round(size * 0.52),
+          lineHeight: 1,
+        }}
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-xl shrink-0 flex items-center justify-center"
+      style={{
+        width: size, height: size,
+        background: platform === "rocket" ? ROCKET_GRAD : "linear-gradient(135deg,#fb923c,#f97316)",
+      }}
+      aria-hidden="true"
+    >
+      {platform === "rocket"
+        ? <RocketLogo size={Math.round(size * 0.44)} white />
+        : <Base44Logo size={Math.round(size * 0.44)} white />}
+    </div>
+  );
+}
+
 function PlatformToggle({ platform, onChange, hasBase44, hasRocket }: { platform: Platform; onChange: (p: Platform) => void; hasBase44: boolean; hasRocket: boolean }) {
   return (
-    <div className="flex bg-[#f5f2ee] rounded-2xl p-1 mb-4 gap-1">
+    <div className="flex bg-[#f5f2ee] rounded-2xl p-1 mb-4 gap-1" role="tablist" aria-label="Select platform">
       {(["base44", "rocket"] as Platform[]).map((value) => {
         const active    = platform === value;
         const connected = value === "base44" ? hasBase44 : hasRocket;
         const label     = value === "base44" ? "Base44" : "Rocket.new";
-        const activeGrad = value === "base44" ? "linear-gradient(135deg,#fb923c,#f97316)" : "linear-gradient(135deg,#818cf8,#4f46e5)";
+        const activeGrad = value === "base44" ? "linear-gradient(135deg,#fb923c,#f97316)" : ROCKET_GRAD;
         return (
           <motion.button
             key={value}
             onClick={() => onChange(value)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold relative overflow-hidden"
+            onKeyDown={e => (e.key === "Enter" || e.key === " ") && onChange(value)}
+            role="tab"
+            aria-selected={active}
+            aria-label={`Switch to ${label}`}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-1"
             whileTap={{ scale: 0.97 }}
           >
             {active && <motion.div layoutId="platform-tab" className="absolute inset-0 rounded-xl shadow-sm" style={{ background: activeGrad }} transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
-            {active && value === "rocket" && <motion.div className="absolute inset-0 rounded-xl pointer-events-none" style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,255,255,0.15),transparent 65%)" }} layoutId="platform-tab-gloss" />}
+            {active && <motion.div className="absolute inset-0 rounded-xl pointer-events-none" style={{ background: "radial-gradient(circle at 30% 40%,rgba(255,255,255,0.14),transparent 60%)" }} layoutId="platform-tab-gloss" />}
             <span className="relative z-10 flex items-center gap-1.5">
               {value === "base44" ? <Base44Logo size={14} white={active} /> : <RocketLogo size={15} white={active} />}
               <span className={active ? "text-white" : "text-[#9a8880]"}>{label}</span>
-              {connected && <span className="h-1.5 w-1.5 rounded-full" style={{ background: active ? "rgba(255,255,255,0.75)" : "#22c55e" }} />}
+              {connected && <span className="h-1.5 w-1.5 rounded-full" style={{ background: active ? "rgba(255,255,255,0.8)" : "#22c55e" }} aria-label="Connected" />}
             </span>
           </motion.button>
         );
@@ -585,8 +644,8 @@ function PushPage() {
   }
 
   if (status === "done") {
-    const platformGrad = platform === "rocket" ? "linear-gradient(135deg,#818cf8,#4f46e5)" : "linear-gradient(135deg,#fb923c,#f97316)";
-    const platformColor = platform === "rocket" ? "#6366f1" : "#f97316";
+    const platformGrad  = platform === "rocket" ? ROCKET_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
+    const platformColor = platform === "rocket" ? ROCKET_COLOR : "#f97316";
     return (
       <AppShell>
         <AnimatedCorner variant="push" />
@@ -711,9 +770,9 @@ function PushPage() {
 
         {/* Rocket OTP login prompt */}
         {platform === "rocket" && needsOtpLogin && (
-          <div className="mt-3 rounded-2xl p-4 bg-[#eff0ff] border border-[#c7d2fe]">
-            <p className="text-[12px] font-semibold text-[#3730a3] mb-2">{appsError}</p>
-            <MotionButton onClick={() => setShowRocketModal(true)} className="text-[11px] font-bold text-white bg-[#6366f1] rounded-xl px-3 py-2">Log in with OTP →</MotionButton>
+          <div className="mt-3 rounded-2xl p-4 border" style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}>
+            <p className="text-[12px] font-semibold mb-2" style={{ color: ROCKET_TEXT }}>{appsError}</p>
+            <MotionButton onClick={() => setShowRocketModal(true)} className="text-[11px] font-bold text-white rounded-xl px-3 py-2" style={{ background: ROCKET_COLOR }}>Log in with OTP →</MotionButton>
           </div>
         )}
 
@@ -725,33 +784,66 @@ function PushPage() {
         )}
 
         {!loadingApps && apps.length > 0 && (
-          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+          <div
+            className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"
+            role="listbox"
+            aria-label={`${platform === "rocket" ? "Rocket.new" : "Base44"} apps`}
+          >
             {apps.map(app => {
-              const isSelected = selectedApp?.id === app.id;
-              const snapshot = getAppSnapshot(app.id);
+              const isSelected  = selectedApp?.id === app.id;
+              const snapshot    = getAppSnapshot(app.id);
+              const accentColor = platform === "rocket" ? ROCKET_COLOR : "#f97316";
+              const selBg       = platform === "rocket" ? ROCKET_LIGHT : "#fff4ed";
+              const selBorder   = platform === "rocket" ? ROCKET_COLOR : "#f97316";
               return (
                 <motion.button
                   key={app.id}
                   onClick={() => !loadingFiles && handleSelectApp(app)}
-                  className="w-full flex items-center gap-3 rounded-2xl px-3.5 py-3 text-left border transition-colors relative"
+                  onKeyDown={e => { if ((e.key === "Enter" || e.key === " ") && !loadingFiles) { e.preventDefault(); handleSelectApp(app); } }}
+                  role="option"
+                  aria-selected={isSelected}
+                  aria-label={`${app.name}${snapshot ? `, last pushed ${new Date(snapshot.timestamp).toLocaleDateString()}` : ", never pushed"}`}
+                  tabIndex={0}
+                  disabled={loadingFiles && !isSelected}
+                  className="w-full flex items-center gap-3 rounded-2xl px-3.5 py-3 text-left border transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
-                    background: isSelected ? (platform === "rocket" ? "#f0f0ff" : "#fff4ed") : "#faf7f3",
-                    borderColor: isSelected ? (platform === "rocket" ? "#6366f1" : "#f97316") : "#f0ece4",
+                    background: isSelected ? selBg : "#faf7f3",
+                    borderColor: isSelected ? selBorder : "#f0ece4",
+                    ["--tw-ring-color" as any]: accentColor,
+                    minHeight: 56,
                   }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: loadingFiles && !isSelected ? 1 : 0.98 }}
                 >
-                  <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: platform === "rocket" ? "linear-gradient(135deg,#818cf8,#4f46e5)" : "linear-gradient(135deg,#fb923c,#f97316)" }}>
-                    {platform === "rocket" ? <RocketLogo size={16} white /> : <Base44Logo size={16} white />}
-                  </div>
+                  {/* Selection indicator stripe */}
+                  {isSelected && (
+                    <motion.div
+                      layoutId="app-selection-stripe"
+                      className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
+                      style={{ background: accentColor }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+
+                  <AppIcon icon={app.icon} platform={platform} size={36} />
+
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{app.name}</div>
-                    <div className="text-[10px] text-[#9a8880] mt-0.5">
-                      {snapshot ? `Last pushed ${new Date(snapshot.timestamp).toLocaleDateString()}` : "Never pushed"}
+                    <div className="text-[10px] mt-0.5 font-medium" style={{ color: isSelected ? accentColor : "#9a8880" }}>
+                      {snapshot
+                        ? `Last pushed ${new Date(snapshot.timestamp).toLocaleDateString()}`
+                        : "Never pushed"}
                     </div>
                   </div>
-                  {loadingFiles && isSelected && <Loader2 className="h-4 w-4 animate-spin text-[#9a8880] shrink-0" />}
-                  {isSelected && !loadingFiles && <Check className="h-4 w-4 text-[#f97316] shrink-0" />}
+
+                  <div className="shrink-0 w-5 flex items-center justify-center">
+                    {loadingFiles && isSelected
+                      ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
+                      : isSelected
+                        ? <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 28 }}>
+                            <Check className="h-4 w-4" style={{ color: accentColor }} strokeWidth={3} />
+                          </motion.div>
+                        : null}
+                  </div>
                 </motion.button>
               );
             })}
@@ -770,12 +862,21 @@ function PushPage() {
 
         {/* Container sleeping */}
         {containerDown && (
-          <div className="mt-3 rounded-2xl p-4 bg-[#f0f0ff] border border-[#c7d2fe]">
-            <div className="text-[13px] font-bold text-[#3730a3] mb-1">Container is sleeping</div>
-            <div className="text-[11px] text-[#4338ca]/70 mb-3">The container for <strong>{containerDown.appName}</strong> is offline. Open it in Rocket.new to wake it up.</div>
-            <div className="flex gap-2">
-              <a href={`https://rocket.new/${containerDown.appId}`} target="_blank" rel="noreferrer" className="text-[11px] font-bold text-white bg-[#6366f1] rounded-xl px-3 py-2">Open in Rocket.new →</a>
-              <MotionButton onClick={() => { setContainerDown(null); handleSelectApp(selectedApp!); }} className="text-[11px] font-bold text-[#6366f1] bg-white border border-[#c7d2fe] rounded-xl px-3 py-2">Try again</MotionButton>
+          <div className="mt-3 rounded-2xl p-4 border" style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}>
+            <div className="text-[13px] font-bold mb-1" style={{ color: ROCKET_TEXT }}>Container is sleeping</div>
+            <div className="text-[11px] mb-3" style={{ color: `${ROCKET_TEXT}99` }}>The container for <strong>{containerDown.appName}</strong> is offline. Open it in Rocket.new to wake it up.</div>
+            <div className="flex gap-2 flex-wrap">
+              <a href={`https://rocket.new/${containerDown.appId}`} target="_blank" rel="noreferrer"
+                className="text-[11px] font-bold text-white rounded-xl px-3 py-2" style={{ background: ROCKET_GRAD }}>
+                Open in Rocket.new →
+              </a>
+              <MotionButton
+                onClick={() => { setContainerDown(null); handleSelectApp(selectedApp!); }}
+                className="text-[11px] font-bold bg-white rounded-xl px-3 py-2 border"
+                style={{ color: ROCKET_TEXT, borderColor: ROCKET_BORDER }}
+              >
+                Try again
+              </MotionButton>
             </div>
           </div>
         )}
