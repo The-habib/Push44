@@ -34,11 +34,11 @@ const SN = { type: "spring", stiffness: 400, damping: 32 } as const;
 const EO = [0.22, 1, 0.36, 1] as const;
 
 // Directional slide variants — dir: 1 = forward (→), -1 = backward (←)
-const PAGE_X = 32; // px slide distance
+const PAGE_X = 18; // px slide distance
 const pageVariants = {
   initial: (dir: number) => ({ opacity: 0, x: dir * PAGE_X }),
   animate: { opacity: 1, x: 0, transition: { duration: 0.26, ease: EO } },
-  exit:    (dir: number) => ({ opacity: 0, x: dir * -PAGE_X * 0.5, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }),
+  exit:    (dir: number) => ({ opacity: 0, x: dir * -PAGE_X * 0.5, transition: { duration: 0.08, ease: [0.4, 0, 1, 1] } }),
 };
 
 /* ─── shared ──────────────────────────────────────────────── */
@@ -62,9 +62,9 @@ export function SectionCard({ title, action, children, className = "" }: {
   return (
     <motion.section
       className={`bg-white rounded-[20px] p-5 mb-4 border border-black/[0.055] ${className}`}
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.38, ease: EO }}
+      transition={{ duration: 0.22, ease: EO }}
     >
       {title && (
         <div className="flex items-center justify-between mb-4">
@@ -110,7 +110,7 @@ function FloatingNav({ pathname }: { pathname: string }) {
               key={to}
               to={to}
               aria-current={active ? "page" : undefined}
-              className="flex-1 flex items-center justify-center min-w-0"
+              className="w-[20%] flex items-center justify-center shrink-0"
             >
               <motion.div
                 className="relative flex items-center justify-center h-11 w-full rounded-[20px] overflow-hidden"
@@ -286,7 +286,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
 
           <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-7">
-            <AnimatePresence mode="wait" initial={false} custom={direction}>
+            <AnimatePresence mode="popLayout" initial={false} custom={direction}>
               <motion.div
                 key={pathname}
                 custom={direction}
@@ -338,8 +338,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Page content — padded away from fixed header and floating nav */}
-        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: 96 }}>
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <main className="flex-1 w-full max-w-2xl mx-auto px-4" style={{ paddingTop: 68, paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
             <motion.div
               key={pathname}
               custom={direction}

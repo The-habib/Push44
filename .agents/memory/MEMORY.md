@@ -4,3 +4,4 @@
 - [GitHub Trees API Push](github-trees-push.md) — bulk push pattern: blobs → tree → commit → update ref; handle empty repo (no HEAD) separately
 - [Rocket.new API Patterns](rocket-api-patterns.md) — confirmed working: ping→file-list→container fetch; companyId header required; SSE never delivers backendUrl
 - [File Snapshot Diff](file-snapshot-diff.md) — push44 stores per-app snapshots (simpleHash) in push44_snapshots; computeFileDiff returns new/modified/unchanged Map after each push
+- [UX Audit Fixes](ux-audit-fixes.md) — AnimatePresence must use mode="popLayout" not "wait"; nav tabs use w-[20%] not flex-1 to prevent icon jitter; safe-area padding via env(); useQuery over useEffect for cached API calls

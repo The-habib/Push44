@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionCard, MotionButton } from "@/components/PageTransition";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Clock, GitBranch, Loader2, AlertTriangle,
@@ -14,6 +15,7 @@ import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
 import { getHistory, formatRelativeTime, getPushStreak, getWeeklyActivity } from "@/lib/storage";
+import { SkeletonStatCard, SkeletonRepoCard } from "@/components/Skeleton";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -28,10 +30,6 @@ export const Route = createFileRoute("/dashboard")({
 function Dashboard() {
   const { creds, isLoaded } = useApp();
   const navigate = useNavigate();
-  const [apps, setApps]           = useState<any[]>([]);
-  const [repos, setRepos]         = useState<any[]>([]);
-  const [loadingApps, setLA]      = useState(false);
-  const [loadingRepos, setLR]     = useState(false);
   const [history, setHistory]     = useState(getHistory());
   const [greeting, setGreeting]   = useState("");
   const [streak, setStreak]       = useState(0);
@@ -47,6 +45,24 @@ function Dashboard() {
   const weekPushes    = weekData.reduce((s, d) => s + d.pushes, 0);
   const weekFiles     = weekData.reduce((s, d) => s + d.files, 0);
 
+  const { data: apps = [], isLoading: loadingApps } = useQuery({
+    queryKey: ["base44-apps", creds.base44Token],
+    queryFn: () => listBase44Apps({ data: { token: creds.base44Token! } }),
+    enabled: !!creds.base44Token && isLoaded,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+
+  const { data: repos = [], isLoading: loadingRepos } = useQuery({
+    queryKey: ["github-repos", creds.githubToken],
+    queryFn: () => listGitHubRepos({ data: { token: creds.githubToken! } }),
+    enabled: !!creds.githubToken && isLoaded,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
@@ -55,18 +71,6 @@ function Dashboard() {
     setStreak(getPushStreak());
     setWeekData(getWeeklyActivity());
   }, []);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    setHistory(getHistory());
-    if (!isConnected) return;
-    if (hasBase44) {
-      setLA(true);
-      listBase44Apps({ data: { token: creds.base44Token! } }).then(setApps).catch(() => {}).finally(() => setLA(false));
-    }
-    setLR(true);
-    listGitHubRepos({ data: { token: creds.githubToken! } }).then(setRepos).catch(() => {}).finally(() => setLR(false));
-  }, [isLoaded, isConnected]);
 
   const maxPushes = Math.max(...weekData.map(d => d.pushes), 1);
 
@@ -168,27 +172,33 @@ function Dashboard() {
       </FadeUp>
 
       {/* Stats */}
-      <StaggerContainer className="grid grid-cols-3 gap-3 mb-4">
-        {[
-          { label: "Apps",   value: apps.length,    loading: loadingApps && isConnected,  bg: "#fff4ed", accent: "#f97316", Icon: LayoutGrid },
-          { label: "Repos",  value: repos.length,   loading: loadingRepos && isConnected, bg: "#f0fdf4", accent: "#22c55e", Icon: Archive    },
-          { label: "Pushes", value: history.length, loading: false,                       bg: "#faf7f3", accent: "#9a8880", Icon: Clock      },
-        ].map(({ label, value, loading, bg, accent, Icon }) => (
-          <StaggerItem key={label}>
-            <motion.div className="rounded-[20px] p-4 flex flex-col gap-3" style={{ background: bg }} whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }} transition={{ type: "spring", stiffness: 380, damping: 28 }}>
-              <div className="h-8 w-8 rounded-[10px] flex items-center justify-center" style={{ background: `${accent}20` }}>
-                <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2} />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-[#9a8880] uppercase tracking-wider mb-0.5">{label}</div>
-                <div className="text-[22px] font-black text-[#1a1a1a] leading-none">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#c8b8a2] mt-1" /> : value}
+      {(loadingApps || loadingRepos) && !apps.length && !repos.length ? (
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <SkeletonStatCard /><SkeletonStatCard /><SkeletonStatCard />
+        </div>
+      ) : (
+        <StaggerContainer className="grid grid-cols-3 gap-3 mb-4">
+          {[
+            { label: "Apps",   value: apps.length,    loading: loadingApps && isConnected,  bg: "#fff4ed", accent: "#f97316", Icon: LayoutGrid },
+            { label: "Repos",  value: repos.length,   loading: loadingRepos && isConnected, bg: "#f0fdf4", accent: "#22c55e", Icon: Archive    },
+            { label: "Pushes", value: history.length, loading: false,                       bg: "#faf7f3", accent: "#9a8880", Icon: Clock      },
+          ].map(({ label, value, loading, bg, accent, Icon }) => (
+            <StaggerItem key={label}>
+              <motion.div className="rounded-[20px] p-4 flex flex-col gap-3" style={{ background: bg }} whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.07)" }} transition={{ type: "spring", stiffness: 380, damping: 28 }}>
+                <div className="h-8 w-8 rounded-[10px] flex items-center justify-center" style={{ background: `${accent}20` }}>
+                  <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={2} />
                 </div>
-              </div>
-            </motion.div>
-          </StaggerItem>
-        ))}
-      </StaggerContainer>
+                <div>
+                  <div className="text-[10px] font-bold text-[#9a8880] uppercase tracking-wider mb-0.5">{label}</div>
+                  <div className="text-[22px] font-black text-[#1a1a1a] leading-none">
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#c8b8a2] mt-1" /> : value}
+                  </div>
+                </div>
+              </motion.div>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      )}
 
       {/* Weekly Activity Chart */}
       {history.length > 0 && (
@@ -299,7 +309,7 @@ function Dashboard() {
       )}
 
       {/* Recent repo */}
-      {isConnected && repos.length > 0 && (
+      {isConnected && (loadingRepos || repos.length > 0) && (
         <FadeUp delay={0.22}>
           <div className="bg-white rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#f7f4f0]">
@@ -307,23 +317,27 @@ function Dashboard() {
               <MotionButton onClick={() => navigate({ to: "/repositories" })} className="text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-3 py-1.5">View all →</MotionButton>
             </div>
             <div className="px-4 py-3 space-y-2">
-              {repos.slice(0, 3).map((repo, i) => (
-                <MotionCard key={repo.full_name} className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3.5">
-                  <div className="h-9 w-9 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
-                    <GitHubLogo className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-bold text-[#1a1a1a] truncate">{repo.full_name}</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <GitBranch className="h-2.5 w-2.5 text-[#c8b8a2]" />
-                      <span className="text-[10px] text-[#9a8880]">{repo.default_branch}</span>
+              {loadingRepos && repos.length === 0 ? (
+                <><SkeletonRepoCard /><SkeletonRepoCard /><SkeletonRepoCard /></>
+              ) : (
+                repos.slice(0, 3).map((repo) => (
+                  <MotionCard key={repo.full_name} className="flex items-center gap-3 bg-[#faf7f3] rounded-2xl p-3.5">
+                    <div className="h-9 w-9 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0">
+                      <GitHubLogo className="h-4 w-4 text-white" />
                     </div>
-                  </div>
-                  <MotionButton onClick={() => navigate({ to: "/push" })} className="h-8 w-8 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0">
-                    <ArrowRight className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
-                  </MotionButton>
-                </MotionCard>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-bold text-[#1a1a1a] truncate">{repo.full_name}</div>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <GitBranch className="h-2.5 w-2.5 text-[#c8b8a2]" />
+                        <span className="text-[10px] text-[#9a8880]">{repo.default_branch}</span>
+                      </div>
+                    </div>
+                    <MotionButton onClick={() => navigate({ to: "/push" })} className="h-8 w-8 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+                    </MotionButton>
+                  </MotionCard>
+                ))
+              )}
             </div>
           </div>
         </FadeUp>

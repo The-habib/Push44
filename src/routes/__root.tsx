@@ -98,6 +98,9 @@ function OnboardingGuard() {
     }
   }, [isLoaded, pathname, creds.base44Token, creds.rocketToken, creds.githubToken]);
 
+  // Prevent flash of protected content while auth state is loading
+  if (!isLoaded && APP_ROUTES.includes(pathname)) return null;
+
   if (APP_ROUTES.includes(pathname)) {
     return (
       <AppShell>

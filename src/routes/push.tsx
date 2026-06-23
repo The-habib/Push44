@@ -452,6 +452,7 @@ function PushPage() {
   const [rocketStage, setRocketStage]         = useState<"pinging" | "listing" | "downloading" | "">("");
   const [tokenExpired, setTokenExpired]       = useState<"github" | "platform" | null>(null);
   const [pushStats, setPushStats]             = useState<{ newCount: number; modifiedCount: number; unchangedCount: number } | null>(null);
+  const [pushProgress, setPushProgress]       = useState<{ done: number; total: number } | null>(null);
 
   const hasBase44   = !!creds.base44Token;
   const hasRocket   = !!creds.rocketToken;
@@ -590,15 +591,16 @@ function PushPage() {
   const handlePush = async () => {
     if (!selectedApp || !selectedRepo || !commitMsg.trim() || stagedFiles.length === 0) return;
     const [owner, repo] = selectedRepo.full_name.split("/");
-    setStatus("pushing"); setErrorMsg("");
+    setStatus("pushing"); setErrorMsg(""); setPushProgress({ done: 0, total: stagedFiles.length });
     const newCount       = stagedFiles.filter(f => diffMap.get(f.path) === "new").length;
     const modifiedCount  = stagedFiles.filter(f => diffMap.get(f.path) === "modified").length;
     const unchangedCount = stagedFiles.filter(f => diffMap.get(f.path) === "unchanged").length;
     try {
-      const result = await pushFilesToGitHub({ data: { token: creds.githubToken!, owner, repo, branch, files: stagedFiles, commitMessage: commitMsg } });
+      const result = await pushFilesToGitHub({ data: { token: creds.githubToken!, owner, repo, branch, files: stagedFiles, commitMessage: commitMsg, onProgress: (done, total) => setPushProgress({ done, total }) } });
       saveAppSnapshot(selectedApp.id, stagedFiles);
       setCommitHash(result.shortSha);
       setStatus("done");
+      setPushProgress(null);
       setPushStats({ newCount, modifiedCount, unchangedCount });
       addHistory({
         id: result.commitSha, appName: selectedApp.name, platform, repo: selectedRepo.full_name,
@@ -610,7 +612,7 @@ function PushPage() {
     } catch (e: any) {
       const msg = e.message ?? "Push failed";
       if (e.status === 401 || msg.includes("Bad credentials")) setTokenExpired("github");
-      setErrorMsg(msg); setStatus("error");
+      setErrorMsg(msg); setStatus("error"); setPushProgress(null);
       addHistory({
         id: Date.now().toString(), appName: selectedApp.name, platform, repo: selectedRepo.full_name,
         branch, commitMessage: commitMsg, commitHash: "",
@@ -1025,6 +1027,22 @@ function PushPage() {
             {status === "error" && (
               <div className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 bg-[#fef2f2] border border-[#fecaca] mb-3 text-[12px] text-[#ef4444] font-semibold">
                 <AlertCircle className="h-4 w-4 shrink-0" />{errorMsg}
+              </div>
+            )}
+
+            {pushProgress && status === "pushing" && (
+              <div className="mb-3 rounded-xl overflow-hidden bg-[#f5f2ee] border border-[#f0ece4]">
+                <div
+                  className="h-1.5 rounded-xl transition-all duration-300"
+                  style={{
+                    width: `${pushProgress.total > 0 ? Math.round((pushProgress.done / pushProgress.total) * 100) : 0}%`,
+                    background: "linear-gradient(90deg,#fb923c,#f97316)",
+                  }}
+                />
+                <div className="flex items-center justify-between px-3 py-1.5 text-[10px] font-bold text-[#9a8880]">
+                  <span>Uploading blobs…</span>
+                  <span>{pushProgress.done}/{pushProgress.total} files</span>
+                </div>
               </div>
             )}
 

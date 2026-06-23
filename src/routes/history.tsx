@@ -136,6 +136,35 @@ function HistoryPage() {
         </FadeUp>
       )}
 
+      {/* Empty state — no pushes yet */}
+      {allEvents.length === 0 && (
+        <FadeUp delay={0.12}>
+          <div className="flex flex-col items-center justify-center py-14 gap-4 text-center">
+            <motion.div
+              className="h-20 w-20 rounded-[28px] flex items-center justify-center"
+              style={{ background: "#fff4ed", boxShadow: "0 4px 24px rgba(249,115,22,0.12)" }}
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <HistoryIcon className="h-9 w-9 text-[#f97316]" />
+            </motion.div>
+            <div>
+              <h2 className="text-[20px] font-black text-[#1a1a1a] mb-1.5">No pushes yet</h2>
+              <p className="text-[13px] text-[#9a8880] max-w-[220px] leading-relaxed">
+                Every time you push code to GitHub it will appear here — with full details.
+              </p>
+            </div>
+            <MotionButton
+              onClick={() => navigate({ to: "/push" })}
+              className="flex items-center gap-2 rounded-2xl px-6 py-3 text-white text-[13px] font-bold"
+              style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", boxShadow: "0 4px 20px rgba(249,115,22,0.3)" }}
+            >
+              <Zap className="h-4 w-4" strokeWidth={2.5} />Make your first push
+            </MotionButton>
+          </div>
+        </FadeUp>
+      )}
+
       {/* Most pushed app */}
       {mostPushedApp && (
         <FadeUp delay={0.1}>

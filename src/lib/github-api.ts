@@ -177,8 +177,8 @@ export interface FileEntry {
   content: string;
 }
 
-export async function pushFilesToGitHub({ data }: { data: { token: string; owner: string; repo: string; branch: string; files: FileEntry[]; commitMessage: string } }) {
-  const { token, owner, repo, branch, files, commitMessage } = data;
+export async function pushFilesToGitHub({ data }: { data: { token: string; owner: string; repo: string; branch: string; files: FileEntry[]; commitMessage: string; onProgress?: (done: number, total: number) => void } }) {
+  const { token, owner, repo, branch, files, commitMessage, onProgress } = data;
   const repoPath = `/repos/${owner}/${repo}`;
   let baseTreeSha: string | null = null;
   let parentCommitSha: string | null = null;
@@ -206,6 +206,7 @@ export async function pushFilesToGitHub({ data }: { data: { token: string; owner
       })
     );
     treeItems.push(...blobs);
+    onProgress?.(Math.min(i + BATCH, files.length), files.length);
   }
 
   const treeBody: any = { tree: treeItems };
