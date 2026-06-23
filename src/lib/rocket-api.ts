@@ -585,178 +585,42 @@ function extractContent(d: any): string | null {
   return null;
 }
 
-// ── SSE-based container wake ──────────────────────────────────────────────────
-// When the S3 file-content endpoint returns 500s (stale cache), we can try to
-// wake the dev container via the gateway SSE stream and fetch files directly.
+// ── Production container ping ─────────────────────────────────────────────────
+// Confirmed working (no auth needed):
+//   POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+//   Body: { applicationId }
+//   Returns: { data: { production: { backendUrl, status: { Name: "running" }, ... } } }
 //
-// Stream: POST https://gateway.rocket.new/api/v1/thread/conversation
-// Auth:   JWT {token}  (NOT Bearer)
-// Body:   { event: "CONTINUE_THREAD", data: { threadId }, sessionId }
-//
-// The server sends SSE events. We watch for SERVER_STATUS_FOR_RESUME_CONTAINER
-// or SERVER_STATUS_FOR_THREAD_DETAILS events which carry data.backendUrl.
-// The stream may close and need reconnecting — we retry for up to `timeoutMs`.
+// The backendUrl is the HTTPS code-editor container endpoint (not the Flutter app).
+// When status.Name === "running", the container has a live /api/file-content endpoint:
+//   POST {backendUrl}/api/file-content
+//   Body: { path: "lib/main.dart" }   ← key is "path", NO auth required!
+//   Returns: { path: "/lib/main.dart", content: "..." }
+//   Files not in the container return 500 { error: "Failed to read file content" } — skip them.
 
-// Helper: drain an SSE stream looking for any key that looks like a container backendUrl.
-// Returns the URL or null. Cancels the reader after `limitMs` or on URL found.
-async function drainSSEForBackendUrl(
-  reader: ReadableStreamDefaultReader<Uint8Array>,
-  limitMs: number,
-  logFn: (label: string, val?: any) => void,
-  streamLabel: string
-): Promise<string | null> {
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let currentEvent = "";
-  const deadline = Date.now() + limitMs;
-
-  const CONTAINER_EVENTS = new Set([
-    "SERVER_STATUS_FOR_RESUME_CONTAINER",
-    "SERVER_STATUS_FOR_THREAD_DETAILS",
-    "THREAD_DETAILS",
-    "SERVER_STATUS",
-    "CONTAINER_STATUS",
-  ]);
-
+async function pingProductionContainer(applicationId: string): Promise<{
+  backendUrl: string | null;
+  running: boolean;
+}> {
   try {
-    while (Date.now() < deadline) {
-      const remaining = deadline - Date.now();
-      const { done, value } = await Promise.race([
-        reader.read(),
-        new Promise<{ done: true; value: undefined }>((r) => setTimeout(() => r({ done: true, value: undefined }), remaining)),
-      ]);
-      if (done) break;
-      if (!value) continue;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("event:")) {
-          currentEvent = trimmed.slice(6).trim();
-        } else if (trimmed.startsWith("data:")) {
-          const rawData = trimmed.slice(5).trim();
-          try {
-            const parsed = JSON.parse(rawData);
-            // Format A: explicit SSE event type
-            // Format B: event name embedded in JSON payload
-            const innerEvent: string = String(parsed.event ?? parsed.type ?? "");
-            const effectiveEvent = CONTAINER_EVENTS.has(currentEvent) ? currentEvent
-              : CONTAINER_EVENTS.has(innerEvent) ? innerEvent : "";
-
-            logFn(`[${streamLabel}] ev=${currentEvent || "msg"} inner=${innerEvent || "-"}`, rawData.slice(0, 180));
-
-            // Look for backendUrl in either format
-            const payload = effectiveEvent ? (parsed.data ?? parsed) : parsed;
-            const backendUrl: string =
-              payload.backendUrl ?? payload.backend_url ??
-              payload.containerUrl ?? payload.container_url ??
-              payload.serverUrl ?? payload.server_url ??
-              (parsed.data?.backendUrl) ?? (parsed.data?.backend_url) ?? "";
-
-            if (backendUrl && backendUrl.startsWith("http")) {
-              logFn(`[${streamLabel}] backendUrl found`, backendUrl);
-              reader.cancel();
-              return backendUrl;
-            }
-          } catch { /* malformed JSON */ }
-          currentEvent = "";
-        }
-      }
-    }
-  } catch { /* stream error */ }
-  reader.cancel().catch(() => {});
-  return null;
-}
-
-async function wakeRocketContainer(
-  token: string,
-  companyId: string,
-  threadId: string,
-  timeoutMs = 120_000,
-  onProgress?: (msg: string) => void
-): Promise<string | null> {
-  const log = (label: string, val?: any) =>
-    console.warn(`[push44:wake] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 400) : "");
-
-  const sessionId = typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
-
-  const deadline = Date.now() + timeoutMs;
-
-  const jwtHdrs = { "Content-Type": "application/json", Authorization: `JWT ${token}`, companyId, pageURL: "https://rocket.new" };
-  const bearerHdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}`, companyId, pageURL: "https://rocket.new" };
-
-  // ── Phase 1: Trigger the container wake via conversation SSE.
-  // Send RESUME_CONTAINER once to tell the server to start the container.
-  // We don't wait for a URL here — just fire-and-forget the wake signal.
-  for (const [hdrs, action] of [[jwtHdrs, "RESUME_CONTAINER"], [bearerHdrs, "CONTINUE_THREAD"]] as const) {
-    try {
-      const res = await fetch(`${GATEWAY_BASE}/api/v1/thread/conversation`, {
+    const res = await fetch(
+      `${APP_BASE}/apis/v1/application/production-deploy/ping`,
+      {
         method: "POST",
-        headers: hdrs,
-        body: JSON.stringify({ event: action, data: { threadId }, sessionId }),
-      });
-      log(`wake trigger ${action} → ${res.status}`);
-      if (res.body) {
-        // Read briefly to confirm receipt, then move on
-        const reader = res.body.getReader();
-        const url = await drainSSEForBackendUrl(reader, 5_000, log, `conv-${action}`);
-        if (url) return url;
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId }),
       }
-    } catch (e: any) { log(`wake trigger error`, e?.message); }
+    );
+    if (!res.ok) return { backendUrl: null, running: false };
+    const data = await res.json();
+    const prod = data?.data?.production ?? {};
+    const statusName: string = prod?.status?.Name ?? "";
+    const backendUrl: string = prod.backendUrl ?? "";
+    const running = statusName === "running";
+    return { backendUrl: backendUrl || null, running };
+  } catch {
+    return { backendUrl: null, running: false };
   }
-
-  // ── Phase 2: Listen on the persistent SSE channel for container status events.
-  // The Rocket.new editor uses this persistent channel to receive container URL
-  // when the container finishes starting (SERVER_STATUS_FOR_RESUME_CONTAINER).
-  log("starting persistent SSE listen loop");
-  onProgress?.("Waking container, waiting for it to start…");
-
-  let attempt = 0;
-  const ENDPOINTS = [
-    { url: `${GATEWAY_BASE}/api/v1/connection/persistent`, method: "GET" as const, hdrs: jwtHdrs, body: undefined },
-    { url: `${GATEWAY_BASE}/api/v1/connection/persistent`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ threadId, sessionId }) },
-    { url: `${GATEWAY_BASE}/api/v1/thread/conversation`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ event: "CONTINUE_THREAD", data: { threadId }, sessionId }) },
-    { url: `${GATEWAY_BASE}/api/v1/thread/conversation`, method: "POST" as const, hdrs: bearerHdrs, body: JSON.stringify({ event: "RESUME_CONTAINER", data: { threadId }, sessionId }) },
-    { url: `${GATEWAY_BASE}/api/v1/thread/consume-stream`, method: "POST" as const, hdrs: jwtHdrs, body: JSON.stringify({ threadId, sessionId }) },
-    { url: `${GATEWAY_BASE}/api/v1/thread/consume-stream`, method: "GET" as const, hdrs: jwtHdrs, body: undefined },
-  ];
-
-  while (Date.now() < deadline) {
-    attempt++;
-    const ep = ENDPOINTS[attempt % ENDPOINTS.length];
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) break;
-
-    try {
-      log(`persistent attempt ${attempt}`, `${ep.method} ${ep.url}`);
-      const res = await fetch(ep.url, {
-        method: ep.method,
-        headers: ep.hdrs,
-        ...(ep.body ? { body: ep.body } : {}),
-      });
-      log(`persistent ${ep.method} ${ep.url.split("/").pop()} → ${res.status}`);
-
-      if (res.ok && res.body) {
-        const listenMs = Math.min(20_000, deadline - Date.now());
-        const url = await drainSSEForBackendUrl(res.body.getReader(), listenMs, log, `p${attempt}`);
-        if (url) return url;
-      }
-    } catch (e: any) { log(`persistent error attempt=${attempt}`, e?.message); }
-
-    if (Date.now() < deadline) {
-      const waited = Math.round((Date.now() - (deadline - timeoutMs)) / 1000);
-      onProgress?.(`Container starting… (${waited}s elapsed, up to ${Math.round(timeoutMs / 1000)}s)`);
-      await new Promise((r) => setTimeout(r, 3_000));
-    }
-  }
-
-  log("container wake timed out");
-  return null;
 }
 
 export async function fetchRocketAppFiles({
@@ -766,7 +630,6 @@ export async function fetchRocketAppFiles({
 }): Promise<RocketFile[]> {
   const { token, appId } = data;
   let applicationId = data.applicationId ?? "";
-  const companyId = data.companyId ?? "";
 
   const log = (label: string, val?: any) =>
     console.warn(`[push44:files] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 800) : "");
@@ -794,7 +657,6 @@ export async function fetchRocketAppFiles({
           const td = thread.threadDetails ?? {};
           applicationId = String(td.applicationId ?? td._id ?? thread.applicationId ?? "");
           if (applicationId) { log("applicationId from thread", applicationId); break; }
-          // If thread response already contains files, return them now
           const files = extractFilesFromPayload(d);
           if (files && files.length > 0) return files;
         } catch { /* try next */ }
@@ -811,16 +673,24 @@ export async function fetchRocketAppFiles({
     );
   }
 
-  // ── Step 2: S3-backed project structure + per-file content.
-  // Confirmed working endpoint (reverse-engineered from Rocket.new JS bundle).
-  // Auth format: both JWT and Bearer are attempted.
+  // ── Step 2: Ping the production container.
+  // Confirmed working (no auth needed):
+  //   POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+  //   Body: { applicationId }
+  // Returns backendUrl of the RUNNING code-editor container (not the Flutter app).
+  // When running, /api/file-content on that URL needs { path } (no auth, no subscription).
+  const { backendUrl, running: containerRunning } = await pingProductionContainer(applicationId);
+  log("production ping", { backendUrl, containerRunning });
+
+  // ── Step 3: Get the full file list from the S3-backed project-structure endpoint.
+  // Confirmed: returns the directory tree even when container is sleeping.
+  // Auth: JWT {token} (Bearer also tried as fallback).
   const s3Headers = [
     { "Content-Type": "application/json", Authorization: `JWT ${token}` },
     { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
   ];
 
   let filePaths: string[] = [];
-  let workingHeaders: Record<string, string> | null = null;
 
   for (const hdrs of s3Headers) {
     try {
@@ -829,17 +699,14 @@ export async function fetchRocketAppFiles({
         headers: hdrs,
         body: JSON.stringify({ applicationId }),
       });
-      log(`project-structure status (${hdrs.Authorization.split(" ")[0]})`, res.status);
+      log(`project-structure (${hdrs.Authorization.split(" ")[0]})`, res.status);
       if (!res.ok) continue;
       const raw = await res.json().catch(() => null);
       if (!raw) continue;
       const d = await rocketDecrypt(raw);
-      log("project-structure response", d);
-      // Pass the root node directly — flattenDirTree handles { type, path, children } format
       const extracted = flattenDirTree(d);
       if (extracted.length > 0) {
-        filePaths = extracted.filter(p => p && !p.endsWith("/"));
-        workingHeaders = hdrs;
+        filePaths = extracted.filter((p) => p && !p.endsWith("/"));
         log("file paths count", filePaths.length);
         log("file paths sample", filePaths.slice(0, 10));
         break;
@@ -847,75 +714,32 @@ export async function fetchRocketAppFiles({
     } catch (e: any) { log("project-structure error", e?.message); }
   }
 
-  if (filePaths.length > 0 && workingHeaders) {
-    // Fetch all files in parallel (batches of 20 to avoid flooding).
-    // Try the path both WITH and WITHOUT a leading slash — some apps need "/css/main.css",
-    // others need "css/main.css". Use whichever gets a 200 for the first file.
-    const firstFile = filePaths[0];
-    let resolvedHeaders = workingHeaders;
-    let useLeadingSlash = false;
-
-    // Probe first file with and without slash to find which works
-    for (const trySlash of [false, true]) {
-      for (const hdrs of s3Headers) {
-        const fileParam = trySlash ? `/${firstFile}` : firstFile;
-        try {
-          const probe = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
-            method: "POST",
-            headers: hdrs,
-            body: JSON.stringify({ applicationId, file: fileParam }),
-          });
-          log(`file-content probe slash=${trySlash}`, { status: probe.status, file: fileParam });
-          if (probe.ok) {
-            resolvedHeaders = hdrs;
-            useLeadingSlash = trySlash;
-            break;
-          }
-        } catch { /* try next */ }
-      }
-      if (resolvedHeaders !== workingHeaders || useLeadingSlash) break;
-    }
-
+  // ── Step 4: Fetch file content from the running production container.
+  // Confirmed: POST {backendUrl}/api/file-content with { path: "lib/main.dart" }
+  // Returns { path: "/lib/main.dart", content: "..." } — NO auth required.
+  // Files not present on the production container return 500 — we skip those.
+  if (containerRunning && backendUrl && filePaths.length > 0) {
+    log("fetching files from running container", backendUrl);
     const BATCH = 20;
     const results: RocketFile[] = [];
 
-    // Fetch from the probe result for the first file so we don't re-fetch it
-    const probeFile = useLeadingSlash ? `/${firstFile}` : firstFile;
-    try {
-      const probeRes = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
-        method: "POST",
-        headers: resolvedHeaders,
-        body: JSON.stringify({ applicationId, file: probeFile }),
-      });
-      if (probeRes.ok) {
-        const raw = await probeRes.json().catch(() => null);
-        if (raw) {
-          const d = await rocketDecrypt(raw);
-          const content = extractContent(d);
-          if (content !== null) results.push({ path: firstFile, content });
-        }
-      }
-    } catch { /* ignore */ }
-
     for (let i = 0; i < filePaths.length; i += BATCH) {
-      const batch = filePaths.slice(i, i + BATCH).filter(p => p !== firstFile);
-      if (batch.length === 0) continue;
+      const batch = filePaths.slice(i, i + BATCH);
       const batchResults = await Promise.allSettled(
-        batch.map(async (filePath) => {
-          const fileParam = useLeadingSlash ? `/${filePath}` : filePath;
+        batch.map(async (filePath): Promise<RocketFile | null> => {
           try {
-            const res = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+            const res = await fetch(`${backendUrl}/api/file-content`, {
               method: "POST",
-              headers: resolvedHeaders,
-              body: JSON.stringify({ applicationId, file: fileParam }),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ path: filePath }),
             });
-            if (!res.ok) return null;
+            if (!res.ok) return null; // 500 = file not in container, skip
             const raw = await res.json().catch(() => null);
             if (!raw) return null;
-            const d = await rocketDecrypt(raw);
-            const content = extractContent(d);
+            const content: string | null =
+              typeof raw.content === "string" ? raw.content : extractContent(raw);
             if (content === null) return null;
-            return { path: filePath, content } as RocketFile;
+            return { path: filePath, content };
           } catch { return null; }
         })
       );
@@ -923,129 +747,93 @@ export async function fetchRocketAppFiles({
         if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
       }
     }
+
     if (results.length > 0) {
-      log("files fetched", results.length);
+      log("container file-content fetched", results.length);
       return results;
     }
-    log("file-content fetch returned 0 files — falling through to SSE container wake", {});
+    log("container returned 0 files — falling through to S3");
   }
 
-  // ── Step 3: SSE-based container wake → live container file fetch.
-  // When S3 returns 500s (stale/missing cache), the only way to get files is
-  // to wake the dev container and fetch directly from it.
-  // wakeRocketContainer connects to gateway.rocket.new SSE stream, sends
-  // CONTINUE_THREAD / RESUME_CONTAINER and waits for a backendUrl in the
-  // SERVER_STATUS_FOR_RESUME_CONTAINER event (up to 50 s).
-  if (appId) {
-    log("trying SSE container wake", { appId, companyId: companyId || "(none)" });
-    const containerUrl = await wakeRocketContainer(token, companyId, appId);
+  // ── Step 5: S3 file-content fallback.
+  // The S3 cache may be stale (returns 500), but worth trying when the container
+  // is not running or returned nothing.
+  if (filePaths.length > 0) {
+    log("trying S3 file-content fallback");
+    const BATCH = 20;
+    const results: RocketFile[] = [];
 
-    if (containerUrl) {
-      log("container is live at", containerUrl);
-
-      // If we have file paths from S3, fetch from container using those.
-      if (filePaths.length > 0) {
-        const containerHdrs = [
-          { "Content-Type": "application/json", Authorization: `JWT ${token}` },
-          { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        ];
-        for (const hdrs of containerHdrs) {
-          const BATCH = 20;
-          const results: RocketFile[] = [];
-          for (let i = 0; i < filePaths.length; i += BATCH) {
-            const batch = filePaths.slice(i, i + BATCH);
-            const batchResults = await Promise.allSettled(
-              batch.map(async (filePath) => {
-                try {
-                  const res = await fetch(`${containerUrl}/api/file-content`, {
-                    method: "POST",
-                    headers: hdrs,
-                    body: JSON.stringify({ applicationId, file: filePath }),
-                  });
-                  if (!res.ok) return null;
-                  const raw = await res.json().catch(() => null);
-                  if (!raw) return null;
-                  const d = await rocketDecrypt(raw);
-                  const content = extractContent(d);
-                  if (content === null) return null;
-                  return { path: filePath, content } as RocketFile;
-                } catch { return null; }
-              })
-            );
-            for (const r of batchResults) {
-              if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
-            }
-          }
-          if (results.length > 0) {
-            log("container file-content fetched", results.length);
-            return results;
-          }
-        }
-      }
-
-      // No file paths from S3 — try ZIP download from live container
-      try {
-        const zipRes = await fetch(
-          `${containerUrl}/api/download-project?t=${Date.now()}`,
-          { method: "GET", headers: { Authorization: `JWT ${token}` } }
-        );
-        if (zipRes.ok) {
-          // Import JSZip dynamically to unzip the project archive
-          const JSZip = (await import("jszip")).default;
-          const buf = await zipRes.arrayBuffer();
-          const zip = await JSZip.loadAsync(buf);
-          const files: RocketFile[] = [];
-          await Promise.all(
-            Object.entries(zip.files).map(async ([path, entry]) => {
-              if (entry.dir) return;
-              // Strip a leading project-root folder if present (e.g. "my-app/src/…" → "src/…")
-              const parts = path.split("/");
-              const rel = parts.length > 1 && !path.startsWith("src/") && !path.startsWith("lib/")
-                ? parts.slice(1).join("/")
-                : path;
-              if (!rel) return;
-              const content = await entry.async("string");
-              files.push({ path: rel, content });
-            })
-          );
-          if (files.length > 0) {
-            log("ZIP download from container fetched", files.length);
-            return files;
-          }
-        }
-      } catch (e: any) { log("container ZIP download error", e?.message); }
-    } else {
-      log("container wake timed out — container may need to be opened in Rocket.new first");
-    }
-  }
-
-  // ── Step 4: Fallback — try other known REST endpoints.
-  const allIds = [...new Set([applicationId, appId].filter(Boolean))];
-  for (const id of allIds) {
-    for (const hdrs of s3Headers) {
-      for (const base of [BACK_BASE, GATEWAY_BASE]) {
-        for (const body of [{ id }, { applicationId: id }, { _id: id }]) {
-          for (const path of ["/api/v1/application/get", "/api/v1/application/get-code", "/api/v1/code/get"]) {
-            try {
-              const res = await fetch(`${base}${path}`, {
-                method: "POST", headers: hdrs, body: JSON.stringify(body),
-              });
-              if (!res.ok) continue;
-              const raw = await res.json().catch(() => null);
-              if (!raw) continue;
+    // Probe with and without leading slash to find which format the S3 cache uses
+    let useLeadingSlash = false;
+    let workingHdrs = s3Headers[0];
+    for (const trySlash of [false, true]) {
+      for (const hdrs of s3Headers) {
+        const fileParam = trySlash ? `/${filePaths[0]}` : filePaths[0];
+        try {
+          const probe = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+            method: "POST",
+            headers: hdrs,
+            body: JSON.stringify({ applicationId, file: fileParam }),
+          });
+          if (probe.ok) {
+            useLeadingSlash = trySlash;
+            workingHdrs = hdrs;
+            const raw = await probe.json().catch(() => null);
+            if (raw) {
               const d = await rocketDecrypt(raw);
-              log(`fallback ${path}`, d);
-              const files = extractFilesFromPayload(d);
-              if (files && files.length > 0) return files;
-            } catch { /* try next */ }
+              const c = extractContent(d);
+              if (c !== null) results.push({ path: filePaths[0], content: c });
+            }
+            break;
           }
+        } catch { /* try next */ }
+      }
+      if (results.length > 0) break;
+    }
+
+    if (results.length > 0) {
+      for (let i = 0; i < filePaths.length; i += BATCH) {
+        const batch = filePaths.slice(i, i + BATCH).filter((p) => p !== filePaths[0]);
+        if (batch.length === 0) continue;
+        const batchResults = await Promise.allSettled(
+          batch.map(async (filePath): Promise<RocketFile | null> => {
+            const fileParam = useLeadingSlash ? `/${filePath}` : filePath;
+            try {
+              const res = await fetch(`${APP_CODE_BASE}/app-preview/v1/rocket/file-content`, {
+                method: "POST",
+                headers: workingHdrs,
+                body: JSON.stringify({ applicationId, file: fileParam }),
+              });
+              if (!res.ok) return null;
+              const raw = await res.json().catch(() => null);
+              if (!raw) return null;
+              const d = await rocketDecrypt(raw);
+              const content = extractContent(d);
+              if (content === null) return null;
+              return { path: filePath, content };
+            } catch { return null; }
+          })
+        );
+        for (const r of batchResults) {
+          if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
         }
       }
+      log("S3 file-content fetched", results.length);
+      return results;
     }
+  }
+
+  // ── Nothing worked.
+  if (!containerRunning) {
+    throw new Error(
+      "Your Rocket.new project container is not running. " +
+      "Open the project in Rocket.new (rocket.new), wait a few seconds for it to load, " +
+      "then come back here and try again."
+    );
   }
 
   throw new Error(
     "Could not fetch files from this Rocket.new project. " +
-    "The dev container appears to be asleep — try opening the project in Rocket.new first, then push again."
+    "The container is running but returned no files. Try again in a few seconds."
   );
 }

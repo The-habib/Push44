@@ -27,7 +27,7 @@ WITH `companyId` header returns real projects. The companyId must be passed as a
 ```
 POST https://back.rocket.new/api/v1/chat-thread/search
 Headers: { Authorization: "Bearer {token}", companyId: "{companyId}", pageURL: "https://rocket.new" }
-Body: {}
+Body: { page: 1, limit: 50 }
 Response: { data: { list: [{ _id, displayName, name, threadDetails: { applicationId, name } }] } }
 ```
 
@@ -47,92 +47,86 @@ Response: { data: { list: [{ _id, displayName, name, threadDetails: { applicatio
 }
 ```
 
-## File fetching — confirmed working (reverse-engineered from Rocket.new JS bundle)
+## ✅ CONFIRMED WORKING: File fetching via production container (June 2026)
 
-### Step 1: Get file tree
+### Step 1: Ping the production container (NO AUTH NEEDED)
+```
+POST https://application.rocket.new/apis/v1/application/production-deploy/ping
+Body: { applicationId: "6a1c9a2e8be93c00147a3884" }
+Response: {
+  data: {
+    production: {
+      backendUrl: "https://callbreaks2883back.builtwithrocket.new",
+      status: { Code: 16, Name: "running" },
+      port4030Url: "ec2-xxx.compute.amazonaws.com:4030",
+      ...
+    }
+  }
+}
+```
+- No auth required at all
+- `status.Name === "running"` means the container is live and accessible
+- `backendUrl` is the HTTPS code-editor container (NOT the Flutter app itself)
+- Container files accessible on port 4030 of EC2, but HTTPS backendUrl is browser-safe
+
+### Step 2: Get file tree (JWT auth required)
 ```
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
-Headers: { Authorization: "JWT {token}" (or Bearer), Content-Type: application/json }
-Body: { applicationId: "6a1c9a2e8be93c00147a3884" }
-Response: directory tree (format TBD — handled by flattenDirTree())
+Headers: { Authorization: "JWT {token}" }
+Body: { applicationId: "..." }
 ```
-Confirmed: returns 401 without auth, 200 with JWT token.
+Returns directory tree — works even when container is sleeping. `flattenDirTree()` handles the `{ type, path, children }` format.
 
-### Step 2: Get each file content
+### Step 3: Fetch each file (NO AUTH NEEDED — critical discovery!)
+```
+POST {backendUrl}/api/file-content
+Headers: { Content-Type: "application/json" }   ← NO Authorization header needed
+Body: { path: "lib/main.dart" }                 ← key is "path" NOT "file", no applicationId needed
+Response: { path: "/lib/main.dart", content: "import 'package:flutter/material.dart';\n..." }
+```
+- Body key MUST be `path` — NOT `file`, `filePath`, `fileName`, or anything else
+- No auth or subscription required to fetch individual files
+- Returns `500 { error: "Failed to read file content" }` for files not present on the container — skip these
+- Container endpoint is open but `download-project` DOES check subscription (`400 "You don't have active subscription"`)
+
+### Why SSE wake approach DOES NOT work
+The SSE stream (`gateway.rocket.new/api/v1/thread/conversation`) only sends:
+1. `heartbeat` — connection established
+2. `PLACEHOLDER {"event":"PLACEHOLDER","data":"Establishing connection..."}` — then stream closes
+
+The `backendUrl` NEVER arrives via SSE even when the container IS running. The correct approach is the production-deploy/ping REST endpoint which returns the URL immediately.
+
+## S3 file-content fallback (may return 500 for stale/missing cache)
+
 ```
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/file-content
 Headers: { Authorization: "JWT {token}" }
-Body: { applicationId: "...", file: "lib/main.dart" }
-Response: file content
+Body: { applicationId: "...", file: "lib/main.dart" }   ← key is "file" NOT "path"
 ```
-Confirmed: returns 401 without auth, 200 with JWT token.
+Returns 500 for many projects because the S3 cache is stale. Use as fallback only after container approach fails.
 
-### Alternative: download ZIP (only when dev container is ACTIVE)
-```
-GET ${containerBackendUrl}/api/download-project?t={timestamp}
-Headers: { Authorization: "JWT {token}" }
-```
-`containerBackendUrl` is obtained from the SSE gateway stream (see below). NOT accessible without the running container.
+## Production container details
 
-### Step 3 — SSE Gateway Container Wake (fallback when S3 file-content returns 500)
-
-**CONFIRMED BUG:** S3 `file-content` returns 500 for every file on some projects even though `project-structure` returns 200. When this happens, must wake the dev container via SSE to fetch files directly.
-
-```
-POST https://gateway.rocket.new/api/v1/thread/conversation
-Headers: {
-  Authorization: "JWT {token}",   ← NOT Bearer
-  companyId: "{companyId}",
-  Content-Type: "application/json",
-  pageURL: "https://rocket.new"
-}
-Body: { event: "CONTINUE_THREAD", data: { threadId: "{appId (= thread _id)}" }, sessionId: "{uuid}" }
-```
-
-SSE events:
-- `heartbeat` — connection established
-- `PLACEHOLDER` — "Starting server..." (container waking, stream will close, reconnect)
-- `SERVER_STATUS_FOR_RESUME_CONTAINER` → `data.backendUrl` ← **this is the container URL**
-- `SERVER_STATUS_FOR_THREAD_DETAILS` → also has `data.backendUrl`
-
-**Why:** Stream closes after 1–2 events when container is sleeping; must reconnect every 4s for up to 50s. `companyId` header is required on the gateway call too. Auth must be `JWT` not `Bearer`.
-
-**Key constraint:** `backendUrl` only exists when container is actively running. If fully terminated, stream stalls indefinitely with PLACEHOLDER. User must open project in Rocket.new first to wake it.
-
-## Production deploy ping (no auth needed!)
-
-```
-POST https://application.rocket.new/apis/v1/application/production-deploy/ping
-Body: { applicationId: "..." }
-Response: { data: { production: { backendUrl, previewUrl, status, ... } } }
-```
-The `production.backendUrl` is the DEPLOYED app's backend (not the code editor container).
-The production container may be terminated (`status.Name: "terminated"`) which causes 502 on file endpoints.
+The `backendUrl` from ping (`callbreaks2883back.builtwithrocket.new`) is the Rocket.new **code editor backend container** running on EC2, NOT the Flutter app. It hosts the code on port 4030:
+- `GET /` → 404 (direct)
+- `POST /api/file-content` with `{ path }` → 200 (no auth)
+- `GET /api/download-project` → 400 "You don't have active subscription" (requires paid plan)
 
 ## Only 2 apps showing — pagination fix
 
-`chat-thread/search` with body `{}` returns only the first page (2 apps). Must send `{ page, limit: 50 }` and paginate until response has fewer than `limit` items. The `fetchAllPages()` helper in `listRocketApps` handles this now.
-
-**Why:** Rocket.new paginates the chat-thread list — the first page only returns ~2 threads. The old code broke after the first successful page.
-
-## log() crash fix
-
-Both `listRocketApps` and `fetchRocketAppFiles` had `log(label, val)` defined as `JSON.stringify(val).slice(0, N)`. `JSON.stringify(undefined)` returns JS `undefined` (not a string), so `.slice()` threw "Cannot read properties of undefined". Fix: always check `val !== undefined` before stringifying.
+`chat-thread/search` with body `{}` returns only the first page. Must send `{ page, limit: 50 }` and paginate until response has fewer than `limit` items.
 
 ## CRITICAL: Never use loginToBack()
 
-`loginToBack()` tries 10+ endpoints that all fail. It adds 20-30 seconds of invisible delay before app listing or file fetching starts. It always returns `null`. The auth token itself (`Bearer {token}`) works directly on back.rocket.new — no session exchange needed.
-
-**Why:** loginToBack was attempting to exchange the dhiwise.com JWT for a back.rocket.new session token, but the back server accepts the JWT directly via `Authorization: Bearer`.
+`loginToBack()` tries 10+ endpoints that all fail. Adds 20-30s invisible delay. Always returns `null`. Auth token works directly on back.rocket.new via `Authorization: Bearer`.
 
 ## URL constants from Rocket.new JS bundle
 
 ```js
 let i = "https://gateway.rocket.new"           // GATEWAY_BASE
 let r = "https://appuser.dhiwise.com"           // AUTH_BASE / USER_SERVICE
-let s = "https://back.rocket.new"               // PLAYGROUND_BACKEND_SERVICE_URL / BACK_BASE
+let s = "https://back.rocket.new"              // PLAYGROUND_BACKEND_SERVICE_URL / BACK_BASE
 let c = "https://application.rocket.new"        // ROCKET_PROJECT_SERVICE / APP_BASE
 let p = "https://project.rocket.new"
-let g = "https://horizon-backend.rocket.new"
 BASE_CONTAINER_CODE_URL = "https://appcodeformat.dhiwise.com"
 ```
