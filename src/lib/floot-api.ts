@@ -114,28 +114,49 @@ function parseRscForProjects(rsc: string): FlootApp[] {
   return projects;
 }
 
+async function tryInternalApi(path: string, token: string): Promise<FlootApp[]> {
+  try {
+    const res = await proxyFetch(path, token);
+    if (!res.ok) return [];
+    const text = await res.text();
+    if (!text || text.trimStart().startsWith("<!")) return [];
+    const d = JSON.parse(text);
+    const unwrapped = (d as any)?.json ?? (d as any)?.result?.data?.json ?? d;
+    return extractProjectsFromAny(unwrapped);
+  } catch {
+    return [];
+  }
+}
+
 export async function listFlootApps({ data }: { data: { token: string } }): Promise<FlootApp[]> {
   const token = data.token;
+
+  const batchSuffix = "?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D";
 
   const jsonEndpoints = [
     "/api/projects",
     "/api/workspaces",
     "/api/apps",
-    "/api/trpc/project.getAll?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
-    "/api/trpc/project.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
-    "/api/trpc/workspace.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
+    "/api/trpc/project.getAll" + batchSuffix,
+    "/api/trpc/project.list" + batchSuffix,
+    "/api/trpc/workspace.list" + batchSuffix,
+    "/_api/projects" + batchSuffix,
+    "/_api/user-projects" + batchSuffix,
+    "/_api/get-projects" + batchSuffix,
+    "/_api/project-list" + batchSuffix,
+    "/_api/project.list" + batchSuffix,
+    "/_api/project.getAll" + batchSuffix,
+    "/_api/project.getOwned" + batchSuffix,
+    "/_api/project.getDashboard" + batchSuffix,
+    "/_api/workspace.list" + batchSuffix,
+    "/_api/workspace.getAll" + batchSuffix,
+    "/_api/dashboard.getProjects" + batchSuffix,
+    "/_api/dashboard.getData" + batchSuffix,
   ];
 
   for (const path of jsonEndpoints) {
-    try {
-      const res = await proxyFetch(path, token);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (!text || text.trimStart().startsWith("<!")) continue;
-      const d = JSON.parse(text);
-      const list = extractProjectsFromAny(d);
-      if (list.length > 0) return list;
-    } catch {}
+    const list = await tryInternalApi(path, token);
+    if (list.length > 0) return list;
   }
 
   const rscPaths = ["/en/dashboard", "/en/projects", "/en/apps", "/en/home"];
