@@ -9,12 +9,13 @@ import {
   ExternalLink, AlertCircle, Mail, Lock, GitBranch,
   CheckCircle2, XCircle, Wifi,
 } from "lucide-react";
-import { Base44Logo, GitHubLogo, RocketLogo } from "@/components/BrandLogos";
+import { Base44Logo, GitHubLogo, RocketLogo, FlootLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { base44Login, validateBase44Token, listBase44Apps } from "@/lib/base44-api";
 import { RocketModal } from "@/components/RocketModal";
 import { getGitHubUser } from "@/lib/github-api";
 import { listRocketApps } from "@/lib/rocket-api";
+import { validateFlootToken, listFlootApps } from "@/lib/floot-api";
 import { Toaster, toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
@@ -232,10 +233,127 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
   );
 }
 
+function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
+  const [tok, setTok]         = useState("");
+  const [showTok, setShowTok] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+  const [done, setDone]       = useState(false);
+
+  const submit = async () => {
+    if (!tok.trim()) { setError("Paste your Floot API token"); return; }
+    setError(""); setLoading(true);
+    try {
+      const info = await validateFlootToken({ data: { token: tok.trim() } });
+      setDone(true);
+      setTimeout(() => onSuccess(tok.trim(), info.email, info.name), 600);
+    } catch (e: any) { setError(e.message ?? "Failed to validate token."); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        initial={{ y: 60, opacity: 0, scale: 0.96 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 60, opacity: 0, scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 340, damping: 28 }}
+      >
+        <div className="px-6 pt-6 pb-5 border-b border-[#f7f4f0]">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
+              style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
+              <FlootLogo size={22} white />
+            </div>
+            <div className="flex-1">
+              <div className="text-[15px] font-black text-[#1a1a1a]">Connect Floot</div>
+              <div className="text-[11px] text-[#9a8880]">Paste your API token to connect</div>
+            </div>
+            <motion.button onClick={onClose}
+              className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
+              whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.9 }}>
+              <X className="h-4 w-4" />
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <div className="flex items-start gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-2xl p-3">
+            <Shield className="h-4 w-4 text-[#2563eb] shrink-0 mt-0.5" />
+            <p className="text-[11px] text-[#1e40af] font-medium leading-snug">
+              Your token goes directly to Floot — nothing is stored on any server.
+            </p>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {done ? (
+              <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center gap-2 py-10">
+                <div className="h-16 w-16 rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
+                  <Check className="h-8 w-8 text-white" strokeWidth={3} />
+                </div>
+                <p className="text-[14px] font-bold text-[#1a1a1a] mt-1">Connected to Floot!</p>
+              </motion.div>
+            ) : (
+              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                <p className="text-[11px] text-[#9a8880] leading-relaxed">
+                  Find your API token in your{" "}
+                  <a href="https://floot.co/settings" target="_blank" rel="noreferrer" className="text-[#2563eb] font-semibold">
+                    Floot account settings
+                  </a>{" "}
+                  under <span className="font-semibold">API</span>.
+                </p>
+                <div className="relative">
+                  <input
+                    type={showTok ? "text" : "password"}
+                    placeholder="Paste token here…"
+                    value={tok}
+                    onChange={(e) => setTok(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && submit()}
+                    autoFocus
+                    className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#2563eb]/40 focus:bg-white transition-colors pr-11"
+                  />
+                  <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                    {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+                        <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <MotionButton onClick={submit} disabled={loading}
+                  className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlootLogo size={18} white />}
+                  {loading ? "Connecting…" : "Connect Floot"}
+                </MotionButton>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function SettingsPage() {
   const { creds, updateCreds, signOut, isLoaded } = useApp();
   const [showB44Modal, setShowB44Modal]       = useState(false);
   const [showRocketModal, setShowRocketModal] = useState(false);
+  const [showFlootModal, setShowFlootModal]   = useState(false);
   const [ghToken, setGhToken]     = useState("");
   const [showGhTok, setShowGhTok] = useState(false);
   const [ghLoading, setGhLoading] = useState(false);
@@ -246,6 +364,7 @@ function SettingsPage() {
   // Test connection states
   const [b44Test,     setB44Test]     = useState<TestResult>("idle");
   const [rocketTest,  setRocketTest]  = useState<TestResult>("idle");
+  const [flootTest,   setFlootTest]   = useState<TestResult>("idle");
   const [ghTest,      setGhTest]      = useState<TestResult>("idle");
 
   useEffect(() => {
@@ -261,8 +380,23 @@ function SettingsPage() {
       .catch(() => setGhUser(null));
   }, [isLoaded, creds.githubToken]);
 
+  const testFloot = async () => {
+    if (!creds.flootToken) return;
+    setFlootTest("loading");
+    try {
+      await listFlootApps({ data: { token: creds.flootToken } });
+      setFlootTest("ok");
+      toast.success("Floot connection is working");
+    } catch (e: any) {
+      setFlootTest("fail");
+      toast.error("Floot test failed: " + (e.message ?? "Unknown error"));
+    }
+    setTimeout(() => setFlootTest("idle"), 4000);
+  };
+
   const b44Connected    = !!creds.base44Token;
   const rocketConnected = !!creds.rocketToken;
+  const flootConnected  = !!creds.flootToken;
   const ghConnected     = !!creds.githubToken && !!ghUser;
   const displayName     = creds.displayName || creds.base44Email || creds.rocketEmail || creds.githubUsername || "";
 
@@ -339,6 +473,12 @@ function SettingsPage() {
             onClose={() => setShowRocketModal(false)}
           />
         )}
+        {showFlootModal && (
+          <FlootModal
+            onSuccess={(t, e, n) => { updateCreds({ flootToken: t, flootEmail: e, displayName: n || e }); setShowFlootModal(false); toast.success(`Floot connected as ${e || n}`); }}
+            onClose={() => setShowFlootModal(false)}
+          />
+        )}
       </AnimatePresence>
 
       {/* ── Profile card ── */}
@@ -365,6 +505,8 @@ function SettingsPage() {
                 <StatusDot on={b44Connected} />
                 <span className="h-3 w-px bg-[#ede9e3]" />
                 <StatusDot on={rocketConnected} />
+                <span className="h-3 w-px bg-[#ede9e3]" />
+                <StatusDot on={flootConnected} />
                 <span className="h-3 w-px bg-[#ede9e3]" />
                 <StatusDot on={ghConnected} />
               </div>
@@ -479,6 +621,62 @@ function SettingsPage() {
                       onClick={() => setShowRocketModal(true)}
                       className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
                       style={{ background: "linear-gradient(135deg,#9810fa,#7008e7)", boxShadow: "0 2px 8px rgba(127,34,254,0.3)" }}>
+                      Connect
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+
+          {/* Floot row */}
+          <div
+            className="px-5 py-3.5 transition-colors"
+            style={{
+              borderTop: "1px solid #f7f4f0",
+              background: flootConnected ? "linear-gradient(90deg,#eff6ff,transparent 70%)" : undefined,
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="h-9 w-9 rounded-[11px] flex items-center justify-center shrink-0 overflow-hidden"
+                style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}
+              >
+                <FlootLogo size={18} white />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">Floot</p>
+                <AnimatePresence mode="wait">
+                  {flootConnected ? (
+                    <motion.p key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] truncate mt-0.5 font-medium" style={{ color: "#2563eb" }}>
+                      {creds.flootEmail || "Authenticated"}
+                    </motion.p>
+                  ) : (
+                    <motion.p key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="text-[11px] text-[#c8b8a2] mt-0.5">
+                      Not connected
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {flootConnected && (
+                  <TestButton result={flootTest} onClick={testFloot} />
+                )}
+                <AnimatePresence mode="wait">
+                  {flootConnected ? (
+                    <motion.button key="disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => { updateCreds({ flootToken: "", flootEmail: "" }); toast.success("Floot disconnected"); }}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] shrink-0"
+                      style={{ background: "#fef2f2", color: "#ef4444" }}>
+                      Disconnect
+                    </motion.button>
+                  ) : (
+                    <motion.button key="conn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setShowFlootModal(true)}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-[10px] text-white shrink-0"
+                      style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)", boxShadow: "0 2px 8px rgba(37,99,235,0.3)" }}>
                       Connect
                     </motion.button>
                   )}

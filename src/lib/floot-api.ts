@@ -1,290 +1,93 @@
-'use server';
-import { createServerFn } from "@tanstack/start";
+const BASE = "https://floot.co";
 
-const FLOOT_BASE = "https://floot.com";
-const FLOOT_TRPC = `${FLOOT_BASE}/api/trpc`;
-
-function flootCookies(token: string) {
-  return `__Secure-next-auth.session-token=${token}`;
-}
-
-function flootHeaders(token: string, extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    Cookie: flootCookies(token),
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/125 Safari/537.36",
-    ...extra,
+async function flootFetch(path: string, opts?: RequestInit & { token?: string }): Promise<any> {
+  const { token, ...rest } = opts ?? {};
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...((rest.headers ?? {}) as Record<string, string>),
   };
+  const res = await fetch(`${BASE}${path}`, { ...rest, headers });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    let msg = `Floot error ${res.status}`;
+    try {
+      const p = JSON.parse(body);
+      msg = p.message ?? p.error ?? p.detail ?? msg;
+    } catch {}
+    throw Object.assign(new Error(msg), { status: res.status });
+  }
+  return res.json();
 }
 
-// ── Auth ───────────────────────────────────────────────────────────────────────
-
-export const flootSendMagicLink = createServerFn()
-  .validator((data: { email: string }) => data)
-  .handler(async ({ data }) => {
-    const csrfRes = await fetch(`${FLOOT_BASE}/api/auth/csrf`, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
-    if (!csrfRes.ok) throw new Error("Could not reach Floot — please check your connection.");
-    const { csrfToken } = await csrfRes.json() as { csrfToken: string };
-
-    const body = new URLSearchParams({
-      csrfToken,
-      email: data.email.trim(),
-      callbackUrl: `${FLOOT_BASE}/en/dashboard`,
-      json: "true",
-    });
-
-    const res = await fetch(`${FLOOT_BASE}/api/auth/signin/email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Mozilla/5.0",
-      },
-      body: body.toString(),
-    });
-    if (!res.ok) throw new Error(`Magic link request failed (${res.status}). Try again.`);
-    return { ok: true };
-  });
-
-export const validateFlootToken = createServerFn()
-  .validator((data: { token: string }) => data)
-  .handler(async ({ data }) => {
-    const res = await fetch(`${FLOOT_BASE}/api/auth/session`, {
-      headers: flootHeaders(data.token),
-    });
-    if (!res.ok) throw new Error(`Session check failed (${res.status})`);
-    const session = await res.json() as { user?: { email?: string; name?: string } };
-    if (!session?.user?.email) throw new Error("Token is invalid or expired. Please get a fresh session token from floot.com.");
-    return {
-      email: session.user.email,
-      name: session.user.name ?? session.user.email,
-    };
-  });
-
-// ── App Listing ────────────────────────────────────────────────────────────────
-
-interface FlootApp {
+export interface FlootApp {
   id: string;
   name: string;
   icon?: string;
-  updatedAt?: string;
+  updated_at: string;
 }
 
-export const listFlootApps = createServerFn()
-  .validator((data: { token: string }) => data)
-  .handler(async ({ data }): Promise<FlootApp[]> => {
-    const res = await fetch(`${FLOOT_BASE}/en/dashboard`, {
-      headers: flootHeaders(data.token, {
-        RSC: "1",
-        "Next-Router-State-Tree": encodeURIComponent(JSON.stringify(["", { children: ["__PAGE__", {}] }, null, null, true])),
-        "Next-Router-Prefetch": "0",
-        Accept: "text/x-component",
-      }),
-      redirect: "manual",
-    });
-
-    if (res.status === 307 || res.status === 302 || res.status === 308 || res.status === 301) {
-      throw new Error("Session token is invalid or expired. Please paste a fresh token from floot.com.");
-    }
-    if (!res.ok) throw new Error(`Dashboard fetch failed (${res.status})`);
-
-    const text = await res.text();
-
-    const apps: FlootApp[] = [];
-    const seen = new Set<string>();
-
-    // Strategy 1: Look for projectName field (confirmed from showcase RSC data)
-    const projectNameRe = /"projectName"\s*:\s*"([^"]+)"/g;
-    let match: RegExpExecArray | null;
-    while ((match = projectNameRe.exec(text)) !== null) {
-      const projectName = match[1];
-      const before = text.slice(Math.max(0, match.index - 200), match.index);
-      const idMatch = before.match(/"id"\s*:\s*"([^"]+)"(?:[^}]*?)$/);
-      if (idMatch && !seen.has(idMatch[1])) {
-        seen.add(idMatch[1]);
-        // Look for iconUrl nearby
-        const after = text.slice(match.index, match.index + 400);
-        const iconMatch = after.match(/"iconUrl"\s*:\s*"([^"]+)"/);
-        apps.push({ id: idMatch[1], name: projectName, icon: iconMatch?.[1] });
-      }
-    }
-
-    // Strategy 2: Look for workspace name patterns
-    if (apps.length === 0) {
-      const nameRe = /"name"\s*:\s*"([^"]+)"/g;
-      while ((match = nameRe.exec(text)) !== null) {
-        const name = match[1];
-        if (name.length < 3 || name.length > 100) continue;
-        const before = text.slice(Math.max(0, match.index - 300), match.index);
-        const idMatch = before.match(/"(?:id|workspaceId)"\s*:\s*"([a-zA-Z0-9_-]{10,})"(?:[^}]*?)$/);
-        if (idMatch && !seen.has(idMatch[1])) {
-          seen.add(idMatch[1]);
-          apps.push({ id: idMatch[1], name });
-        }
-      }
-    }
-
-    if (apps.length === 0) {
-      throw new Error("No Floot projects found. Make sure you have created at least one project at floot.com.");
-    }
-
-    return apps;
-  });
-
-// ── File Fetching ──────────────────────────────────────────────────────────────
-
-export const fetchFlootAppFiles = createServerFn()
-  .validator((data: { token: string; workspaceId: string }) => data)
-  .handler(async ({ data }): Promise<{ path: string; content: string }[]> => {
-    // Step 1: Ensure the workspace backend is running and get its URL
-    const tRpcRes = await fetch(`${FLOOT_TRPC}/workspace.ensureBackendRunningForDev`, {
-      method: "POST",
-      headers: flootHeaders(data.token, {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      }),
-      body: JSON.stringify({ json: { id: data.workspaceId } }),
-    });
-
-    if (tRpcRes.status === 401) throw new Error("Unauthorized — session token is invalid or expired.");
-    if (!tRpcRes.ok) {
-      const err = await tRpcRes.json().catch(() => ({})) as { error?: { message?: string } };
-      throw new Error(err?.error?.message ?? `Backend start failed (${tRpcRes.status})`);
-    }
-
-    const tRpcData = await tRpcRes.json() as {
-      result?: {
-        data?: {
-          json?: Record<string, unknown>;
-        };
-      };
-    };
-
-    const inner = tRpcData?.result?.data?.json;
-
-    // Extract backend URL — try all known field names
-    const backendUrl = (
-      (inner as any)?.url ??
-      (inner as any)?.backendUrl ??
-      (inner as any)?.devUrl ??
-      (inner as any)?.containerUrl ??
-      (inner as any)?.address ??
-      (inner as any)?.wsUrl ??
-      null
-    ) as string | null;
-
-    if (!backendUrl) {
-      // Fallback: try RSC editor page for file tree
-      return fetchFlootFilesViaRsc(data.token, data.workspaceId);
-    }
-
-    // Step 2: Get file list from backend
-    const files = await fetchFromBackend(backendUrl);
-    if (files.length > 0) return files;
-
-    // Fallback to RSC
-    return fetchFlootFilesViaRsc(data.token, data.workspaceId);
-  });
-
-async function fetchFromBackend(backendUrl: string): Promise<{ path: string; content: string }[]> {
-  const base = backendUrl.replace(/\/$/, "");
-
-  // Try file listing endpoints
-  let filePaths: string[] = [];
-
-  for (const endpoint of ["/api/files", "/api/file-list", "/files", "/api/project-files"]) {
-    try {
-      const res = await fetch(`${base}${endpoint}`, {
-        headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json() as unknown;
-      if (Array.isArray(data)) {
-        filePaths = data.filter((x): x is string => typeof x === "string");
-        break;
-      }
-      if (data && typeof data === "object") {
-        const arr = (data as any).files ?? (data as any).paths ?? (data as any).data;
-        if (Array.isArray(arr)) {
-          filePaths = arr.filter((x): x is string => typeof x === "string");
-          break;
-        }
-      }
-    } catch {}
-  }
-
-  if (filePaths.length === 0) return [];
-
-  // Fetch each file in parallel batches of 20
-  const BATCH = 20;
-  const results: { path: string; content: string }[] = [];
-
-  for (let i = 0; i < filePaths.length && i < 300; i += BATCH) {
-    const batch = filePaths.slice(i, i + BATCH);
-    const settled = await Promise.allSettled(
-      batch.map(async (filePath) => {
-        for (const endpoint of ["/api/file-content", "/api/file", "/file-content"]) {
-          try {
-            const res = await fetch(`${base}${endpoint}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ path: filePath }),
-              signal: AbortSignal.timeout(6000),
-            });
-            if (!res.ok) continue;
-            const data = await res.json() as { content?: string; data?: string };
-            const content = data?.content ?? data?.data ?? "";
-            if (typeof content === "string") return { path: filePath, content };
-          } catch {}
-        }
-        return null;
-      })
-    );
-    for (const r of settled) {
-      if (r.status === "fulfilled" && r.value) results.push(r.value);
-    }
-  }
-
-  return results;
+export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
+  const d = await flootFetch("/api/auth/session", { token: data.token });
+  const user = d?.user ?? d;
+  if (!user?.email) throw new Error("Token is invalid or expired. Please get a fresh API token from your Floot account settings.");
+  return {
+    email: String(user.email ?? ""),
+    name: String(user.name ?? user.displayName ?? user.email ?? ""),
+  };
 }
 
-async function fetchFlootFilesViaRsc(token: string, workspaceId: string): Promise<{ path: string; content: string }[]> {
-  // Try the editor RSC page which may embed file tree in server-rendered props
-  const res = await fetch(`${FLOOT_BASE}/en/editor`, {
-    headers: flootHeaders(token, {
-      RSC: "1",
-      Accept: "text/x-component",
-    }),
-    redirect: "manual",
-  });
+export async function listFlootApps({ data }: { data: { token: string } }): Promise<FlootApp[]> {
+  const d = await flootFetch("/api/projects", { token: data.token });
 
-  if (!res.ok && res.status !== 307) {
-    throw new Error(
-      "Could not fetch files from Floot. The workspace backend URL was not returned — " +
-      "this may mean the workspace is still starting up. Please try again in a few seconds."
-    );
+  const list: any[] = Array.isArray(d)
+    ? d
+    : Array.isArray(d?.data)
+      ? d.data
+      : Array.isArray(d?.projects)
+        ? d.projects
+        : Array.isArray(d?.workspaces)
+          ? d.workspaces
+          : Array.isArray(d?.items)
+            ? d.items
+            : [];
+
+  if (list.length === 0) {
+    throw new Error("No Floot projects found. Make sure you have created at least one project at floot.co.");
   }
 
-  const text = await res.text();
+  return list.map((p: any) => ({
+    id: String(p.id ?? p._id ?? p.workspaceId ?? ""),
+    name: String(p.name ?? p.title ?? p.projectName ?? p.displayName ?? "Untitled"),
+    updated_at: String(p.updatedAt ?? p.updated_at ?? p.lastModified ?? ""),
+    icon: p.icon ?? p.thumbnail ?? p.iconUrl ?? undefined,
+  })).filter(p => p.id);
+}
 
-  // Try to extract a file tree from RSC props
-  const files: { path: string; content: string }[] = [];
-  const fileMatch = text.match(/"files"\s*:\s*(\{[^}]{0,100000}\})/s);
-  if (fileMatch) {
-    try {
-      const fileMap = JSON.parse(fileMatch[1]) as Record<string, string>;
-      for (const [path, content] of Object.entries(fileMap)) {
-        if (typeof content === "string") files.push({ path, content });
-      }
-    } catch {}
+export async function fetchFlootAppFiles({ data }: { data: { token: string; appId: string } }): Promise<{ path: string; content: string }[]> {
+  const d = await flootFetch(`/api/projects/${data.appId}/files`, { token: data.token });
+
+  // Shape: { "path/to/file": "content", ... }
+  if (d && typeof d === "object" && !Array.isArray(d)) {
+    const keys = Object.keys(d);
+    if (keys.length > 0 && typeof d[keys[0]] === "string") {
+      return keys.map((path) => ({ path, content: String(d[path]) }));
+    }
+    // Shape: { files: { "path": "content" } }
+    if (d.files && typeof d.files === "object" && !Array.isArray(d.files)) {
+      return Object.entries(d.files).map(([path, content]) => ({ path, content: String(content) }));
+    }
+    // Shape: { files: [{ path, content }] }
+    if (Array.isArray(d.files)) {
+      return (d.files as any[]).map(f => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter(f => f.path);
+    }
   }
 
-  if (files.length > 0) return files;
+  // Shape: [{ path, content }]
+  if (Array.isArray(d)) {
+    return (d as any[]).map(f => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter(f => f.path);
+  }
 
-  throw new Error(
-    "Could not fetch files from this Floot workspace. " +
-    "The workspace backend did not return a URL — it may still be starting up. " +
-    "Please wait a moment and try again."
-  );
+  throw new Error("Unexpected response from Floot files API. The API format may have changed.");
 }
