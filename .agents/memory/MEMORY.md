@@ -7,3 +7,4 @@
 - [UX Audit Fixes](ux-audit-fixes.md) — AnimatePresence must use mode="popLayout" not "wait"; nav tabs use w-[20%] not flex-1 to prevent icon jitter; safe-area padding via env(); useQuery over useEffect for cached API calls
 - [Push44 Version Control Features](push44-version-control-features.md) — diff viewer, deleted files, ZIP, test buttons, re-push flow; snapshot must save ALL files not just staged
 - [Rocket APK Max Failed Attempt](rocket-apk-max-failed-attempt.md) — isMaxApkBuildFailedAttempt=true requires reset-apk-build endpoint call before make-apk-build will succeed
+- [Floot Auth Reverse Engineering](floot-auth-reverse-engineering.md) — NextAuth magic link on floot.com (.co is wrong); magic link confirmed working; no public API; session token = Bearer JWT

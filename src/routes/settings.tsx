@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Shield, Eye, EyeOff, Check, X, Loader2,
   ExternalLink, AlertCircle, Mail, Lock, GitBranch,
-  CheckCircle2, XCircle, Wifi,
+  CheckCircle2, XCircle, Wifi, ArrowRight, Copy, ChevronRight,
 } from "lucide-react";
 import { Base44Logo, GitHubLogo, RocketLogo, FlootLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
@@ -15,7 +15,7 @@ import { base44Login, validateBase44Token, listBase44Apps } from "@/lib/base44-a
 import { RocketModal } from "@/components/RocketModal";
 import { getGitHubUser } from "@/lib/github-api";
 import { listRocketApps } from "@/lib/rocket-api";
-import { validateFlootToken, listFlootApps } from "@/lib/floot-api";
+import { validateFlootToken, listFlootApps, sendFlootMagicLink } from "@/lib/floot-api";
 import { Toaster, toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
@@ -233,22 +233,46 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
   );
 }
 
+type FlootTab = "email" | "token";
+type FlootStep = "input" | "sent" | "gettoken" | "done";
+
 function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, n: string) => void; onClose: () => void }) {
+  const [tab, setTab]         = useState<FlootTab>("email");
+  const [step, setStep]       = useState<FlootStep>("input");
+  const [email, setEmail]     = useState("");
   const [tok, setTok]         = useState("");
   const [showTok, setShowTok] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
-  const [done, setDone]       = useState(false);
+  const [copied, setCopied]   = useState(false);
 
-  const submit = async () => {
-    if (!tok.trim()) { setError("Paste your Floot API token"); return; }
+  const FLOOT_GRAD = "linear-gradient(135deg,#3b82f6,#2563eb)";
+
+  const sendMagicLink = async () => {
+    if (!email.trim() || !email.includes("@")) { setError("Enter a valid email address"); return; }
+    setError(""); setLoading(true);
+    try {
+      await sendFlootMagicLink({ data: { email } });
+      setStep("sent");
+    } catch (e: any) {
+      setError(e.message ?? "Could not send magic link. Check your connection.");
+    } finally { setLoading(false); }
+  };
+
+  const connectToken = async () => {
+    if (!tok.trim()) { setError("Paste your session token"); return; }
     setError(""); setLoading(true);
     try {
       const info = await validateFlootToken({ data: { token: tok.trim() } });
-      setDone(true);
-      setTimeout(() => onSuccess(tok.trim(), info.email, info.name), 600);
-    } catch (e: any) { setError(e.message ?? "Failed to validate token."); }
+      setStep("done");
+      setTimeout(() => onSuccess(tok.trim(), info.email, info.name), 700);
+    } catch (e: any) { setError(e.message ?? "Token is invalid. Please try again."); }
     finally { setLoading(false); }
+  };
+
+  const copyInstructions = () => {
+    const text = "F12 → Application → Cookies → floot.com → next-auth.session-token → copy Value";
+    navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
 
   return (
@@ -262,15 +286,18 @@ function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, 
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
       >
-        <div className="px-6 pt-6 pb-5 border-b border-[#f7f4f0]">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-[#f7f4f0]">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
-              style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
+            <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: FLOOT_GRAD }}>
               <FlootLogo size={22} white />
             </div>
             <div className="flex-1">
               <div className="text-[15px] font-black text-[#1a1a1a]">Connect Floot</div>
-              <div className="text-[11px] text-[#9a8880]">Paste your API token to connect</div>
+              <div className="text-[11px] text-[#9a8880]">
+                {step === "sent" ? "Check your email" : step === "gettoken" ? "Copy your session token" : step === "done" ? "Connected!" : "Sign in with email or paste token"}
+              </div>
             </div>
             <motion.button onClick={onClose}
               className="h-8 w-8 rounded-xl bg-[#faf7f3] flex items-center justify-center text-[#9a8880]"
@@ -278,70 +305,254 @@ function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, 
               <X className="h-4 w-4" />
             </motion.button>
           </div>
+
+          {/* Tab toggle — only show on input step */}
+          {step === "input" && (
+            <div className="flex bg-[#f5f2ee] rounded-xl p-0.5 mt-4 gap-0.5">
+              {(["email", "token"] as FlootTab[]).map((t) => (
+                <motion.button key={t} onClick={() => { setTab(t); setError(""); }}
+                  className="flex-1 relative py-2 rounded-[10px] text-[12px] font-bold overflow-hidden"
+                  whileTap={{ scale: 0.97 }}>
+                  {tab === t && (
+                    <motion.div layoutId="floot-tab" className="absolute inset-0 rounded-[10px] bg-white shadow-sm"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+                  )}
+                  <span className={`relative z-10 flex items-center justify-center gap-1.5 ${tab === t ? "text-[#1a1a1a]" : "text-[#9a8880]"}`}>
+                    {t === "email" ? <Mail className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                    {t === "email" ? "Email" : "Paste Token"}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="px-6 py-5 space-y-4">
-          <div className="flex items-start gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-2xl p-3">
-            <Shield className="h-4 w-4 text-[#2563eb] shrink-0 mt-0.5" />
-            <p className="text-[11px] text-[#1e40af] font-medium leading-snug">
-              Your token goes directly to Floot — nothing is stored on any server.
-            </p>
-          </div>
+        {/* Body */}
+        <div className="px-6 py-5">
+          <AnimatePresence mode="popLayout">
 
-          <AnimatePresence mode="wait">
-            {done ? (
+            {/* ── DONE ───────────────────────────────── */}
+            {step === "done" && (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center gap-2 py-10">
-                <div className="h-16 w-16 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
+                <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: FLOOT_GRAD }}>
                   <Check className="h-8 w-8 text-white" strokeWidth={3} />
                 </div>
                 <p className="text-[14px] font-bold text-[#1a1a1a] mt-1">Connected to Floot!</p>
               </motion.div>
-            ) : (
-              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                <p className="text-[11px] text-[#9a8880] leading-relaxed">
-                  Find your API token in your{" "}
-                  <a href="https://floot.co/settings" target="_blank" rel="noreferrer" className="text-[#2563eb] font-semibold">
-                    Floot account settings
-                  </a>{" "}
-                  under <span className="font-semibold">API</span>.
-                </p>
-                <div className="relative">
-                  <input
-                    type={showTok ? "text" : "password"}
-                    placeholder="Paste token here…"
-                    value={tok}
-                    onChange={(e) => setTok(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && submit()}
-                    autoFocus
-                    className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] font-mono outline-none focus:border-[#2563eb]/40 focus:bg-white transition-colors pr-11"
-                  />
-                  <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
-                    {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            )}
+
+            {/* ── EMAIL SENT ─────────────────────────── */}
+            {step === "sent" && (
+              <motion.div key="sent" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div className="h-14 w-14 rounded-full flex items-center justify-center bg-[#eff6ff]">
+                    <Mail className="h-7 w-7 text-[#2563eb]" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[14px] font-bold text-[#1a1a1a]">Check your inbox!</p>
+                    <p className="text-[12px] text-[#9a8880] mt-0.5">Magic link sent to <span className="font-semibold text-[#1a1a1a]">{email}</span></p>
+                  </div>
+                </div>
+
+                {/* Steps */}
+                <div className="space-y-2">
+                  {[
+                    { n: 1, text: "Click the magic link in the email from Floot" },
+                    { n: 2, text: "It opens Floot in your browser and logs you in" },
+                    { n: 3, text: "Come back here and click the button below" },
+                  ].map(({ n, text }) => (
+                    <div key={n} className="flex items-start gap-3">
+                      <span className="h-5 w-5 rounded-full text-[10px] font-black text-white flex items-center justify-center shrink-0 mt-0.5"
+                        style={{ background: FLOOT_GRAD }}>{n}</span>
+                      <p className="text-[12px] text-[#6b7280] leading-snug">{text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <MotionButton onClick={() => setStep("input")}
+                    className="flex-1 py-2.5 rounded-xl border border-[#f0ece4] text-[12px] font-semibold text-[#9a8880]">
+                    ← Back
+                  </MotionButton>
+                  <MotionButton onClick={() => { setStep("gettoken"); setError(""); }}
+                    className="flex-[2] py-2.5 rounded-xl text-[13px] font-bold text-white flex items-center justify-center gap-2"
+                    style={{ background: FLOOT_GRAD }}>
+                    I've logged in <ArrowRight className="h-3.5 w-3.5" />
+                  </MotionButton>
+                </div>
+
+                <button onClick={() => sendMagicLink()}
+                  className="w-full text-center text-[11px] text-[#9a8880] hover:text-[#2563eb] transition-colors">
+                  Didn't receive it? Resend magic link
+                </button>
+              </motion.div>
+            )}
+
+            {/* ── GET SESSION TOKEN ───────────────────── */}
+            {step === "gettoken" && (
+              <motion.div key="gettoken" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+
+                {/* How-to instructions box */}
+                <div className="rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-4 space-y-3">
+                  <p className="text-[12px] font-bold text-[#1e40af]">How to copy your session token:</p>
+                  <div className="space-y-2">
+                    {[
+                      { step: "1", text: "In your browser, go to floot.com (you should be logged in)", link: { label: "Open Floot", url: "https://floot.com" } },
+                      { step: "2", text: 'Press F12 (or Cmd+Option+I on Mac) to open DevTools, click "Application"' },
+                      { step: "3", text: 'Open Cookies → click "https://floot.com"' },
+                      { step: "4", text: 'Find "next-auth.session-token" and copy its entire Value' },
+                    ].map(({ step: s, text, link }) => (
+                      <div key={s} className="flex items-start gap-2.5">
+                        <span className="h-4 w-4 rounded-full text-[9px] font-black text-white flex items-center justify-center shrink-0 mt-0.5 bg-[#2563eb]">{s}</span>
+                        <div className="flex-1">
+                          <p className="text-[11px] text-[#1e40af] leading-snug">{text}</p>
+                          {link && (
+                            <a href={link.url} target="_blank" rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] font-bold text-[#2563eb] mt-1 hover:underline">
+                              {link.label} <ExternalLink className="h-2.5 w-2.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={copyInstructions}
+                    className="w-full flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#1d4ed8] bg-white/60 rounded-lg py-1.5 hover:bg-white transition-colors">
+                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copied ? "Copied!" : "Copy path to clipboard"}
                   </button>
                 </div>
 
-                <AnimatePresence>
-                  {error && (
-                    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
-                        <p className="text-[12px] text-[#991b1b] font-medium">{error}</p>
+                {/* Token input */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input
+                      type={showTok ? "text" : "password"}
+                      placeholder="Paste next-auth.session-token value…"
+                      value={tok}
+                      onChange={(e) => { setTok(e.target.value); setError(""); }}
+                      onKeyDown={(e) => e.key === "Enter" && connectToken()}
+                      autoFocus
+                      className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[12px] font-mono outline-none focus:border-[#2563eb]/40 focus:bg-white transition-colors pr-11"
+                    />
+                    <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                      {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 flex items-start gap-2">
+                        <AlertCircle className="h-3.5 w-3.5 text-[#ef4444] shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-[#991b1b] font-medium">{error}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="flex gap-2">
+                  <MotionButton onClick={() => setStep("sent")}
+                    className="flex-1 py-2.5 rounded-xl border border-[#f0ece4] text-[12px] font-semibold text-[#9a8880]">
+                    ← Back
+                  </MotionButton>
+                  <MotionButton onClick={connectToken} disabled={loading}
+                    className="flex-[2] py-2.5 rounded-xl text-[13px] font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+                    style={{ background: FLOOT_GRAD }}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlootLogo size={16} white />}
+                    {loading ? "Connecting…" : "Connect Floot"}
+                  </MotionButton>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── INPUT STEP ─────────────────────────── */}
+            {step === "input" && (
+              <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+
+                <div className="flex items-start gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-2xl p-3">
+                  <Shield className="h-4 w-4 text-[#2563eb] shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-[#1e40af] font-medium leading-snug">
+                    Your credentials go directly to Floot — nothing is stored on any server.
+                  </p>
+                </div>
+
+                <AnimatePresence mode="popLayout">
+                  {/* Email tab */}
+                  {tab === "email" && (
+                    <motion.div key="email-tab" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-3">
+                      <p className="text-[12px] text-[#6b7280] leading-relaxed">
+                        Enter your Floot email address. We'll send you a <strong>magic link</strong> — click it to log in, then copy your session token back here.
+                      </p>
+                      <input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                        onKeyDown={(e) => e.key === "Enter" && sendMagicLink()}
+                        autoFocus
+                        className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[13px] outline-none focus:border-[#2563eb]/40 focus:bg-white transition-colors"
+                      />
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 flex items-start gap-2">
+                            <AlertCircle className="h-3.5 w-3.5 text-[#ef4444] shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-[#991b1b] font-medium">{error}</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <MotionButton onClick={sendMagicLink} disabled={loading}
+                        className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{ background: FLOOT_GRAD }}>
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                        {loading ? "Sending link…" : "Send Magic Link"}
+                      </MotionButton>
+                    </motion.div>
+                  )}
+
+                  {/* Token tab */}
+                  {tab === "token" && (
+                    <motion.div key="token-tab" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-3">
+                      <p className="text-[12px] text-[#6b7280] leading-relaxed">
+                        Log in to <a href="https://floot.com" target="_blank" rel="noreferrer" className="text-[#2563eb] font-semibold">floot.com</a>, then open DevTools (F12) → Application → Cookies → <code className="bg-[#f5f2ee] px-1 rounded text-[11px]">floot.com</code> and copy the value of <code className="bg-[#f5f2ee] px-1 rounded text-[11px]">next-auth.session-token</code>.
+                      </p>
+                      <div className="relative">
+                        <input
+                          type={showTok ? "text" : "password"}
+                          placeholder="Paste session token here…"
+                          value={tok}
+                          onChange={(e) => { setTok(e.target.value); setError(""); }}
+                          onKeyDown={(e) => e.key === "Enter" && connectToken()}
+                          autoFocus
+                          className="w-full rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-4 py-3 text-[12px] font-mono outline-none focus:border-[#2563eb]/40 focus:bg-white transition-colors pr-11"
+                        />
+                        <button onClick={() => setShowTok(!showTok)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#c8b8a2]">
+                          {showTok ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                       </div>
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="bg-[#fef2f2] border border-[#fecaca] rounded-xl p-3 flex items-start gap-2">
+                            <AlertCircle className="h-3.5 w-3.5 text-[#ef4444] shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-[#991b1b] font-medium">{error}</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <MotionButton onClick={connectToken} disabled={loading}
+                        className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{ background: FLOOT_GRAD }}>
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlootLogo size={18} white />}
+                        {loading ? "Connecting…" : "Connect Floot"}
+                      </MotionButton>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                <MotionButton onClick={submit} disabled={loading}
-                  className="w-full rounded-2xl py-3.5 font-bold text-white text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlootLogo size={18} white />}
-                  {loading ? "Connecting…" : "Connect Floot"}
-                </MotionButton>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </motion.div>
