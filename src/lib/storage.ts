@@ -7,6 +7,8 @@ export interface Credentials {
   rocketToken: string;
   rocketEmail: string;
   rocketCompanyId: string;
+  flootToken: string;
+  flootEmail: string;
   defaultBranch: string;
   defaultRepo: string;
   defaultOwner: string;
@@ -15,7 +17,7 @@ export interface Credentials {
 export interface PushRecord {
   id: string;
   appName: string;
-  platform?: "base44" | "rocket";
+  platform?: "base44" | "rocket" | "floot";
   repo: string;
   branch: string;
   commitMessage: string;
@@ -87,7 +89,7 @@ export function clearHistory(): void { localStorage.removeItem(HISTORY_KEY); }
 // ── Push page preferences (platform, last repo, branch, etc.) ─────────────────
 
 export interface PushPrefs {
-  platform?: "base44" | "rocket";
+  platform?: "base44" | "rocket" | "floot";
   lastRepo?: { full_name: string; default_branch: string; html_url: string } | null;
   branch?: string;
   isPrivate?: boolean;
