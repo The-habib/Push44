@@ -1,24 +1,12 @@
-const BASE = "https://floot.com";
+const PROXY = "/proxy/floot";
 
-async function flootFetch(path: string, opts?: RequestInit & { token?: string }): Promise<any> {
-  const { token, ...rest } = opts ?? {};
+async function proxyFetch(path: string, token: string, opts?: RequestInit): Promise<Response> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...((rest.headers ?? {}) as Record<string, string>),
+    "Accept": "application/json",
+    "X-Floot-Token": token,
+    ...((opts?.headers ?? {}) as Record<string, string>),
   };
-  const res = await fetch(`${BASE}${path}`, { ...rest, headers });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    let msg = `Floot error ${res.status}`;
-    try {
-      const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
-    } catch {}
-    throw Object.assign(new Error(msg), { status: res.status });
-  }
-  return res.json();
+  return fetch(`${PROXY}${path}`, { ...opts, headers });
 }
 
 export interface FlootApp {
@@ -29,66 +17,216 @@ export interface FlootApp {
 }
 
 export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
-  const res = await fetch(`${BASE}/api/auth/session`, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${data.token}`,
-    },
-  });
-  if (!res.ok) throw new Error("Could not reach Floot. Check your connection.");
-  const d = await res.json();
-  const user = d?.user ?? d;
-  if (!user?.email) {
-    throw new Error("Session token is invalid or expired. Please log in to Floot again and copy a fresh token.");
+  let res: Response;
+  try {
+    res = await proxyFetch("/api/auth/session", data.token);
+  } catch {
+    throw new Error("Could not reach Floot. Check your internet connection.");
   }
+
+  if (!res.ok) {
+    throw new Error(`Floot returned ${res.status}. Try again or get a fresh token.`);
+  }
+
+  const d = await res.json().catch(() => ({}));
+  const user = d?.user ?? (d?.email ? d : null);
+
+  if (!user?.email) {
+    throw new Error(
+      "Your Floot session has expired — this token is no longer valid.\n\n" +
+      "To get a fresh token:\n" +
+      "1. Go to floot.com and log in\n" +
+      "2. Press F12 → Application → Cookies → floot.com\n" +
+      "3. Copy the value of next-auth.session-token\n" +
+      "4. Paste it here"
+    );
+  }
+
   return {
-    email: String(user.email ?? ""),
-    name: String(user.name ?? user.displayName ?? user.email ?? ""),
+    email: String(user.email),
+    name: String(user.name ?? user.displayName ?? user.email),
   };
 }
 
-export async function listFlootApps({ data }: { data: { token: string } }): Promise<FlootApp[]> {
-  const d = await flootFetch("/api/projects", { token: data.token });
+function extractProjectsFromAny(d: unknown): FlootApp[] {
+  const out: FlootApp[] = [];
 
-  const list: any[] = Array.isArray(d)
-    ? d
-    : Array.isArray(d?.data) ? d.data
-    : Array.isArray(d?.projects) ? d.projects
-    : Array.isArray(d?.workspaces) ? d.workspaces
-    : Array.isArray(d?.items) ? d.items
-    : [];
+  const tryItem = (item: any) => {
+    const id = item?.id ?? item?._id ?? item?.projectId ?? item?.workspaceId;
+    const name = item?.name ?? item?.title ?? item?.projectName ?? item?.displayName;
+    if (id && name && typeof name === "string") {
+      out.push({
+        id: String(id),
+        name: String(name),
+        updated_at: String(item?.updatedAt ?? item?.updated_at ?? item?.lastModified ?? ""),
+        icon: item?.icon ?? item?.thumbnail ?? item?.iconUrl ?? undefined,
+      });
+    }
+  };
 
-  if (list.length === 0) {
-    throw new Error("No Floot projects found. Make sure you have created at least one project at floot.com.");
+  if (Array.isArray(d)) {
+    d.forEach(tryItem);
+  } else if (d && typeof d === "object") {
+    const obj = d as Record<string, unknown>;
+    for (const key of ["data", "projects", "items", "workspaces", "list", "results"]) {
+      if (Array.isArray(obj[key])) {
+        (obj[key] as any[]).forEach(tryItem);
+        if (out.length > 0) break;
+      }
+    }
+    if (out.length === 0) tryItem(d);
   }
 
-  return list.map((p: any) => ({
-    id: String(p.id ?? p._id ?? p.workspaceId ?? ""),
-    name: String(p.name ?? p.title ?? p.projectName ?? p.displayName ?? "Untitled"),
-    updated_at: String(p.updatedAt ?? p.updated_at ?? p.lastModified ?? ""),
-    icon: p.icon ?? p.thumbnail ?? p.iconUrl ?? undefined,
-  })).filter(p => p.id);
+  return out;
+}
+
+function parseRscForProjects(rsc: string): FlootApp[] {
+  const projects: FlootApp[] = [];
+  const seen = new Set<string>();
+
+  const addProject = (p: FlootApp) => {
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      projects.push(p);
+    }
+  };
+
+  const lineRe = /^\d+:(.+)$/gm;
+  for (const match of rsc.matchAll(lineRe)) {
+    const raw = match[1].trim();
+    if (!raw.startsWith("{") && !raw.startsWith("[")) continue;
+    try {
+      const d = JSON.parse(raw);
+      for (const p of extractProjectsFromAny(d)) addProject(p);
+    } catch {}
+  }
+
+  const inlineRe = /\{"id":"([^"]{4,80})","name":"([^"]{1,120})"[^}]*"updatedAt":"([^"]*)"/g;
+  for (const m of rsc.matchAll(inlineRe)) {
+    addProject({ id: m[1], name: m[2], updated_at: m[3] });
+  }
+
+  const idNameRe = /"(?:project|workspace)Id":"([^"]{4,80})"[^}]{0,200}"(?:project|workspace)?[Nn]ame":"([^"]{1,120})"/g;
+  for (const m of rsc.matchAll(idNameRe)) {
+    addProject({ id: m[1], name: m[2], updated_at: "" });
+  }
+
+  return projects;
+}
+
+export async function listFlootApps({ data }: { data: { token: string } }): Promise<FlootApp[]> {
+  const token = data.token;
+
+  const jsonEndpoints = [
+    "/api/projects",
+    "/api/workspaces",
+    "/api/apps",
+    "/api/trpc/project.getAll?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
+    "/api/trpc/project.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
+    "/api/trpc/workspace.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D",
+  ];
+
+  for (const path of jsonEndpoints) {
+    try {
+      const res = await proxyFetch(path, token);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (!text || text.trimStart().startsWith("<!")) continue;
+      const d = JSON.parse(text);
+      const list = extractProjectsFromAny(d);
+      if (list.length > 0) return list;
+    } catch {}
+  }
+
+  const rscPaths = ["/en/dashboard", "/en/projects", "/en/apps", "/en/home"];
+  for (const path of rscPaths) {
+    try {
+      const res = await proxyFetch(path, token, {
+        headers: {
+          "Accept": "text/x-component,text/html,application/json",
+          "RSC": "1",
+          "X-Floot-Token": token,
+        } as Record<string, string>,
+      });
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (!text) continue;
+
+      const projects = parseRscForProjects(text);
+      if (projects.length > 0) return projects;
+    } catch {}
+  }
+
+  throw new Error(
+    "Could not load your Floot projects.\n\n" +
+    "Make sure:\n" +
+    "• Your session token is fresh (tokens expire after ~30 days)\n" +
+    "• You've created at least one project on floot.com\n\n" +
+    "To get a fresh token: log in to floot.com → F12 → Application → Cookies → floot.com → copy next-auth.session-token"
+  );
 }
 
 export async function fetchFlootAppFiles({ data }: { data: { token: string; appId: string } }): Promise<{ path: string; content: string }[]> {
-  const d = await flootFetch(`/api/projects/${data.appId}/files`, { token: data.token });
+  const token = data.token;
+  const appId = data.appId;
 
-  if (d && typeof d === "object" && !Array.isArray(d)) {
-    const keys = Object.keys(d);
-    if (keys.length > 0 && typeof d[keys[0]] === "string") {
-      return keys.map((path) => ({ path, content: String(d[path]) }));
-    }
-    if (d.files && typeof d.files === "object" && !Array.isArray(d.files)) {
-      return Object.entries(d.files).map(([path, content]) => ({ path, content: String(content) }));
-    }
-    if (Array.isArray(d.files)) {
-      return (d.files as any[]).map(f => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter(f => f.path);
+  const filePaths = [
+    `/api/projects/${appId}/files`,
+    `/api/projects/${appId}/export`,
+    `/api/projects/${appId}/source`,
+    `/api/apps/${appId}/files`,
+    `/api/workspaces/${appId}/files`,
+  ];
+
+  for (const path of filePaths) {
+    try {
+      const res = await proxyFetch(path, token);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (!text || text.trimStart().startsWith("<!")) continue;
+      const d = JSON.parse(text);
+
+      if (d && typeof d === "object" && !Array.isArray(d)) {
+        const keys = Object.keys(d);
+        if (keys.length > 0 && typeof d[keys[0]] === "string") {
+          return keys.map((p) => ({ path: p, content: String(d[p]) }));
+        }
+        if (d.files && typeof d.files === "object" && !Array.isArray(d.files)) {
+          return Object.entries(d.files).map(([p, c]) => ({ path: p, content: String(c) }));
+        }
+        if (Array.isArray(d.files)) {
+          return (d.files as any[]).map((f) => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter((f) => f.path);
+        }
+      }
+
+      if (Array.isArray(d)) {
+        return (d as any[]).map((f) => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter((f) => f.path);
+      }
+    } catch {}
+  }
+
+  const rscRes = await proxyFetch(`/en/project/${appId}`, token, {
+    headers: {
+      "Accept": "text/x-component,text/html",
+      "RSC": "1",
+      "X-Floot-Token": token,
+    } as Record<string, string>,
+  }).catch(() => null);
+
+  if (rscRes?.ok) {
+    const text = await rscRes.text().catch(() => "");
+    const fileMatches = [...text.matchAll(/"path":"([^"]+)","content":"((?:[^"\\]|\\.)*)"/g)];
+    if (fileMatches.length > 0) {
+      return fileMatches.map((m) => ({
+        path: m[1],
+        content: m[2].replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\"/g, '"').replace(/\\\\/g, "\\"),
+      }));
     }
   }
 
-  if (Array.isArray(d)) {
-    return (d as any[]).map(f => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter(f => f.path);
-  }
-
-  throw new Error("Unexpected response from Floot files API.");
+  throw new Error(
+    "Floot file export is not yet supported.\n\n" +
+    "Floot does not currently expose a public API for downloading project source files. " +
+    "This feature will be added once Floot provides an export endpoint."
+  );
 }

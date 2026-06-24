@@ -23,45 +23,76 @@ description: Confirmed Floot login flow from deep reverse engineering of floot.c
    - Body: `email={email}&csrfToken={token}&callbackUrl=https://floot.com&json=true`
    - Response: `{ url: "https://floot.com/api/auth/signin?csrf=true" }` (HTTP 200 = email sent)
 
-### Session
-- Cookie-based: `next-auth.session-token` cookie on floot.com
-- GET `/api/auth/session` returns `{}` when unauthenticated, `{ user: { email, name }, expires }` when logged in
-- DOES NOT return the raw token via API
+### Session Token — CRITICAL: Database Strategy (UUID), NOT JWT
+
+The `next-auth.session-token` cookie value is a **UUID** (e.g. `497f0bb7-e8df-432f-aa00-033357cc1540`), NOT a JWT.
+- This is NextAuth **database strategy** — the UUID maps to a session row in Floot's DB
+- Tokens expire (typically 30 days)
+- `Authorization: Bearer {uuid}` NEVER works — NextAuth DB strategy ignores Bearer headers
+- The ONLY way to validate cross-origin is via a server-side proxy that sets the Cookie header
+
+### Session Validation
+- GET `/api/auth/session` with `Cookie: next-auth.session-token={token}` → `{ user: { email, name }, expires }` if valid
+- Returns `{}` (2 bytes) if token is expired or invalid
+- Browser fetch cannot set Cookie headers (forbidden header) — MUST use server-side proxy
 
 ### CORS
 - `Access-Control-Allow-Origin: *` on auth endpoints
-- No `Access-Control-Allow-Credentials: true` — cannot send cookies cross-origin
+- No `Access-Control-Allow-Credentials: true` — cannot send cookies cross-origin from browser
 
-### No Public API
+### No Public REST API
 - All `/api/*` routes except NextAuth ones return 404
-- No tRPC procedures discoverable from login page chunks
-- No API subdomains (api.floot.com etc all return 525)
-- `/api/projects` → 404 (the original guessed endpoint was WRONG)
+- No tRPC procedures discoverable (Floot is fully RSC — server-side rendering)
+- No API subdomains (api.floot.com, app.floot.com, backend.floot.com all return 525)
+- `/api/projects` → 404 HTML
 
-### Token Strategy for Push44
-- After magic link login, `next-auth.session-token` cookie = JWT signed by Floot's secret
-- This JWT value, when given to Push44, is sent as `Authorization: Bearer <token>` 
-- `/api/auth/session` with Bearer returns `{}` for fake tokens — real tokens may work
-- Browser fetch cannot set Cookie header cross-origin (forbidden header)
+### Floot App Architecture
+- **Fully RSC (React Server Components)** with Next.js App Router + OpenNext on CloudFront/Lambda
+- Routes use locale prefix: `/[lng]/dashboard`, `/[lng]/login`, etc. (e.g. `/en/dashboard`)
+- RSC endpoint: GET `/en/dashboard` with header `RSC: 1` → returns RSC stream format
+- RSC stream format: numbered lines `{n}:{json_or_component_ref}`
+- When authenticated, dashboard RSC contains project data embedded in component props
+- When expired, returns "Project Not Found" / redirects to `/en/login`
 
-### Why Bearer May Work
-NextAuth with JWT strategy can be configured to accept the JWT as Bearer.
-The session token cookie IS the JWT. If Floot's tRPC middleware uses `getToken()` which reads both cookies AND Authorization headers, then Bearer token auth works.
+### Proxy Solution (IMPLEMENTED in vite.config.ts)
+
+Added a Vite middleware plugin (`flootProxyPlugin`) that:
+- Intercepts all `/proxy/floot/*` requests from the browser
+- Extracts token from `X-Floot-Token` request header
+- Forwards request to `https://floot.com{rest_of_path}` with `Cookie: next-auth.session-token={token}`
+- Returns the response to the browser
+- Available in both `configureServer` (dev) and `configurePreviewServer` (preview)
+
+`src/lib/floot-api.ts` updated to use `/proxy/floot/...` URLs.
+
+### Project Listing — Status: Needs Fresh Token to Map RSC Structure
+
+The RSC dashboard response embeds project data in component props when authenticated.
+The exact RSC data structure for the authenticated project list is UNKNOWN (need a valid, unexpired token to observe it).
+
+Multi-strategy approach implemented in `listFlootApps`:
+1. Try JSON endpoints: `/api/projects`, `/api/workspaces`, tRPC variants
+2. Parse RSC stream from `/en/dashboard` with regex extraction
+3. Fail with clear "token expired" guidance
+
+### File Fetching — Status: Endpoint Unknown
+
+No file export endpoint discovered. `fetchFlootAppFiles` tries common patterns and RSC parsing.
+Will need a valid token + actual project to reverse-engineer the correct endpoint.
 
 ### CRITICAL: Magic link trigger DOES NOT work cross-origin
 
 `__Host-next-auth.csrf-token` cookie has `HttpOnly; Secure; SameSite=Lax`.
-- Browser cannot send/receive this cookie cross-origin (CORS `*` blocks credentials)
-- GET `/api/auth/csrf` returns the token but cookie never stores in browser for floot.com
-- POST `/api/auth/signin/email` fails CSRF check → returns `{"url":"...?csrf=true"}` HTTP 200 (looks like success, but is actually a CSRF error)
-- **Result: No email is ever sent.** Confirmed by live user testing.
+- Browser cannot send/receive this cookie cross-origin
+- POST `/api/auth/signin/email` fails CSRF check → looks like success but no email is sent
 
 ### Correct UX (implemented in FlootModal)
 1. "Open Floot Login" button → opens `https://floot.com/login` in a new tab
 2. User logs in on Floot's own site (magic link works there, same origin)
 3. Step-by-step DevTools instructions: F12 → Application → Cookies → floot.com → copy `next-auth.session-token`
 4. User pastes token into Push44
+5. Push44 validates via `/proxy/floot/api/auth/session` (server-side cookie)
 
-**Why:** Session is JWT-based (NextAuth default strategy), CORS allows * (no credentials), same-origin CSRF protection blocks all cross-origin auth triggers.
+**Why:** DB-strategy token (UUID), CORS blocks credentials, same-origin CSRF protection blocks cross-origin auth.
 
-**How to apply:** Never try to trigger Floot auth from Push44's browser context. Always send user to floot.com directly. Push44 sends session token as `Authorization: Bearer {sessionToken}` in all Floot API calls.
+**How to apply:** Never call Floot API directly from browser. Always use `/proxy/floot/...` proxy path. The proxy plugin adds the Cookie header server-side where it's allowed.
