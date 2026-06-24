@@ -258,7 +258,7 @@ function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, 
   };
 
   const copyPath = () => {
-    navigator.clipboard.writeText("next-auth.session-token").then(() => {
+    navigator.clipboard.writeText("nextauth.session-token").then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -365,7 +365,7 @@ function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, 
                       { n: "1", text: "In your browser where you just logged in to Floot, press", kbd: "F12" },
                       { n: "2", text: 'Click the "Application" tab in DevTools' },
                       { n: "3", text: 'On the left, open Cookies → click "https://floot.com"' },
-                      { n: "4", text: 'Find the cookie named:', code: "next-auth.session-token" },
+                      { n: "4", text: 'Find the cookie named:', code: "nextauth.session-token" },
                       { n: "5", text: "Double-click its Value to select it, then copy" },
                     ].map(({ n, text, kbd, code }) => (
                       <div key={n} className="flex items-start gap-2.5">

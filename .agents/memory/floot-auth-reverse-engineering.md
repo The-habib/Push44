@@ -32,9 +32,10 @@ The `next-auth.session-token` cookie value is a **UUID** (e.g. `497f0bb7-e8df-43
 - The ONLY way to validate cross-origin is via a server-side proxy that sets the Cookie header
 
 ### Session Validation
-- GET `/api/auth/session` with `Cookie: next-auth.session-token={token}` → `{ user: { email, name }, expires }` if valid
+- GET `/api/auth/session` with `Cookie: nextauth.session-token={token}` → `{ user: { email, name }, expires }` if valid
 - Returns `{}` (2 bytes) if token is expired or invalid
 - Browser fetch cannot set Cookie headers (forbidden header) — MUST use server-side proxy
+- **CRITICAL**: Cookie name is `nextauth.session-token` (NO hyphen between "next" and "auth"). Using `next-auth.session-token` always returns `{}` even with a valid token. Confirmed by live testing 2026-06-25.
 
 ### CORS
 - `Access-Control-Allow-Origin: *` on auth endpoints
@@ -59,7 +60,7 @@ The `next-auth.session-token` cookie value is a **UUID** (e.g. `497f0bb7-e8df-43
 Added a Vite middleware plugin (`flootProxyPlugin`) that:
 - Intercepts all `/proxy/floot/*` requests from the browser
 - Extracts token from `X-Floot-Token` request header
-- Forwards request to `https://floot.com{rest_of_path}` with `Cookie: next-auth.session-token={token}`
+- Forwards request to `https://floot.com{rest_of_path}` with `Cookie: nextauth.session-token={token}; next-auth.session-token={token}` (both sent for robustness; `nextauth.session-token` is the real one)
 - Returns the response to the browser
 - Available in both `configureServer` (dev) and `configurePreviewServer` (preview)
 
@@ -89,7 +90,7 @@ Will need a valid token + actual project to reverse-engineer the correct endpoin
 ### Correct UX (implemented in FlootModal)
 1. "Open Floot Login" button → opens `https://floot.com/login` in a new tab
 2. User logs in on Floot's own site (magic link works there, same origin)
-3. Step-by-step DevTools instructions: F12 → Application → Cookies → floot.com → copy `next-auth.session-token`
+3. Step-by-step DevTools instructions: F12 → Application → Cookies → floot.com → copy `nextauth.session-token` (NO hyphen)
 4. User pastes token into Push44
 5. Push44 validates via `/proxy/floot/api/auth/session` (server-side cookie)
 

@@ -14,7 +14,7 @@ function flootProxyPlugin(): Plugin {
     const targetPath = req.url.replace("/proxy/floot", "") || "/";
 
     const forwardHeaders: Record<string, string> = {
-      "Cookie": `next-auth.session-token=${token}; __Secure-next-auth.session-token=${token}`,
+      "Cookie": `nextauth.session-token=${token}; next-auth.session-token=${token}`,
       "Accept": (req.headers["accept"] as string) ?? "application/json",
       "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
       "Referer": "https://floot.com/",

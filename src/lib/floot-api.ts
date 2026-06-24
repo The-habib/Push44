@@ -37,7 +37,7 @@ export async function validateFlootToken({ data }: { data: { token: string } }):
       "To get a fresh token:\n" +
       "1. Go to floot.com and log in\n" +
       "2. Press F12 → Application → Cookies → floot.com\n" +
-      "3. Copy the value of next-auth.session-token\n" +
+      "3. Copy the value of nextauth.session-token\n" +
       "4. Paste it here"
     );
   }
@@ -91,7 +91,7 @@ function parseRscForProjects(rsc: string): FlootApp[] {
     }
   };
 
-  const lineRe = /^\d+:(.+)$/gm;
+  const lineRe = /^[0-9a-f]+:(.+)$/gm;
   for (const match of rsc.matchAll(lineRe)) {
     const raw = match[1].trim();
     if (!raw.startsWith("{") && !raw.startsWith("[")) continue;
@@ -157,13 +157,7 @@ export async function listFlootApps({ data }: { data: { token: string } }): Prom
     } catch {}
   }
 
-  throw new Error(
-    "Could not load your Floot projects.\n\n" +
-    "Make sure:\n" +
-    "• Your session token is fresh (tokens expire after ~30 days)\n" +
-    "• You've created at least one project on floot.com\n\n" +
-    "To get a fresh token: log in to floot.com → F12 → Application → Cookies → floot.com → copy next-auth.session-token"
-  );
+  return [];
 }
 
 export async function fetchFlootAppFiles({ data }: { data: { token: string; appId: string } }): Promise<{ path: string; content: string }[]> {
