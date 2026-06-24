@@ -16,19 +16,30 @@ export interface FlootApp {
   updated_at: string;
 }
 
-export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
-  let res: Response;
+async function fetchFlootSession(token: string): Promise<{ user: any } | null> {
   try {
-    res = await proxyFetch("/api/auth/session", data.token);
-  } catch {
-    throw new Error("Could not reach Floot. Check your internet connection.");
+    const res = await proxyFetch("/api/auth/session", token);
+    if (res.ok) {
+      const d = await res.json().catch(() => null);
+      if (d && (d.user || d.email)) return d;
+      if (res.status !== 404) return null;
+    }
+    if (res.status === 404) throw new Error("PROXY_UNAVAILABLE");
+  } catch (e: any) {
+    if (e?.message !== "PROXY_UNAVAILABLE") {
+      throw new Error("Could not reach Floot. Check your internet connection.");
+    }
   }
 
-  if (!res.ok) {
-    throw new Error(`Floot returned ${res.status}. Try again or get a fresh token.`);
-  }
+  throw new Error(
+    "Floot connection requires the Replit-hosted version of Push44.\n\n" +
+    "Please open Push44 from your Replit preview (the URL in your Replit editor), " +
+    "not push-44.vercel.app. The Replit version has the secure proxy needed to connect Floot."
+  );
+}
 
-  const d = await res.json().catch(() => ({}));
+export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
+  const d = await fetchFlootSession(data.token);
   const user = d?.user ?? (d?.email ? d : null);
 
   if (!user?.email) {
@@ -36,8 +47,8 @@ export async function validateFlootToken({ data }: { data: { token: string } }):
       "Your Floot session has expired — this token is no longer valid.\n\n" +
       "To get a fresh token:\n" +
       "1. Go to floot.com and log in\n" +
-      "2. Press F12 → Application → Cookies → floot.com\n" +
-      "3. Copy the value of nextauth.session-token\n" +
+      "2. Open DevTools (F12) → Application → Cookies → floot.com\n" +
+      "3. Copy the Value of the cookie named: nextauth.session-token\n" +
       "4. Paste it here"
     );
   }
@@ -48,134 +59,45 @@ export async function validateFlootToken({ data }: { data: { token: string } }):
   };
 }
 
-function extractProjectsFromAny(d: unknown): FlootApp[] {
-  const out: FlootApp[] = [];
-
-  const tryItem = (item: any) => {
-    const id = item?.id ?? item?._id ?? item?.projectId ?? item?.workspaceId;
-    const name = item?.name ?? item?.title ?? item?.projectName ?? item?.displayName;
-    if (id && name && typeof name === "string") {
-      out.push({
-        id: String(id),
-        name: String(name),
-        updated_at: String(item?.updatedAt ?? item?.updated_at ?? item?.lastModified ?? ""),
-        icon: item?.icon ?? item?.thumbnail ?? item?.iconUrl ?? undefined,
-      });
-    }
-  };
-
-  if (Array.isArray(d)) {
-    d.forEach(tryItem);
-  } else if (d && typeof d === "object") {
-    const obj = d as Record<string, unknown>;
-    for (const key of ["data", "projects", "items", "workspaces", "list", "results"]) {
-      if (Array.isArray(obj[key])) {
-        (obj[key] as any[]).forEach(tryItem);
-        if (out.length > 0) break;
-      }
-    }
-    if (out.length === 0) tryItem(d);
-  }
-
-  return out;
-}
-
-function parseRscForProjects(rsc: string): FlootApp[] {
-  const projects: FlootApp[] = [];
-  const seen = new Set<string>();
-
-  const addProject = (p: FlootApp) => {
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      projects.push(p);
-    }
-  };
-
-  const lineRe = /^[0-9a-f]+:(.+)$/gm;
-  for (const match of rsc.matchAll(lineRe)) {
-    const raw = match[1].trim();
-    if (!raw.startsWith("{") && !raw.startsWith("[")) continue;
-    try {
-      const d = JSON.parse(raw);
-      for (const p of extractProjectsFromAny(d)) addProject(p);
-    } catch {}
-  }
-
-  const inlineRe = /\{"id":"([^"]{4,80})","name":"([^"]{1,120})"[^}]*"updatedAt":"([^"]*)"/g;
-  for (const m of rsc.matchAll(inlineRe)) {
-    addProject({ id: m[1], name: m[2], updated_at: m[3] });
-  }
-
-  const idNameRe = /"(?:project|workspace)Id":"([^"]{4,80})"[^}]{0,200}"(?:project|workspace)?[Nn]ame":"([^"]{1,120})"/g;
-  for (const m of rsc.matchAll(idNameRe)) {
-    addProject({ id: m[1], name: m[2], updated_at: "" });
-  }
-
-  return projects;
-}
-
-async function tryInternalApi(path: string, token: string): Promise<FlootApp[]> {
-  try {
-    const res = await proxyFetch(path, token);
-    if (!res.ok) return [];
-    const text = await res.text();
-    if (!text || text.trimStart().startsWith("<!")) return [];
-    const d = JSON.parse(text);
-    const unwrapped = (d as any)?.json ?? (d as any)?.result?.data?.json ?? d;
-    return extractProjectsFromAny(unwrapped);
-  } catch {
-    return [];
-  }
-}
-
 export async function listFlootApps({ data }: { data: { token: string } }): Promise<FlootApp[]> {
   const token = data.token;
 
-  const batchSuffix = "?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D";
+  try {
+    const res = await proxyFetch("/_api/workspace/list", token);
+    if (res.ok) {
+      const d = await res.json().catch(() => null);
+      if (d) {
+        const apps: FlootApp[] = [];
+        const seen = new Set<string>();
 
-  const jsonEndpoints = [
-    "/api/projects",
-    "/api/workspaces",
-    "/api/apps",
-    "/api/trpc/project.getAll" + batchSuffix,
-    "/api/trpc/project.list" + batchSuffix,
-    "/api/trpc/workspace.list" + batchSuffix,
-    "/_api/projects" + batchSuffix,
-    "/_api/user-projects" + batchSuffix,
-    "/_api/get-projects" + batchSuffix,
-    "/_api/project-list" + batchSuffix,
-    "/_api/project.list" + batchSuffix,
-    "/_api/project.getAll" + batchSuffix,
-    "/_api/project.getOwned" + batchSuffix,
-    "/_api/project.getDashboard" + batchSuffix,
-    "/_api/workspace.list" + batchSuffix,
-    "/_api/workspace.getAll" + batchSuffix,
-    "/_api/dashboard.getProjects" + batchSuffix,
-    "/_api/dashboard.getData" + batchSuffix,
-  ];
+        const addWorkspace = (ws: any) => {
+          if (!ws?.id || !ws?.name) return;
+          if (seen.has(ws.id)) return;
+          seen.add(ws.id);
+          apps.push({
+            id: String(ws.id),
+            name: String(ws.name),
+            updated_at: String(ws.updatedAt ?? ws.createdAt ?? ""),
+            icon: ws.iconUrl ?? undefined,
+          });
+        };
 
-  for (const path of jsonEndpoints) {
-    const list = await tryInternalApi(path, token);
-    if (list.length > 0) return list;
-  }
+        for (const ws of (d.ownedWorkspaces ?? [])) addWorkspace(ws);
+        for (const ws of (d.sharedWorkspaces ?? [])) addWorkspace(ws);
+        for (const ws of (d.favoriteWorkspaces ?? [])) addWorkspace(ws);
 
-  const rscPaths = ["/en/dashboard", "/en/projects", "/en/apps", "/en/home"];
-  for (const path of rscPaths) {
-    try {
-      const res = await proxyFetch(path, token, {
-        headers: {
-          "Accept": "text/x-component,text/html,application/json",
-          "RSC": "1",
-          "X-Floot-Token": token,
-        } as Record<string, string>,
-      });
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (!text) continue;
+        if (apps.length > 0) return apps;
+      }
+    }
 
-      const projects = parseRscForProjects(text);
-      if (projects.length > 0) return projects;
-    } catch {}
+    if (res.status === 404) {
+      throw new Error(
+        "Floot connection requires the Replit-hosted version of Push44.\n\n" +
+        "Please open Push44 from your Replit preview, not push-44.vercel.app."
+      );
+    }
+  } catch (e: any) {
+    if (e?.message?.includes("Replit")) throw e;
   }
 
   return [];
@@ -185,63 +107,41 @@ export async function fetchFlootAppFiles({ data }: { data: { token: string; appI
   const token = data.token;
   const appId = data.appId;
 
-  const filePaths = [
-    `/api/projects/${appId}/files`,
-    `/api/projects/${appId}/export`,
-    `/api/projects/${appId}/source`,
-    `/api/apps/${appId}/files`,
-    `/api/workspaces/${appId}/files`,
-  ];
+  const res = await proxyFetch("/_api/workspace/list", token).catch(() => null);
+  if (res?.ok) {
+    const d = await res.json().catch(() => null);
+    const allWorkspaces = [
+      ...(d?.ownedWorkspaces ?? []),
+      ...(d?.sharedWorkspaces ?? []),
+      ...(d?.favoriteWorkspaces ?? []),
+    ];
+    const workspace = allWorkspaces.find((ws: any) => ws.id === appId);
 
-  for (const path of filePaths) {
-    try {
-      const res = await proxyFetch(path, token);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (!text || text.trimStart().startsWith("<!")) continue;
-      const d = JSON.parse(text);
+    if (workspace) {
+      const files: { path: string; content: string }[] = [];
 
-      if (d && typeof d === "object" && !Array.isArray(d)) {
-        const keys = Object.keys(d);
-        if (keys.length > 0 && typeof d[keys[0]] === "string") {
-          return keys.map((p) => ({ path: p, content: String(d[p]) }));
-        }
-        if (d.files && typeof d.files === "object" && !Array.isArray(d.files)) {
-          return Object.entries(d.files).map(([p, c]) => ({ path: p, content: String(c) }));
-        }
-        if (Array.isArray(d.files)) {
-          return (d.files as any[]).map((f) => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter((f) => f.path);
-        }
+      if (workspace.sketchCss && typeof workspace.sketchCss === "string" && workspace.sketchCss.trim()) {
+        files.push({ path: "sketch.css", content: workspace.sketchCss });
       }
 
-      if (Array.isArray(d)) {
-        return (d as any[]).map((f) => ({ path: String(f.path ?? f.name ?? ""), content: String(f.content ?? "") })).filter((f) => f.path);
+      if (workspace.userPrompt && typeof workspace.userPrompt === "string") {
+        files.push({ path: "PROMPT.md", content: `# ${workspace.name}\n\n${workspace.userPrompt}` });
       }
-    } catch {}
-  }
 
-  const rscRes = await proxyFetch(`/en/project/${appId}`, token, {
-    headers: {
-      "Accept": "text/x-component,text/html",
-      "RSC": "1",
-      "X-Floot-Token": token,
-    } as Record<string, string>,
-  }).catch(() => null);
-
-  if (rscRes?.ok) {
-    const text = await rscRes.text().catch(() => "");
-    const fileMatches = [...text.matchAll(/"path":"([^"]+)","content":"((?:[^"\\]|\\.)*)"/g)];
-    if (fileMatches.length > 0) {
-      return fileMatches.map((m) => ({
-        path: m[1],
-        content: m[2].replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\"/g, '"').replace(/\\\\/g, "\\"),
-      }));
+      if (files.length > 0) {
+        throw new Error(
+          `Floot does not currently expose a source-code export API.\n\n` +
+          `The project "${workspace.name}" was found but its generated source files ` +
+          `are stored internally and not accessible via a public API.\n\n` +
+          `Floot file export will be added once Floot provides an export endpoint.`
+        );
+      }
     }
   }
 
   throw new Error(
-    "Floot file export is not yet supported.\n\n" +
-    "Floot does not currently expose a public API for downloading project source files. " +
-    "This feature will be added once Floot provides an export endpoint."
+    "Floot does not currently expose a source-code export API.\n\n" +
+    "Floot file export will be added once Floot provides an export endpoint.\n" +
+    "Check back later — this integration is actively being developed."
   );
 }

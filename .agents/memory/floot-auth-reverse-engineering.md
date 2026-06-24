@@ -1,6 +1,6 @@
 ---
 name: Floot Authentication - Reverse Engineered
-description: Confirmed Floot login flow from deep reverse engineering of floot.com JS bundles and live API probing
+description: Confirmed Floot login flow and API endpoints from deep reverse engineering of floot.com JS bundles and live API probing
 ---
 
 ## Confirmed Facts (June 2026)
@@ -41,19 +41,42 @@ The `next-auth.session-token` cookie value is a **UUID** (e.g. `497f0bb7-e8df-43
 - `Access-Control-Allow-Origin: *` on auth endpoints
 - No `Access-Control-Allow-Credentials: true` — cannot send cookies cross-origin from browser
 
-### No Public REST API
-- All `/api/*` routes except NextAuth ones return 404
-- No tRPC procedures discoverable (Floot is fully RSC — server-side rendering)
-- No API subdomains (api.floot.com, app.floot.com, backend.floot.com all return 525)
-- `/api/projects` → 404 HTML
+### ✅ CONFIRMED WORKING: Project Listing API (June 2026)
 
-### Floot App Architecture
-- **Fully RSC (React Server Components)** with Next.js App Router + OpenNext on CloudFront/Lambda
-- Routes use locale prefix: `/[lng]/dashboard`, `/[lng]/login`, etc. (e.g. `/en/dashboard`)
-- RSC endpoint: GET `/en/dashboard` with header `RSC: 1` → returns RSC stream format
-- RSC stream format: numbered lines `{n}:{json_or_component_ref}`
-- When authenticated, dashboard RSC contains project data embedded in component props
-- When expired, returns "Project Not Found" / redirects to `/en/login`
+**Endpoint:** `GET /_api/workspace/list`
+- Cookie: `nextauth.session-token={token}` (via proxy)
+- Returns:
+```json
+{
+  "ownedWorkspaces": [{ "id": "{uuid}", "name": "...", "createdAt": "...", "iconUrl": "...", "sketchCss": "...", "userPrompt": "...", ... }],
+  "sharedWorkspaces": [],
+  "favoriteWorkspaces": [],
+  "totalOwnedCount": 1,
+  "totalSharedCount": 0
+}
+```
+- `id` is the workspace UUID (= project ID)
+- Endpoint discovered from `app/dashboard/page-b7cf7b768e773575.js` bundle chunk
+
+**Other confirmed endpoints (no file export available):**
+- `GET /_api/workspace/deployment?workspaceId={id}` → `{"type":"notDeployed"}` or deployment info
+- `GET /_api/resources/list?workspaceId={id}` → `{"resources":[]}`
+- `GET /_api/resources/create`, `/_api/resources/update`, `/_api/resources/delete`, `/_api/resources/check-duplicate`
+- `GET /_api/folder/list`, `/_api/folder/create`, `/_api/folder/delete`, `/_api/folder/rename`
+- `GET /_api/database/tables?workspaceId={id}`, `/_api/database/dump` (project-specific DB)
+- `GET /_api/storage/listFolder?workspaceId={id}`, `/_api/storage/fileUrl?`, `/_api/storage/uploadUrl`
+- `GET /_api/appsync-subscriber-token` — AppSync WebSocket for real-time collaboration
+- `GET /_api/user-info` — returns current user info
+- `GET /_api/workspace/mobile-build-status`, `/_api/workspace/mobile-build-download-url`
+
+### ❌ File Source Code Export: NOT AVAILABLE via REST
+
+Floot's generated code files are accessed via **AppSync WebSocket** (real-time editor), NOT REST.
+- No `/export`, `/download`, or `/files` endpoint exists
+- `sketchCss` in workspace response is just the CSS variables, not full source
+- File export cannot be implemented until Floot adds an export endpoint
+
+**Why:** Floot is a web-based real-time IDE. Code state is stored in AppSync subscriptions, not in REST-accessible files. The editor streams code changes via `/_api/appsync-subscriber-token` WebSocket.
 
 ### Proxy Solution (IMPLEMENTED in vite.config.ts)
 
@@ -63,31 +86,9 @@ Added a Vite middleware plugin (`flootProxyPlugin`) that:
 - Forwards request to `https://floot.com{rest_of_path}` with `Cookie: nextauth.session-token={token}; next-auth.session-token={token}` (both sent for robustness; `nextauth.session-token` is the real one)
 - Returns the response to the browser
 - Available in both `configureServer` (dev) and `configurePreviewServer` (preview)
+- **ONLY available in Replit dev environment — NOT on push-44.vercel.app**
 
-`src/lib/floot-api.ts` updated to use `/proxy/floot/...` URLs.
-
-### Project Listing — Status: Needs Fresh Token to Map RSC Structure
-
-The RSC dashboard response embeds project data in component props when authenticated.
-The exact RSC data structure for the authenticated project list is UNKNOWN (need a valid, unexpired token to observe it).
-
-Multi-strategy approach implemented in `listFlootApps`:
-1. Try JSON endpoints: `/api/projects`, `/api/workspaces`, tRPC variants
-2. Parse RSC stream from `/en/dashboard` with regex extraction
-3. Fail with clear "token expired" guidance
-
-### File Fetching — Status: Endpoint Unknown
-
-No file export endpoint discovered. `fetchFlootAppFiles` tries common patterns and RSC parsing.
-Will need a valid token + actual project to reverse-engineer the correct endpoint.
-
-### CRITICAL: Magic link trigger DOES NOT work cross-origin
-
-`__Host-next-auth.csrf-token` cookie has `HttpOnly; Secure; SameSite=Lax`.
-- Browser cannot send/receive this cookie cross-origin
-- POST `/api/auth/signin/email` fails CSRF check → looks like success but no email is sent
-
-### Correct UX (implemented in FlootModal)
+### Correct UX (implemented in FlootModal / settings.tsx)
 1. "Open Floot Login" button → opens `https://floot.com/login` in a new tab
 2. User logs in on Floot's own site (magic link works there, same origin)
 3. Step-by-step DevTools instructions: F12 → Application → Cookies → floot.com → copy `nextauth.session-token` (NO hyphen)
@@ -97,3 +98,8 @@ Will need a valid token + actual project to reverse-engineer the correct endpoin
 **Why:** DB-strategy token (UUID), CORS blocks credentials, same-origin CSRF protection blocks cross-origin auth.
 
 **How to apply:** Never call Floot API directly from browser. Always use `/proxy/floot/...` proxy path. The proxy plugin adds the Cookie header server-side where it's allowed.
+
+### RSC Architecture Notes
+- `/dashboard` RSC (no locale prefix) authenticates correctly and loads dashboard layout
+- Project page is a `ClientPageRoot` wrapper — project data loads client-side, NOT in RSC stream
+- Correct dashboard URL is `/dashboard` (not `/en/dashboard`) — the `/en/` prefix causes a server-side redirect
