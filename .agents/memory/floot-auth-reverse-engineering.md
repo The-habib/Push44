@@ -48,6 +48,20 @@ description: Confirmed Floot login flow from deep reverse engineering of floot.c
 NextAuth with JWT strategy can be configured to accept the JWT as Bearer.
 The session token cookie IS the JWT. If Floot's tRPC middleware uses `getToken()` which reads both cookies AND Authorization headers, then Bearer token auth works.
 
-**Why:** Session is JWT-based (NextAuth default strategy), CORS allows *, token flow is the only viable option for client-side app without server proxy.
+### CRITICAL: Magic link trigger DOES NOT work cross-origin
 
-**How to apply:** Push44 sends token as `Authorization: Bearer {sessionToken}` in all Floot API calls.
+`__Host-next-auth.csrf-token` cookie has `HttpOnly; Secure; SameSite=Lax`.
+- Browser cannot send/receive this cookie cross-origin (CORS `*` blocks credentials)
+- GET `/api/auth/csrf` returns the token but cookie never stores in browser for floot.com
+- POST `/api/auth/signin/email` fails CSRF check → returns `{"url":"...?csrf=true"}` HTTP 200 (looks like success, but is actually a CSRF error)
+- **Result: No email is ever sent.** Confirmed by live user testing.
+
+### Correct UX (implemented in FlootModal)
+1. "Open Floot Login" button → opens `https://floot.com/login` in a new tab
+2. User logs in on Floot's own site (magic link works there, same origin)
+3. Step-by-step DevTools instructions: F12 → Application → Cookies → floot.com → copy `next-auth.session-token`
+4. User pastes token into Push44
+
+**Why:** Session is JWT-based (NextAuth default strategy), CORS allows * (no credentials), same-origin CSRF protection blocks all cross-origin auth triggers.
+
+**How to apply:** Never try to trigger Floot auth from Push44's browser context. Always send user to floot.com directly. Push44 sends session token as `Authorization: Bearer {sessionToken}` in all Floot API calls.

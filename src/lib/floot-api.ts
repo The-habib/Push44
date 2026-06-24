@@ -28,34 +28,6 @@ export interface FlootApp {
   updated_at: string;
 }
 
-export async function getFlootCsrfToken(): Promise<string> {
-  const res = await fetch(`${BASE}/api/auth/csrf`, {
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) throw new Error("Could not reach Floot. Check your connection.");
-  const data = await res.json();
-  if (!data.csrfToken) throw new Error("Unexpected response from Floot auth.");
-  return data.csrfToken as string;
-}
-
-export async function sendFlootMagicLink({ data }: { data: { email: string } }): Promise<void> {
-  const csrfToken = await getFlootCsrfToken();
-  const body = new URLSearchParams({
-    email: data.email.trim(),
-    csrfToken,
-    callbackUrl: BASE,
-    json: "true",
-  });
-  const res = await fetch(`${BASE}/api/auth/signin/email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to send magic link. Please check your email address.");
-  }
-}
-
 export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
   const res = await fetch(`${BASE}/api/auth/session`, {
     headers: {
