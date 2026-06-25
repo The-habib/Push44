@@ -40,6 +40,7 @@ export const Route = createFileRoute("/push")({
     meta: [
       { title: "Push to GitHub · Push44" },
       { name: "description", content: "Select a Base44 or Rocket.new app, pick a GitHub repo and push all source files in one atomic commit." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: PushPage,

@@ -1,0 +1,27 @@
+{
+  "name": "Push44 — Push Apps to GitHub",
+  "short_name": "Push44",
+  "description": "Back up your Base44, Rocket.new, Floot, and Zite app source code to GitHub in one tap. Free, no sign-up, runs in your browser.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffcf8",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "utilities", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr"
+}

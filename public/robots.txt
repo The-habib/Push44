@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /onboarding
+
+# Block private app routes — no SEO value, protect crawl budget
+Disallow: /dashboard
+Disallow: /push
+Disallow: /settings
+Disallow: /repositories
+Disallow: /history
 
 Sitemap: https://push-44.vercel.app/sitemap.xml
