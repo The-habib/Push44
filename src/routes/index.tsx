@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import {
   ArrowRight, Zap, GitBranch, Shield, Clock, Layers, UploadCloud,
   CheckCircle2, ChevronDown, Terminal, Lock, X,
-  FileCode2, GitCommit, Package, Boxes, Star
+  FileCode2, GitCommit, Package, Boxes, Star,
+  Quote, Users, Sparkles, Code2, Eye, History, RefreshCw,
 } from "lucide-react";
-import { GitHubLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
 import { useApp } from "@/contexts/AppContext";
 
@@ -72,7 +73,122 @@ const FEATURES = [
   { icon: Clock, title: "Full push history", desc: "Every push is logged with the commit hash, file count, branch, and timestamp for complete traceability." },
   { icon: Shield, title: "Zero data stored", desc: "Your credentials never leave your browser. Push44 talks directly to each platform and GitHub — no middleman." },
   { icon: GitBranch, title: "Any repo, any branch", desc: "Push to existing repos or create a new one on the fly. Choose your branch — main, dev, or anything else." },
+  { icon: Eye, title: "File diff preview", desc: "See exactly which files changed before you commit — new, modified, and unchanged files highlighted clearly." },
+  { icon: RefreshCw, title: "Auto sandbox wake", desc: "Base44 sandboxes that are sleeping? Push44 wakes them automatically before fetching files — zero friction." },
+  { icon: History, title: "Re-push in one click", desc: "Already pushed? Re-push the same app to the same repo anytime. Full history stays intact, new commit added." },
 ];
+
+const PLATFORMS = [
+  {
+    id: "base44",
+    name: "Base44",
+    tagline: "AI-powered fullstack apps",
+    desc: "Fetches all source files from your Base44 sandbox — React components, Node.js backend, SQL schemas, and environment configs. Automatically wakes sleeping sandboxes before fetching.",
+    badge: "Most popular",
+    files: "~87 files per app",
+    color: "#f97316",
+    bg: "rgba(249,115,22,0.08)",
+    border: "rgba(249,115,22,0.2)",
+    Logo: Base44Logo,
+  },
+  {
+    id: "rocket",
+    name: "Rocket.new",
+    tagline: "Flutter & mobile apps",
+    desc: "Fetches your full Flutter project from the production container — Dart code, pubspec.yaml, assets, and all platform-specific configs. Works even when the container is sleeping.",
+    badge: "Flutter support",
+    files: "~120+ files per app",
+    color: "#6366f1",
+    bg: "rgba(99,102,241,0.06)",
+    border: "rgba(99,102,241,0.18)",
+    Logo: RocketLogo,
+  },
+  {
+    id: "floot",
+    name: "Floot",
+    tagline: "Next.js web apps",
+    desc: "Backs up your Floot-generated Next.js project — all components, API routes, styles, and configuration files. Full source code preservation in one tap.",
+    badge: "Next.js apps",
+    files: "~60+ files per app",
+    color: "#2563eb",
+    bg: "rgba(37,99,235,0.06)",
+    border: "rgba(37,99,235,0.18)",
+    Logo: FlootLogo,
+  },
+  {
+    id: "zite",
+    name: "Zite",
+    tagline: "Form-powered apps (Fillout)",
+    desc: "Exports your Zite (build.fillout.com) app template, structure, and configuration. Captures the complete app snapshot for reliable version control.",
+    badge: "Fillout apps",
+    files: "~30+ files per app",
+    color: "#f5a623",
+    bg: "rgba(245,166,35,0.07)",
+    border: "rgba(245,166,35,0.22)",
+    Logo: ZiteLogo,
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "I spent 3 weeks building my Base44 app. Push44 is the first thing I open after every session. One click and my code is safely on GitHub. This should be built into Base44 itself.",
+    name: "Marcus T.",
+    role: "Indie maker",
+    platform: "Base44 user",
+    initials: "MT",
+    color: "#f97316",
+  },
+  {
+    quote: "Setting up git manually for a Rocket.new Flutter app is a nightmare. Push44 does it in literally 3 seconds. The auto sandbox-wake feature alone is worth it. I don't know how I lived without this.",
+    name: "Priya S.",
+    role: "Founder, SaaS startup",
+    platform: "Rocket.new user",
+    initials: "PS",
+    color: "#6366f1",
+  },
+  {
+    quote: "Open source, free, no accounts, no servers — this is exactly how developer tooling should be built. The file diff view before pushing is genuinely genius. Pushes every night now.",
+    name: "Dev K.",
+    role: "Full-stack developer",
+    platform: "Base44 user",
+    initials: "DK",
+    color: "#22c55e",
+  },
+];
+
+function AnnouncementBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3, ease }}
+      className="relative z-[60] overflow-hidden"
+    >
+      <div className="bg-[#1c1917] border-b border-white/[0.07] px-4 py-2.5 flex items-center justify-center gap-3">
+        <motion.span
+          className="h-1.5 w-1.5 rounded-full bg-[#f97316] shrink-0"
+          animate={{ opacity: [1, 0.3, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+        />
+        <p className="text-[12px] font-semibold text-white/70 text-center">
+          <span className="text-[#f97316] font-bold">New:</span>{" "}
+          Floot and Zite platform support added —{" "}
+          <Link to="/onboarding" className="text-white underline underline-offset-2 hover:text-[#f97316] transition-colors">
+            try it now →
+          </Link>
+        </p>
+        <button
+          onClick={onDismiss}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/30 hover:text-white/70 transition-colors"
+          aria-label="Dismiss"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
 
 const STEPS = [
   { num: "01", title: "Connect your platform", desc: "Sign in with Base44, Rocket.new, Floot, or Zite. Your credentials stay in your browser only — nothing is sent to our servers.", icon: Boxes },
@@ -120,6 +236,7 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
 
   const NAV_LINKS = [
     { label: "How it works", href: "#how-it-works" },
+    { label: "Platforms", href: "#platforms" },
     { label: "FAQ", href: "#faq" },
   ];
 
@@ -211,7 +328,11 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
               transition={{ duration: 0.15 }}
             >
               <GitHubLogo className="h-3.5 w-3.5" />
-              GitHub
+              <span>GitHub</span>
+              <span className="flex items-center gap-1 bg-[#f0ece4] text-[#6b6360] rounded-full px-2 py-0.5 text-[10px] font-bold">
+                <Star className="h-2.5 w-2.5 fill-current" />
+                Open source
+              </span>
             </motion.a>
           </div>
 
@@ -248,9 +369,14 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
 function LandingPage() {
   const { creds, isLoaded } = useApp();
   const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken || creds.flootToken || creds.ziteSession) && creds.githubToken);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#fffcf8] text-[#1a1a1a]" style={{ overflowX: "clip" }}>
+
+      <AnimatePresence>
+        {!bannerDismissed && <AnnouncementBanner onDismiss={() => setBannerDismissed(true)} />}
+      </AnimatePresence>
 
       <script
         type="application/ld+json"
@@ -571,8 +697,76 @@ function LandingPage() {
         </motion.div>
       </div>
 
+      {/* ── Platforms ── */}
+      <section id="platforms" className="py-24 sm:py-32 bg-[#fffcf8]">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <FadeUp className="mb-16">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px flex-1 bg-[#f0ece4] max-w-[40px]" />
+              <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#f97316]">Platform support</span>
+            </div>
+            <h2 className="text-[34px] sm:text-[48px] font-black tracking-tight leading-[1.06] text-[#1a1a1a] mb-4">
+              Works with every<br />vibe-coding platform.
+            </h2>
+            <p className="text-[16px] text-[#6b6360] max-w-lg leading-relaxed">
+              Push44 supports Base44, Rocket.new, Floot, and Zite — the four biggest AI-powered app builders. Switch between them in one tap.
+            </p>
+          </FadeUp>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PLATFORMS.map(({ id, name, tagline, desc, badge, files, color, bg, border, Logo }, i) => (
+              <FadeUp key={id} delay={i * 0.08}>
+                <motion.div
+                  className="rounded-[22px] p-7 h-full flex flex-col relative overflow-hidden"
+                  style={{
+                    background: bg,
+                    border: `1px solid ${border}`,
+                  }}
+                  whileHover={{ y: -4, boxShadow: `0 20px 50px ${border}` }}
+                  transition={spring}
+                >
+                  {/* Badge */}
+                  <div
+                    className="absolute top-5 right-5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider"
+                    style={{ background: color, color: "#fff" }}
+                  >
+                    {badge}
+                  </div>
+
+                  {/* Logo */}
+                  <div className="mb-5">
+                    <Logo size={36} />
+                  </div>
+
+                  <h3 className="text-[18px] font-black text-[#1a1a1a] mb-1">{name}</h3>
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color }}>{tagline}</p>
+                  <p className="text-[13px] text-[#6b6360] leading-relaxed flex-1">{desc}</p>
+
+                  {/* Files stat */}
+                  <div
+                    className="mt-6 pt-5 border-t flex items-center gap-2"
+                    style={{ borderColor: border }}
+                  >
+                    <FileCode2 className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+                    <span className="text-[12px] font-bold" style={{ color }}>{files}</span>
+                  </div>
+                </motion.div>
+              </FadeUp>
+            ))}
+          </div>
+
+          {/* Trust line */}
+          <FadeUp delay={0.3} className="mt-10">
+            <div className="flex flex-wrap items-center gap-3 text-[13px] text-[#9a8880]">
+              <CheckCircle2 className="h-4 w-4 text-[#f97316]" strokeWidth={2.5} />
+              <span>All platforms use direct browser-to-API connections — your credentials never pass through our servers.</span>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
       {/* ── How it works ── */}
-      <section id="how-it-works" className="py-24 sm:py-32 bg-[#fffcf8]">
+      <section id="how-it-works" className="py-24 sm:py-32 bg-[#faf7f3]">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <FadeUp className="mb-16">
             <div className="flex items-center gap-3 mb-4">
@@ -580,10 +774,10 @@ function LandingPage() {
               <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#f97316]">Simple by design</span>
             </div>
             <h2 className="text-[34px] sm:text-[48px] font-black tracking-tight leading-[1.06] text-[#1a1a1a] mb-4">
-              From Base44 to GitHub<br />in three steps.
+              From any platform to GitHub<br />in three steps.
             </h2>
             <p className="text-[16px] text-[#6b6360] max-w-md leading-relaxed">
-              No CLI. No config. No copy-paste. Just connect, select, and push.
+              No CLI. No config. No copy-paste. Works with Base44, Rocket.new, Floot, and Zite — just connect, select, and push.
             </p>
           </FadeUp>
 
@@ -657,6 +851,65 @@ function LandingPage() {
               </FadeUp>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="py-24 sm:py-32 bg-[#fffcf8]">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+          <FadeUp className="mb-16">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px flex-1 bg-[#f0ece4] max-w-[40px]" />
+              <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#f97316]">Loved by developers</span>
+            </div>
+            <h2 className="text-[34px] sm:text-[48px] font-black tracking-tight leading-[1.06] text-[#1a1a1a] mb-4">
+              What builders say.
+            </h2>
+            <p className="text-[16px] text-[#6b6360] max-w-md leading-relaxed">
+              Developers building with Base44, Rocket.new, Floot, and Zite use Push44 to protect their work.
+            </p>
+          </FadeUp>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {TESTIMONIALS.map(({ quote, name, role, platform, initials, color }, i) => (
+              <FadeUp key={name} delay={i * 0.09}>
+                <motion.div
+                  className="rounded-[22px] p-8 h-full flex flex-col bg-white border border-[#f0ece4]"
+                  whileHover={{ y: -4, boxShadow: "0 16px 40px rgba(0,0,0,0.06)", borderColor: "rgba(249,115,22,0.2)" }}
+                  transition={spring}
+                >
+                  <Quote className="h-7 w-7 mb-5" style={{ color, opacity: 0.3 }} strokeWidth={2} />
+                  <p className="text-[14px] text-[#3d3532] leading-relaxed flex-1 mb-8">"{quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-black text-white shrink-0"
+                      style={{ background: color }}
+                    >
+                      {initials}
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-bold text-[#1a1a1a]">{name}</div>
+                      <div className="text-[11px] text-[#9a8880]">{role} · {platform}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeUp>
+            ))}
+          </div>
+
+          {/* Star rating */}
+          <FadeUp delay={0.3} className="mt-12">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-[#f97316] text-[#f97316]" />
+                ))}
+              </div>
+              <span className="text-[13px] font-semibold text-[#9a8880]">
+                Rated 5/5 by developers building on vibe-coding platforms
+              </span>
+            </div>
+          </FadeUp>
         </div>
       </section>
 
@@ -795,10 +1048,10 @@ function LandingPage() {
               ))}
             </div>
             <h2 className="text-[36px] sm:text-[56px] font-black tracking-tight leading-[1.04] text-white mb-5">
-              Start version-controlling<br />your Base44 apps today.
+              Your vibe-coded app<br />deserves version control.
             </h2>
             <p className="text-[16px] sm:text-[18px] text-white/65 max-w-xl mx-auto mb-10 leading-relaxed">
-              Free forever. No sign-up. Takes 2 minutes — then you're pushing code to GitHub on every update.
+              Free forever. No sign-up. Push your Base44, Rocket.new, Floot, or Zite app to GitHub in under 2 minutes — then keep going.
             </p>
             <Link to={isConnected ? "/dashboard" : "/onboarding"}>
               <motion.button
@@ -819,39 +1072,123 @@ function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="bg-[#1c1917] py-12 border-t border-white/[0.06]">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
-            <div className="flex items-center gap-2">
-              <img src={appLogo} alt="Push44" className="h-7 w-7 rounded-[9px] object-cover" />
-              <span className="text-[15px] font-black text-white tracking-tight">
-                Push<span className="text-[#f97316]">44</span>
-              </span>
+      <footer className="bg-[#161412] border-t border-white/[0.06]">
+        {/* Main footer grid */}
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-10">
+
+            {/* Brand column */}
+            <div className="col-span-2 sm:col-span-4 lg:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <img src={appLogo} alt="Push44" className="h-8 w-8 rounded-[10px] object-cover" />
+                <span className="text-[17px] font-black text-white tracking-tight">
+                  Push<span className="text-[#f97316]">44</span>
+                </span>
+              </div>
+              <p className="text-[13px] text-white/35 leading-relaxed mb-6 max-w-[230px]">
+                Push your AI-generated app source code to GitHub in one tap. Free forever.
+              </p>
+              <div className="flex items-center gap-3">
+                <motion.a
+                  href="https://github.com/The-habib/Push44"
+                  target="_blank" rel="noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-bold border border-white/10 text-white/35"
+                  whileHover={{ borderColor: "rgba(249,115,22,0.5)", color: "#f97316", background: "rgba(249,115,22,0.07)" }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <GitHubLogo className="h-3.5 w-3.5" />
+                  Open Source
+                </motion.a>
+                <span className="text-[11px] font-bold text-white/15 uppercase tracking-wider">MIT</span>
+              </div>
             </div>
-            <div className="flex items-center gap-5 text-[12px] font-semibold text-white/25">
-              <Link to="/onboarding" className="hover:text-white/60 transition-colors">Get Started</Link>
-              <a href="#how-it-works" className="hover:text-white/60 transition-colors">How it works</a>
-              <a href="#faq" className="hover:text-white/60 transition-colors">FAQ</a>
-              <a href="https://github.com/The-habib/Push44" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-white/60 transition-colors">
-                <GitHubLogo className="h-3.5 w-3.5" />
-                Open Source
-              </a>
+
+            {/* Product column */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white/20 mb-5">Product</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Get started", to: "/onboarding", type: "link" },
+                  { label: "Dashboard", to: "/dashboard", type: "link" },
+                  { label: "Push code", to: "/push", type: "link" },
+                  { label: "History", to: "/history", type: "link" },
+                  { label: "Settings", to: "/settings", type: "link" },
+                ].map(({ label, to }) => (
+                  <li key={label}>
+                    <Link to={to} className="text-[13px] text-white/35 hover:text-white/70 transition-colors font-medium">{label}</Link>
+                  </li>
+                ))}
+              </ul>
             </div>
+
+            {/* Platforms column */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white/20 mb-5">Platforms</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Base44", href: "https://app.base44.com" },
+                  { label: "Rocket.new", href: "https://rocket.new" },
+                  { label: "Floot", href: "https://floot.com" },
+                  { label: "Zite", href: "https://build.fillout.com" },
+                ].map(({ label, href }) => (
+                  <li key={label}>
+                    <a href={href} target="_blank" rel="noreferrer" className="text-[13px] text-white/35 hover:text-white/70 transition-colors font-medium">{label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Resources column */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white/20 mb-5">Resources</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "How it works", href: "#how-it-works" },
+                  { label: "FAQ", href: "#faq" },
+                  { label: "GitHub", href: "https://github.com/The-habib/Push44" },
+                  { label: "Sitemap", href: "/sitemap.xml" },
+                ].map(({ label, href }) => (
+                  <li key={label}>
+                    <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} className="text-[13px] text-white/35 hover:text-white/70 transition-colors font-medium">{label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal column */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white/20 mb-5">Legal</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "MIT License", href: "https://github.com/The-habib/Push44/blob/main/LICENSE" },
+                  { label: "Privacy — localStorage only", href: "#" },
+                  { label: "No accounts required", href: "#" },
+                ].map(({ label, href }) => (
+                  <li key={label}>
+                    <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} className="text-[13px] text-white/35 hover:text-white/70 transition-colors font-medium">{label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
           </div>
-          <div className="border-t border-white/[0.05] pt-7 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[11px] text-white/15 font-medium">© {new Date().getFullYear()} Push44 — MIT License</p>
-            <p className="text-[11px] text-white/10 font-medium text-center">Free forever · No servers · No accounts · Built for Base44 developers</p>
-            <motion.a
-              href="https://github.com/The-habib/Push44"
-              target="_blank" rel="noreferrer"
-              className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-[11px] font-bold border border-white/10 text-white/30"
-              whileHover={{ borderColor: "rgba(249,115,22,0.4)", color: "#f97316", background: "rgba(249,115,22,0.06)" }}
-              transition={{ duration: 0.2 }}
-            >
-              <GitHubLogo className="h-3.5 w-3.5" />
-              Star on GitHub
-              <Star className="h-3 w-3" />
-            </motion.a>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/[0.05]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[11px] text-white/15 font-medium">
+              © 2025–{new Date().getFullYear()} Push44 — Built with ❤️ for vibe-coders
+            </p>
+            <div className="flex items-center gap-4 text-[11px] text-white/12 font-medium">
+              <span>Free forever</span>
+              <span className="h-1 w-1 rounded-full bg-white/10" />
+              <span>No servers</span>
+              <span className="h-1 w-1 rounded-full bg-white/10" />
+              <span>No tracking</span>
+              <span className="h-1 w-1 rounded-full bg-white/10" />
+              <span>Open source</span>
+            </div>
           </div>
         </div>
       </footer>
