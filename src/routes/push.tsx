@@ -1298,7 +1298,21 @@ function PushPage() {
 
   useEffect(() => {
     if (!isLoaded || !isConnected) return;
-    setApps([]); setSelectedApp(null); setFiles([]); setDiffMap(new Map()); setStagedPaths(new Set()); setDeletedPaths(new Set());
+    setApps([]);
+    setSelectedApp(null);
+    setFiles([]);
+    setDiffMap(new Map());
+    setStagedPaths(new Set());
+    setDeletedPaths(new Set());
+    setContainerDown(null);
+    setFlootNoApi(null);
+    setAppsError("");
+    setNeedsOtpLogin(false);
+    setTokenExpired(null);
+    setLF(false);
+    setWaking(false);
+    setRocketStage("");
+    setExpandedDiffPath(null);
     loadApps();
   }, [platform, isLoaded]);
 
@@ -1670,7 +1684,31 @@ function PushPage() {
 
       {/* Step 1: Select App + Files */}
       <SectionShell step={1} label="Select app & review files" active={!step1done} done={step1done}>
-        <PlatformToggle platform={platform} onChange={p => { setPlatform(p); }} hasBase44={hasBase44} hasRocket={hasRocket} hasFloot={hasFloot} hasZite={hasZite} />
+        <PlatformToggle
+          platform={platform}
+          onChange={p => {
+            if (p === platform) return;
+            setContainerDown(null);
+            setFlootNoApi(null);
+            setAppsError("");
+            setNeedsOtpLogin(false);
+            setTokenExpired(null);
+            setSelectedApp(null);
+            setFiles([]);
+            setDiffMap(new Map());
+            setStagedPaths(new Set());
+            setDeletedPaths(new Set());
+            setWaking(false);
+            setLF(false);
+            setRocketStage("");
+            setExpandedDiffPath(null);
+            setPlatform(p);
+          }}
+          hasBase44={hasBase44}
+          hasRocket={hasRocket}
+          hasFloot={hasFloot}
+          hasZite={hasZite}
+        />
 
         {/* Platform not connected */}
         {((platform === "base44" && !hasBase44) || (platform === "rocket" && !hasRocket) || (platform === "floot" && !hasFloot) || (platform === "zite" && !hasZite)) && (
@@ -1685,10 +1723,37 @@ function PushPage() {
 
         {/* Rocket OTP login prompt */}
         {platform === "rocket" && needsOtpLogin && (
-          <div className="mt-3 rounded-2xl p-4 border" style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}>
-            <p className="text-[12px] font-semibold mb-2" style={{ color: ROCKET_TEXT }}>{appsError}</p>
+          <motion.div
+            className="mt-3 rounded-2xl p-4 border"
+            style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="h-4 w-4 shrink-0" style={{ color: ROCKET_COLOR }} />
+              <p className="text-[12px] font-semibold" style={{ color: ROCKET_TEXT }}>{appsError}</p>
+            </div>
             <MotionButton onClick={() => setShowRocketModal(true)} className="text-[11px] font-bold text-white rounded-xl px-3 py-2" style={{ background: ROCKET_COLOR }}>Log in with OTP →</MotionButton>
-          </div>
+          </motion.div>
+        )}
+
+        {/* General apps-load error (all platforms, non-OTP) */}
+        {!loadingApps && appsError && !needsOtpLogin && (
+          <motion.div
+            className="mt-3 flex items-start gap-2.5 rounded-2xl px-4 py-3 border"
+            style={{ background: "#fef2f2", borderColor: "#fecaca" }}
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
+          >
+            <AlertCircle className="h-4 w-4 text-[#ef4444] shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-[#991b1b]">{appsError}</p>
+              <button
+                onClick={() => { setAppsError(""); loadApps(); }}
+                className="text-[11px] font-bold text-[#ef4444] mt-1.5 underline underline-offset-2"
+              >
+                Try again
+              </button>
+            </div>
+          </motion.div>
         )}
 
         {/* App list */}
@@ -1754,7 +1819,7 @@ function PushPage() {
           </div>
         )}
 
-        {/* Sandbox waking */}
+        {/* Sandbox waking — Base44 specific (sandbox concept only applies to Base44) */}
         {loadingFiles && wakingSandbox && selectedApp && (
           <div className="mt-3 rounded-2xl p-4 bg-[#fff4ed] border border-[#fed7aa]">
             <div className="flex items-center gap-2.5 mb-2">
@@ -1762,39 +1827,53 @@ function PushPage() {
               <span className="text-[13px] font-bold text-[#9a3412]">Waking up sandbox…</span>
             </div>
             <p className="text-[11px] text-[#c2410c]/80 mb-3 leading-relaxed">
-              The sandbox for <strong>{selectedApp.name}</strong> is taking longer than usual. Open the app in Base44 to wake it manually.
+              The sandbox for <strong>{selectedApp.name}</strong> is taking longer than usual.
+              {platform === "base44" && " Open the app in Base44 to wake it manually."}
             </p>
-            <a href={`https://app.base44.com/apps/${selectedApp.id}`} target="_blank" rel="noreferrer"
-              className="text-[11px] font-bold text-white rounded-xl px-3 py-2 inline-block"
-              style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
-              Open in Base44 →
-            </a>
+            {platform === "base44" && (
+              <a href={`https://app.base44.com/apps/${selectedApp.id}`} target="_blank" rel="noreferrer"
+                className="text-[11px] font-bold text-white rounded-xl px-3 py-2 inline-block"
+                style={{ background: "linear-gradient(135deg,#fb923c,#f97316)" }}>
+                Open in Base44 →
+              </a>
+            )}
           </div>
         )}
 
-        {/* Container sleeping */}
-        {containerDown && (
-          <div className="mt-3 rounded-2xl p-4 border" style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}>
-            <div className="text-[13px] font-bold mb-1" style={{ color: ROCKET_TEXT }}>Container is sleeping</div>
-            <div className="text-[11px] mb-3" style={{ color: `${ROCKET_TEXT}99` }}>The container for <strong>{containerDown.appName}</strong> is offline.</div>
+        {/* Container sleeping — Rocket.new only */}
+        {platform === "rocket" && containerDown && (
+          <motion.div
+            className="mt-3 rounded-2xl p-4 border"
+            style={{ background: ROCKET_LIGHT, borderColor: ROCKET_BORDER }}
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-2 w-2 rounded-full bg-[#ef4444]" />
+              <div className="text-[13px] font-bold" style={{ color: ROCKET_TEXT }}>Container is sleeping</div>
+            </div>
+            <div className="text-[11px] mb-3" style={{ color: `${ROCKET_TEXT}99` }}>
+              The project container for <strong>{containerDown.appName}</strong> is offline. Open it in Rocket.new to wake it, then try again.
+            </div>
             <div className="flex gap-2 flex-wrap">
               <a href={`https://rocket.new/${containerDown.appId}`} target="_blank" rel="noreferrer"
-                className="text-[11px] font-bold text-white rounded-xl px-3 py-2" style={{ background: ROCKET_GRAD }}>
+                className="text-[11px] font-bold text-white rounded-xl px-3 py-2 inline-flex items-center gap-1.5"
+                style={{ background: ROCKET_GRAD }}>
+                <ExternalLink className="h-3 w-3" />
                 Open in Rocket.new →
               </a>
               <MotionButton
-                onClick={() => { setContainerDown(null); handleSelectApp(selectedApp!); }}
+                onClick={() => { setContainerDown(null); if (selectedApp) handleSelectApp(selectedApp); }}
                 className="text-[11px] font-bold bg-white rounded-xl px-3 py-2 border"
                 style={{ color: ROCKET_TEXT, borderColor: ROCKET_BORDER }}
               >
                 Try again
               </MotionButton>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Floot — no file-export API */}
-        {flootNoApi && (
+        {platform === "floot" && flootNoApi && (
           <motion.div
             className="mt-3 rounded-2xl border overflow-hidden"
             style={{ background: FLOOT_LIGHT, borderColor: FLOOT_BORDER }}
