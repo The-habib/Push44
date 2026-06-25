@@ -181,96 +181,189 @@ function AnnouncementBanner({ onDismiss }: { onDismiss: () => void }) {
 function Navbar({ isConnected }: { isConnected: boolean }) {
   const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 80);
-    const onScroll = () => setScrolled(window.scrollY > 80);
+    const t = setTimeout(() => setVisible(true), 120);
+    const onScroll = () => setScrolled(window.scrollY > 72);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   const NAV_LINKS = [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Platforms", href: "#platforms" },
-    { label: "FAQ", href: "#faq" },
+    { id: "hiw",      label: "How it works", href: "#how-it-works" },
+    { id: "plat",     label: "Platforms",    href: "#platforms"    },
+    { id: "faq",      label: "FAQ",          href: "#faq"          },
+    { id: "gh",       label: "GitHub",       href: "https://github.com/The-habib/Push44", external: true },
   ];
 
+  /* ── pill is always cream/warm-white — floats on both dark hero and light sections ── */
+  const pillBg     = scrolled ? "rgba(255,252,248,0.96)" : "rgba(255,252,248,0.82)";
+  const pillBorder = scrolled ? "rgba(249,115,22,0.18)"  : "rgba(224,216,204,0.90)";
+  const pillShadow = scrolled
+    ? [
+        "0 0 0 1px rgba(249,115,22,0.16)",
+        "0 10px 36px rgba(0,0,0,0.14)",
+        "0 3px 10px rgba(0,0,0,0.07)",
+        "inset 0 1px 0 rgba(255,255,255,0.95)",
+      ].join(", ")
+    : [
+        "0 0 0 1px rgba(224,216,204,0.85)",
+        "0 8px 32px rgba(0,0,0,0.22)",
+        "0 2px 12px rgba(0,0,0,0.14)",
+        "inset 0 1px 0 rgba(255,255,255,0.95)",
+      ].join(", ");
+
+  const linkBase  = "rgba(100,90,85,1)";
+  const linkHover = "rgba(20,16,14,1)";
+  const hoverBg   = "rgba(0,0,0,0.055)";
+
   return (
-    <motion.header
-      className="fixed top-0 left-0 right-0 z-50"
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -12 }}
-      transition={{ duration: 0.4, ease }}
-    >
+    /* pointer-events-none on the belt so it never blocks scrolling content;
+       pointer-events-auto is restored on the pill itself.
+       overflow-x:clip (not overflow:hidden) on the page root keeps fixed
+       children from being trapped in a new containing block (Safari / iOS). */
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-5 pt-3 sm:pt-4 pointer-events-none">
       <motion.div
-        className="flex items-center justify-between px-5 sm:px-8 lg:px-12 py-4"
+        className="pointer-events-auto w-full"
+        style={{ maxWidth: 860 }}
+        initial={{ opacity: 0, y: -28, scale: 0.90 }}
         animate={{
-          background: scrolled ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0)",
-          backdropFilter: scrolled ? "blur(20px)" : "blur(0px)",
-          borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "1px solid rgba(0,0,0,0)",
+          opacity: visible ? 1 : 0,
+          y:       visible ? 0 : -28,
+          scale:   visible ? 1 : 0.90,
         }}
-        transition={{ duration: 0.3, ease }}
+        transition={{ duration: 0.65, ease: [0.34, 1.12, 0.64, 1] }}
       >
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0 z-10">
-          <motion.img
-            src={appLogo}
-            alt="Push44"
-            className="h-8 w-8 rounded-[10px] object-cover"
-            whileHover={{ scale: 1.08, rotate: -3 }}
-            transition={spring}
-          />
-          <span
-            className="text-[15px] font-black tracking-tight leading-none"
-            style={{ color: scrolled ? "#111" : "#fff" }}
-          >
-            Push<span style={{ color: "#f97316" }}>44</span>
-          </span>
-        </Link>
+        {/* ── Floating pill shell ── */}
+        <motion.div
+          className="flex items-center justify-between rounded-full"
+          style={{
+            padding: "5px 5px 5px 10px",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            borderWidth: "1px",
+            borderStyle: "solid",
+          }}
+          animate={{ background: pillBg, boxShadow: pillShadow, borderColor: pillBorder }}
+          transition={{ duration: 0.45, ease }}
+        >
 
-        {/* Center nav */}
-        <nav className="hidden sm:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-          {NAV_LINKS.map(({ label, href }) => (
-            <a
-              key={label}
-              href={href}
-              className="px-4 py-2 text-[13px] font-medium rounded-full transition-colors duration-150"
-              style={{ color: scrolled ? "#555" : "rgba(255,255,255,0.55)" }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.color = scrolled ? "#111" : "#fff"; (e.target as HTMLElement).style.background = scrolled ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.08)"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.color = scrolled ? "#555" : "rgba(255,255,255,0.55)"; (e.target as HTMLElement).style.background = "transparent"; }}
+          {/* ── Logo ── */}
+          <Link to="/" className="flex items-center gap-1.5 py-0.5 pr-2 shrink-0">
+            <motion.img
+              src={appLogo}
+              alt="Push44"
+              className="h-7 w-7 rounded-[9px] object-cover"
+              whileHover={{ scale: 1.15, rotate: -8 }}
+              whileTap={{ scale: 0.85, rotate: 4 }}
+              transition={{ type: "spring", stiffness: 500, damping: 18 }}
+            />
+            <motion.span
+              className="text-[14px] font-black tracking-tight leading-none"
+              animate={{ color: scrolled ? "#1a1a1a" : "#ffffff" }}
+              transition={{ duration: 0.35, ease }}
             >
-              {label}
-            </a>
-          ))}
-          <a
-            href="https://github.com/The-habib/Push44"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium rounded-full transition-colors duration-150"
-            style={{ color: scrolled ? "#555" : "rgba(255,255,255,0.55)" }}
-            onMouseEnter={e => { const el = e.currentTarget; el.style.color = scrolled ? "#111" : "#fff"; el.style.background = scrolled ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.08)"; }}
-            onMouseLeave={e => { const el = e.currentTarget; el.style.color = scrolled ? "#555" : "rgba(255,255,255,0.55)"; el.style.background = "transparent"; }}
-          >
-            <GitHubLogo className="h-3.5 w-3.5" />
-            GitHub
-          </a>
-        </nav>
+              Push<span style={{ color: "#f97316" }}>44</span>
+            </motion.span>
+          </Link>
 
-        {/* CTA */}
-        <Link to={isConnected ? "/dashboard" : "/onboarding"} className="shrink-0 z-10">
-          <motion.button
-            className="flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-bold text-white"
-            style={{ background: "#f97316", boxShadow: "0 4px 16px rgba(249,115,22,0.4)" }}
-            whileHover={{ scale: 1.04, boxShadow: "0 8px 24px rgba(249,115,22,0.55)" }}
-            whileTap={{ scale: 0.96 }}
-            transition={spring}
-          >
-            {isConnected ? "Dashboard" : "Get Started"}
-            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-          </motion.button>
-        </Link>
+          {/* ── Nav links (desktop) ── */}
+          <div className="hidden sm:flex items-center gap-0.5 flex-1 justify-center">
+            {NAV_LINKS.map(({ id, label, href, external }, i) => (
+              <motion.a
+                key={id}
+                href={href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noreferrer" : undefined}
+                className="relative flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold rounded-full select-none"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{
+                  opacity: visible ? 1 : 0,
+                  y:       visible ? 0 : -10,
+                  color:   hovered === id ? linkHover : linkBase,
+                }}
+                transition={{
+                  opacity: { duration: 0.4, delay: 0.12 + i * 0.055, ease },
+                  y:       { duration: 0.4, delay: 0.12 + i * 0.055, ease },
+                  color:   { duration: 0.18 },
+                }}
+                onHoverStart={() => setHovered(id)}
+                onHoverEnd={() => setHovered(null)}
+              >
+                {/* Sliding hover pill */}
+                {hovered === id && (
+                  <motion.span
+                    layoutId="navHoverBg"
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: hoverBg }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                  />
+                )}
+                {id === "gh" && <GitHubLogo className="h-3.5 w-3.5 relative z-10 shrink-0" />}
+                <span className="relative z-10">{label}</span>
+                {id === "gh" && (
+                  <span
+                    className="relative z-10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold"
+                    style={{
+                      background: scrolled ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.10)",
+                      color:      scrolled ? "#9a8880"           : "rgba(255,255,255,0.45)",
+                    }}
+                  >
+                    <Star className="h-2.5 w-2.5 fill-current" />
+                    Open source
+                  </span>
+                )}
+              </motion.a>
+            ))}
+          </div>
+
+          {/* ── CTA button ── */}
+          <Link to={isConnected ? "/dashboard" : "/onboarding"} className="shrink-0">
+            <motion.button
+              className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-bold text-white overflow-hidden"
+              style={{
+                background:  "linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%)",
+                boxShadow:   "0 2px 14px rgba(249,115,22,0.50), inset 0 1px 0 rgba(255,255,255,0.22)",
+              }}
+              initial={{ opacity: 0, scale: 0.75 }}
+              animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.75 }}
+              transition={{ duration: 0.55, delay: 0.35, ease: [0.34, 1.25, 0.64, 1] }}
+              whileHover={{
+                scale:      1.07,
+                boxShadow: "0 6px 28px rgba(249,115,22,0.72), inset 0 1px 0 rgba(255,255,255,0.28)",
+              }}
+              whileTap={{ scale: 0.92 }}
+              transition={spring}
+            >
+              {/* Shimmer sweep on hover */}
+              <motion.span
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%)",
+                  backgroundSize: "200% 100%",
+                }}
+                initial={{ backgroundPosition: "200% 0" }}
+                whileHover={{ backgroundPosition: "-200% 0" }}
+                transition={{ duration: 0.55, ease: "easeInOut" }}
+              />
+              <span className="relative z-10">{isConnected ? "Dashboard" : "Get Started"}</span>
+              <motion.span
+                className="relative z-10"
+                animate={{ x: [0, 2.5, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
+              >
+                <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+              </motion.span>
+            </motion.button>
+          </Link>
+
+        </motion.div>
       </motion.div>
-    </motion.header>
+    </div>
   );
 }
 
