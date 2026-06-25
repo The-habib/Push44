@@ -8,7 +8,7 @@ import {
   AlertCircle, Trash2, ExternalLink, TrendingUp, Zap, Search,
   Download, X, Flame, RefreshCw,
 } from "lucide-react";
-import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import { getHistory, clearHistory, formatRelativeTime, getPushStreak, savePushPrefs, type PushRecord } from "@/lib/storage";
 
 export const Route = createFileRoute("/history")({
@@ -87,6 +87,8 @@ function HistoryPage() {
 
   const platformIcon = (platform?: string) => {
     if (platform === "rocket") return <RocketLogo size={12} />;
+    if (platform === "floot")  return <FlootLogo  size={12} />;
+    if (platform === "zite")   return <ZiteLogo   size={12} />;
     if (platform === "base44") return <Base44Logo size={12} />;
     return null;
   };

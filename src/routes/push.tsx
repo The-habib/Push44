@@ -10,7 +10,7 @@ import {
   Minus, UploadCloud, RefreshCw, Archive, Smartphone, Download,
   Clock, Copy, ChevronRight, Terminal, Zap,
 } from "lucide-react";
-import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { FileDiffViewer } from "@/components/FileDiffViewer";
 import { useApp } from "@/contexts/AppContext";
@@ -22,6 +22,7 @@ import {
   generateRocketKeystore,
 } from "@/lib/rocket-api";
 import { listFlootApps, fetchFlootAppFiles } from "@/lib/floot-api";
+import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
 import {
   listGitHubRepos, createGitHubRepo, pushFilesToGitHub,
   listRepoBranches, createRepoBranch,
@@ -44,7 +45,7 @@ export const Route = createFileRoute("/push")({
   component: PushPage,
 });
 
-type Platform = "base44" | "rocket" | "floot";
+type Platform = "base44" | "rocket" | "floot" | "zite";
 interface App  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface Repo { full_name: string; default_branch: string; html_url: string }
 interface Branch { name: string; sha: string; protected: boolean }
@@ -494,6 +495,12 @@ const FLOOT_LIGHT   = "#eff6ff";
 const FLOOT_BORDER  = "#bfdbfe";
 const FLOOT_TEXT    = "#1d4ed8";
 
+const ZITE_COLOR    = "#d97706";
+const ZITE_GRAD     = "linear-gradient(135deg,#f59e0b,#d97706)";
+const ZITE_LIGHT    = "#fffbeb";
+const ZITE_BORDER   = "#fde68a";
+const ZITE_TEXT     = "#92400e";
+
 function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platform; size?: number }) {
   const isUrl   = typeof icon === "string" && (icon.startsWith("http") || icon.startsWith("data:"));
   const isEmoji = typeof icon === "string" && icon.length > 0 && icon.length <= 4 && !isUrl;
@@ -506,7 +513,7 @@ function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platf
     );
   }
   if (isEmoji) {
-    const emojiBg = platform === "rocket" ? ROCKET_LIGHT : platform === "floot" ? FLOOT_LIGHT : "#fff4ed";
+    const emojiBg = platform === "rocket" ? ROCKET_LIGHT : platform === "floot" ? FLOOT_LIGHT : platform === "zite" ? ZITE_LIGHT : "#fff4ed";
     return (
       <div
         className="rounded-xl shrink-0 flex items-center justify-center border border-black/[0.05]"
@@ -517,7 +524,7 @@ function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platf
       </div>
     );
   }
-  const fallbackGrad = platform === "rocket" ? ROCKET_GRAD : platform === "floot" ? FLOOT_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
+  const fallbackGrad = platform === "rocket" ? ROCKET_GRAD : platform === "floot" ? FLOOT_GRAD : platform === "zite" ? ZITE_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
   return (
     <div
       className="rounded-xl shrink-0 flex items-center justify-center"
@@ -528,16 +535,19 @@ function AppIcon({ icon, platform, size = 36 }: { icon?: string; platform: Platf
         ? <RocketLogo size={Math.round(size * 0.44)} white />
         : platform === "floot"
           ? <FlootLogo size={Math.round(size * 0.44)} white />
-          : <Base44Logo size={Math.round(size * 0.44)} white />}
+          : platform === "zite"
+            ? <ZiteLogo size={Math.round(size * 0.44)} white />
+            : <Base44Logo size={Math.round(size * 0.44)} white />}
     </div>
   );
 }
 
-function PlatformToggle({ platform, onChange, hasBase44, hasRocket, hasFloot }: { platform: Platform; onChange: (p: Platform) => void; hasBase44: boolean; hasRocket: boolean; hasFloot: boolean }) {
+function PlatformToggle({ platform, onChange, hasBase44, hasRocket, hasFloot, hasZite }: { platform: Platform; onChange: (p: Platform) => void; hasBase44: boolean; hasRocket: boolean; hasFloot: boolean; hasZite: boolean }) {
   const tabs: { value: Platform; label: string; grad: string; logo: React.ReactNode; connected: boolean }[] = [
-    { value: "base44", label: "Base44",     grad: "linear-gradient(135deg,#fb923c,#f97316)", logo: <Base44Logo size={14} white={platform === "base44"} />, connected: hasBase44 },
-    { value: "rocket", label: "Rocket.new", grad: ROCKET_GRAD, logo: <RocketLogo size={15} white={platform === "rocket"} />, connected: hasRocket },
-    { value: "floot",  label: "Floot",      grad: FLOOT_GRAD,  logo: <FlootLogo  size={14} white={platform === "floot"}  />, connected: hasFloot  },
+    { value: "base44", label: "Base44",     grad: "linear-gradient(135deg,#fb923c,#f97316)", logo: <Base44Logo size={13} white={platform === "base44"} />, connected: hasBase44 },
+    { value: "rocket", label: "Rocket",     grad: ROCKET_GRAD, logo: <RocketLogo size={13} white={platform === "rocket"} />, connected: hasRocket },
+    { value: "floot",  label: "Floot",      grad: FLOOT_GRAD,  logo: <FlootLogo  size={13} white={platform === "floot"}  />, connected: hasFloot  },
+    { value: "zite",   label: "Zite",       grad: ZITE_GRAD,   logo: <ZiteLogo   size={13} white={platform === "zite"}   />, connected: hasZite   },
   ];
   return (
     <div className="flex bg-[#f5f2ee] rounded-2xl p-1 mb-4 gap-1" role="tablist">
@@ -549,7 +559,7 @@ function PlatformToggle({ platform, onChange, hasBase44, hasRocket, hasFloot }: 
             onClick={() => onChange(value)}
             role="tab"
             aria-selected={active}
-            className="w-[33%] flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold relative overflow-hidden"
+            className="w-[25%] flex items-center justify-center gap-1 py-2.5 rounded-xl text-[10px] font-bold relative overflow-hidden"
             whileTap={{ scale: 0.97 }}
           >
             {active && <motion.div layoutId="platform-tab" className="absolute inset-0 rounded-xl shadow-sm" style={{ background: grad }} transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
@@ -1247,7 +1257,8 @@ function PushPage() {
   const hasBase44   = !!creds.base44Token;
   const hasRocket   = !!creds.rocketToken;
   const hasFloot    = !!creds.flootToken;
-  const isConnected = !!((hasBase44 || hasRocket || hasFloot) && creds.githubToken);
+  const hasZite     = !!creds.ziteSession;
+  const isConnected = !!((hasBase44 || hasRocket || hasFloot || hasZite) && creds.githubToken);
   const step1done   = !!selectedApp && files.length > 0;
   const step2done   = !!selectedRepo;
   const stagedFiles = files.filter(f => stagedPaths.has(f.path));
@@ -1260,9 +1271,10 @@ function PushPage() {
   useEffect(() => {
     if (!isLoaded) return;
     if (creds.defaultBranch) setBranch(creds.defaultBranch);
-    if (hasBase44 && !hasRocket && !hasFloot) setPlatform("base44");
-    if (!hasBase44 && hasRocket && !hasFloot) setPlatform("rocket");
-    if (!hasBase44 && !hasRocket && hasFloot) setPlatform("floot");
+    if (hasBase44 && !hasRocket && !hasFloot && !hasZite) setPlatform("base44");
+    if (!hasBase44 && hasRocket && !hasFloot && !hasZite) setPlatform("rocket");
+    if (!hasBase44 && !hasRocket && hasFloot && !hasZite) setPlatform("floot");
+    if (!hasBase44 && !hasRocket && !hasFloot && hasZite) setPlatform("zite");
     if (isConnected) loadRepos();
   }, [isLoaded, isConnected]);
 
@@ -1321,12 +1333,24 @@ function PushPage() {
         else { setAppsError(msg); }
       }
       finally { setLA(false); }
-    } else {
+    } else if (platform === "floot") {
       if (!creds.flootToken) return;
       setLA(true);
       try {
         setAppsError("");
         setApps(await listFlootApps({ data: { token: creds.flootToken } }));
+      } catch (e: any) {
+        const msg: string = e.message ?? "Unknown error";
+        if (e.status === 401 || msg.includes("Unauthorized") || msg.includes("invalid or expired")) setTokenExpired("platform");
+        else setAppsError(msg);
+      }
+      finally { setLA(false); }
+    } else {
+      if (!creds.ziteSession) return;
+      setLA(true);
+      try {
+        setAppsError("");
+        setApps(await listZiteApps({ data: { session: creds.ziteSession, csrf: creds.ziteCsrf ?? "" } }));
       } catch (e: any) {
         const msg: string = e.message ?? "Unknown error";
         if (e.status === 401 || msg.includes("Unauthorized") || msg.includes("invalid or expired")) setTokenExpired("platform");
@@ -1362,8 +1386,10 @@ function PushPage() {
         setRocketStage("pinging");
         loadedFiles = await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId, companyId: creds.rocketCompanyId } });
         setRocketStage("");
-      } else {
+      } else if (platform === "floot") {
         loadedFiles = await fetchFlootAppFiles({ data: { token: creds.flootToken!, appId: app.id, appName: app.name } });
+      } else {
+        loadedFiles = await fetchZiteAppFiles({ data: { session: creds.ziteSession!, csrf: creds.ziteCsrf ?? "", appId: app.id } });
       }
       const snapshot = getAppSnapshot(app.id);
       const diff = computeFileDiff(loadedFiles, snapshot);
@@ -1515,8 +1541,8 @@ function PushPage() {
   }
 
   if (status === "done") {
-    const platformGrad  = platform === "rocket" ? ROCKET_GRAD : platform === "floot" ? FLOOT_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
-    const platformColor = platform === "rocket" ? ROCKET_COLOR : platform === "floot" ? FLOOT_COLOR : "#f97316";
+    const platformGrad  = platform === "rocket" ? ROCKET_GRAD : platform === "floot" ? FLOOT_GRAD : platform === "zite" ? ZITE_GRAD : "linear-gradient(135deg,#fb923c,#f97316)";
+    const platformColor = platform === "rocket" ? ROCKET_COLOR : platform === "floot" ? FLOOT_COLOR : platform === "zite" ? ZITE_COLOR : "#f97316";
     return (
       <>
         <AnimatedCorner variant="push" />
@@ -1543,10 +1569,10 @@ function PushPage() {
               <div className="px-5 py-4 space-y-3.5">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl shrink-0 flex items-center justify-center" style={{ background: platformGrad }}>
-                    {platform === "rocket" ? <RocketLogo size={20} white /> : platform === "floot" ? <FlootLogo size={18} white /> : <Base44Logo size={20} white />}
+                    {platform === "rocket" ? <RocketLogo size={20} white /> : platform === "floot" ? <FlootLogo size={18} white /> : platform === "zite" ? <ZiteLogo size={18} white /> : <Base44Logo size={20} white />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] text-[#9a8880] font-medium uppercase tracking-wide mb-0.5">{platform === "rocket" ? "Rocket.new project" : platform === "floot" ? "Floot project" : "Base44 app"} pushed</div>
+                    <div className="text-[11px] text-[#9a8880] font-medium uppercase tracking-wide mb-0.5">{platform === "rocket" ? "Rocket.new project" : platform === "floot" ? "Floot project" : platform === "zite" ? "Zite project" : "Base44 app"} pushed</div>
                     <div className="text-[13px] font-bold text-[#1a1a1a] truncate">{selectedApp?.name ?? "App"}</div>
                   </div>
                 </div>
@@ -1642,14 +1668,14 @@ function PushPage() {
 
       {/* Step 1: Select App + Files */}
       <SectionShell step={1} label="Select app & review files" active={!step1done} done={step1done}>
-        <PlatformToggle platform={platform} onChange={p => { setPlatform(p); }} hasBase44={hasBase44} hasRocket={hasRocket} hasFloot={hasFloot} />
+        <PlatformToggle platform={platform} onChange={p => { setPlatform(p); }} hasBase44={hasBase44} hasRocket={hasRocket} hasFloot={hasFloot} hasZite={hasZite} />
 
         {/* Platform not connected */}
-        {((platform === "base44" && !hasBase44) || (platform === "rocket" && !hasRocket) || (platform === "floot" && !hasFloot)) && (
+        {((platform === "base44" && !hasBase44) || (platform === "rocket" && !hasRocket) || (platform === "floot" && !hasFloot) || (platform === "zite" && !hasZite)) && (
           <div className="flex items-center gap-3 rounded-2xl p-4 bg-[#fff4ed] border border-[#fed7aa]">
             <AlertTriangle className="h-4 w-4 text-[#f97316] shrink-0" />
             <p className="text-[12px] font-semibold text-[#9a3412] flex-1">
-              {platform === "base44" ? "Base44" : platform === "floot" ? "Floot" : "Rocket.new"} not connected.
+              {platform === "base44" ? "Base44" : platform === "floot" ? "Floot" : platform === "zite" ? "Zite" : "Rocket.new"} not connected.
             </p>
             <MotionButton onClick={() => navigate({ to: "/settings" })} className="text-[11px] font-bold text-[#f97316] bg-white border border-[#f97316]/30 rounded-full px-3 py-1.5">Connect →</MotionButton>
           </div>
@@ -1675,9 +1701,9 @@ function PushPage() {
             {apps.map(app => {
               const isSelected  = selectedApp?.id === app.id;
               const snapshot    = getAppSnapshot(app.id);
-              const accentColor = platform === "rocket" ? ROCKET_COLOR : "#f97316";
-              const selBg       = platform === "rocket" ? ROCKET_LIGHT : "#fff4ed";
-              const selBorder   = platform === "rocket" ? ROCKET_COLOR : "#f97316";
+              const accentColor = platform === "rocket" ? ROCKET_COLOR : platform === "floot" ? FLOOT_COLOR : platform === "zite" ? ZITE_COLOR : "#f97316";
+              const selBg       = platform === "rocket" ? ROCKET_LIGHT : platform === "floot" ? FLOOT_LIGHT : platform === "zite" ? ZITE_LIGHT : "#fff4ed";
+              const selBorder   = platform === "rocket" ? ROCKET_COLOR : platform === "floot" ? FLOOT_COLOR : platform === "zite" ? ZITE_COLOR : "#f97316";
               return (
                 <motion.button
                   key={app.id}

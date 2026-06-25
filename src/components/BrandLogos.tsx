@@ -68,6 +68,29 @@ export function Base44Logo({
   );
 }
 
+export function ZiteLogo({
+  className = "",
+  size = 20,
+  white,
+}: {
+  className?: string;
+  size?: number;
+  white?: boolean;
+}) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill={white ? "#ffffff" : "#d97706"}
+      aria-label="Zite"
+      className={className}
+      width={size}
+      height={size}
+    >
+      <path d="M4 6h24v3.5L10.5 22.5H28V26H4v-3.5L21.5 9.5H4z" />
+    </svg>
+  );
+}
+
 export function GitHubLogo({
   className = "",
   size,
