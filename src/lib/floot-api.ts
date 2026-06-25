@@ -1,4 +1,4 @@
-const PROXY = "/proxy/floot";
+const PROXY = "/api/floot";
 
 async function proxyFetch(path: string, token: string, opts?: RequestInit): Promise<Response> {
   const headers: Record<string, string> = {

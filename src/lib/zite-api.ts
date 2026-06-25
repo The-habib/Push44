@@ -1,4 +1,4 @@
-const PROXY = "/proxy/zite";
+const PROXY = "/api/zite";
 
 async function proxyFetch(
   path: string,

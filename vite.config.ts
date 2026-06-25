@@ -9,9 +9,9 @@ function ziteProxyPlugin(): Plugin {
   const ZITE_ORIGIN = "https://build.fillout.com";
 
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-    if (!req.url?.startsWith("/proxy/zite")) return next();
+    if (!req.url?.startsWith("/api/zite")) return next();
 
-    const targetPath = req.url.replace("/proxy/zite", "") || "/";
+    const targetPath = req.url.replace("/api/zite", "") || "/";
     const session = (req.headers["x-zite-session"] as string) ?? "";
     const csrf    = (req.headers["x-zite-csrf"]    as string) ?? "";
 
@@ -111,12 +111,12 @@ function ziteProxyPlugin(): Plugin {
 
 function flootProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-    if (!req.url?.startsWith("/proxy/floot")) {
+    if (!req.url?.startsWith("/api/floot")) {
       return next();
     }
 
     const token = (req.headers["x-floot-token"] as string) ?? "";
-    const targetPath = req.url.replace("/proxy/floot", "") || "/";
+    const targetPath = req.url.replace("/api/floot", "") || "/";
 
     const forwardHeaders: Record<string, string> = {
       "Cookie": `nextauth.session-token=${token}; next-auth.session-token=${token}`,

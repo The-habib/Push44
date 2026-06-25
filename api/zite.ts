@@ -1,4 +1,6 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { IncomingMessage, ServerResponse } from "node:http";
+type VercelRequest = IncomingMessage & { url?: string; method?: string; headers: Record<string, string | string[] | undefined>; body?: any };
+type VercelResponse = ServerResponse & { status: (code: number) => VercelResponse; json: (body: any) => void; send: (body: any) => void; setHeader: (key: string, value: string) => void; end: (body?: any) => void };
 
 const ZITE_BASE = "https://server.zite.com";
 const ORIGIN    = "https://build.fillout.com";
