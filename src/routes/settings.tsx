@@ -601,7 +601,7 @@ function SettingsPage() {
       toast.success("Floot connection is working");
     } catch (e: any) {
       setFlootTest("fail");
-      toast.error("Floot test failed: " + (e.message ?? "Unknown error"));
+      toast.error(e.message || "Could not connect to Floot. Please check your token.");
     }
     setTimeout(() => setFlootTest("idle"), 4000);
   };
@@ -615,7 +615,7 @@ function SettingsPage() {
       toast.success("Zite connection is working");
     } catch (e: any) {
       setZiteTest("fail");
-      toast.error("Zite test failed: " + (e.message ?? "Unknown error"));
+      toast.error(e.message || "Could not connect to Zite. Please check your session or reconnect.");
     }
     setTimeout(() => setZiteTest("idle"), 4000);
   };
@@ -649,7 +649,7 @@ function SettingsPage() {
       toast.success("Base44 connection is working");
     } catch (e: any) {
       setB44Test("fail");
-      toast.error("Base44 test failed: " + (e.message ?? "Unknown error"));
+      toast.error(e.message || "Could not connect to Base44. Please check your token.");
     }
     setTimeout(() => setB44Test("idle"), 4000);
   };
@@ -663,7 +663,7 @@ function SettingsPage() {
       toast.success("Rocket.new connection is working");
     } catch (e: any) {
       setRocketTest("fail");
-      toast.error("Rocket.new test failed: " + (e.message ?? "Unknown error"));
+      toast.error(e.message || "Could not connect to Rocket.new. Please check your token.");
     }
     setTimeout(() => setRocketTest("idle"), 4000);
   };
@@ -677,7 +677,7 @@ function SettingsPage() {
       toast.success(`GitHub OK — logged in as @${u.login}`);
     } catch (e: any) {
       setGhTest("fail");
-      toast.error("GitHub test failed: " + (e.message ?? "Unknown error"));
+      toast.error(e.message || "Could not connect to GitHub. Please check your token.");
     }
     setTimeout(() => setGhTest("idle"), 4000);
   };

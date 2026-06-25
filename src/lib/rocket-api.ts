@@ -178,7 +178,11 @@ export async function rocketRequestOTP({ data }: { data: { email: string } }) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: data.email }),
   });
-  if (!res.ok) throw new Error(await parseError(res, `Failed to send OTP (${res.status})`));
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Email address not found. Make sure you're using the email registered with Rocket.new.");
+    if (res.status >= 500) throw new Error("Rocket.new is experiencing server issues. Please try again in a moment.");
+    throw new Error(await parseError(res, "Failed to send the verification code. Please check the email address and try again."));
+  }
 }
 
 export async function rocketVerifyOTP({ data }: { data: { email: string; otp: string } }) {
@@ -187,7 +191,12 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: data.email, otp: data.otp }),
   });
-  if (!res.ok) throw new Error(await parseError(res, `OTP verification failed (${res.status})`));
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 400) {
+      throw new Error("Incorrect or expired verification code. Please request a new one and try again.");
+    }
+    throw new Error(await parseError(res, "Verification failed — please request a new code and try again."));
+  }
   const raw = await res.json();
   const d = await rocketDecrypt(raw);
   console.warn("[push44:otp] full response", JSON.stringify(d).slice(0, 3000));
@@ -196,7 +205,7 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
   const token: string =
     payload.token ?? payload.access_token ?? payload.accessToken ??
     payload.jwtToken ?? payload.authToken ?? payload.jwt ?? "";
-  if (!token) throw new Error("No token returned from Rocket.new. Check your OTP code.");
+  if (!token) throw new Error("Rocket.new did not return a session token. Please try the login process again.");
   const user = payload.user ?? payload;
   // companyId may live at data.companyId OR data.user.companyId
   const companyId: string =
@@ -239,7 +248,7 @@ export async function validateRocketToken({ data }: { data: { token: string } })
       if (email) return { email, name, companyId };
     } catch { /* try next */ }
   }
-  throw new Error("Token validation failed. Make sure you pasted the correct Rocket.new API token.");
+  throw new Error("Could not validate this Rocket.new token. Make sure you pasted the correct API key from your account settings.");
 }
 
 // ─── Projects ────────────────────────────────────────────────────────────────

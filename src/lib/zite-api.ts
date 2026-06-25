@@ -46,20 +46,32 @@ export async function loginToZite({
 
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) {
-      throw new Error("Invalid email or password. Check your credentials and try again.");
+      throw new Error("Wrong email or password. Please check your build.fillout.com credentials and try again.");
+    }
+    if (res.status === 404) {
+      throw new Error("Could not reach the Zite service. Please try again in a moment.");
+    }
+    if (res.status >= 500) {
+      throw new Error("Zite is experiencing server issues. Please try again later.");
     }
     const text = await res.text().catch(() => "");
-    throw new Error(`Login failed (${res.status})${text ? ": " + text.slice(0, 200) : ""}`);
+    let msg = "Login failed — please check your credentials and try again.";
+    try {
+      const parsed = JSON.parse(text);
+      const raw: string = String(parsed.message ?? parsed.error?.message ?? parsed.error ?? "");
+      if (raw && !raw.startsWith("{") && !raw.toLowerCase().includes("page could not")) msg = raw;
+    } catch {}
+    throw new Error(msg);
   }
 
   const d = await res.json().catch(() => null);
-  if (!d) throw new Error("Unexpected response from Zite login.");
+  if (!d) throw new Error("Received an unexpected response from Zite. Please try again.");
 
   const session: string = d.session ?? "";
   const csrf: string = d.csrf ?? "";
 
   if (!session) {
-    throw new Error("Login succeeded but no session cookie was returned. Try again.");
+    throw new Error("Login succeeded but Zite did not return a session. Please try again.");
   }
 
   const email: string = d.email ?? data.email;
@@ -75,11 +87,11 @@ export async function validateZiteSession({
 }): Promise<{ email: string; name: string }> {
   const res = await proxyFetch("/admin/profile", data.session, data.csrf);
   if (!res.ok) {
-    throw new Error("Zite session is invalid or expired. Please reconnect.");
+    throw Object.assign(new Error("Your Zite session has expired. Please reconnect in Settings."), { status: 401 });
   }
   const d = await res.json().catch(() => null);
   const user = d?.user ?? d;
-  if (!user?.email) throw new Error("Could not read profile from Zite.");
+  if (!user?.email) throw new Error("Could not read your Zite profile. Please reconnect in Settings.");
   return {
     email: String(user.email),
     name: String(user.firstName ?? user.fullName ?? user.email),
@@ -93,9 +105,9 @@ export async function listZiteApps({
 }): Promise<ZiteApp[]> {
   const res = await proxyFetch("/admin/zite/apps", data.session, data.csrf);
   if (res.status === 401 || res.status === 403) {
-    throw new Error("Your Zite session has expired. Please reconnect in Settings.");
+    throw Object.assign(new Error("Your Zite session has expired. Please reconnect in Settings."), { status: 401 });
   }
-  if (!res.ok) throw new Error(`Failed to list Zite apps (${res.status})`);
+  if (!res.ok) throw new Error("Failed to load your Zite apps. Please try again or reconnect in Settings.");
 
   const d = await res.json().catch(() => null);
   const flows: any[] = d?.flows ?? [];
@@ -119,9 +131,9 @@ export async function fetchZiteAppFiles({
     data.csrf,
   );
   if (res.status === 401 || res.status === 403) {
-    throw new Error("Your Zite session has expired. Please reconnect in Settings.");
+    throw Object.assign(new Error("Your Zite session has expired. Please reconnect in Settings."), { status: 401 });
   }
-  if (!res.ok) throw new Error(`Failed to fetch Zite app (${res.status})`);
+  if (!res.ok) throw new Error("Failed to fetch the app files from Zite. Please try again or reconnect in Settings.");
 
   const d = await res.json().catch(() => null);
   const rawFiles: Record<string, any> =
@@ -142,7 +154,7 @@ export async function fetchZiteAppFiles({
 
   if (result.length === 0) {
     throw new Error(
-      "No source files found in this Zite app. Make sure the app has been built at least once.",
+      "No source files were found in this Zite app. Make sure it has been built at least once in Zite.",
     );
   }
 

@@ -16,9 +16,29 @@ async function ghFetch(token: string, path: string, opts?: RequestInit) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    const msg = err.message ?? `GitHub API error ${res.status}`;
-    if (res.status === 401 || res.status === 403) throw Object.assign(new Error(msg), { status: res.status });
-    throw new Error(msg);
+    if (res.status === 401) {
+      throw Object.assign(new Error("Your GitHub token is invalid or has expired. Please update it in Settings."), { status: 401 });
+    }
+    if (res.status === 403) {
+      throw Object.assign(new Error("GitHub access denied. Make sure your token includes the 'repo' permission scope."), { status: 403 });
+    }
+    if (res.status === 404) {
+      throw new Error("Not found on GitHub. The repository may have been deleted or you may not have access to it.");
+    }
+    if (res.status === 409) {
+      throw new Error("A conflict occurred while writing to GitHub. The branch may have been updated by another push — please try again.");
+    }
+    if (res.status === 422) {
+      const raw: string = String(err.message ?? "");
+      if (raw.toLowerCase().includes("already exists") || raw.toLowerCase().includes("name already")) {
+        throw new Error("A repository with that name already exists on GitHub. Please choose a different name.");
+      }
+      throw new Error("GitHub rejected the request. Check that the repository name is valid and try again.");
+    }
+    if (res.status >= 500) {
+      throw new Error("GitHub is experiencing server issues. Please try again in a moment.");
+    }
+    throw new Error(String(err.message ?? "An unexpected error occurred with GitHub. Please try again."));
   }
   return res.json();
 }

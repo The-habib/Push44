@@ -1319,8 +1319,8 @@ function PushPage() {
       try { setApps(await listBase44Apps({ data: { token: creds.base44Token } })); }
       catch (e: any) {
         const msg = e.message ?? "";
-        if (e.status === 401 || msg.includes("Bad credentials") || msg.includes("Unauthorized")) setTokenExpired("platform");
-        else toast.error("Failed to load Base44 apps: " + msg);
+        if (e.status === 401 || e.status === 403 || msg.includes("Bad credentials") || msg.includes("Unauthorized")) setTokenExpired("platform");
+        else toast.error(msg || "Failed to load your Base44 apps. Please try again.");
       }
       finally { setLA(false); }
     } else if (platform === "rocket") {
@@ -1369,8 +1369,8 @@ function PushPage() {
       const data = await listGitHubRepos({ data: { token: creds.githubToken } });
       setRepos(data.map((r: any) => ({ full_name: r.full_name, default_branch: r.default_branch, html_url: r.html_url })));
     } catch (e: any) {
-      if (e.status === 401) setTokenExpired("github");
-      else toast.error("Failed to load repos: " + e.message);
+      if (e.status === 401 || e.status === 403) setTokenExpired("github");
+      else toast.error(e.message || "Failed to load your GitHub repositories. Please try again.");
     }
     finally { setLR(false); }
   };
@@ -1417,10 +1417,10 @@ function PushPage() {
       } else if (platform === "floot" && msg.startsWith("FLOOT_NO_API:")) {
         const parts = msg.split(":");
         setFlootNoApi({ appId: parts[1] ?? app.id, appName: parts.slice(2).join(":") || app.name });
-      } else if (e.status === 401 || msg.includes("Unauthorized")) {
+      } else if (e.status === 401 || e.status === 403 || msg.toLowerCase().includes("unauthorized")) {
         setTokenExpired("platform");
       } else {
-        toast.error("Failed to fetch files: " + msg);
+        toast.error(msg || "Failed to fetch the app files. Please try again.");
       }
     }
     finally { clearTimeout(t); setLF(false); setWaking(false); setRocketStage(""); }
@@ -1456,7 +1456,7 @@ function PushPage() {
       await handleSelectRepo(r);
       setRepos((p) => [r, ...p]); setShowNewRepo(false); setNewRepoName(""); setNewRepoDesc("");
       toast.success(`Repo "${r.full_name}" created!`);
-    } catch (e: any) { toast.error("Create repo failed: " + e.message); }
+    } catch (e: any) { toast.error(e.message || "Failed to create the repository. Please try again."); }
   };
 
   const handleDownloadZip = async () => {
@@ -1510,13 +1510,13 @@ function PushPage() {
     } catch (e: any) {
       const msg = e.message ?? "Push failed";
       if (e.status === 401 || msg.includes("Bad credentials")) setTokenExpired("github");
-      setErrorMsg(msg); setStatus("error"); setPushProgress(null);
+      setErrorMsg(msg || "An unexpected error occurred during the push. Please try again."); setStatus("error"); setPushProgress(null);
       addHistory({
         id: Date.now().toString(), appName: selectedApp.name, platform, repo: selectedRepo.full_name,
         branch, commitMessage: commitMsg, commitHash: "",
         filesCount: stagedFiles.length, status: "failed", error: msg, timestamp: Date.now(),
       });
-      toast.error("Push failed: " + msg);
+      toast.error(msg || "Push failed. Please check your GitHub token and try again.");
     }
   };
 

@@ -12,11 +12,16 @@ async function b44Fetch(
   };
   const res = await fetch(`${BASE}${path}`, { ...opts, headers });
   if (!res.ok) {
+    if (res.status === 401) throw Object.assign(new Error("Your Base44 token is invalid or has expired. Please reconnect in Settings."), { status: 401 });
+    if (res.status === 403) throw Object.assign(new Error("Access denied by Base44 — your token may lack the required permissions."), { status: 403 });
+    if (res.status === 429) throw new Error("Too many requests — please wait a moment and try again.");
+    if (res.status >= 500) throw new Error("Base44 is experiencing server issues. Please try again in a moment.");
     const body = await res.text().catch(() => "");
-    let msg = `Base44 error ${res.status}`;
+    let msg = "An unexpected error occurred with Base44. Please try again.";
     try {
       const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
+      const raw: string = String(p.message ?? p.error ?? p.detail ?? "");
+      if (raw && !raw.startsWith("{") && !raw.startsWith("[")) msg = raw;
     } catch {}
     throw new Error(msg);
   }
@@ -31,17 +36,25 @@ export async function base44Login({ data }: { data: { email: string; password: s
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    let msg = `Login failed (${res.status})`;
-    try {
-      const p = JSON.parse(body);
-      msg = p.message ?? p.error ?? p.detail ?? msg;
-    } catch {}
-    throw new Error(msg);
+    if (res.status === 401 || res.status === 400) {
+      const body = await res.text().catch(() => "");
+      try {
+        const p = JSON.parse(body);
+        const raw: string = String(p.message ?? p.error ?? p.detail ?? "");
+        if (raw.toLowerCase().includes("google") || raw.toLowerCase().includes("oauth")) {
+          throw new Error("This account uses Google sign-in. Please use the Auth Token tab instead.");
+        }
+      } catch (inner) {
+        if (inner instanceof Error && inner.message.includes("Auth Token")) throw inner;
+      }
+      throw new Error("Invalid email or password. If you signed up with Google, use the Auth Token tab instead.");
+    }
+    if (res.status >= 500) throw new Error("Base44 is experiencing server issues. Please try again in a moment.");
+    throw new Error("Login failed — please check your credentials and try again.");
   }
   const d = await res.json();
   const token: string = d.access_token ?? d.token ?? d.accessToken ?? "";
-  if (!token) throw new Error("No token returned from Base44.");
+  if (!token) throw new Error("Base44 did not return a session token. Please try again.");
   const user = d.user ?? {};
   return {
     token,
@@ -134,7 +147,7 @@ async function wakeAndWaitForSandbox(
   }
 
   throw new Error(
-    "Sandbox did not wake up in time. Open your app in Base44 and try again."
+    "The sandbox is taking too long to wake up. Please open your app on Base44 first to wake it manually, then try again."
   );
 }
 
