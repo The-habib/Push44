@@ -19,7 +19,7 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "Get Started · Push44" },
-      { name: "description", content: "Set up Push44 in under 2 minutes — connect your Base44 account and GitHub token to start pushing apps." },
+      { name: "description", content: "Set up Push44 in under 2 minutes — connect Base44, Rocket.new, Floot, or Zite plus a GitHub token to start pushing apps." },
     ],
   }),
   component: OnboardingPage,
@@ -97,7 +97,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
     {
       icon: <FolderDown className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
       title: "Fetch all source files",
-      desc: "Every file from your Base44 sandbox, pulled in one request.",
+      desc: "Every source file from your app, pulled in one request.",
     },
     {
       icon: <GitCommit className="h-5 w-5 text-[#f97316]" strokeWidth={2} />,
@@ -161,7 +161,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
             Push<span style={{ color: "#f97316" }}>44</span>
           </h1>
           <p className="text-[13px] text-[#6b6360] leading-relaxed max-w-[240px] mx-auto">
-            Back up your Base44 apps to GitHub in one tap.
+            Back up your apps to GitHub in one tap.
           </p>
         </motion.div>
 
@@ -429,7 +429,7 @@ function DoneStep() {
         </motion.div>
       </ScaleIn>
       <FadeUp delay={0.1}><h2 className="text-[26px] font-black text-[#1a1a1a] tracking-tight mb-2">You're all set!</h2></FadeUp>
-      <FadeUp delay={0.16}><p className="text-[14px] text-[#6b6360] leading-relaxed max-w-[220px] mb-8">Push44 is ready. Start pushing your Base44 apps to GitHub in one tap.</p></FadeUp>
+      <FadeUp delay={0.16}><p className="text-[14px] text-[#6b6360] leading-relaxed max-w-[220px] mb-8">Push44 is ready. Start pushing your apps to GitHub in one tap.</p></FadeUp>
     </div>
   );
 }

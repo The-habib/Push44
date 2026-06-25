@@ -12,7 +12,7 @@ import {
   Rocket, Flame, GitCommit, ExternalLink, Lock, RefreshCw,
 } from "lucide-react";
 import { BarChart, Bar, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
@@ -110,10 +110,12 @@ function Dashboard() {
   >([]);
 
   /* ── derived flags ── */
-  const isConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
-  const hasGitHub   = !!creds.githubToken;
-  const hasBase44   = !!creds.base44Token;
-  const hasRocket   = !!creds.rocketToken;
+  const hasGitHub = !!creds.githubToken;
+  const hasBase44 = !!creds.base44Token;
+  const hasRocket = !!creds.rocketToken;
+  const hasFloot  = !!creds.flootToken;
+  const hasZite   = !!creds.ziteSession;
+  const isConnected = !!((hasBase44 || hasRocket || hasFloot || hasZite) && hasGitHub);
   const lastPush    = history[0];
   const firstName   = (creds.displayName || "").trim().split(/\s+/)[0] || "";
   const weekPushes  = weekData.reduce((s, d) => s + d.pushes, 0);
@@ -151,12 +153,17 @@ function Dashboard() {
   }, []);
 
   /* ── hero badge text ── */
+  const connectedPlatforms = [
+    hasBase44 && "Base44",
+    hasRocket && "Rocket.new",
+    hasFloot  && "Floot",
+    hasZite   && "Zite",
+  ].filter(Boolean) as string[];
+
   const heroBadge = isConnected
-    ? hasBase44 && hasRocket
-      ? "Base44 + Rocket.new → GitHub"
-      : hasRocket
-        ? "Rocket.new → GitHub"
-        : "Base44 → GitHub"
+    ? connectedPlatforms.length > 2
+      ? `${connectedPlatforms.length} Platforms → GitHub`
+      : `${connectedPlatforms.join(" + ")} → GitHub`
     : "Not connected";
 
   const heroSub = isConnected
@@ -164,7 +171,7 @@ function Dashboard() {
     : "Connect your accounts to start pushing.";
 
   /* ── service tiles data ── */
-  const services = [
+  const platformServices = [
     {
       label: "Base44",
       sub: creds.base44Email || (hasBase44 ? "Connected" : "—"),
@@ -184,13 +191,22 @@ function Dashboard() {
       border: "rgba(99,102,241,0.18)",
     },
     {
-      label: "GitHub",
-      sub: creds.githubUsername ? `@${creds.githubUsername}` : (hasGitHub ? "Connected" : "—"),
-      connected: hasGitHub,
-      Icon: GitHubLogo,
-      color: "#1a1a1a",
-      bg: "rgba(26,26,26,0.05)",
-      border: "rgba(26,26,26,0.12)",
+      label: "Floot",
+      sub: creds.flootEmail || (hasFloot ? "Connected" : "—"),
+      connected: hasFloot,
+      Icon: FlootLogo,
+      color: "#2563eb",
+      bg: "rgba(37,99,235,0.07)",
+      border: "rgba(37,99,235,0.18)",
+    },
+    {
+      label: "Zite",
+      sub: creds.ziteEmail || (hasZite ? "Connected" : "—"),
+      connected: hasZite,
+      Icon: ZiteLogo,
+      color: "#d97706",
+      bg: "rgba(217,119,6,0.08)",
+      border: "rgba(217,119,6,0.20)",
     },
   ] as const;
 
@@ -347,7 +363,7 @@ function Dashboard() {
                 Setup required
               </div>
               <div className="text-[11px] text-[#c2410c]/65 mt-0.5 font-medium">
-                Connect Base44 or Rocket.new + GitHub to start.
+                Connect a platform (Base44, Rocket, Floot, Zite) + GitHub.
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-[#f97316] shrink-0" />
@@ -357,13 +373,14 @@ function Dashboard() {
 
       {/* ── Connection health tiles ─────────────────── */}
       <FadeUp delay={0.09}>
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {services.map(({ label, sub, connected, Icon, color, bg, border }) => (
+        {/* Platform tiles (4-col) */}
+        <div className="grid grid-cols-4 gap-2 mb-2">
+          {platformServices.map(({ label, sub, connected, Icon, color, bg, border }) => (
             <motion.button
               key={label}
               type="button"
               onClick={() => navigate({ to: "/settings" })}
-              className="rounded-[18px] py-3.5 px-2 flex flex-col items-center gap-2 border w-full"
+              className="rounded-[16px] py-3 px-1.5 flex flex-col items-center gap-1.5 border w-full"
               style={{
                 background: connected ? bg : "rgba(0,0,0,0.025)",
                 borderColor: connected ? border : "rgba(0,0,0,0.07)",
@@ -371,33 +388,57 @@ function Dashboard() {
               whileHover={{ y: -2, transition: SP }}
               whileTap={{ scale: 0.95, transition: SP }}
             >
-              {/* Icon */}
-              <div className="h-9 w-9 flex items-center justify-center">
+              <div className="h-8 w-8 flex items-center justify-center">
                 <Icon
-                  size={24}
+                  size={22}
                   className={connected ? "" : "opacity-25"}
                   style={{ color: connected ? color : undefined }}
                 />
               </div>
-              {/* Label + dot */}
-              <div className="flex flex-col items-center gap-1.5 w-full px-1">
+              <div className="flex flex-col items-center gap-1 w-full">
                 <span
-                  className="text-[9.5px] font-extrabold tracking-wide leading-none text-center"
+                  className="text-[9px] font-extrabold tracking-wide leading-none text-center"
                   style={{ color: connected ? color : "#c8b8a2" }}
                 >
                   {label}
-                </span>
-                <span
-                  className="text-[8.5px] font-semibold text-center truncate w-full leading-none"
-                  style={{ color: connected ? `${color}99` : "#d4ccc4" }}
-                >
-                  {sub}
                 </span>
                 <StatusDot connected={connected} />
               </div>
             </motion.button>
           ))}
         </div>
+        {/* GitHub — full-width card */}
+        <motion.button
+          type="button"
+          onClick={() => navigate({ to: "/settings" })}
+          className="w-full rounded-[16px] px-4 py-3 flex items-center gap-3 border mb-4"
+          style={{
+            background: hasGitHub ? "rgba(26,26,26,0.04)" : "rgba(0,0,0,0.025)",
+            borderColor: hasGitHub ? "rgba(26,26,26,0.12)" : "rgba(0,0,0,0.07)",
+          }}
+          whileHover={{ y: -1, transition: SP }}
+          whileTap={{ scale: 0.98, transition: SP }}
+        >
+          <GitHubLogo
+            size={22}
+            className={hasGitHub ? "text-[#1a1a1a]" : "text-[#c8b8a2]"}
+          />
+          <div className="flex-1 text-left min-w-0">
+            <div
+              className="text-[12px] font-extrabold leading-none"
+              style={{ color: hasGitHub ? "#1a1a1a" : "#c8b8a2" }}
+            >
+              GitHub
+            </div>
+            <div
+              className="text-[10.5px] font-medium mt-0.5 truncate"
+              style={{ color: hasGitHub ? "#6b6360" : "#d4ccc4" }}
+            >
+              {creds.githubUsername ? `@${creds.githubUsername}` : (hasGitHub ? "Connected" : "Not connected")}
+            </div>
+          </div>
+          <StatusDot connected={hasGitHub} />
+        </motion.button>
       </FadeUp>
 
       {/* ── Stat cards ──────────────────────────────── */}

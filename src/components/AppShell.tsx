@@ -191,7 +191,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const displayName    = creds.displayName || creds.base44Email || creds.githubUsername || "";
   const pageTitle      = PAGE_TITLES[pathname] ?? "Push44";
-  const fullyConnected = !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
+  const fullyConnected = !!((creds.base44Token || creds.rocketToken || creds.flootToken || creds.ziteSession) && creds.githubToken);
 
   // Track nav direction
   const prevPathRef = useRef(pathname);

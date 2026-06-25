@@ -77,16 +77,37 @@ export function ZiteLogo({
   size?: number;
   white?: boolean;
 }) {
+  if (white) {
+    return (
+      <svg
+        viewBox="0 0 32 32"
+        fill="none"
+        aria-label="Zite"
+        className={className}
+        width={size}
+        height={size}
+      >
+        <path
+          d="M5 7.5h22l-14 17H27V24.5H5l14-17H5z"
+          fill="#ffffff"
+        />
+      </svg>
+    );
+  }
   return (
     <svg
       viewBox="0 0 32 32"
-      fill={white ? "#ffffff" : "#d97706"}
+      fill="none"
       aria-label="Zite"
       className={className}
       width={size}
       height={size}
     >
-      <path d="M4 6h24v3.5L10.5 22.5H28V26H4v-3.5L21.5 9.5H4z" />
+      <rect width="32" height="32" rx="7" fill="#111108" />
+      <path
+        d="M5 7.5h22l-14 17H27V24.5H5l14-17H5z"
+        fill="#f5a623"
+      />
     </svg>
   );
 }

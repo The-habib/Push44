@@ -13,11 +13,11 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Push44 — Push Base44 Apps to GitHub in One Tap" },
+      { title: "Push44 — Push Your Apps to GitHub in One Tap" },
       {
         name: "description",
         content:
-          "Push44 lets you back up and version-control your Base44 app source code to GitHub in a single click. Free, open, and takes under 2 minutes to set up.",
+          "Push44 backs up Base44, Rocket.new, Floot, and Zite app source code to GitHub in one tap. Free, runs in your browser, zero server-side storage.",
       },
     ],
   }),
@@ -42,27 +42,27 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
 }
 
 const FEATURES = [
-  { icon: Zap, title: "One-tap push", desc: "All 87+ source files committed to GitHub in a single click — no copy-pasting, no manual uploads, no CLI." },
+  { icon: Zap, title: "One-tap push", desc: "All source files committed to GitHub in a single click — no copy-pasting, no manual uploads, no CLI." },
   { icon: Layers, title: "GitHub Trees API", desc: "Uses GitHub's efficient bulk-commit Trees API so even large apps push in seconds, not minutes." },
-  { icon: UploadCloud, title: "Auto sandbox wake", desc: "Automatically wakes sleeping Base44 sandboxes before fetching files — no manual intervention needed." },
+  { icon: UploadCloud, title: "4 platforms supported", desc: "Works with Base44, Rocket.new, Floot, and Zite (build.fillout.com) — switch between them in one tap." },
   { icon: Clock, title: "Full push history", desc: "Every push is logged with the commit hash, file count, branch, and timestamp for complete traceability." },
-  { icon: Shield, title: "Zero data stored", desc: "Your credentials never leave your browser. Push44 talks directly to Base44 and GitHub — no middleman." },
+  { icon: Shield, title: "Zero data stored", desc: "Your credentials never leave your browser. Push44 talks directly to each platform and GitHub — no middleman." },
   { icon: GitBranch, title: "Any repo, any branch", desc: "Push to existing repos or create a new one on the fly. Choose your branch — main, dev, or anything else." },
 ];
 
 const STEPS = [
-  { num: "01", title: "Connect Base44", desc: "Sign in with your Base44 email and password, or paste an API key. Your credentials stay in your browser only.", icon: Boxes },
-  { num: "02", title: "Select your app", desc: "Choose from all your Base44 projects. Push44 automatically wakes the sandbox and fetches every source file.", icon: Package },
+  { num: "01", title: "Connect your platform", desc: "Sign in with Base44, Rocket.new, Floot, or Zite. Your credentials stay in your browser only — nothing is sent to our servers.", icon: Boxes },
+  { num: "02", title: "Select your app", desc: "Choose from all your projects. Push44 automatically wakes sleeping sandboxes and fetches every source file.", icon: Package },
   { num: "03", title: "Push to GitHub", desc: "Pick a GitHub repo or create one instantly. All files are committed in a single atomic push.", icon: GitCommit },
 ];
 
 const FAQS = [
-  { q: "What is Push44?", a: "Push44 is a free web app that lets you back up your Base44 app source code to GitHub in one tap. It fetches all your app files from the Base44 sandbox and commits them to any GitHub repository using a single atomic commit." },
+  { q: "What is Push44?", a: "Push44 is a free web app that lets you back up your app source code to GitHub in one tap. It supports Base44, Rocket.new, Floot, and Zite (build.fillout.com). It fetches all your app files and commits them to any GitHub repository using a single atomic commit." },
   { q: "Is Push44 free to use?", a: "Yes, completely free. There are no subscriptions, no sign-up required, and no limits on the number of pushes. Push44 runs entirely in your browser." },
-  { q: "Is my Base44 password safe?", a: "Yes. Your credentials go directly from your browser to the Base44 and GitHub APIs. Push44 has no backend server — nothing is ever stored or transmitted through our infrastructure." },
+  { q: "Are my credentials safe?", a: "Yes. Your credentials go directly from your browser to each platform's and GitHub's APIs. Push44 has no backend server — nothing is ever stored or transmitted through our infrastructure." },
   { q: "What GitHub permissions does Push44 need?", a: "Push44 needs a GitHub Personal Access Token with repo and user scopes. This lets it list your repos, create new ones, and push commits. You can revoke the token at any time from your GitHub settings." },
   { q: "Does Push44 work with private GitHub repos?", a: "Yes. With the correct token scopes, Push44 can push to both public and private repositories, and can create new private repos on your behalf." },
-  { q: "Can I push to an existing repository?", a: "Yes. You can push to any existing repository or create a brand-new one. Push44 adds all your Base44 app files in a single commit, preserving any existing repo history." },
+  { q: "Can I push to an existing repository?", a: "Yes. You can push to any existing repository or create a brand-new one. Push44 adds all your app files in a single commit, preserving any existing repo history." },
 ];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -223,7 +223,7 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
 
 function LandingPage() {
   const { creds, isLoaded } = useApp();
-  const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken) && creds.githubToken);
+  const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken || creds.flootToken || creds.ziteSession) && creds.githubToken);
 
   return (
     <div className="min-h-screen bg-[#fffcf8] text-[#1a1a1a]" style={{ overflowX: "clip" }}>
@@ -296,10 +296,8 @@ function LandingPage() {
                 transition={{ duration: 0.6, delay: 0.08, ease }}
                 className="text-[48px] sm:text-[62px] lg:text-[72px] font-black leading-[1.0] tracking-[-0.02em] text-[#1a1a1a] mb-6"
               >
-                Push{" "}
-                <span className="text-[#f97316]">Base44</span>{" "}
-                apps<br />
-                to{" "}
+                Push your<br />
+                apps to{" "}
                 <span className="relative inline-block">
                   GitHub
                   <motion.span
@@ -319,7 +317,7 @@ function LandingPage() {
                 transition={{ duration: 0.55, delay: 0.18, ease }}
                 className="text-[17px] sm:text-[19px] text-[#6b6360] leading-relaxed max-w-lg mb-9"
               >
-                Fetch all your Base44 source files and commit them to any GitHub repo in a single atomic push. Version-control your vibe-coded apps in under 2 minutes.
+                Fetch all your source files from Base44, Rocket.new, Floot, or Zite and commit them to any GitHub repo in a single atomic push. Version-control your apps in under 2 minutes.
               </motion.p>
 
               <motion.div
