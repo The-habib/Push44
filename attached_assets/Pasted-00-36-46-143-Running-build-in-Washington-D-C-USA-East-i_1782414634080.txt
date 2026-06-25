@@ -1,0 +1,41 @@
+00:36:46.143 Running build in Washington, D.C., USA (East) – iad1
+00:36:46.144 Build machine configuration: 2 cores, 8 GB
+00:36:46.272 Cloning github.com/The-habib/Push44 (Branch: main, Commit: f1b073c)
+00:36:48.406 Cloning completed: 2.134s
+00:36:48.515 Restored build cache from previous deployment (5hVgD8saRXWJCiKs6oPDF6N7vMgn)
+00:36:48.765 Running "vercel build"
+00:36:48.785 Vercel CLI 54.17.1
+00:36:49.734 Running "install" command: `bun install`...
+00:36:49.919 bun install v1.3.12 (700fc117)
+00:36:49.943 Resolving dependencies
+00:36:53.322 Resolved, downloaded and extracted [1348]
+00:36:53.440 Saved lockfile
+00:36:53.442 
+00:36:53.442 Checked 318 installs across 356 packages (no changes) [3.54s]
+00:36:53.592 $ vite build
+00:36:55.019 vite v8.1.0 building client environment for production...
+00:36:56.473 transforming...✓ 921 modules transformed.
+00:36:56.731 rendering chunks...
+00:36:57.042 computing gzip size...
+00:36:57.067 dist/index.html                                       4.67 kB │ gzip:   1.44 kB
+00:36:57.068 dist/assets/base44-logo-transparent-BqJLnLIw.png     71.75 kB
+00:36:57.068 dist/assets/logo-B1Bl1SyO.png                     1,393.70 kB
+00:36:57.069 dist/assets/index-I0QRveet.css                      102.29 kB │ gzip:  17.44 kB
+00:36:57.069 dist/assets/index-9bUicTuj.js                     1,244.80 kB │ gzip: 350.20 kB
+00:36:57.069 
+00:36:57.070 [plugin builtin:vite-reporter] 
+00:36:57.070 (!) Some chunks are larger than 500 kB after minification. Consider:
+00:36:57.071 - Using dynamic import() to code-split the application
+00:36:57.071 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+00:36:57.071 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+00:36:57.072 ✓ built in 2.05s
+00:36:57.178 Installing dependencies...
+00:36:57.189 bun install v1.3.12 (700fc117)
+00:36:57.214 
+00:36:57.214 Checked 318 installs across 356 packages (no changes) [29.00ms]
+00:36:57.519 Using TypeScript 6.0.3 (local user-provided)
+00:37:03.896 Using TypeScript 6.0.3 (local user-provided)
+00:37:04.777 Build Completed in /vercel/output [15s]
+00:37:04.929 Deploying outputs...
+00:37:09.581 Deployment completed
+00:37:09.723 Creating build cache...

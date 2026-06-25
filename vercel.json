@@ -3,6 +3,10 @@
   "installCommand": "bun install",
   "framework": null,
   "outputDirectory": "dist",
-  "cleanUrls": true,
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "routes": [
+    { "src": "/api/zite/(.*)",  "dest": "/api/zite-proxy?p=$1"  },
+    { "src": "/api/floot/(.*)", "dest": "/api/floot-proxy?p=$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
