@@ -96,7 +96,8 @@ function Base44Modal({ onSuccess, onClose }: { onSuccess: (t: string, e: string,
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 rounded-[28px] shadow-2xl overflow-hidden border border-white/80"
+        style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)" }}
         initial={{ y: 60, opacity: 0, scale: 0.96 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
@@ -262,7 +263,8 @@ function ZiteModal({ onSuccess, onClose }: { onSuccess: (session: string, csrf: 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 rounded-[28px] shadow-2xl overflow-hidden border border-white/80"
+        style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)" }}
         initial={{ y: 60, opacity: 0, scale: 0.96 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
@@ -390,7 +392,8 @@ function FlootModal({ onSuccess, onClose }: { onSuccess: (t: string, e: string, 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <motion.div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 bg-white rounded-[28px] shadow-2xl overflow-hidden border border-[#f0ece4]"
+        className="relative z-10 w-full max-w-sm mx-4 mb-24 sm:mb-0 rounded-[28px] shadow-2xl overflow-hidden border border-white/80"
+        style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)" }}
         initial={{ y: 60, opacity: 0, scale: 0.96 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 60, opacity: 0, scale: 0.96 }}
@@ -749,7 +752,7 @@ function SettingsPage() {
 
       {/* ── Connections card ── */}
       <FadeUp delay={0.06}>
-        <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
+        <div className="rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 16px rgba(0,0,0,0.05)" }}>
           <div className="px-5 pt-4 pb-2">
             <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Platforms</p>
           </div>
@@ -1073,7 +1076,7 @@ function SettingsPage() {
 
       {/* ── Push defaults ── */}
       <FadeUp delay={0.12}>
-        <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3">
+        <div className="rounded-[24px] border border-[#f0ece4] overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 16px rgba(0,0,0,0.05)" }}>
           <div className="px-5 pt-4 pb-2">
             <p className="text-[10px] font-black tracking-[0.12em] uppercase text-[#c8b8a2]">Push Defaults</p>
           </div>

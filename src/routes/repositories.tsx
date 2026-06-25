@@ -290,7 +290,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                   </div>
 
                   {languages.length > 0 && (
-                    <div className="bg-white rounded-[20px] border border-[#f0ece4] p-4">
+                    <div className="rounded-[20px] border border-[#f0ece4] p-4" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="h-7 w-7 rounded-lg bg-[#faf7f3] flex items-center justify-center"><Tag className="h-3.5 w-3.5 text-[#9a8880]" /></div>
                         <h3 className="text-[13px] font-black text-[#1a1a1a]">Languages</h3>
@@ -320,7 +320,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                   )}
 
                   {details?.topics?.length > 0 && (
-                    <div className="bg-white rounded-[20px] border border-[#f0ece4] p-4">
+                    <div className="rounded-[20px] border border-[#f0ece4] p-4" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                       <h3 className="text-[13px] font-black text-[#1a1a1a] mb-3">Topics</h3>
                       <div className="flex flex-wrap gap-2">
                         {details.topics.map((t: string) => (
@@ -331,7 +331,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                   )}
 
                   {contributors.length > 0 && (
-                    <div className="bg-white rounded-[20px] border border-[#f0ece4] p-4">
+                    <div className="rounded-[20px] border border-[#f0ece4] p-4" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="h-7 w-7 rounded-lg bg-[#faf7f3] flex items-center justify-center"><Users className="h-3.5 w-3.5 text-[#9a8880]" /></div>
                         <h3 className="text-[13px] font-black text-[#1a1a1a]">Contributors</h3>
@@ -354,7 +354,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
                   )}
 
                   {details && (
-                    <div className="bg-white rounded-[20px] border border-[#f0ece4] p-4">
+                    <div className="rounded-[20px] border border-[#f0ece4] p-4" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="h-7 w-7 rounded-lg bg-[#faf7f3] flex items-center justify-center"><Calendar className="h-3.5 w-3.5 text-[#9a8880]" /></div>
                         <h3 className="text-[13px] font-black text-[#1a1a1a]">Timeline</h3>
@@ -381,7 +381,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
               {tab === "branches" && (
                 <div className="space-y-3">
                   {/* Create new branch */}
-                  <div className="bg-white rounded-[20px] border border-[#f0ece4] p-4">
+                  <div className="rounded-[20px] border border-[#f0ece4] p-4" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-[13px] font-black text-[#1a1a1a]">Branches</h3>
                       <button onClick={() => setShowBranchCreate(s => !s)} className="flex items-center gap-1.5 text-[11px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-2.5 py-1.5 border border-[#f97316]/20">
@@ -439,7 +439,7 @@ function RepoDetailSheet({ repo, token, onClose, onPush }: DetailSheetProps) {
 
               {/* ─── COMMITS TAB ─── */}
               {tab === "commits" && (
-                <div className="bg-white rounded-[20px] border border-[#f0ece4] overflow-hidden">
+                <div className="rounded-[20px] border border-[#f0ece4] overflow-hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
                   <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-[#f7f4f0]">
                     <div className="h-7 w-7 rounded-lg bg-[#faf7f3] flex items-center justify-center"><GitCommit className="h-3.5 w-3.5 text-[#9a8880]" /></div>
                     <h3 className="text-[13px] font-black text-[#1a1a1a]">Commit History</h3>
@@ -655,7 +655,8 @@ function ReposPage() {
             <StaggerItem key={repo.id}>
               <motion.div
                 onClick={() => setSelected(repo)}
-                className="flex items-center gap-3.5 bg-white rounded-[20px] px-4 py-3.5 border border-[#f0ece4] cursor-pointer"
+                className="flex items-center gap-3.5 rounded-[20px] px-4 py-3.5 border border-[#f0ece4] cursor-pointer"
+              style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
                 whileHover={{ y: -2, boxShadow: "0 6px 24px rgba(0,0,0,0.07)" }}
                 whileTap={{ scale: 0.985 }}
                 transition={{ type: "spring", stiffness: 380, damping: 28 }}

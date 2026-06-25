@@ -129,15 +129,15 @@ function HistoryPage() {
       {allEvents.length > 0 && (
         <FadeUp delay={0.08}>
           <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="rounded-2xl px-3 py-3 bg-white border border-[#f0ece4] text-center">
+            <div className="rounded-2xl px-3 py-3 border border-[#f0ece4] text-center" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
               <div className="text-[18px] font-black text-[#1a1a1a] leading-none">{totalFiles.toLocaleString()}</div>
               <div className="text-[9px] font-bold text-[#9a8880] uppercase tracking-wide mt-1">Total files</div>
             </div>
-            <div className="rounded-2xl px-3 py-3 bg-white border border-[#f0ece4] text-center">
+            <div className="rounded-2xl px-3 py-3 border border-[#f0ece4] text-center" style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
               <div className="text-[18px] font-black text-[#1a1a1a] leading-none">{avgFiles}</div>
               <div className="text-[9px] font-bold text-[#9a8880] uppercase tracking-wide mt-1">Avg / push</div>
             </div>
-            <div className="rounded-2xl px-3 py-3 border text-center" style={{ background: streak > 0 ? "#fff4ed" : "white", borderColor: streak > 0 ? "#fed7aa" : "#f0ece4" }}>
+            <div className="rounded-2xl px-3 py-3 border text-center" style={{ background: streak > 0 ? "rgba(255,244,237,0.9)" : "rgba(255,255,255,0.85)", borderColor: streak > 0 ? "#fed7aa" : "#f0ece4", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-center gap-1">
                 {streak > 0 && <Flame className="h-3.5 w-3.5 text-[#f97316]" />}
                 <div className="text-[18px] font-black leading-none" style={{ color: streak > 0 ? "#f97316" : "#1a1a1a" }}>{streak}</div>
@@ -180,7 +180,8 @@ function HistoryPage() {
       {/* Most pushed app */}
       {mostPushedApp && (
         <FadeUp delay={0.1}>
-          <div className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 mb-4 border border-[#f0ece4]">
+          <div className="flex items-center gap-3 rounded-2xl px-4 py-3.5 mb-4 border border-[#f0ece4]"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
             <div className="h-9 w-9 rounded-xl bg-[#fff4ed] flex items-center justify-center shrink-0">
               <Zap className="h-4 w-4 text-[#f97316]" />
             </div>
@@ -196,7 +197,8 @@ function HistoryPage() {
       {/* Search + filters */}
       {allEvents.length > 0 && (
         <FadeUp delay={0.12}>
-          <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-4">
+          <div className="rounded-[24px] border border-[#f0ece4] overflow-hidden mb-4"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
             <div className="px-4 py-3 border-b border-[#f7f4f0]">
               {/* Search */}
               <div className="flex items-center gap-2 rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-3 py-2 mb-2.5">
@@ -362,7 +364,8 @@ function HistoryPage() {
       {/* Empty state (no history at all) */}
       {allEvents.length === 0 && (
         <FadeUp delay={0.1}>
-          <div className="bg-white rounded-[24px] border border-[#f0ece4] p-8 flex flex-col items-center text-center gap-4">
+          <div className="rounded-[24px] border border-[#f0ece4] p-8 flex flex-col items-center text-center gap-4"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
             <motion.div className="h-16 w-16 rounded-[22px] flex items-center justify-center bg-[#faf7f3]" animate={{ y: [0, -5, 0] }} transition={{ duration: 3, repeat: Infinity }}>
               <HistoryIcon className="h-8 w-8 text-[#c8b8a2]" />
             </motion.div>

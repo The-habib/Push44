@@ -46,7 +46,8 @@ const ease = [0.25, 0.46, 0.45, 0.94] as const;
 function Step({ title, subtitle, icon, children }: { title: string; subtitle: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <motion.div
-      className="w-full bg-white rounded-[28px] shadow-[0_4px_40px_rgba(0,0,0,0.08)] border border-[#f0ece4] overflow-hidden"
+      className="w-full rounded-[28px] overflow-hidden border border-[#f0ece4]"
+      style={{ background: "rgba(255,255,255,0.94)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "0 8px 40px rgba(0,0,0,0.09), 0 2px 8px rgba(0,0,0,0.04)" }}
       initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -14, scale: 0.97 }}
@@ -203,8 +204,8 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         {features.map((f, i) => (
           <motion.div
             key={f.title}
-            className="flex items-center gap-3.5 bg-white rounded-[16px] border border-[#f0ece4] px-4 py-3"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+            className="flex items-center gap-3.5 rounded-[16px] border border-[#f0ece4] px-4 py-3"
+            style={{ background: "rgba(255,255,255,0.90)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.32 + i * 0.08, type: "spring", stiffness: 340, damping: 28 }}

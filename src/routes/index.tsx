@@ -1044,7 +1044,7 @@ function LandingPage() {
           </FadeUp>
 
           <FadeUp delay={0.1}>
-            <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden px-6 sm:px-8">
+            <div className="rounded-2xl border border-black/[0.06] overflow-hidden px-6 sm:px-8" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
               {FAQS.map(({ q, a }) => (
                 <FAQItem key={q} q={q} a={a} />
               ))}

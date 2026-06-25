@@ -68,7 +68,8 @@ function StepBadge({ n, active, done }: { n: number; active: boolean; done: bool
 function SectionShell({ step, label, active, done, children }: { step: number; label: string; active: boolean; done: boolean; children: React.ReactNode }) {
   return (
     <motion.div
-      className="bg-white rounded-[24px] border mb-3 overflow-hidden"
+      className="rounded-[24px] border mb-3 overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 16px rgba(0,0,0,0.05)" }}
       animate={{ borderColor: active ? "rgba(249,115,22,0.3)" : "#f0ece4" }}
       transition={{ duration: 0.25 }}
     >
@@ -149,7 +150,7 @@ function StagingBrowser({
 
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-3">
-      <div className="bg-white rounded-[22px] border border-[#f0ece4] overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+      <div className="rounded-[22px] border border-[#f0ece4] overflow-hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
 
         {/* Header */}
         <div className="px-4 py-3 border-b border-[#f5f2ee]">
@@ -822,8 +823,8 @@ function ApkBuildPanel({
 
   return (
     <motion.div
-      className="bg-white rounded-[24px] border mb-3 overflow-hidden"
-      style={{ borderColor }}
+      className="rounded-[24px] border mb-3 overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 16px rgba(0,0,0,0.05)", borderColor }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -1565,7 +1566,7 @@ function PushPage() {
           </FadeUp>
 
           <FadeUp delay={0.16}>
-            <div className="bg-white rounded-[22px] border border-[#f0ece4] overflow-hidden mb-3" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
+            <div className="rounded-[22px] border border-[#f0ece4] overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
               <div className="h-1 w-full" style={{ background: "linear-gradient(90deg,#22c55e,#16a34a)" }} />
               <div className="px-5 py-4 space-y-3.5">
                 <div className="flex items-center gap-3">

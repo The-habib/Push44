@@ -483,7 +483,8 @@ function Dashboard() {
       {/* ── Weekly activity chart ───────────────────── */}
       {history.length > 0 && (
         <FadeUp delay={0.14}>
-          <div className="bg-white rounded-[24px] border border-[#f0ece4] overflow-hidden mb-4">
+          <div className="rounded-[24px] border border-[#f0ece4] overflow-hidden mb-4"
+            style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 20px rgba(0,0,0,0.05)" }}>
             <SectionHeader
               title="This week"
               sub={`${weekPushes} push${weekPushes !== 1 ? "es" : ""} · ${weekFiles.toLocaleString()} files`}
@@ -554,7 +555,8 @@ function Dashboard() {
       {/* ── Last push ───────────────────────────────── */}
       {lastPush && (
         <FadeUp delay={0.17}>
-          <div className="bg-white rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4">
+          <div className="rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 20px rgba(0,0,0,0.05)" }}>
             <SectionHeader
               title="Last Push"
               action={
@@ -725,7 +727,8 @@ function Dashboard() {
       {/* ── Recent repos ────────────────────────────── */}
       {isConnected && (loadingRepos || repos.length > 0) && (
         <FadeUp delay={0.20}>
-          <div className="bg-white rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4">
+          <div className="rounded-[24px] overflow-hidden border border-[#f0ece4] mb-4"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: "0 2px 20px rgba(0,0,0,0.05)" }}>
             <SectionHeader
               title="Recent Repos"
               action={
