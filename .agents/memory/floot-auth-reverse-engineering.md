@@ -1,6 +1,6 @@
 ---
 name: Floot Authentication - Reverse Engineered
-description: Confirmed Floot login flow and API endpoints from deep reverse engineering of floot.com JS bundles and live API probing
+description: Confirmed Floot login flow, API endpoints, and definitive file-access limitation from deep reverse engineering
 ---
 
 ## Confirmed Facts (June 2026)
@@ -61,22 +61,38 @@ The `next-auth.session-token` cookie value is a **UUID** (e.g. `497f0bb7-e8df-43
 **Other confirmed endpoints (no file export available):**
 - `GET /_api/workspace/deployment?workspaceId={id}` → `{"type":"notDeployed"}` or deployment info
 - `GET /_api/resources/list?workspaceId={id}` → `{"resources":[]}`
-- `GET /_api/resources/create`, `/_api/resources/update`, `/_api/resources/delete`, `/_api/resources/check-duplicate`
-- `GET /_api/folder/list`, `/_api/folder/create`, `/_api/folder/delete`, `/_api/folder/rename`
-- `GET /_api/database/tables?workspaceId={id}`, `/_api/database/dump` (project-specific DB)
-- `GET /_api/storage/listFolder?workspaceId={id}`, `/_api/storage/fileUrl?`, `/_api/storage/uploadUrl`
-- `GET /_api/appsync-subscriber-token` — AppSync WebSocket for real-time collaboration
-- `GET /_api/user-info` — returns current user info
-- `GET /_api/workspace/mobile-build-status`, `/_api/workspace/mobile-build-download-url`
+- `GET /_api/workspace/runtime-schedules?workspaceId={id}` → scheduled jobs
+- `GET /_api/workspace/floot-ai-credits?workspaceId={id}` → AI credit usage
+- `GET /_api/workspace/canonical-domain?workspaceId={id}` → custom domain info
+- `GET /_api/appsync-subscriber-token` — AppSync WebSocket JWT for real-time collaboration
+- Full list of 45 `/_api/` endpoints confirmed by page.js bundle analysis — NONE expose file content
 
-### ❌ File Source Code Export: NOT AVAILABLE via REST
+### ❌ FILE SOURCE CODE EXPORT: DEFINITIVELY NOT AVAILABLE (June 2026)
 
-Floot's generated code files are accessed via **AppSync WebSocket** (real-time editor), NOT REST.
-- No `/export`, `/download`, or `/files` endpoint exists
-- `sketchCss` in workspace response is just the CSS variables, not full source
-- File export cannot be implemented until Floot adds an export endpoint
+After exhaustive reverse engineering (2+ sessions, 3MB+ of JS analyzed), confirmed:
 
-**Why:** Floot is a web-based real-time IDE. Code state is stored in AppSync subscriptions, not in REST-accessible files. The editor streams code changes via `/_api/appsync-subscriber-token` WebSocket.
+**Floot's architecture for file content:**
+- Files live ONLY in browser-side React context state (module 34910 exports `{updateFS, K}`)
+- The `K` context provides `{getAllFiles, getContent, updateFS, subscribe, get, update}`
+- This state is populated EXCLUSIVELY via AppSync Events WebSocket subscription
+- AppSync channel: `/publish/workspace/{id}`
+- AppSync token: `/_api/appsync-subscriber-token` → JWT
+
+**Why AppSync can't be used server-side:**
+- WebSocket always returns `connection_error: "Required headers are missing"` (errorCode 400)
+- Tried: base64url/standard base64, Bearer prefix, Origin header, multiple host values
+- Lambda authorizer likely validates the Origin or other browser-only headers
+- No workaround found after extensive testing
+
+**Why there's no REST fallback:**
+- `updateFS({upserts:{...}, withSync:false})` saves without AppSync but this goes through client-side React context — no HTTP endpoint found
+- All 45 `/_api/` endpoints probed — none return file content
+- No `/export`, `/download`, `/files`, `/snapshot`, `/code`, `/source`, `/zip` endpoint exists
+
+**Result in Push44:** `fetchFlootAppFiles` throws `FLOOT_NO_API:{appId}:{appName}` tagged error.
+`push.tsx` catches this and shows a blue "Open in Floot" card with link to `https://floot.com/project/{id}` and step-by-step instructions for the manual ZIP/GitHub-sync workflow.
+
+**Future path:** If Floot adds a REST export API or makes AppSync accessible from non-browser contexts, re-implement `fetchFlootAppFiles` with real file fetching.
 
 ### Proxy Solution (IMPLEMENTED in vite.config.ts)
 

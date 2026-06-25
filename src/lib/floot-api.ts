@@ -103,45 +103,15 @@ export async function listFlootApps({ data }: { data: { token: string } }): Prom
   return [];
 }
 
-export async function fetchFlootAppFiles({ data }: { data: { token: string; appId: string } }): Promise<{ path: string; content: string }[]> {
-  const token = data.token;
-  const appId = data.appId;
-
-  const res = await proxyFetch("/_api/workspace/list", token).catch(() => null);
-  if (res?.ok) {
-    const d = await res.json().catch(() => null);
-    const allWorkspaces = [
-      ...(d?.ownedWorkspaces ?? []),
-      ...(d?.sharedWorkspaces ?? []),
-      ...(d?.favoriteWorkspaces ?? []),
-    ];
-    const workspace = allWorkspaces.find((ws: any) => ws.id === appId);
-
-    if (workspace) {
-      const files: { path: string; content: string }[] = [];
-
-      if (workspace.sketchCss && typeof workspace.sketchCss === "string" && workspace.sketchCss.trim()) {
-        files.push({ path: "sketch.css", content: workspace.sketchCss });
-      }
-
-      if (workspace.userPrompt && typeof workspace.userPrompt === "string") {
-        files.push({ path: "PROMPT.md", content: `# ${workspace.name}\n\n${workspace.userPrompt}` });
-      }
-
-      if (files.length > 0) {
-        throw new Error(
-          `Floot does not currently expose a source-code export API.\n\n` +
-          `The project "${workspace.name}" was found but its generated source files ` +
-          `are stored internally and not accessible via a public API.\n\n` +
-          `Floot file export will be added once Floot provides an export endpoint.`
-        );
-      }
-    }
-  }
-
-  throw new Error(
-    "Floot does not currently expose a source-code export API.\n\n" +
-    "Floot file export will be added once Floot provides an export endpoint.\n" +
-    "Check back later — this integration is actively being developed."
-  );
+/**
+ * Floot stores project source files exclusively in AppSync Events WebSocket
+ * subscription state (browser-only React context). There is no REST API for
+ * reading or exporting file content. This function throws a tagged error so
+ * push.tsx can show a dedicated "Open in Floot" card instead of a generic
+ * error toast.
+ *
+ * Tag format: "FLOOT_NO_API:{appId}:{appName}"
+ */
+export async function fetchFlootAppFiles({ data }: { data: { token: string; appId: string; appName?: string } }): Promise<{ path: string; content: string }[]> {
+  throw new Error(`FLOOT_NO_API:${data.appId}:${data.appName ?? "this project"}`);
 }
