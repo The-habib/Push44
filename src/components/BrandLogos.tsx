@@ -1,4 +1,4 @@
-import base44Logo from "@/assets/base44-logo-transparent.png";
+import base44Logo from "@/assets/base44-logo-transparent.webp";
 import rocketLogo from "@/assets/rocket-logo.png";
 
 export function FlootLogo({

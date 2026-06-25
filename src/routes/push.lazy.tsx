@@ -1318,53 +1318,70 @@ function PushPage() {
     }
   }, [apps, repushAppName]);
 
+  const appsReqId = useRef(0);
+
   const loadApps = async () => {
+    const reqId = ++appsReqId.current;
+
     if (platform === "base44") {
       if (!creds.base44Token) return;
       setLA(true);
-      try { setApps(await listBase44Apps({ data: { token: creds.base44Token } })); }
-      catch (e: any) {
+      try {
+        const result = await listBase44Apps({ data: { token: creds.base44Token } });
+        if (reqId !== appsReqId.current) return;
+        setApps(result);
+      } catch (e: any) {
+        if (reqId !== appsReqId.current) return;
         const msg = e.message ?? "";
         if (e.status === 401 || e.status === 403 || msg.includes("Bad credentials") || msg.includes("Unauthorized")) setTokenExpired("platform");
         else toast.error(msg || "Failed to load your Base44 apps. Please try again.");
       }
-      finally { setLA(false); }
+      finally { if (reqId === appsReqId.current) setLA(false); }
     } else if (platform === "rocket") {
       if (!creds.rocketToken) return;
       setLA(true); setNeedsOtpLogin(false);
       try {
         setAppsError("");
-        setApps(await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } }));
+        const result = await listRocketApps({ data: { token: creds.rocketToken, companyId: creds.rocketCompanyId } });
+        if (reqId !== appsReqId.current) return;
+        setApps(result);
       } catch (e: any) {
+        if (reqId !== appsReqId.current) return;
         const msg: string = e.message ?? "Unknown error";
         if (msg.startsWith("NEEDS_OTP_LOGIN")) { setNeedsOtpLogin(true); setAppsError("Your API key needs workspace info. Log in with Email OTP to continue."); }
         else { setAppsError(msg); }
       }
-      finally { setLA(false); }
+      finally { if (reqId === appsReqId.current) setLA(false); }
     } else if (platform === "floot") {
       if (!creds.flootToken) return;
       setLA(true);
       try {
         setAppsError("");
-        setApps(await listFlootApps({ data: { token: creds.flootToken } }));
+        const result = await listFlootApps({ data: { token: creds.flootToken } });
+        if (reqId !== appsReqId.current) return;
+        setApps(result);
       } catch (e: any) {
+        if (reqId !== appsReqId.current) return;
         const msg: string = e.message ?? "Unknown error";
         if (e.status === 401 || msg.includes("Unauthorized") || msg.includes("invalid or expired")) setTokenExpired("platform");
         else setAppsError(msg);
       }
-      finally { setLA(false); }
+      finally { if (reqId === appsReqId.current) setLA(false); }
     } else {
       if (!creds.ziteSession) return;
       setLA(true);
       try {
         setAppsError("");
-        setApps(await listZiteApps({ data: { session: creds.ziteSession, csrf: creds.ziteCsrf ?? "" } }));
+        const result = await listZiteApps({ data: { session: creds.ziteSession, csrf: creds.ziteCsrf ?? "" } });
+        if (reqId !== appsReqId.current) return;
+        setApps(result);
       } catch (e: any) {
+        if (reqId !== appsReqId.current) return;
         const msg: string = e.message ?? "Unknown error";
         if (e.status === 401 || msg.includes("Unauthorized") || msg.includes("invalid or expired")) setTokenExpired("platform");
         else setAppsError(msg);
       }
-      finally { setLA(false); }
+      finally { if (reqId === appsReqId.current) setLA(false); }
     }
   };
 
