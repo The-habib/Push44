@@ -166,7 +166,13 @@ export async function deleteRepoBranch({ data }: { data: { token: string; owner:
     method: "DELETE",
     headers: ghHeaders(data.token),
   });
-  if (!res.ok) throw new Error(`Failed to delete branch: ${res.statusText}`);
+  if (!res.ok) {
+    if (res.status === 401) throw new Error("Your GitHub token is invalid or has expired. Please update it in Settings.");
+    if (res.status === 403) throw new Error("You don't have permission to delete this branch.");
+    if (res.status === 404) throw new Error("Branch not found — it may have already been deleted.");
+    if (res.status === 422) throw new Error("This branch is protected and cannot be deleted.");
+    throw new Error("Could not delete the branch. Please try again.");
+  }
 }
 
 export async function getCommitFiles({ data }: { data: { token: string; owner: string; repo: string; sha: string } }) {

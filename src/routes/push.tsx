@@ -1446,7 +1446,7 @@ function PushPage() {
       setBranches(prev => [...prev, { name, sha: "", protected: false }]);
       setBranch(name);
       toast.success(`Branch "${name}" created`);
-    } catch (e: any) { toast.error("Failed to create branch: " + e.message); }
+    } catch (e: any) { toast.error(e.message || "Failed to create the branch. Please try again."); }
   };
 
   const handleCreateRepo = async () => {
@@ -1472,7 +1472,7 @@ function PushPage() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`ZIP downloaded (${stagedFiles.length} files)`);
-    } catch (e: any) { toast.error("ZIP failed: " + e.message); }
+    } catch (e: any) { toast.error(e.message || "Could not generate the ZIP file. Please try again."); }
   };
 
   const handlePush = async () => {
