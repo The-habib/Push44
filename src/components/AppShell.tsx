@@ -20,19 +20,18 @@ const NAV: NavItem[] = [
   { to: "/settings",     icon: Settings,    label: "Settings" },
 ];
 
-const PAGE_META: Record<string, { title: string; emoji: string; color: string }> = {
-  "/dashboard":    { title: "Dashboard",    emoji: "🏠", color: "#f97316" },
-  "/push":         { title: "Push to GitHub", emoji: "🚀", color: "#6366f1" },
-  "/repositories": { title: "Repositories", emoji: "📦", color: "#2563eb" },
-  "/history":      { title: "History",      emoji: "⏱",  color: "#22c55e" },
-  "/settings":     { title: "Settings",     emoji: "⚙️",  color: "#9a8880" },
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard":    "Dashboard",
+  "/push":         "Push to GitHub",
+  "/repositories": "Repositories",
+  "/history":      "Push History",
+  "/settings":     "Settings",
 };
 
 const SP  = { type: "spring", stiffness: 500, damping: 38 } as const;
 const ST  = { type: "spring", stiffness: 600, damping: 30 } as const;
 const SN  = { type: "spring", stiffness: 400, damping: 32 } as const;
 const EO  = [0.22, 1, 0.36, 1] as const;
-const EIO = [0.25, 0.46, 0.45, 0.94] as const;
 
 const PAGE_X = 18;
 const pageVariants = {
@@ -51,7 +50,7 @@ export function AvatarBubble({ name, size = 36, fontSize = 14 }: { name: string;
       style={{
         width: size, height: size, fontSize,
         background: "linear-gradient(135deg,#fb923c 0%,#f97316 50%,#ea580c 100%)",
-        boxShadow: "0 2px 8px rgba(249,115,22,0.35)",
+        boxShadow: "0 3px 12px rgba(249,115,22,0.40), 0 1px 4px rgba(249,115,22,0.25)",
       }}
     >
       {initials}
@@ -87,6 +86,10 @@ export function SectionCard({ title, action, children, className = "" }: {
   );
 }
 
+/* ─────────────────────────────────────────────
+   BOTTOM NAV — no outer pill, truly transparent
+   Only the active tab has an orange bubble
+───────────────────────────────────────────── */
 let navHasShown = false;
 
 function BottomNav({ pathname }: { pathname: string }) {
@@ -95,268 +98,173 @@ function BottomNav({ pathname }: { pathname: string }) {
   if (isFirst) navHasShown = true;
 
   return (
-    <div
-      className="shrink-0 flex items-center justify-center"
+    <motion.div
+      className="shrink-0 flex items-center justify-around"
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 16px)",
-        paddingTop: 8,
-        paddingLeft: 16,
-        paddingRight: 16,
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 18px)",
+        paddingTop: 6,
+        paddingLeft: 8,
+        paddingRight: 8,
+        /* No background — truly floating icons */
       }}
+      initial={isFirst && !reduced ? { opacity: 0, y: 28 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.34, 1.3, 0.64, 1], delay: 0.06 }}
     >
-      <motion.div
-        className="flex items-center w-full overflow-hidden"
-        style={{
-          maxWidth: 420,
-          borderRadius: 28,
-          background: "rgba(255,255,255,0.90)",
-          backdropFilter: "blur(32px)",
-          WebkitBackdropFilter: "blur(32px)",
-          border: "1px solid rgba(255,255,255,0.98)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1)",
-          padding: "4px",
-        }}
-        initial={isFirst && !reduced ? { opacity: 0, y: 32, scale: 0.86 } : false}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.34, 1.4, 0.64, 1], delay: 0.05 }}
-      >
-        {NAV.map(({ to, icon: Icon, label }) => {
-          const active = pathname === to;
-          return (
-            <Link
-              key={to}
-              to={to}
-              aria-current={active ? "page" : undefined}
-              className="w-[20%] flex items-center justify-center shrink-0"
+      {NAV.map(({ to, icon: Icon, label }) => {
+        const active = pathname === to;
+        return (
+          <Link
+            key={to}
+            to={to}
+            aria-current={active ? "page" : undefined}
+            className="flex-1 flex justify-center"
+          >
+            <motion.div
+              className="relative flex items-center justify-center"
+              whileTap={reduced ? {} : { scale: 0.80 }}
+              transition={{ type: "spring", stiffness: 700, damping: 22 }}
             >
-              <motion.div
-                className="relative flex items-center justify-center h-11 w-full overflow-hidden"
-                style={{ borderRadius: 22 }}
-                whileTap={reduced ? {} : { scale: 0.80, rotate: -1.5 }}
-                transition={{ type: "spring", stiffness: 700, damping: 22 }}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="fnav-pill"
-                    className="absolute inset-0"
-                    style={{
-                      borderRadius: 22,
-                      background: "linear-gradient(140deg, #fb923c 0%, #f97316 45%, #ea580c 100%)",
-                      boxShadow: "0 6px 20px rgba(249,115,22,0.45), 0 2px 8px rgba(249,115,22,0.30)",
-                    }}
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 620, damping: 26, mass: 0.75 }}
+              {/* Orange pill — only wraps the active tab */}
+              {active && (
+                <motion.div
+                  layoutId="fnav-pill"
+                  className="absolute inset-0"
+                  style={{
+                    borderRadius: 20,
+                    background: "linear-gradient(140deg, #fb923c 0%, #f97316 45%, #ea580c 100%)",
+                    boxShadow: "0 6px 20px rgba(249,115,22,0.42), 0 2px 8px rgba(249,115,22,0.26)",
+                  }}
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 600, damping: 26, mass: 0.8 }}
+                />
+              )}
+
+              <div className="relative z-10 flex items-center gap-[5px] px-4 py-2.5">
+                <motion.span
+                  style={{ display: "flex" }}
+                  animate={{
+                    color: active ? "#fff" : "rgba(26,26,26,0.32)",
+                    scale: active ? 1.06 : 1,
+                  }}
+                  transition={{ duration: 0.22, ease: EO }}
+                >
+                  <Icon
+                    className="h-[19px] w-[19px] shrink-0"
+                    strokeWidth={active ? 2.5 : 1.75}
                   />
-                )}
-                <div className="relative z-10 flex items-center gap-[5px] px-1.5">
-                  <motion.span
-                    style={{ display: "flex" }}
-                    animate={{
-                      color: active ? "#fff" : "rgba(26,26,26,0.35)",
-                      scale: active ? 1.08 : 1,
-                    }}
-                    transition={{ duration: 0.25, ease: EO }}
-                  >
-                    <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2.5 : 1.75} />
-                  </motion.span>
-                  <AnimatePresence initial={false}>
-                    {active && (
-                      <motion.span
-                        key={label}
-                        className="text-[11px] font-bold text-white whitespace-nowrap overflow-hidden"
-                        style={{ lineHeight: 1 }}
-                        initial={{ opacity: 0, x: -8, width: 0 }}
-                        animate={{ opacity: 1, x: 0, width: "auto" }}
-                        exit={{ opacity: 0, x: -6, width: 0 }}
-                        transition={{ duration: 0.26, ease: EO }}
-                      >
-                        {label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            </Link>
-          );
-        })}
-      </motion.div>
-    </div>
+                </motion.span>
+
+                <AnimatePresence initial={false}>
+                  {active && (
+                    <motion.span
+                      key={label}
+                      className="text-[11px] font-bold text-white whitespace-nowrap overflow-hidden"
+                      style={{ lineHeight: 1 }}
+                      initial={{ opacity: 0, x: -8, width: 0 }}
+                      animate={{ opacity: 1, x: 0, width: "auto" }}
+                      exit={{ opacity: 0, x: -5, width: 0 }}
+                      transition={{ duration: 0.24, ease: EO }}
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </Link>
+        );
+      })}
+    </motion.div>
   );
 }
 
-/* ── Floating mobile header pill ── */
+/* ─────────────────────────────────────────────
+   MOBILE HEADER — no background, logo + avatar only
+───────────────────────────────────────────── */
 let headerHasShown = false;
 
-function FloatingHeader({
-  pathname,
+function MobileHeader({
   displayName,
   fullyConnected,
-  githubUsername,
 }: {
-  pathname: string;
   displayName: string;
   fullyConnected: boolean;
-  githubUsername: string;
 }) {
   const reduced = useReducedMotion();
-  const meta = PAGE_META[pathname] ?? { title: "Push44", emoji: "✦", color: "#f97316" };
-
   const isFirst = !headerHasShown;
   if (isFirst) headerHasShown = true;
 
   return (
-    /* shrink-0 in the outer flex column — always pinned at top */
-    <div
-      className="shrink-0 flex justify-center z-30"
-      style={{ padding: "12px 14px 4px" }}
+    <motion.div
+      className="shrink-0 flex items-center justify-between z-30"
+      style={{ padding: "14px 18px 6px" }}
+      initial={isFirst && !reduced ? { opacity: 0, y: -16 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: [0.34, 1.15, 0.64, 1], delay: 0.03 }}
     >
-      <motion.div
-        className="w-full"
-        style={{ maxWidth: 480 }}
-        initial={isFirst && !reduced ? { opacity: 0, y: -24, scale: 0.92 } : false}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.55, ease: [0.34, 1.2, 0.64, 1], delay: 0.04 }}
-      >
-        {/* ── The pill itself ── */}
-        <div
-          className="flex items-center gap-2 w-full"
-          style={{
-            borderRadius: 26,
-            background: "rgba(255,255,255,0.90)",
-            backdropFilter: "blur(36px)",
-            WebkitBackdropFilter: "blur(36px)",
-            border: "1px solid rgba(255,255,255,0.98)",
-            boxShadow: [
-              "0 0 0 1px rgba(249,115,22,0.08)",
-              "0 12px 40px rgba(0,0,0,0.11)",
-              "0 4px 12px rgba(0,0,0,0.06)",
-              "inset 0 1px 0 rgba(255,255,255,1)",
-              "inset 0 -1px 0 rgba(0,0,0,0.03)",
-            ].join(", "),
-            padding: "7px 8px 7px 10px",
-          }}
+      {/* App logo — no container, just the logo itself */}
+      <Link to="/dashboard">
+        <motion.div
+          className="relative"
+          whileHover={{ scale: 1.10, rotate: -5 }}
+          whileTap={{ scale: 0.86, rotate: 3 }}
+          transition={ST}
         >
+          <img
+            src={appLogo}
+            alt="Push44"
+            style={{
+              height: 38,
+              width: 38,
+              borderRadius: 12,
+              objectFit: "cover",
+              /* Shadow for depth over any content */
+              boxShadow: "0 4px 16px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.07)",
+            }}
+          />
+          {/* Connection status dot */}
+          <motion.span
+            style={{
+              position: "absolute",
+              bottom: -1,
+              right: -1,
+              height: 11,
+              width: 11,
+              borderRadius: "50%",
+              background: fullyConnected ? "#22c55e" : "#f59e0b",
+              boxShadow: "0 0 0 2.5px rgba(250,248,245,1)",
+            }}
+            animate={fullyConnected ? { scale: [1, 1.35, 1] } : {}}
+            transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 4 }}
+          />
+        </motion.div>
+      </Link>
 
-          {/* ── Logo ── */}
-          <Link to="/dashboard" className="shrink-0">
-            <motion.div
-              className="relative"
-              whileHover={{ scale: 1.10, rotate: -5 }}
-              whileTap={{ scale: 0.85, rotate: 4 }}
-              transition={ST}
-            >
-              <img
-                src={appLogo}
-                alt="Push44"
-                className="h-8 w-8 rounded-[11px] object-cover"
-                style={{ boxShadow: "0 3px 12px rgba(249,115,22,0.28)" }}
-              />
-              {/* Connection status dot on logo */}
-              <motion.span
-                className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
-                style={{ boxShadow: "0 0 0 2px white" }}
-                animate={fullyConnected ? { scale: [1, 1.35, 1] } : {}}
-                transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 4 }}
-              />
-            </motion.div>
-          </Link>
-
-          {/* ── Page title (animated between routes) ── */}
-          <div className="flex-1 min-w-0 overflow-hidden px-1">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 9, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -7, filter: "blur(3px)" }}
-                transition={{ duration: 0.22, ease: EIO }}
-                className="flex items-center gap-1.5"
-              >
-                {/* Colored accent dot per page */}
-                <motion.span
-                  className="h-1.5 w-1.5 rounded-full shrink-0"
-                  style={{ background: meta.color }}
-                  layoutId="header-accent-dot"
-                  transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                />
-                <span
-                  className="text-[13.5px] font-black tracking-[-0.02em] leading-none truncate"
-                  style={{ color: "#1a1a1a" }}
-                >
-                  {meta.title}
-                </span>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Sub-label: app name / username */}
-            {displayName ? (
-              <p className="text-[10px] text-[#9a8880] font-medium truncate mt-0.5 leading-none">
-                {displayName}
-              </p>
-            ) : null}
-          </div>
-
-          {/* ── Right: GitHub + Avatar ── */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* GitHub button */}
-            <motion.a
-              href={githubUsername ? `https://github.com/${githubUsername}` : "https://github.com"}
-              target="_blank"
-              rel="noreferrer"
-              className="h-8 w-8 rounded-[11px] flex items-center justify-center shrink-0"
-              style={{
-                background: "rgba(26,26,26,0.06)",
-                border: "1px solid rgba(0,0,0,0.07)",
-                color: "rgba(26,26,26,0.45)",
-              }}
-              whileHover={{
-                background: "#1a1a1a",
-                color: "#fff",
-                scale: 1.08,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.20)",
-              }}
-              whileTap={{ scale: 0.88 }}
-              transition={ST}
-            >
-              <GitHubLogo className="h-3.5 w-3.5" />
-            </motion.a>
-
-            {/* Avatar */}
-            <Link to="/settings">
-              <motion.div
-                className="relative"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.88 }}
-                transition={ST}
-              >
-                <AvatarBubble name={displayName} size={34} fontSize={12} />
-              </motion.div>
-            </Link>
-          </div>
-
-        </div>
-
-        {/* ── Subtle orange glow stripe at bottom of pill ── */}
-        <div
-          className="mx-auto mt-0.5 pointer-events-none"
-          style={{
-            height: 1,
-            width: "60%",
-            background: `linear-gradient(90deg, transparent, ${meta.color}30, transparent)`,
-            transition: "background 0.4s ease",
-          }}
-        />
-      </motion.div>
-    </div>
+      {/* Avatar — no container */}
+      <Link to="/settings">
+        <motion.div
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.88 }}
+          transition={ST}
+        >
+          <AvatarBubble name={displayName} size={38} fontSize={14} />
+        </motion.div>
+      </Link>
+    </motion.div>
   );
 }
 
+/* ─────────────────────────────────────────────
+   APP SHELL
+───────────────────────────────────────────── */
 export function AppShell({ children }: { children: ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname       = useRouterState({ select: (s) => s.location.pathname });
   const { creds }      = useApp();
   const reduced        = useReducedMotion();
 
   const displayName    = creds.displayName || creds.base44Email || creds.githubUsername || "";
+  const pageTitle      = PAGE_TITLES[pathname] ?? "Push44";
   const fullyConnected = !!((creds.base44Token || creds.rocketToken || creds.flootToken || creds.ziteSession) && creds.githubToken);
 
   const prevPathRef = useRef(pathname);
@@ -374,8 +282,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
 
-  const meta = PAGE_META[pathname] ?? { title: "Push44", emoji: "✦", color: "#f97316" };
-
   return (
     <div
       className="w-full"
@@ -384,7 +290,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         minHeight: "100dvh",
       }}
     >
-      {/* Background mesh */}
+      {/* Ambient background mesh */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -393,7 +299,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
       />
 
-      {/* ═══════════════ DESKTOP ≥ 1024px ═══════════════ */}
+      {/* ══════════ DESKTOP ≥ 1024px ══════════ */}
       <div className="hidden lg:flex min-h-[100dvh] relative z-10">
 
         {/* Sidebar */}
@@ -407,7 +313,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             boxShadow: "2px 0 24px rgba(0,0,0,0.04)",
           }}
         >
-          {/* Sidebar logo row */}
           <Link to="/dashboard">
             <div
               className="flex items-center gap-2.5 px-5 py-5 cursor-pointer"
@@ -427,11 +332,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </Link>
 
-          {/* Nav items */}
           <nav className="flex-1 px-3 py-5 space-y-1" aria-label="Main navigation">
             {NAV.map(({ to, icon: Icon, label }) => {
               const active = pathname === to;
-              const m = PAGE_META[to];
               return (
                 <Link key={to} to={to} aria-current={active ? "page" : undefined}>
                   <motion.div
@@ -446,30 +349,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                         className="absolute inset-0 rounded-[14px]"
                         style={{
                           background: "linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%)",
-                          boxShadow: `0 4px 18px rgba(249,115,22,0.38), 0 0 0 1px rgba(249,115,22,0.15)`,
+                          boxShadow: "0 4px 18px rgba(249,115,22,0.38)",
                         }}
                         initial={false}
                         transition={SP}
                       />
                     )}
-                    <span
-                      className="relative z-10 flex shrink-0"
-                      style={{ color: active ? "#fff" : "rgba(0,0,0,0.32)" }}
-                    >
+                    <span className="relative z-10 flex shrink-0" style={{ color: active ? "#fff" : "rgba(0,0,0,0.32)" }}>
                       <Icon className="h-[15px] w-[15px]" strokeWidth={active ? 2.5 : 2} />
                     </span>
-                    <span
-                      className="relative z-10 text-[13.5px] font-semibold"
-                      style={{ color: active ? "#fff" : "rgba(0,0,0,0.45)" }}
-                    >
+                    <span className="relative z-10 text-[13.5px] font-semibold" style={{ color: active ? "#fff" : "rgba(0,0,0,0.45)" }}>
                       {label}
                     </span>
                     {active && (
-                      <motion.span
-                        className="relative z-10 ml-auto h-1.5 w-1.5 rounded-full bg-white/60"
-                        layoutId="sidebar-dot"
-                        initial={false}
-                      />
+                      <motion.span className="relative z-10 ml-auto h-1.5 w-1.5 rounded-full bg-white/60" layoutId="sidebar-dot" initial={false} />
                     )}
                   </motion.div>
                 </Link>
@@ -477,7 +370,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          {/* Sidebar footer — user account */}
           <div className="px-3 pb-5 pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.055)" }}>
             <Link to="/settings">
               <motion.div
@@ -502,44 +394,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        {/* Desktop main content area */}
+        {/* Desktop content area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
-
-          {/* Desktop top bar — floating pill style */}
+          {/* Desktop topbar */}
           <div
             className="sticky top-0 z-20 flex justify-between items-center gap-4 px-8"
             style={{
               paddingTop: 14,
               paddingBottom: 12,
-              background: "rgba(250,248,245,0.82)",
+              background: "rgba(250,248,245,0.85)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               borderBottom: "1px solid rgba(0,0,0,0.05)",
               boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.04)",
             }}
           >
-            {/* Animated page title */}
-            <div className="flex items-center gap-3">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={pathname}
-                  initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -6, filter: "blur(2px)" }}
-                  transition={{ duration: 0.2, ease: EIO }}
-                  className="flex items-center gap-2.5"
-                >
-                  <div
-                    className="h-6 w-1 rounded-full"
-                    style={{ background: `linear-gradient(to bottom, ${meta.color}, ${meta.color}60)` }}
-                  />
-                  <h2 className="text-[16px] font-black text-[#1a1a1a] tracking-[-0.02em]">{meta.title}</h2>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Right controls */}
-            <div className="flex items-center gap-2">
+            <h2 className="text-[16px] font-black text-[#1a1a1a] tracking-[-0.02em]">{pageTitle}</h2>
+            <div className="flex items-center gap-2.5">
               <motion.a
                 href={creds.githubUsername ? `https://github.com/${creds.githubUsername}` : "https://github.com"}
                 target="_blank"
@@ -550,26 +421,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                   border: "1px solid rgba(0,0,0,0.07)",
                   color: "rgba(26,26,26,0.4)",
                 }}
-                whileHover={{
-                  scale: 1.06,
-                  background: "#1a1a1a",
-                  color: "#fff",
-                  borderColor: "#1a1a1a",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.20)",
-                }}
+                whileHover={{ scale: 1.06, background: "#1a1a1a", color: "#fff" }}
                 whileTap={{ scale: 0.90 }}
                 transition={SN}
               >
                 <GitHubLogo className="h-3.5 w-3.5" />
               </motion.a>
-
               <Link to="/settings">
-                <motion.div
-                  className="relative"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.90 }}
-                  transition={SN}
-                >
+                <motion.div className="relative" whileHover={{ scale: 1.04 }} transition={SN}>
                   <AvatarBubble name={displayName} size={32} fontSize={11} />
                   <span
                     className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${fullyConnected ? "bg-[#22c55e]" : "bg-[#f59e0b]"}`}
@@ -597,15 +456,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* ═══════════════ MOBILE + TABLET < 1024px ═══════════════ */}
+      {/* ══════════ MOBILE + TABLET < 1024px ══════════ */}
       <div className="lg:hidden h-[100dvh] flex flex-col overflow-hidden relative z-10">
 
-        {/* ── NEW: Floating pill header ── */}
-        <FloatingHeader
-          pathname={pathname}
+        {/* Truly transparent header — logo + avatar only */}
+        <MobileHeader
           displayName={displayName}
           fullyConnected={fullyConnected}
-          githubUsername={creds.githubUsername || ""}
         />
 
         {/* Scrollable content */}
@@ -615,7 +472,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="absolute inset-0 overflow-y-auto"
             style={{ overflowX: "clip" }}
           >
-            <div className="w-full max-w-2xl mx-auto px-4 pt-3 pb-4">
+            <div className="w-full max-w-2xl mx-auto px-4 pt-2 pb-4">
               <AnimatePresence mode="wait" initial={false} custom={direction}>
                 <motion.div
                   key={pathname}
@@ -632,6 +489,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
+        {/* Truly transparent bottom nav — no outer pill */}
         <BottomNav pathname={pathname} />
       </div>
     </div>
