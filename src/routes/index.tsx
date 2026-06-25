@@ -5,7 +5,7 @@ import {
   ArrowRight, Zap, GitBranch, Shield, Clock, Layers, UploadCloud,
   CheckCircle2, ChevronDown, Lock, X,
   FileCode2, GitCommit, Package, Boxes, Star,
-  Quote, Eye, History, RefreshCw, GitMerge, Server,
+  Quote, Eye, History, RefreshCw, GitMerge, Server, Sparkles,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import appLogo from "@/assets/logo.png";
@@ -69,23 +69,27 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
 const PLATFORMS = [
   {
     id: "base44", name: "Base44", tagline: "Fullstack React + Node", files: "~87 files",
-    color: "#f97316", bg: "rgba(249,115,22,0.08)", border: "rgba(249,115,22,0.18)", Logo: Base44Logo,
+    color: "#f97316", bg: "rgba(249,115,22,0.09)", border: "rgba(249,115,22,0.22)", Logo: Base44Logo,
     desc: "React frontend, Node backend, SQL schemas, env configs.",
+    gradientFrom: "rgba(249,115,22,0.12)", gradientTo: "transparent",
   },
   {
     id: "rocket", name: "Rocket.new", tagline: "Flutter mobile apps", files: "~120+ files",
-    color: "#6366f1", bg: "rgba(99,102,241,0.07)", border: "rgba(99,102,241,0.18)", Logo: RocketLogo,
+    color: "#6366f1", bg: "rgba(99,102,241,0.08)", border: "rgba(99,102,241,0.22)", Logo: RocketLogo,
     desc: "Complete Flutter project — Dart, pubspec, platform configs.",
+    gradientFrom: "rgba(99,102,241,0.10)", gradientTo: "transparent",
   },
   {
     id: "floot", name: "Floot", tagline: "Next.js web apps", files: "~60+ files",
-    color: "#2563eb", bg: "rgba(37,99,235,0.07)", border: "rgba(37,99,235,0.18)", Logo: FlootLogo,
+    color: "#2563eb", bg: "rgba(37,99,235,0.08)", border: "rgba(37,99,235,0.22)", Logo: FlootLogo,
     desc: "Components, API routes, styles, and configuration files.",
+    gradientFrom: "rgba(37,99,235,0.10)", gradientTo: "transparent",
   },
   {
     id: "zite", name: "Zite", tagline: "Fillout form apps", files: "~30+ files",
-    color: "#d97706", bg: "rgba(217,119,6,0.07)", border: "rgba(217,119,6,0.18)", Logo: ZiteLogo,
+    color: "#d97706", bg: "rgba(217,119,6,0.08)", border: "rgba(217,119,6,0.22)", Logo: ZiteLogo,
     desc: "Full app template, structure, and configuration snapshot.",
+    gradientFrom: "rgba(217,119,6,0.10)", gradientTo: "transparent",
   },
 ];
 
@@ -105,9 +109,21 @@ const TESTIMONIALS = [
 ];
 
 const STEPS = [
-  { num: "01", title: "Connect your platform", desc: "Sign in with Base44, Rocket.new, Floot, or Zite. Credentials stay in your browser — nothing sent to any server.", icon: Boxes },
-  { num: "02", title: "Select your app", desc: "Choose from all your projects. Push44 auto-wakes sleeping sandboxes and fetches every source file.", icon: Package },
-  { num: "03", title: "Push to GitHub", desc: "Pick a repo or create one. All files committed in a single atomic push via the GitHub Trees API.", icon: GitCommit },
+  {
+    num: "01", title: "Connect your platform", color: "#f97316", iconBg: "rgba(249,115,22,0.12)", iconColor: "#f97316",
+    desc: "Sign in with Base44, Rocket.new, Floot, or Zite. Credentials stay in your browser — nothing sent to any server.",
+    icon: Boxes,
+  },
+  {
+    num: "02", title: "Select your app", color: "#6366f1", iconBg: "rgba(99,102,241,0.12)", iconColor: "#6366f1",
+    desc: "Choose from all your projects. Push44 auto-wakes sleeping sandboxes and fetches every source file.",
+    icon: Package,
+  },
+  {
+    num: "03", title: "Push to GitHub", color: "#22c55e", iconBg: "rgba(34,197,94,0.12)", iconColor: "#22c55e",
+    desc: "Pick a repo or create one. All files committed in a single atomic push via the GitHub Trees API.",
+    icon: GitCommit,
+  },
 ];
 
 const FAQS = [
@@ -125,11 +141,11 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     <div className="border-b border-black/[0.07] last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-start justify-between gap-6 py-6 text-left group"
+        className="w-full flex items-start justify-between gap-6 py-5 text-left group"
       >
-        <span className="text-[16px] sm:text-[17px] font-semibold text-[#111] leading-snug group-hover:text-[#f97316] transition-colors duration-150">{q}</span>
+        <span className="text-[15px] sm:text-[16px] font-semibold text-[#111] leading-snug group-hover:text-[#f97316] transition-colors duration-150">{q}</span>
         <motion.span animate={{ rotate: open ? 45 : 0 }} transition={{ duration: 0.2 }} className="shrink-0 mt-0.5">
-          <ChevronDown className="h-5 w-5 text-black/25" />
+          <ChevronDown className="h-4.5 w-4.5 text-black/30" />
         </motion.span>
       </button>
       <motion.div
@@ -138,7 +154,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         transition={{ duration: 0.28, ease }}
         className="overflow-hidden"
       >
-        <p className="text-[15px] text-[#555] leading-[1.78] pb-6 max-w-2xl">{a}</p>
+        <p className="text-[14px] text-[#555] leading-[1.75] pb-5 max-w-2xl">{a}</p>
       </motion.div>
     </div>
   );
@@ -191,13 +207,12 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
   }, []);
 
   const NAV_LINKS = [
-    { id: "hiw",      label: "How it works", href: "#how-it-works" },
-    { id: "plat",     label: "Platforms",    href: "#platforms"    },
-    { id: "faq",      label: "FAQ",          href: "#faq"          },
-    { id: "gh",       label: "GitHub",       href: "https://github.com/The-habib/Push44", external: true },
+    { id: "hiw",  label: "How it works", href: "#how-it-works" },
+    { id: "plat", label: "Platforms",    href: "#platforms"    },
+    { id: "faq",  label: "FAQ",          href: "#faq"          },
+    { id: "gh",   label: "GitHub",       href: "https://github.com/The-habib/Push44", external: true },
   ];
 
-  /* ── pill is always cream/warm-white — floats on both dark hero and light sections ── */
   const pillBg     = scrolled ? "rgba(255,252,248,0.96)" : "rgba(255,252,248,0.82)";
   const pillBorder = scrolled ? "rgba(249,115,22,0.18)"  : "rgba(224,216,204,0.90)";
   const pillShadow = scrolled
@@ -219,10 +234,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
   const hoverBg   = "rgba(0,0,0,0.055)";
 
   return (
-    /* pointer-events-none on the belt so it never blocks scrolling content;
-       pointer-events-auto is restored on the pill itself.
-       overflow-x:clip (not overflow:hidden) on the page root keeps fixed
-       children from being trapped in a new containing block (Safari / iOS). */
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-5 pt-3 sm:pt-4 pointer-events-none">
       <motion.div
         className="pointer-events-auto w-full"
@@ -235,7 +246,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
         }}
         transition={{ duration: 0.65, ease: [0.34, 1.12, 0.64, 1] }}
       >
-        {/* ── Floating pill shell ── */}
         <motion.div
           className="flex items-center justify-between rounded-full"
           style={{
@@ -248,8 +258,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
           animate={{ background: pillBg, boxShadow: pillShadow, borderColor: pillBorder }}
           transition={{ duration: 0.45, ease }}
         >
-
-          {/* ── Logo ── */}
           <Link to="/" className="flex items-center gap-1.5 py-0.5 pr-2 shrink-0">
             <motion.img
               src={appLogo}
@@ -268,7 +276,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
             </motion.span>
           </Link>
 
-          {/* ── Nav links (desktop) ── */}
           <div className="hidden sm:flex items-center gap-0.5 flex-1 justify-center">
             {NAV_LINKS.map(({ id, label, href, external }, i) => (
               <motion.a
@@ -291,7 +298,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
                 onHoverStart={() => setHovered(id)}
                 onHoverEnd={() => setHovered(null)}
               >
-                {/* Sliding hover pill */}
                 {hovered === id && (
                   <motion.span
                     layoutId="navHoverBg"
@@ -321,7 +327,6 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
             ))}
           </div>
 
-          {/* ── CTA button ── */}
           <Link to={isConnected ? "/dashboard" : "/onboarding"} className="shrink-0">
             <motion.button
               className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-bold text-white overflow-hidden"
@@ -337,9 +342,7 @@ function Navbar({ isConnected }: { isConnected: boolean }) {
                 boxShadow: "0 6px 28px rgba(249,115,22,0.72), inset 0 1px 0 rgba(255,255,255,0.28)",
               }}
               whileTap={{ scale: 0.92 }}
-              transition={spring}
             >
-              {/* Shimmer sweep on hover */}
               <motion.span
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
@@ -371,6 +374,11 @@ function LandingPage() {
   const { creds, isLoaded } = useApp();
   const isConnected = isLoaded && !!((creds.base44Token || creds.rocketToken || creds.flootToken || creds.ziteSession) && creds.githubToken);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [footerYear, setFooterYear] = useState(2025);
+
+  useEffect(() => {
+    setFooterYear(new Date().getFullYear());
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0c0c0c] text-white" style={{ overflowX: "clip" }}>
@@ -410,13 +418,19 @@ function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden">
-        {/* Background elements */}
+        {/* Radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: "radial-gradient(ellipse 80% 60% at 60% 110%, rgba(249,115,22,0.14) 0%, transparent 65%)",
           }}
         />
+        {/* Subtle top accent */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.3), transparent)" }}
+        />
+        {/* Grid overlay */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.025]"
           style={{
@@ -430,10 +444,14 @@ function LandingPage() {
 
             {/* Left: Copy */}
             <div>
-              {/* Eyebrow */}
+              {/* Eyebrow badge */}
               <FadeUp delay={0.05}>
-                <div className="inline-flex items-center gap-2 mb-8 rounded-full border border-white/[0.1] bg-white/[0.04] px-4 py-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" />
+                <div className="inline-flex items-center gap-2 mb-8 rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-2">
+                  <motion.span
+                    className="h-1.5 w-1.5 rounded-full bg-[#f97316] shrink-0"
+                    animate={{ opacity: [1, 0.35, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                   <span className="text-[12px] font-semibold text-white/50 tracking-wide">
                     Open source · Free forever · No sign-up
                   </span>
@@ -462,8 +480,11 @@ function LandingPage() {
                   <Link to={isConnected ? "/dashboard" : "/onboarding"}>
                     <motion.button
                       className="flex items-center gap-2.5 rounded-2xl px-7 py-4 text-[15px] font-bold text-white"
-                      style={{ background: "#f97316", boxShadow: "0 8px 32px rgba(249,115,22,0.45)" }}
-                      whileHover={{ scale: 1.03, boxShadow: "0 12px 40px rgba(249,115,22,0.6)" }}
+                      style={{
+                        background: "linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%)",
+                        boxShadow: "0 8px 32px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.2)",
+                      }}
+                      whileHover={{ scale: 1.03, boxShadow: "0 12px 40px rgba(249,115,22,0.62), inset 0 1px 0 rgba(255,255,255,0.25)" }}
                       whileTap={{ scale: 0.97 }}
                       transition={spring}
                     >
@@ -475,8 +496,20 @@ function LandingPage() {
                     href="https://github.com/The-habib/Push44"
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2.5 rounded-2xl px-7 py-4 text-[15px] font-semibold text-white/60 border border-white/[0.1]"
-                    whileHover={{ color: "#fff", borderColor: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)" }}
+                    className="flex items-center gap-2.5 rounded-2xl px-7 py-4 text-[15px] font-semibold"
+                    style={{
+                      color: "rgba(255,255,255,0.6)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.04)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                    }}
+                    whileHover={{
+                      color: "#fff",
+                      borderColor: "rgba(255,255,255,0.28)",
+                      background: "rgba(255,255,255,0.08)",
+                      y: -2,
+                    }}
                     transition={{ duration: 0.2 }}
                   >
                     <GitHubLogo className="h-4 w-4" />
@@ -485,18 +518,18 @@ function LandingPage() {
                 </div>
               </FadeUp>
 
-              {/* Platform pills */}
+              {/* Platform pills — compact to avoid wrapping */}
               <FadeUp delay={0.28}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[12px] text-white/25 font-medium mr-1">Works with</span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] text-white/25 font-medium mr-1">Works with</span>
                   {PLATFORMS.map(({ id, name, Logo, color }) => (
                     <div
                       key={id}
-                      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 border"
-                      style={{ borderColor: `${color}30`, background: `${color}0d` }}
+                      className="flex items-center gap-1 rounded-full px-2.5 py-1 border"
+                      style={{ borderColor: `${color}28`, background: `${color}0c` }}
                     >
-                      <Logo size={14} />
-                      <span className="text-[11px] font-semibold" style={{ color: `${color}cc` }}>{name}</span>
+                      <Logo size={12} />
+                      <span className="text-[10.5px] font-semibold" style={{ color: `${color}bb` }}>{name}</span>
                     </div>
                   ))}
                 </div>
@@ -510,7 +543,7 @@ function LandingPage() {
                 whileHover={{ y: -6 }}
                 transition={{ ...spring, damping: 32 }}
               >
-                {/* Glow */}
+                {/* Glow behind card */}
                 <div
                   className="absolute -inset-10 pointer-events-none"
                   style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(249,115,22,0.12) 0%, transparent 70%)" }}
@@ -542,7 +575,6 @@ function LandingPage() {
 
                   {/* App content */}
                   <div className="p-6">
-                    {/* App header row */}
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-xl bg-[#f97316] flex items-center justify-center shrink-0">
@@ -611,38 +643,45 @@ function LandingPage() {
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, #f9f8f6)" }} />
+        {/* Bottom fade into cream */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, #f4f1ec)" }} />
       </section>
 
-      {/* ── WORKS WITH ── */}
-      <section className="bg-[#f9f8f6] border-b border-black/[0.06]">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-14">
-          <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-12">
-            <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-black/25 shrink-0">Built for</span>
-            <div className="flex flex-wrap justify-center sm:justify-start items-center gap-6 sm:gap-10">
+      {/* ── BUILT FOR ── */}
+      <section className="border-b border-black/[0.07]" style={{ background: "#f4f1ec" }}>
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-12">
+          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
+            <span className="text-[10px] font-black tracking-[0.22em] uppercase text-black/30 shrink-0">Built for</span>
+            <div className="w-px h-5 bg-black/10 hidden sm:block shrink-0" />
+            <div className="flex flex-wrap justify-center sm:justify-start items-center gap-8 sm:gap-10">
               {PLATFORMS.map(({ id, name, Logo, color }) => (
                 <motion.div
                   key={id}
-                  className="flex items-center gap-2.5 opacity-40 hover:opacity-90 transition-opacity duration-200"
-                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2.5 transition-all duration-200"
+                  style={{ opacity: 0.55 }}
+                  whileHover={{ opacity: 1, scale: 1.06 }}
                   transition={spring}
                 >
                   <Logo size={22} />
                   <span className="text-[14px] font-bold text-[#111]">{name}</span>
                 </motion.div>
               ))}
-              <div className="flex items-center gap-2.5 opacity-40 hover:opacity-90 transition-opacity duration-200">
+              <motion.div
+                className="flex items-center gap-2.5"
+                style={{ opacity: 0.45 }}
+                whileHover={{ opacity: 0.85, scale: 1.06 }}
+                transition={spring}
+              >
                 <GitHubLogo className="h-5 w-5 text-[#111]" />
                 <span className="text-[14px] font-bold text-[#111]">GitHub</span>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FEATURE 1 — Every file ── */}
-      <section className="bg-[#f9f8f6] py-28 sm:py-40">
+      <section style={{ background: "#f4f1ec" }} className="py-28 sm:py-40">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <FadeUp>
@@ -671,15 +710,17 @@ function LandingPage() {
               <div
                 className="rounded-2xl overflow-hidden"
                 style={{
-                  background: "#141414",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  boxShadow: "0 32px 64px rgba(0,0,0,0.2)",
+                  background: "rgba(255,255,255,0.70)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.85)",
+                  boxShadow: "0 32px 64px rgba(0,0,0,0.10), 0 2px 16px rgba(0,0,0,0.05)",
                 }}
               >
-                <div className="px-5 py-3.5 border-b border-white/[0.05] flex items-center gap-3" style={{ background: "#0f0f0f" }}>
+                <div className="px-5 py-3.5 border-b border-black/[0.05] flex items-center gap-3" style={{ background: "rgba(249,115,22,0.05)" }}>
                   <FileCode2 className="h-4 w-4 text-[#f97316]" />
-                  <span className="text-[12px] font-semibold text-white/40 font-mono">my-saas-app — 87 files</span>
-                  <span className="ml-auto text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 px-2 py-0.5 rounded-full">fetched</span>
+                  <span className="text-[12px] font-semibold text-black/40 font-mono">my-saas-app — 87 files</span>
+                  <span className="ml-auto text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 px-2 py-0.5 rounded-full border border-[#22c55e]/15">fetched</span>
                 </div>
                 <div className="p-5 font-mono text-[12px] space-y-1.5">
                   {[
@@ -696,12 +737,12 @@ function LandingPage() {
                     ["· index.html", "", ""],
                   ].map(([path, count, accent], i) => (
                     <div key={i} className="flex items-center justify-between gap-4">
-                      <span className="text-white/45">{path}</span>
-                      {count && <span className="text-[10px]" style={{ color: accent }}>{count}</span>}
+                      <span className="text-black/40">{path}</span>
+                      {count && <span className="text-[10px] font-semibold" style={{ color: accent }}>{count}</span>}
                     </div>
                   ))}
-                  <div className="pt-2 mt-2 border-t border-white/[0.05] flex items-center justify-between">
-                    <span className="text-white/25">Total</span>
+                  <div className="pt-2 mt-2 border-t border-black/[0.06] flex items-center justify-between">
+                    <span className="text-black/25">Total</span>
                     <span className="text-[#f97316] font-bold">87 files · ~340KB</span>
                   </div>
                 </div>
@@ -712,23 +753,24 @@ function LandingPage() {
       </section>
 
       {/* ── FEATURE 2 — One commit ── */}
-      <section className="bg-white py-28 sm:py-40">
+      <section className="py-28 sm:py-40" style={{ background: "#f9f8f6" }}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-            {/* Visual first on desktop */}
             <FadeUp delay={0.12} className="order-2 lg:order-1">
               <div
                 className="rounded-2xl overflow-hidden"
                 style={{
-                  background: "#141414",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  boxShadow: "0 32px 64px rgba(0,0,0,0.15)",
+                  background: "rgba(255,255,255,0.75)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.9)",
+                  boxShadow: "0 32px 64px rgba(0,0,0,0.09), 0 2px 16px rgba(0,0,0,0.05)",
                 }}
               >
-                <div className="px-5 py-3.5 border-b border-white/[0.05] flex items-center gap-3" style={{ background: "#0f0f0f" }}>
+                <div className="px-5 py-3.5 border-b border-black/[0.05] flex items-center gap-3" style={{ background: "rgba(99,102,241,0.05)" }}>
                   <GitMerge className="h-4 w-4 text-[#6366f1]" />
-                  <span className="text-[12px] font-semibold text-white/40 font-mono">git log — main</span>
+                  <span className="text-[12px] font-semibold text-black/40 font-mono">git log — main</span>
                 </div>
                 <div className="p-5 font-mono text-[12px] space-y-4">
                   {[
@@ -740,15 +782,15 @@ function LandingPage() {
                     <div key={sha} className="flex items-start gap-3">
                       <div className="flex flex-col items-center shrink-0 mt-1">
                         <div className="h-2 w-2 rounded-full bg-[#6366f1]" />
-                        <div className="w-px flex-1 bg-white/[0.06] min-h-[20px] mt-1" />
+                        <div className="w-px flex-1 bg-black/[0.07] min-h-[20px] mt-1" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[#6366f1]">{sha}</span>
-                          {tag && <span className="text-[9px] font-bold text-white bg-[#6366f1]/20 px-1.5 py-0.5 rounded">{tag}</span>}
+                          <span className="text-[#6366f1] font-bold">{sha}</span>
+                          {tag && <span className="text-[9px] font-bold text-[#6366f1] bg-[#6366f1]/10 px-1.5 py-0.5 rounded border border-[#6366f1]/15">{tag}</span>}
                         </div>
-                        <div className="text-white/55 mt-0.5 truncate">{msg}</div>
-                        <div className="text-white/25 text-[10px] mt-0.5">{time}</div>
+                        <div className="text-black/50 mt-0.5 truncate">{msg}</div>
+                        <div className="text-black/25 text-[10px] mt-0.5">{time}</div>
                       </div>
                     </div>
                   ))}
@@ -766,12 +808,12 @@ function LandingPage() {
               </p>
               <div className="space-y-4">
                 {[
-                  { icon: GitBranch, text: "Push to any branch — main, dev, or custom" },
-                  { icon: CheckCircle2, text: "Create a new repo or push to an existing one" },
-                  { icon: CheckCircle2, text: "Full push history with commit hashes + timestamps" },
-                ].map(({ icon: Icon, text }) => (
+                  { icon: GitBranch, text: "Push to any branch — main, dev, or custom", color: "#6366f1" },
+                  { icon: CheckCircle2, text: "Create a new repo or push to an existing one", color: "#6366f1" },
+                  { icon: CheckCircle2, text: "Full push history with commit hashes + timestamps", color: "#6366f1" },
+                ].map(({ icon: Icon, text, color }) => (
                   <div key={text} className="flex items-start gap-3">
-                    <Icon className="h-5 w-5 text-[#6366f1] shrink-0 mt-0.5" strokeWidth={2.5} />
+                    <Icon className="h-5 w-5 shrink-0 mt-0.5" style={{ color }} strokeWidth={2.5} />
                     <span className="text-[15px] text-[#444] font-medium">{text}</span>
                   </div>
                 ))}
@@ -809,57 +851,93 @@ function LandingPage() {
 
             <FadeUp delay={0.12}>
               <div
-                className="rounded-2xl p-8"
+                className="rounded-2xl p-7"
                 style={{
-                  background: "#141414",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "rgba(255,255,255,0.04)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.09)",
                   boxShadow: "0 32px 64px rgba(0,0,0,0.4)",
                 }}
               >
-                {/* Architecture diagram */}
-                <div className="flex flex-col items-center gap-0">
-                  {/* Your Browser */}
-                  <div className="w-full rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center">
-                    <div className="text-[11px] font-bold tracking-[0.12em] uppercase text-white/30 mb-1">Your Browser</div>
-                    <div className="text-[15px] font-bold text-white">Push44 app</div>
-                    <div className="text-[11px] text-white/30 mt-1">credentials in localStorage</div>
-                  </div>
+                {/* Your Browser node */}
+                <div
+                  className="w-full rounded-xl p-4 text-center mb-2"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/30 mb-1">Your Browser</div>
+                  <div className="text-[16px] font-bold text-white">Push44 app</div>
+                  <div className="text-[11px] text-white/30 mt-1">credentials in localStorage · zero server calls</div>
+                </div>
 
-                  {/* Arrow down */}
-                  <div className="flex flex-col items-center py-3">
-                    <div className="w-px h-6 bg-white/10" />
-                    <ArrowRight className="h-4 w-4 rotate-90 text-white/20" />
-                  </div>
+                {/* Arrow down */}
+                <div className="flex flex-col items-center py-3">
+                  <div className="w-px h-5 bg-white/10" />
+                  <ArrowRight className="h-4 w-4 rotate-90 text-white/20" />
+                </div>
 
-                  {/* Split */}
-                  <div className="grid grid-cols-2 gap-3 w-full">
-                    <div className="rounded-xl border border-[#f97316]/20 bg-[#f97316]/[0.06] p-3 text-center">
-                      <div className="text-[10px] font-bold text-[#f97316]/60 mb-1 uppercase tracking-wide">Direct API</div>
-                      <div className="text-[13px] font-bold text-white/70">Base44</div>
-                      <div className="text-[10px] text-white/25 mt-0.5">app.base44.com</div>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
-                      <div className="text-[10px] font-bold text-white/30 mb-1 uppercase tracking-wide">Direct API</div>
-                      <div className="text-[13px] font-bold text-white/70">GitHub</div>
-                      <div className="text-[10px] text-white/25 mt-0.5">api.github.com</div>
-                    </div>
-                  </div>
-
-                  {/* No server callout */}
-                  <div className="mt-5 w-full rounded-xl border border-white/[0.05] bg-black/30 p-3 flex items-center gap-3">
+                {/* Platforms + GitHub grid */}
+                <div className="grid grid-cols-2 gap-2.5 mb-3">
+                  {[
+                    { label: "Base44", sub: "app.base44.com", color: "#f97316" },
+                    { label: "Rocket.new", sub: "rocket.new", color: "#6366f1" },
+                    { label: "Floot", sub: "floot.com", color: "#2563eb" },
+                    { label: "Zite", sub: "build.fillout.com", color: "#d97706" },
+                  ].map(({ label, sub, color }) => (
                     <div
-                      className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.2)" }}
+                      key={label}
+                      className="rounded-xl p-3 text-center"
+                      style={{
+                        background: `${color}10`,
+                        border: `1px solid ${color}25`,
+                      }}
                     >
-                      <Server className="h-4 w-4 text-red-400/60" strokeWidth={1.5} />
+                      <div className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: `${color}99` }}>Direct API</div>
+                      <div className="text-[13px] font-bold text-white/80">{label}</div>
+                      <div className="text-[9px] text-white/25 mt-0.5">{sub}</div>
                     </div>
-                    <div>
-                      <div className="text-[12px] font-bold text-white/35">Push44 server</div>
-                      <div className="text-[10px] text-red-400/50 font-medium">Does not exist</div>
-                    </div>
-                    <div className="ml-auto">
-                      <div className="text-[10px] font-black text-red-400/40 bg-red-400/[0.08] px-2 py-1 rounded-full">0 requests</div>
-                    </div>
+                  ))}
+                </div>
+
+                {/* Arrow down to GitHub */}
+                <div className="flex flex-col items-center py-2">
+                  <div className="w-px h-4 bg-white/10" />
+                  <ArrowRight className="h-4 w-4 rotate-90 text-white/20" />
+                </div>
+
+                {/* GitHub */}
+                <div
+                  className="rounded-xl p-3 text-center mb-4"
+                  style={{
+                    background: "rgba(34,197,94,0.08)",
+                    border: "1px solid rgba(34,197,94,0.20)",
+                  }}
+                >
+                  <div className="text-[10px] font-bold text-[#22c55e]/60 uppercase tracking-wide mb-0.5">Destination</div>
+                  <div className="text-[14px] font-bold text-white/85">GitHub</div>
+                  <div className="text-[10px] text-white/25 mt-0.5">api.github.com · your repo</div>
+                </div>
+
+                {/* No server note */}
+                <div
+                  className="rounded-xl p-3 flex items-center gap-3"
+                  style={{
+                    background: "rgba(239,68,68,0.07)",
+                    border: "1px solid rgba(239,68,68,0.14)",
+                  }}
+                >
+                  <div
+                    className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(239,68,68,0.12)" }}
+                  >
+                    <Server className="h-4 w-4 text-red-400/60" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <div className="text-[12px] font-bold text-white/30">Push44 server</div>
+                    <div className="text-[10px] text-red-400/50 font-medium">Does not exist · 0 requests</div>
                   </div>
                 </div>
               </div>
@@ -869,7 +947,7 @@ function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="bg-white py-28 sm:py-40">
+      <section id="how-it-works" className="py-28 sm:py-40" style={{ background: "#f4f1ec" }}>
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <FadeUp className="mb-20">
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#f97316] mb-5">Simple by design</p>
@@ -882,28 +960,46 @@ function LandingPage() {
           </FadeUp>
 
           <div className="relative">
-            {/* Connecting line */}
-            <div className="absolute left-[28px] top-12 bottom-12 w-px bg-black/[0.06] hidden sm:block" />
+            {/* Connecting line — vertically centered between step icons */}
+            <div
+              className="absolute hidden sm:block"
+              style={{
+                left: 27,
+                top: 56,
+                bottom: 56,
+                width: 2,
+                background: "linear-gradient(to bottom, rgba(249,115,22,0.3), rgba(99,102,241,0.3), rgba(34,197,94,0.3))",
+                borderRadius: 2,
+              }}
+            />
 
-            <div className="space-y-12 sm:space-y-16">
-              {STEPS.map(({ num, title, desc, icon: Icon }, i) => (
+            <div className="space-y-10 sm:space-y-14">
+              {STEPS.map(({ num, title, desc, icon: Icon, color, iconBg, iconColor }, i) => (
                 <FadeUp key={num} delay={i * 0.1}>
                   <div className="flex items-start gap-6 sm:gap-8">
-                    <div
-                      className="relative h-14 w-14 rounded-2xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: i === 0 ? "#f97316" : "#f9f8f6",
-                        border: i === 0 ? "none" : "1px solid rgba(0,0,0,0.08)",
-                      }}
-                    >
-                      <Icon className="h-6 w-6" style={{ color: i === 0 ? "#fff" : "#999" }} strokeWidth={1.75} />
+                    {/* Step icon bubble */}
+                    <div className="relative shrink-0">
+                      <div
+                        className="h-14 w-14 rounded-2xl flex items-center justify-center"
+                        style={{
+                          background: iconBg,
+                          border: `1px solid ${color}30`,
+                          backdropFilter: "blur(8px)",
+                          WebkitBackdropFilter: "blur(8px)",
+                          boxShadow: `0 4px 20px ${color}15`,
+                        }}
+                      >
+                        <Icon className="h-6 w-6" style={{ color: iconColor }} strokeWidth={1.75} />
+                      </div>
+                      {/* Step number badge */}
                       <span
-                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-[9px] font-black flex items-center justify-center"
-                        style={{ background: i === 0 ? "#f97316" : "#e5e5e5", color: i === 0 ? "#fff" : "#888" }}
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-[9px] font-black flex items-center justify-center text-white"
+                        style={{ background: color, boxShadow: `0 2px 8px ${color}50` }}
                       >
                         {i + 1}
                       </span>
                     </div>
+
                     <div className="pt-2">
                       <h3 className="text-[19px] font-bold text-[#0c0c0c] mb-2">{title}</h3>
                       <p className="text-[15px] text-[#666] leading-[1.7] max-w-md">{desc}</p>
@@ -921,17 +1017,22 @@ function LandingPage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-2 sm:grid-cols-4">
             {[
-              { num: "87+", label: "Files per push", sub: "Base44 apps" },
-              { num: "4", label: "Platforms", sub: "Base44, Rocket, Floot, Zite" },
-              { num: "1", label: "Commit", sub: "Atomic. Always." },
-              { num: "0", label: "Servers", sub: "No backend, ever" },
-            ].map(({ num, label, sub }, i) => (
+              { num: "87+",  label: "Files per push",  sub: "Base44 apps", gradient: "linear-gradient(135deg, #fb923c, #f97316)" },
+              { num: "4",    label: "Platforms",        sub: "Base44 · Rocket · Floot · Zite", gradient: "linear-gradient(135deg, #818cf8, #6366f1)" },
+              { num: "1",    label: "Commit",           sub: "Atomic. Always.", gradient: "linear-gradient(135deg, #4ade80, #22c55e)" },
+              { num: "0",    label: "Servers",          sub: "No backend, ever", gradient: "rgba(255,255,255,0.65)" },
+            ].map(({ num, label, sub, gradient }, i) => (
               <FadeUp key={label} delay={i * 0.06}>
-                <div className="py-14 px-6 border-r border-white/[0.05] last:border-0">
+                <div
+                  className="py-14 px-6"
+                  style={{
+                    borderRight: i < 3 ? "1px solid rgba(255,255,255,0.05)" : undefined,
+                  }}
+                >
                   <div
                     className="text-[52px] sm:text-[60px] font-black tracking-tight leading-none mb-2"
                     style={{
-                      background: i === 0 ? "linear-gradient(135deg, #fb923c, #f97316)" : "rgba(255,255,255,0.85)",
+                      background: gradient,
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                     }}
@@ -948,7 +1049,7 @@ function LandingPage() {
       </section>
 
       {/* ── PLATFORMS ── */}
-      <section id="platforms" className="bg-[#f9f8f6] py-28 sm:py-40">
+      <section id="platforms" className="py-28 sm:py-40" style={{ background: "#f9f8f6" }}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <FadeUp className="mb-16">
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#f97316] mb-5">Platform support</p>
@@ -964,12 +1065,28 @@ function LandingPage() {
             {PLATFORMS.map(({ id, name, tagline, desc, files, color, Logo }, i) => (
               <FadeUp key={id} delay={i * 0.07}>
                 <motion.div
-                  className="rounded-2xl p-6 h-full flex flex-col bg-white border border-black/[0.06]"
-                  whileHover={{ y: -5, boxShadow: "0 20px 48px rgba(0,0,0,0.08)", borderColor: `${color}40` }}
+                  className="rounded-2xl p-6 h-full flex flex-col"
+                  style={{
+                    background: "rgba(255,255,255,0.75)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.90)",
+                    boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
+                  }}
+                  whileHover={{
+                    y: -6,
+                    boxShadow: `0 24px 52px rgba(0,0,0,0.10), 0 0 0 1px ${color}30`,
+                    borderColor: `${color}50`,
+                  }}
                   transition={spring}
                 >
-                  <div className="mb-5">
-                    <Logo size={34} />
+                  {/* Colored top accent */}
+                  <div
+                    className="h-1 w-12 rounded-full mb-5"
+                    style={{ background: color }}
+                  />
+                  <div className="mb-4 p-2.5 rounded-xl inline-flex" style={{ background: `${color}12`, border: `1px solid ${color}20` }}>
+                    <Logo size={28} />
                   </div>
                   <h3 className="text-[16px] font-bold text-[#0c0c0c] mb-1">{name}</h3>
                   <p className="text-[11px] font-bold uppercase tracking-wider mb-4" style={{ color }}>{tagline}</p>
@@ -986,57 +1103,70 @@ function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="bg-white py-28 sm:py-40">
+      <section className="bg-[#0c0c0c] py-28 sm:py-40">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <FadeUp className="mb-16">
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#f97316] mb-5">Loved by builders</p>
-            <h2 className="text-[38px] sm:text-[52px] font-black tracking-[-0.025em] leading-[1.05] text-[#0c0c0c]">
-              What developers say.
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-10">
+              <h2 className="text-[38px] sm:text-[52px] font-black tracking-[-0.025em] leading-[1.05] text-white">
+                What developers say.
+              </h2>
+              <div className="flex items-center gap-1.5 pb-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-[#f97316] text-[#f97316]" />
+                ))}
+              </div>
+            </div>
           </FadeUp>
 
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-3 gap-4">
             {TESTIMONIALS.map(({ quote, name, role, platform, initials, color }, i) => (
               <FadeUp key={name} delay={i * 0.08}>
                 <motion.div
-                  className="rounded-2xl p-7 h-full flex flex-col border border-black/[0.06]"
-                  whileHover={{ y: -4, borderColor: `${color}30`, boxShadow: "0 16px 40px rgba(0,0,0,0.06)" }}
+                  className="rounded-2xl p-6 h-full flex flex-col"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: "0 2px 20px rgba(0,0,0,0.3)",
+                  }}
+                  whileHover={{
+                    y: -5,
+                    background: "rgba(255,255,255,0.07)",
+                    borderColor: `${color}35`,
+                    boxShadow: `0 20px 48px rgba(0,0,0,0.4), 0 0 0 1px ${color}20`,
+                  }}
                   transition={spring}
                 >
-                  <Quote className="h-6 w-6 mb-5" style={{ color, opacity: 0.25 }} />
-                  <p className="text-[14px] text-[#333] leading-[1.75] flex-1 mb-7">"{quote}"</p>
+                  {/* Quote accent line */}
+                  <div className="h-0.5 w-8 rounded-full mb-5" style={{ background: color }} />
+
+                  <p className="text-[14px] text-white/65 leading-[1.78] flex-1 mb-6 italic">"{quote}"</p>
+
                   <div className="flex items-center gap-3">
                     <div
                       className="h-9 w-9 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0"
-                      style={{ background: color }}
+                      style={{ background: color, boxShadow: `0 4px 12px ${color}50` }}
                     >
                       {initials}
                     </div>
                     <div>
-                      <div className="text-[13px] font-bold text-[#0c0c0c]">{name}</div>
-                      <div className="text-[11px] text-[#999]">{role} · {platform}</div>
+                      <div className="text-[13px] font-bold text-white/90">{name}</div>
+                      <div className="text-[11px] text-white/35">{role} · {platform}</div>
                     </div>
                   </div>
                 </motion.div>
               </FadeUp>
             ))}
           </div>
-
-          <FadeUp delay={0.25} className="mt-12">
-            <div className="flex items-center gap-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-[#f97316] text-[#f97316]" />
-              ))}
-              <span className="text-[13px] text-[#999] ml-1">Loved by vibe-coders building on AI platforms</span>
-            </div>
-          </FadeUp>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" className="bg-[#f9f8f6] py-28 sm:py-40">
+      <section id="faq" className="py-28 sm:py-40" style={{ background: "#f4f1ec" }}>
         <div className="max-w-2xl mx-auto px-5 sm:px-8">
-          <FadeUp className="mb-14">
+          <FadeUp className="mb-12">
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#f97316] mb-5">Questions</p>
             <h2 className="text-[38px] sm:text-[52px] font-black tracking-[-0.025em] leading-[1.05] text-[#0c0c0c]">
               Everything you<br />need to know.
@@ -1044,7 +1174,16 @@ function LandingPage() {
           </FadeUp>
 
           <FadeUp delay={0.1}>
-            <div className="rounded-2xl border border-black/[0.06] overflow-hidden px-6 sm:px-8" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+            <div
+              className="rounded-2xl overflow-hidden px-6 sm:px-8"
+              style={{
+                background: "rgba(255,255,255,0.88)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                border: "1px solid rgba(255,255,255,0.95)",
+                boxShadow: "0 4px 32px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04)",
+              }}
+            >
               {FAQS.map(({ q, a }) => (
                 <FAQItem key={q} q={q} a={a} />
               ))}
@@ -1055,17 +1194,28 @@ function LandingPage() {
 
       {/* ── FINAL CTA ── */}
       <section className="bg-[#0c0c0c] py-40 relative overflow-hidden">
+        {/* Radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(249,115,22,0.14) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(249,115,22,0.15) 0%, transparent 65%)" }}
         />
+        {/* Top line accent */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.35), transparent)" }}
+        />
+
         <div className="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <FadeUp>
-            <div className="flex items-center justify-center gap-2 mb-8">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-white/20 text-white/20" />
-              ))}
+            {/* Sparkle decoration */}
+            <div className="flex items-center justify-center gap-4 mb-10">
+              <div className="h-px flex-1 max-w-[60px]" style={{ background: "linear-gradient(to right, transparent, rgba(249,115,22,0.3))" }} />
+              <Sparkles className="h-5 w-5 text-[#f97316]/50" />
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/20">Free forever</span>
+              <Sparkles className="h-5 w-5 text-[#f97316]/50" />
+              <div className="h-px flex-1 max-w-[60px]" style={{ background: "linear-gradient(to left, transparent, rgba(249,115,22,0.3))" }} />
             </div>
+
             <h2 className="text-[44px] sm:text-[64px] font-black tracking-[-0.03em] leading-[0.96] text-white mb-6">
               Your code deserves<br />version control.
             </h2>
@@ -1076,24 +1226,39 @@ function LandingPage() {
               <Link to={isConnected ? "/dashboard" : "/onboarding"}>
                 <motion.button
                   className="flex items-center gap-2.5 rounded-2xl px-9 py-5 text-[16px] font-bold text-white"
-                  style={{ background: "#f97316", boxShadow: "0 8px 40px rgba(249,115,22,0.45)" }}
-                  whileHover={{ scale: 1.04, boxShadow: "0 16px 50px rgba(249,115,22,0.65)" }}
+                  style={{
+                    background: "linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%)",
+                    boxShadow: "0 8px 40px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  }}
+                  whileHover={{ scale: 1.04, boxShadow: "0 16px 50px rgba(249,115,22,0.65), inset 0 1px 0 rgba(255,255,255,0.25)" }}
                   whileTap={{ scale: 0.97 }}
                   transition={spring}
                 >
                   {isConnected ? "Go to Dashboard" : "Get Started Free"}
-                  <ArrowRight className="h-4.5 w-4.5" strokeWidth={2.5} />
+                  <ArrowRight className="h-5 w-5" strokeWidth={2.5} />
                 </motion.button>
               </Link>
               <motion.a
                 href="https://github.com/The-habib/Push44"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2.5 rounded-2xl px-9 py-5 text-[16px] font-semibold text-white/50 border border-white/10"
-                whileHover={{ color: "#fff", borderColor: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)" }}
+                className="flex items-center gap-2.5 rounded-2xl px-9 py-5 text-[16px] font-semibold"
+                style={{
+                  color: "rgba(255,255,255,0.5)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                }}
+                whileHover={{
+                  color: "#fff",
+                  borderColor: "rgba(255,255,255,0.25)",
+                  background: "rgba(255,255,255,0.07)",
+                  y: -2,
+                }}
                 transition={{ duration: 0.2 }}
               >
-                <GitHubLogo className="h-4.5 w-4.5" />
+                <GitHubLogo className="h-5 w-5" />
                 View Source
               </motion.a>
             </div>
@@ -1104,7 +1269,7 @@ function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="bg-[#080808] border-t border-white/[0.05]">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-10">
 
             <div className="col-span-2 sm:col-span-3 lg:col-span-1">
               <div className="flex items-center gap-2 mb-4">
@@ -1134,10 +1299,10 @@ function LandingPage() {
               <ul className="space-y-3">
                 {[
                   { label: "Get started", to: "/onboarding" },
-                  { label: "Dashboard", to: "/dashboard" },
-                  { label: "Push code", to: "/push" },
-                  { label: "History", to: "/history" },
-                  { label: "Settings", to: "/settings" },
+                  { label: "Dashboard",  to: "/dashboard"  },
+                  { label: "Push code",  to: "/push"       },
+                  { label: "History",    to: "/history"    },
+                  { label: "Settings",   to: "/settings"   },
                 ].map(({ label, to }) => (
                   <li key={label}>
                     <Link to={to} className="text-[13px] text-white/30 hover:text-white/70 transition-colors font-medium">{label}</Link>
@@ -1150,10 +1315,10 @@ function LandingPage() {
               <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white/15 mb-5">Platforms</h4>
               <ul className="space-y-3">
                 {[
-                  { label: "Base44", href: "https://app.base44.com" },
-                  { label: "Rocket.new", href: "https://rocket.new" },
-                  { label: "Floot", href: "https://floot.com" },
-                  { label: "Zite", href: "https://build.fillout.com" },
+                  { label: "Base44",     href: "https://app.base44.com"    },
+                  { label: "Rocket.new", href: "https://rocket.new"        },
+                  { label: "Floot",      href: "https://floot.com"         },
+                  { label: "Zite",       href: "https://build.fillout.com" },
                 ].map(({ label, href }) => (
                   <li key={label}>
                     <a href={href} target="_blank" rel="noreferrer" className="text-[13px] text-white/30 hover:text-white/70 transition-colors font-medium">{label}</a>
@@ -1167,12 +1332,19 @@ function LandingPage() {
               <ul className="space-y-3">
                 {[
                   { label: "How it works", href: "#how-it-works" },
-                  { label: "FAQ", href: "#faq" },
-                  { label: "GitHub", href: "https://github.com/The-habib/Push44" },
-                  { label: "Sitemap", href: "/sitemap.xml" },
+                  { label: "FAQ",          href: "#faq"          },
+                  { label: "GitHub",       href: "https://github.com/The-habib/Push44" },
+                  { label: "Sitemap",      href: "/sitemap.xml"  },
                 ].map(({ label, href }) => (
                   <li key={label}>
-                    <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} className="text-[13px] text-white/30 hover:text-white/70 transition-colors font-medium">{label}</a>
+                    <a
+                      href={href}
+                      target={href.startsWith("http") ? "_blank" : undefined}
+                      rel={href.startsWith("http") ? "noreferrer" : undefined}
+                      className="text-[13px] text-white/30 hover:text-white/70 transition-colors font-medium"
+                    >
+                      {label}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -1183,7 +1355,7 @@ function LandingPage() {
         <div className="border-t border-white/[0.04]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-[11px] text-white/15 font-medium">
-              © 2025–{new Date().getFullYear()} Push44 — MIT License
+              © 2025–{footerYear} Push44 — MIT License
             </p>
             <div className="flex items-center gap-4 text-[11px] text-white/10 font-medium">
               <span>Free forever</span>
