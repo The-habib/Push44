@@ -8,7 +8,7 @@ import {
   Quote, Eye, History, RefreshCw, GitMerge, Server, Sparkles,
 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
-import appLogo from "@/assets/logo.png";
+import appLogo from "@/assets/logo.webp";
 import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/")({

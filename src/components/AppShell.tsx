@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, UploadCloud, Archive, History, Settings } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { GitHubLogo } from "@/components/BrandLogos";
-import appLogo from "@/assets/logo.png";
+import appLogo from "@/assets/logo.webp";
 import { useApp } from "@/contexts/AppContext";
 import { useEffect, useRef, type ReactNode } from "react";
 
