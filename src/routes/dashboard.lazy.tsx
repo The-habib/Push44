@@ -18,6 +18,7 @@ import { listBase44Apps } from "@/lib/base44-api";
 import { listGitHubRepos } from "@/lib/github-api";
 import {
   getHistory, formatRelativeTime, getPushStreak, getWeeklyActivity, savePushPrefs,
+  getStalePushApps, type StalePushApp,
 } from "@/lib/storage";
 import { SkeletonStatCard, SkeletonRepoCard } from "@/components/Skeleton";
 
@@ -95,6 +96,7 @@ function Dashboard() {
   const [history, setHistory]   = useState(getHistory());
   const [greeting, setGreeting] = useState("");
   const [streak, setStreak]     = useState(0);
+  const [staleApps, setStaleApps] = useState<StalePushApp[]>([]);
   const [weekData, setWeekData] = useState<
     { day: string; pushes: number; files: number }[]
   >([]);
@@ -140,6 +142,7 @@ function Dashboard() {
     setHistory(hist);
     setStreak(getPushStreak());
     setWeekData(getWeeklyActivity());
+    setStaleApps(getStalePushApps());
   }, []);
 
   /* ── hero badge text ── */
@@ -544,6 +547,83 @@ function Dashboard() {
                   </span>
                 ))}
               </div>
+            </div>
+          </div>
+        </FadeUp>
+      )}
+
+      {/* ── Divergence Heartbeat ───────────────────── */}
+      {staleApps.length > 0 && isConnected && (
+        <FadeUp delay={0.15}>
+          <div className="rounded-[24px] border overflow-hidden mb-4"
+            style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderColor: "#fde68a", boxShadow: "0 2px 20px rgba(217,119,6,0.08)" }}>
+            <div className="h-[3px] w-full" style={{ background: "linear-gradient(90deg,#f59e0b,#d97706)" }} />
+            <SectionHeader
+              title="Sync Reminder"
+              sub={`${staleApps.length} app${staleApps.length !== 1 ? "s" : ""} not pushed in 12+ hours`}
+              action={
+                <div className="flex items-center gap-1.5 bg-[#fffbeb] rounded-full px-2.5 py-1 border border-[#fde68a]">
+                  <motion.span
+                    className="h-1.5 w-1.5 rounded-full bg-[#f59e0b]"
+                    animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 2.4, repeat: Infinity }}
+                  />
+                  <span className="text-[10px] font-bold text-[#d97706]">Diverged</span>
+                </div>
+              }
+            />
+            <div className="px-4 py-3 space-y-2">
+              {staleApps.map((app) => {
+                const PlatformIcon =
+                  app.platform === "rocket" ? RocketLogo
+                  : app.platform === "floot" ? FlootLogo
+                  : app.platform === "zite" ? ZiteLogo
+                  : Base44Logo;
+                const accentColor =
+                  app.platform === "rocket" ? "#7f22fe"
+                  : app.platform === "floot" ? "#2563eb"
+                  : app.platform === "zite" ? "#d97706"
+                  : "#f97316";
+                const hours = Math.floor((Date.now() - app.lastPushedAt) / 3600000);
+                const days  = Math.floor(hours / 24);
+                const staleness = days >= 1 ? `${days}d ago` : `${hours}h ago`;
+                return (
+                  <motion.div
+                    key={`${app.platform}::${app.appName}`}
+                    className="flex items-center gap-3 rounded-[18px] px-3.5 py-3 border"
+                    style={{ background: "#fffbeb", borderColor: "#fde68a" }}
+                    whileHover={{ y: -1, boxShadow: "0 4px 16px rgba(217,119,6,0.10)" }}
+                    transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                  >
+                    <div className="h-9 w-9 rounded-[12px] flex items-center justify-center shrink-0"
+                      style={{ background: `${accentColor}18` }}>
+                      <PlatformIcon size={18} style={{ color: accentColor }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-bold text-[#1a1a1a] truncate">{app.appName}</div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <GitBranch className="h-2.5 w-2.5 text-[#9a8880]" />
+                        <span className="text-[10px] text-[#9a8880] font-medium truncate">{app.repo}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
+                      <span className="text-[10px] font-bold text-[#d97706] bg-[#fef3c7] rounded-full px-2 py-0.5 border border-[#fde68a]">
+                        {staleness}
+                      </span>
+                      <MotionButton
+                        onClick={() => {
+                          savePushPrefs({ platform: app.platform, repushAppName: app.appName });
+                          navigate({ to: "/push" });
+                        }}
+                        className="text-[10px] font-bold text-white rounded-lg px-2.5 py-1"
+                        style={{ background: accentColor }}
+                      >
+                        Push now →
+                      </MotionButton>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </FadeUp>

@@ -250,6 +250,47 @@ export function getWeeklyActivity(): { day: string; pushes: number; files: numbe
   return result;
 }
 
+export interface StalePushApp {
+  appName: string;
+  platform: Platform;
+  lastPushedAt: number;
+  repo: string;
+  pushCount: number;
+}
+
+export function getStalePushApps(staleAfterMs = 12 * 60 * 60 * 1000): StalePushApp[] {
+  const history = getHistory().filter(h => h.status === "success" && h.platform);
+  if (!history.length) return [];
+
+  const appMap = new Map<string, StalePushApp>();
+  for (const record of history) {
+    const key = `${record.platform}::${record.appName}`;
+    const existing = appMap.get(key);
+    if (!existing || record.timestamp > existing.lastPushedAt) {
+      appMap.set(key, {
+        appName: record.appName,
+        platform: record.platform!,
+        lastPushedAt: record.timestamp,
+        repo: record.repo,
+        pushCount: 0,
+      });
+    }
+  }
+
+  // Count pushes per app
+  for (const record of history) {
+    const key = `${record.platform}::${record.appName}`;
+    const entry = appMap.get(key);
+    if (entry) entry.pushCount++;
+  }
+
+  const now = Date.now();
+  return [...appMap.values()]
+    .filter(a => now - a.lastPushedAt > staleAfterMs)
+    .sort((a, b) => b.lastPushedAt - a.lastPushedAt)
+    .slice(0, 5);
+}
+
 export function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
