@@ -298,7 +298,18 @@ function HistoryPage() {
                                 </div>
                               </div>
                               <div className="text-[11px] text-[#6b6360] truncate mb-0.5">{e.repo}</div>
-                              <div className="text-[11px] text-[#9a8880] italic truncate">"{e.commitMessage}"</div>
+                              <div className="text-[11px] text-[#9a8880] italic truncate mb-1">"{e.commitMessage}"</div>
+
+                              {e.aiPrompt && (
+                                <div className="mt-2 p-2 bg-[#fffbeb] border border-[#fde68a] rounded-xl">
+                                  <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#d97706] uppercase tracking-wider mb-1">
+                                    <Zap className="h-2.5 w-2.5" /> AI Context
+                                  </div>
+                                  <div className="text-[10px] text-[#92400e] line-clamp-3 leading-relaxed">
+                                    {e.aiPrompt}
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Diff pills */}
                               {ok && (e.newCount !== undefined || e.modifiedCount !== undefined || e.deletedCount !== undefined) && (

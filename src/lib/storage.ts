@@ -35,6 +35,7 @@ export interface PushRecord {
   status: "success" | "failed";
   error?: string;
   timestamp: number;
+  aiPrompt?: string;
 }
 
 export interface FileSnapshot {

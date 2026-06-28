@@ -216,6 +216,7 @@ export async function pushFilesToGitHub({ data }: {
     owner: string;
     repo: string;
     branch: string;
+    platform?: string;
     files: FileEntry[];
     filesToDelete?: string[];
     commitMessage: string;
@@ -271,6 +272,45 @@ export async function pushFilesToGitHub({ data }: {
     method: "POST",
     body: JSON.stringify(commitBody),
   });
+
+  // Inject "Restore to Platform" button into README.md if it doesn't exist or update it
+  try {
+    const readmePath = "README.md";
+    let readmeContent = "";
+    let readmeSha: string | null = null;
+    
+    try {
+      const existingReadme = await ghFetch(token, `${repoPath}/contents/${readmePath}?ref=${branch}`);
+      readmeContent = atob(existingReadme.content);
+      readmeSha = existingReadme.sha;
+    } catch (e) {
+      // README doesn't exist, start fresh
+    }
+
+    const platformUrls: Record<string, string> = {
+      base44: "https://app.base44.com/apps",
+      rocket: "https://rocket.new",
+      floot: "https://floot.app",
+      zite: "https://build.fillout.com",
+    };
+    const platformUrl = platformUrls[data.platform || ""] || "https://app.base44.com";
+    const restoreButton = `\n\n---\n\n[![Restore to ${data.platform || "Platform"}](https://img.shields.io/badge/Restore%20to-${(data.platform || "Platform").toUpperCase()}-orange?style=for-the-badge&logo=rocket)](${platformUrl})`;
+
+    if (!readmeContent.includes("Restore to")) {
+      const newReadmeContent = readmeContent + restoreButton;
+      await ghFetch(token, `${repoPath}/contents/${readmePath}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: "chore: add restore button to README",
+          content: btoa(newReadmeContent),
+          sha: readmeSha || undefined,
+          branch,
+        }),
+      });
+    }
+  } catch (e) {
+    console.error("Failed to inject README button", e);
+  }
 
   if (parentCommitSha) {
     await ghFetch(token, `${repoPath}/git/refs/heads/${branch}`, {

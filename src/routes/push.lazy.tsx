@@ -1270,6 +1270,9 @@ function PushPage() {
   const [diffMap, setDiffMap]           = useState<Map<string, DiffStatus>>(new Map());
   const [stagedPaths, setStagedPaths]   = useState<Set<string>>(new Set());
   const [deletedPaths, setDeletedPaths] = useState<Set<string>>(new Set());
+  const [aiPrompt, setAiPrompt]         = useState("");
+  const [secretsFound, setSecretsFound] = useState<string[]>([]);
+  const [showSecretModal, setShowSecretModal] = useState(false);
   const [hasSnapshot, setHasSnapshot]   = useState(false);
   const [branches, setBranches]         = useState<Branch[]>([]);
   const [branchLoading, setBL]          = useState(false);
@@ -1548,7 +1551,40 @@ function PushPage() {
     } catch (e: any) { toast.error(e.message || "Could not generate the ZIP file. Please try again."); }
   };
 
-  const handlePush = async () => {
+  const SECRET_PATTERNS = [
+    /["'](sk-[a-zA-Z0-9]{48})["']/g, // OpenAI
+    /["'](key-[a-zA-Z0-9]{32})["']/g, // Generic key
+    /["'](AIza[a-zA-Z0-9-_]{35})["']/g, // Google API Key
+    /["'](ghp_[a-zA-Z0-9]{36})["']/g, // GitHub PAT
+    /((access_key|secret_key|api_key|password|secret|token|apikey)\s*[:=]\s*["'][^"']{4,}["'])/gi, // Generic assignment
+  ];
+
+  const scanSecrets = useCallback(() => {
+    const found: string[] = [];
+    stagedFiles.forEach(f => {
+      SECRET_PATTERNS.forEach(regex => {
+        const matches = f.content.match(regex);
+        if (matches) {
+          matches.forEach(m => {
+            if (!found.includes(m)) found.push(`${f.path}: ${m.replace(/["']/g, "").trim()}`);
+          });
+        }
+      });
+    });
+    return found;
+  }, [stagedFiles]);
+
+  const handlePushClick = () => {
+    const found = scanSecrets();
+    if (found.length > 0) {
+      setSecretsFound(found);
+      setShowSecretModal(true);
+    } else {
+      doPush();
+    }
+  };
+
+  const doPush = async () => {
     if (!selectedApp || !selectedRepo || !commitMsg.trim() || stagedFiles.length === 0) return;
     const [owner, repo] = selectedRepo.full_name.split("/");
     setStatus("pushing"); setErrorMsg(""); setPushProgress({ done: 0, total: stagedFiles.length });
@@ -1557,10 +1593,23 @@ function PushPage() {
     const unchangedCount = stagedFiles.filter(f => diffMap.get(f.path) === "unchanged").length;
     const delCount       = deletedPaths.size;
     try {
+      // Auto-inject platform-aware .gitignore if not already staged
+      const GITIGNORE_RULES: Record<string, string> = {
+        base44: `# Base44 platform artifacts\n.base44/\n*.b44\n\n# Env & secrets\n.env\n.env.*\n!.env.example\n\n# Node\nnode_modules/\ndist/\n.next/\nbuild/\n\n# OS\n.DS_Store\nThumbs.db\n`,
+        rocket: `# Rocket.new / Flutter artifacts\nbuild/\n.dart_tool/\n.flutter-plugins\n.flutter-plugins-dependencies\npubspec.lock\n*.g.dart\n*.freezed.dart\nandroid/.gradle/\nios/Pods/\n\n# Env & secrets\n.env\n.env.*\n!.env.example\n\n# OS\n.DS_Store\nThumbs.db\n`,
+        floot:  `# Floot platform artifacts\n.floot/\n\n# Env & secrets\n.env\n.env.*\n!.env.example\n\n# Node\nnode_modules/\ndist/\nbuild/\n\n# OS\n.DS_Store\nThumbs.db\n`,
+        zite:   `# Zite platform artifacts\n.zite/\n\n# Env & secrets\n.env\n.env.*\n!.env.example\n\n# Node\nnode_modules/\ndist/\nbuild/\n\n# OS\n.DS_Store\nThumbs.db\n`,
+      };
+      const hasGitignore = stagedFiles.some(f => f.path === ".gitignore");
+      const filesWithGitignore = hasGitignore
+        ? stagedFiles
+        : [...stagedFiles, { path: ".gitignore", content: GITIGNORE_RULES[platform] ?? GITIGNORE_RULES.base44 }];
+
       const result = await pushFilesToGitHub({
         data: {
           token: creds.githubToken!, owner, repo, branch,
-          files: stagedFiles,
+          platform,
+          files: filesWithGitignore,
           filesToDelete: [...deletedPaths],
           commitMessage: commitMsg,
           onProgress: (done, total) => setPushProgress({ done, total }),
@@ -1578,6 +1627,7 @@ function PushPage() {
         filesCount: stagedFiles.length, stagedCount: stagedFiles.length,
         newCount, modifiedCount, deletedCount: delCount,
         status: "success", timestamp: Date.now(),
+        aiPrompt,
       });
       toast.success(`Pushed ${stagedFiles.length} files to ${selectedRepo.full_name}`);
     } catch (e: any) {
@@ -1700,12 +1750,26 @@ function PushPage() {
           <FadeUp delay={0.24}>
             <div className="space-y-2.5">
               {selectedRepo && (
-                <a href={`${selectedRepo.html_url}/tree/${branch}`} target="_blank" rel="noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-[16px] border border-[#f0ece4] bg-white text-[13px] font-bold text-[#1a1a1a]"
-                  style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />View on GitHub
-                </a>
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={`${selectedRepo.html_url}/tree/${branch}`}
+                      target="_blank" rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-3 rounded-[14px] border border-[#f0ece4] bg-white text-[12px] font-bold text-[#1a1a1a]"
+                      style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />View on GitHub
+                    </a>
+                    <a
+                      href={`https://github.dev/${selectedRepo.full_name}/blob/${branch}`}
+                      target="_blank" rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-3 rounded-[14px] border text-[12px] font-bold text-white"
+                      style={{ background: "linear-gradient(135deg,#1a1a1a,#333)", borderColor: "#1a1a1a", boxShadow: "0 1px 8px rgba(0,0,0,0.18)" }}
+                    >
+                      <Terminal className="h-3.5 w-3.5" />Open in VS Code
+                    </a>
+                  </div>
+                </>
               )}
               <MotionButton
                 onClick={() => { setStatus("idle"); setSelectedApp(null); setFiles([]); setDiffMap(new Map()); setStagedPaths(new Set()); setDeletedPaths(new Set()); setPushStats(null); loadApps(); }}
@@ -2179,6 +2243,19 @@ function PushPage() {
               )}
             </div>
 
+            <div className="relative mb-3">
+              <Zap className="absolute left-3.5 top-3 h-4 w-4 text-[#c8b8a2]" />
+              <textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                placeholder="Paste AI prompt context (optional)…"
+                rows={2}
+                aria-label="AI Prompt context"
+                className="w-full text-[13px] rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-9 pr-3.5 py-2.5 outline-none font-medium placeholder:text-[#c8b8a2] resize-none transition-colors focus:border-[#f97316]/50"
+              />
+              <p className="text-[9px] text-[#9a8880] font-medium mt-1 ml-0.5">Prompt history helps you remember how the AI built this.</p>
+            </div>
+
             {/* Summary row */}
             <div className="flex items-center gap-2 mb-3 text-[11px] text-[#9a8880] font-medium flex-wrap">
               <span className="flex items-center gap-1"><UploadCloud className="h-3 w-3" />{stagedFiles.length} files staged</span>
@@ -2217,7 +2294,7 @@ function PushPage() {
             )}
 
             <MotionButton
-              onClick={handlePush}
+              onClick={handlePushClick}
               disabled={status === "pushing" || (stagedFiles.length === 0 && deletedPaths.size === 0) || !commitMsg.trim()}
               className="w-full flex items-center justify-center gap-2.5 rounded-2xl py-3.5 font-bold text-[14px] text-white"
               style={{
@@ -2235,6 +2312,43 @@ function PushPage() {
           </>
         )}
       </SectionShell>
+
+      {/* Secret Sanitizer Modal */}
+      <AnimatePresence>
+        {showSecretModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSecretModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative z-10 w-full max-w-md bg-white rounded-[28px] overflow-hidden shadow-2xl">
+              <div className="px-6 py-5 border-b border-[#f7f4f0] flex items-center gap-3">
+                <div className="h-11 w-11 rounded-2xl bg-[#fef2f2] flex items-center justify-center shrink-0">
+                  <Shield className="h-6 w-6 text-[#ef4444]" />
+                </div>
+                <div>
+                  <h3 className="text-[16px] font-black text-[#1a1a1a]">Secret Detected</h3>
+                  <p className="text-[11px] text-[#9a8880]">Pushing secrets to GitHub is dangerous.</p>
+                </div>
+              </div>
+              <div className="px-6 py-5">
+                <div className="bg-[#fef2f2] border border-[#fecaca] rounded-2xl p-4 mb-4">
+                  <p className="text-[12px] font-bold text-[#ef4444] mb-2">We found potential secrets in your staged files:</p>
+                  <div className="max-h-40 overflow-y-auto space-y-1.5 pr-2">
+                    {secretsFound.map((s, i) => (
+                      <div key={i} className="text-[10px] font-mono text-[#991b1b] bg-white/50 rounded p-1.5 break-all border border-[#fecaca]/50">{s}</div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[12px] text-[#6b6360] leading-relaxed mb-6">
+                  It's highly recommended to use environment variables instead of hardcoding keys. Proceed only if you're sure these aren't sensitive.
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowSecretModal(false)} className="flex-1 rounded-xl py-3 text-[13px] font-bold text-[#9a8880] bg-[#faf7f3] border border-[#f0ece4]">Cancel</button>
+                  <button onClick={() => { setShowSecretModal(false); doPush(); }} className="flex-1 rounded-xl py-3 text-[13px] font-bold text-white bg-[#ef4444]">Push Anyway</button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
