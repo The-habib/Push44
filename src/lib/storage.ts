@@ -56,12 +56,15 @@ if (typeof localStorage !== "undefined") {
 }
 
 function simpleHash(str: string): string {
-  let h = 0;
+  // FNV-1a inspired dual-hash — far lower collision rate than djb2
+  let h1 = 0x811c9dc5;
+  let h2 = 0xc4ceb9fe;
   for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i);
-    h |= 0;
+    const c = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193);
+    h2 = Math.imul(h2 ^ c, 0x85ebca77);
   }
-  return Math.abs(h).toString(36);
+  return (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0");
 }
 
 export function getCredentials(): Partial<Credentials> {
@@ -242,7 +245,7 @@ export function formatRelativeTime(timestamp: number): string {
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hr ago`;
+  if (hours < 24) return `${hours} hr${hours !== 1 ? "s" : ""} ago`;
   const days = Math.floor(hours / 24);
   if (days === 1) return "yesterday";
   return `${days} days ago`;

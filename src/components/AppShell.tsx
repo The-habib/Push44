@@ -303,6 +303,7 @@ function FloatingHeader({
               href={githubUsername ? `https://github.com/${githubUsername}` : "https://github.com"}
               target="_blank"
               rel="noreferrer"
+              aria-label={githubUsername ? `View @${githubUsername} on GitHub` : "Open GitHub"}
               className="h-8 w-8 rounded-[11px] flex items-center justify-center shrink-0"
               style={{
                 background: "rgba(26,26,26,0.06)",
@@ -544,6 +545,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 href={creds.githubUsername ? `https://github.com/${creds.githubUsername}` : "https://github.com"}
                 target="_blank"
                 rel="noreferrer"
+                aria-label={creds.githubUsername ? `View @${creds.githubUsername} on GitHub` : "Open GitHub"}
                 className="h-8 w-8 rounded-[10px] flex items-center justify-center"
                 style={{
                   background: "rgba(26,26,26,0.06)",

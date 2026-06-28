@@ -243,7 +243,12 @@ function HistoryPage() {
                 <MotionButton onClick={handleExport} className="flex items-center gap-1.5 text-[#9a8880] text-[11px] font-bold bg-[#faf7f3] rounded-full px-3 py-1.5 border border-[#f0ece4]">
                   <Download className="h-3 w-3" />Export
                 </MotionButton>
-                <MotionButton onClick={() => { clearHistory(); setAllEvents([]); }} className="flex items-center gap-1.5 text-[#ef4444] text-[11px] font-bold bg-[#fef2f2] rounded-full px-3 py-1.5">
+                <MotionButton onClick={() => {
+                  if (window.confirm(`Clear all ${allEvents.length} push records? This cannot be undone.`)) {
+                    clearHistory();
+                    setAllEvents([]);
+                  }
+                }} className="flex items-center gap-1.5 text-[#ef4444] text-[11px] font-bold bg-[#fef2f2] rounded-full px-3 py-1.5">
                   <Trash2 className="h-3 w-3" />Clear
                 </MotionButton>
               </div>

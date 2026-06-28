@@ -1,7 +1,7 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Cloud, GitBranch, FileText, Lock, MessageSquare, Loader2,
@@ -108,12 +108,21 @@ function StagingBrowser({
   expandedDiffPath: string | null;
   onToggleDiff: (path: string) => void;
 }) {
-  const newCount       = files.filter(f => diffMap.get(f.path) === "new").length;
-  const modifiedCount  = files.filter(f => diffMap.get(f.path) === "modified").length;
-  const unchangedCount = files.filter(f => diffMap.get(f.path) === "unchanged").length;
+  const newCount       = useMemo(() => files.filter(f => diffMap.get(f.path) === "new").length,       [files, diffMap]);
+  const modifiedCount  = useMemo(() => files.filter(f => diffMap.get(f.path) === "modified").length,  [files, diffMap]);
+  const unchangedCount = useMemo(() => files.filter(f => diffMap.get(f.path) === "unchanged").length, [files, diffMap]);
+  const totalLines     = useMemo(() => files.reduce((a, f) => a + f.content.split("\n").length, 0),   [files]);
   const deletedCount   = deletedPaths.size;
   const stagedCount    = stagedPaths.size;
-  const stagedDeletions = deletedCount; // all deletedPaths are staged
+  const stagedDeletions = deletedCount;
+
+  // Build a snapshot content lookup map once — avoids repeated JSON.parse per file per render
+  const snapshotContentMap = useMemo(() => {
+    if (!appId) return new Map<string, string>();
+    const snap = getAppSnapshot(appId);
+    if (!snap) return new Map<string, string>();
+    return new Map(snap.files.map(f => [f.path, f.content]));
+  }, [appId]);
 
   const toggleFile = (path: string) => {
     const next = new Set(stagedPaths);
@@ -127,18 +136,18 @@ function StagingBrowser({
     onDeletedPathsChange(next);
   };
 
-  const sorted = [...files].sort((a, b) => {
+  const sorted = useMemo(() => [...files].sort((a, b) => {
     const order: Record<DiffStatus, number> = { new: 0, modified: 1, unchanged: 2, deleted: 3 };
     const da = diffMap.get(a.path) ?? "unchanged";
     const db = diffMap.get(b.path) ?? "unchanged";
     return (order[da] - order[db]) || a.path.localeCompare(b.path);
-  });
+  }), [files, diffMap]);
 
   // Deleted file paths as virtual file entries
-  const deletedFileList = [...diffMap.entries()]
+  const deletedFileList = useMemo(() => [...diffMap.entries()]
     .filter(([, s]) => s === "deleted")
     .map(([p]) => p)
-    .sort();
+    .sort(), [diffMap]);
 
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-3">
@@ -157,7 +166,7 @@ function StagingBrowser({
               </span>
             </div>
             <span className="text-[11px] text-[#9a8880] font-medium">
-              {files.reduce((a, f) => a + f.content.split("\n").length, 0).toLocaleString()} lines
+              {totalLines.toLocaleString()} lines
             </span>
           </div>
 
@@ -223,8 +232,8 @@ function StagingBrowser({
             const staged = stagedPaths.has(file.path);
             const status = diffMap.get(file.path);
             const isExpanded = expandedDiffPath === file.path;
-            const oldContent = (status === "modified" || status === "unchanged") && appId
-              ? getSnapshotFileContent(appId, file.path)
+            const oldContent = (status === "modified" || status === "unchanged")
+              ? (snapshotContentMap.get(file.path) ?? null)
               : null;
             const showDiff = (status === "new" || status === "modified") && isExpanded;
 
@@ -298,7 +307,7 @@ function StagingBrowser({
             const dir   = parts.join("/");
             const isStaged = deletedPaths.has(path);
             const isExpanded = expandedDiffPath === `__del__${path}`;
-            const oldContent = appId ? getSnapshotFileContent(appId, path) : null;
+            const oldContent = snapshotContentMap.get(path) ?? null;
 
             return (
               <div key={`del-${path}`}>
@@ -380,6 +389,23 @@ function BranchSelector({
   const [open, setOpen]         = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName]   = useState("");
+  const containerRef            = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleMouse = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", handleMouse);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleMouse);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
 
   const handleCreate = () => {
     const trimmed = newName.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._/-]/g, "");
@@ -389,11 +415,14 @@ function BranchSelector({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         onClick={() => !disabled && setOpen(o => !o)}
         className="flex items-center gap-2 w-full text-left rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-3.5 py-2.5 text-[13px] font-bold text-[#1a1a1a]"
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Branch selector, currently on ${current || "no branch"}`}
       >
         <GitBranch className="h-3.5 w-3.5 text-[#9a8880] shrink-0" />
         <span className="flex-1 truncate">{current || "Select branch"}</span>
@@ -439,7 +468,7 @@ function BranchSelector({
                     className="flex-1 text-[12px] rounded-lg border border-[#f0ece4] bg-[#faf7f3] px-2.5 py-1.5 outline-none font-semibold placeholder:text-[#c8b8a2]"
                   />
                   <button onClick={handleCreate} className="text-[11px] font-bold bg-[#f97316] text-white rounded-lg px-2.5 py-1.5">Create</button>
-                  <button onClick={() => setCreating(false)} className="text-[11px] text-[#9a8880] px-2">✕</button>
+                  <button onClick={() => setCreating(false)} className="text-[11px] text-[#9a8880] px-2" aria-label="Cancel new branch">✕</button>
                 </div>
               ) : (
                 <button
@@ -553,6 +582,7 @@ function PlatformToggle({ platform, onChange, hasBase44, hasRocket, hasFloot, ha
             onClick={() => onChange(value)}
             role="tab"
             aria-selected={active}
+            aria-pressed={active}
             className="w-[25%] flex items-center justify-center gap-1 py-2.5 rounded-xl text-[10px] font-bold relative overflow-hidden"
             whileTap={{ scale: 0.97 }}
           >
@@ -1247,6 +1277,8 @@ function PushPage() {
   const [pushStats, setPushStats]             = useState<{ newCount: number; modifiedCount: number; unchangedCount: number; deletedCount: number } | null>(null);
   const [pushProgress, setPushProgress]       = useState<{ done: number; total: number } | null>(null);
   const [expandedDiffPath, setExpandedDiffPath] = useState<string | null>(null);
+  const [appSearch, setAppSearch]               = useState("");
+  const [repoSearch, setRepoSearch]             = useState("");
 
   const hasBase44   = !!creds.base44Token;
   const hasRocket   = !!creds.rocketToken;
@@ -1711,6 +1743,7 @@ function PushPage() {
             setLF(false);
             setRocketStage("");
             setExpandedDiffPath(null);
+            setAppSearch("");
             setPlatform(p);
           }}
           hasBase44={hasBase44}
@@ -1773,8 +1806,27 @@ function PushPage() {
         )}
 
         {!loadingApps && apps.length > 0 && (
-          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
-            {apps.map(app => {
+          <div className="space-y-1.5">
+            {/* Search input — only shown when there are enough apps to warrant it */}
+            {apps.length >= 6 && (
+              <div className="flex items-center gap-2 rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-3 py-2 mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-[#c8b8a2] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input
+                  value={appSearch}
+                  onChange={e => setAppSearch(e.target.value)}
+                  placeholder={`Search ${apps.length} apps…`}
+                  aria-label="Search apps"
+                  className="flex-1 text-[12px] font-medium bg-transparent outline-none placeholder:text-[#c8b8a2]"
+                />
+                {appSearch && (
+                  <button onClick={() => setAppSearch("")} className="text-[#c8b8a2] hover:text-[#9a8880]" aria-label="Clear app search">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                )}
+              </div>
+            )}
+          <div className="max-h-56 overflow-y-auto pr-0.5 space-y-1.5">
+            {apps.filter(a => !appSearch || a.name.toLowerCase().includes(appSearch.toLowerCase())).map(app => {
               const isSelected  = selectedApp?.id === app.id;
               const snapshot    = getAppSnapshot(app.id);
               const accentColor = platform === "rocket" ? ROCKET_COLOR : platform === "floot" ? FLOOT_COLOR : platform === "zite" ? ZITE_COLOR : "#f97316";
@@ -1815,6 +1867,10 @@ function PushPage() {
                 </motion.button>
               );
             })}
+            {appSearch && apps.filter(a => a.name.toLowerCase().includes(appSearch.toLowerCase())).length === 0 && (
+              <div className="text-center py-4 text-[12px] text-[#9a8880] font-medium">No apps match "{appSearch}"</div>
+            )}
+          </div>
           </div>
         )}
 
@@ -1991,9 +2047,27 @@ function PushPage() {
           <p className="text-[12px] text-[#c8b8a2] font-medium">Select an app first</p>
         ) : (
           <>
-            <div className="space-y-1.5 mb-3 max-h-48 overflow-y-auto">
+            <div className="space-y-1.5 mb-3">
               {loadingRepos && <div className="flex items-center gap-2 py-3 text-[#9a8880]"><Loader2 className="h-3.5 w-3.5 animate-spin" /><span className="text-[12px]">Loading repos…</span></div>}
-              {repos.slice(0, 8).map(r => (
+              {!loadingRepos && repos.length >= 6 && (
+                <div className="flex items-center gap-2 rounded-xl border border-[#f0ece4] bg-[#faf7f3] px-3 py-2 mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-[#c8b8a2] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <input
+                    value={repoSearch}
+                    onChange={e => setRepoSearch(e.target.value)}
+                    placeholder={`Search ${repos.length} repos…`}
+                    aria-label="Search repositories"
+                    className="flex-1 text-[12px] font-medium bg-transparent outline-none placeholder:text-[#c8b8a2]"
+                  />
+                  {repoSearch && (
+                    <button onClick={() => setRepoSearch("")} className="text-[#c8b8a2] hover:text-[#9a8880]" aria-label="Clear repo search">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="max-h-48 overflow-y-auto space-y-1.5">
+              {repos.filter(r => !repoSearch || r.full_name.toLowerCase().includes(repoSearch.toLowerCase())).map(r => (
                 <motion.button
                   key={r.full_name}
                   onClick={() => handleSelectRepo(r)}
@@ -2006,6 +2080,10 @@ function PushPage() {
                   {selectedRepo?.full_name === r.full_name && <Check className="h-3.5 w-3.5 text-[#f97316] shrink-0" />}
                 </motion.button>
               ))}
+              {repoSearch && repos.filter(r => r.full_name.toLowerCase().includes(repoSearch.toLowerCase())).length === 0 && (
+                <div className="text-center py-4 text-[12px] text-[#9a8880] font-medium">No repos match "{repoSearch}"</div>
+              )}
+              </div>
             </div>
 
             {/* Create new repo */}

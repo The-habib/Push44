@@ -3,7 +3,7 @@ import { AnimatedCorner } from "@/components/AnimatedCorner";
 import {
   FadeUp, StaggerContainer, StaggerItem, MotionButton,
 } from "@/components/PageTransition";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -156,7 +156,7 @@ function Dashboard() {
     : "Not connected";
 
   const heroSub = isConnected
-    ? `${loadingApps ? "—" : apps.length} apps · ${loadingRepos ? "—" : repos.length} repos · ${history.length} pushes`
+    ? `${uniqueAppCount} apps · ${loadingRepos ? "—" : repos.length} repos · ${history.length} pushes`
     : "Connect your accounts to start pushing.";
 
   /* ── service tiles data ── */
@@ -200,10 +200,14 @@ function Dashboard() {
   ] as const;
 
   /* ── stat cards data ── */
+  const uniqueAppCount = useMemo(
+    () => new Set(history.map(h => h.appName)).size,
+    [history],
+  );
   const statCards = [
     {
-      label: "Apps",
-      value: loadingApps && isConnected ? null : apps.length,
+      label: "Apps pushed",
+      value: uniqueAppCount,
       Icon: LayoutGrid,
       bg: "rgba(249,115,22,0.07)",
       accent: "#f97316",
