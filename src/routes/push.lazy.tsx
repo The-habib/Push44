@@ -1,7 +1,7 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatedCorner } from "@/components/AnimatedCorner";
 import { FadeUp, StaggerContainer, StaggerItem, MotionButton } from "@/components/PageTransition";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Cloud, GitBranch, FileText, Lock, MessageSquare, Loader2,
@@ -30,7 +30,7 @@ import {
 import {
   addHistory, getAppSnapshot, saveAppSnapshot, computeFileDiff,
   getDeletedPaths, getSnapshotFileContent, getPushPrefs, savePushPrefs,
-  type DiffStatus,
+  type DiffStatus, type Platform,
 } from "@/lib/storage";
 import { Toaster, toast } from "sonner";
 import JSZip from "jszip";
@@ -38,7 +38,6 @@ import JSZip from "jszip";
 export const Route = createLazyFileRoute("/push")({  component: PushPage,
 });
 
-type Platform = "base44" | "rocket" | "floot" | "zite";
 interface App  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface Repo { full_name: string; default_branch: string; html_url: string }
 interface Branch { name: string; sha: string; protected: boolean }
@@ -92,7 +91,7 @@ function DiffDot({ status }: { status: DiffStatus | undefined }) {
   return                           <span className="h-2 w-2 rounded-full bg-[#d4ccc4] shrink-0" title="Unchanged" />;
 }
 
-function StagingBrowser({
+function StagingBrowserInner({
   files, diffMap, stagedPaths, onChange, hasSnapshot,
   deletedPaths, onDeletedPathsChange, appId,
   expandedDiffPath, onToggleDiff,
@@ -122,7 +121,7 @@ function StagingBrowser({
     const snap = getAppSnapshot(appId);
     if (!snap) return new Map<string, string>();
     return new Map(snap.files.map(f => [f.path, f.content]));
-  }, [appId]);
+  }, [appId, hasSnapshot]); // Added hasSnapshot to dependency array to refresh when snapshot state changes
 
   const toggleFile = (path: string) => {
     const next = new Set(stagedPaths);
@@ -201,6 +200,7 @@ function StagingBrowser({
             <button
               onClick={() => onChange(new Set(files.map(f => f.path)))}
               className="text-[10px] font-bold text-[#f97316] bg-[#fff4ed] rounded-full px-2.5 py-1 border border-[#f97316]/20"
+              aria-label="Stage all files"
             >
               Stage all
             </button>
@@ -208,6 +208,7 @@ function StagingBrowser({
               <button
                 onClick={() => onChange(new Set(files.filter(f => diffMap.get(f.path) !== "unchanged").map(f => f.path)))}
                 className="text-[10px] font-bold text-[#d97706] bg-[#fffbeb] rounded-full px-2.5 py-1 border border-[#fde68a]"
+                aria-label="Stage only new and modified files"
               >
                 Changes only
               </button>
@@ -215,6 +216,7 @@ function StagingBrowser({
             <button
               onClick={() => onChange(new Set())}
               className="text-[10px] font-bold text-[#9a8880] bg-[#faf7f3] rounded-full px-2.5 py-1 border border-[#f0ece4]"
+              aria-label="Deselect all files"
             >
               Deselect all
             </button>
@@ -375,6 +377,7 @@ function StagingBrowser({
     </motion.div>
   );
 }
+const StagingBrowser = memo(StagingBrowserInner);
 
 function BranchSelector({
   branches, loading, current, onSelect, onCreate, disabled,
@@ -407,10 +410,10 @@ function BranchSelector({
     };
   }, [open]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const trimmed = newName.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._/-]/g, "");
     if (!trimmed) return;
-    onCreate(trimmed, current);
+    await onCreate(trimmed, current);
     setNewName(""); setCreating(false); setOpen(false);
   };
 
@@ -422,6 +425,7 @@ function BranchSelector({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls="branch-listbox"
         aria-label={`Branch selector, currently on ${current || "no branch"}`}
       >
         <GitBranch className="h-3.5 w-3.5 text-[#9a8880] shrink-0" />
@@ -434,6 +438,8 @@ function BranchSelector({
       <AnimatePresence>
         {open && (
           <motion.div
+            id="branch-listbox"
+            role="listbox"
             className="absolute top-full left-0 right-0 z-40 mt-1 rounded-2xl border border-[#f0ece4] bg-white overflow-hidden"
             style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.10)" }}
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
@@ -467,7 +473,14 @@ function BranchSelector({
                     placeholder={`from ${current}`}
                     className="flex-1 text-[12px] rounded-lg border border-[#f0ece4] bg-[#faf7f3] px-2.5 py-1.5 outline-none font-semibold placeholder:text-[#c8b8a2]"
                   />
-                  <button onClick={handleCreate} className="text-[11px] font-bold bg-[#f97316] text-white rounded-lg px-2.5 py-1.5">Create</button>
+                  <button 
+                    onClick={handleCreate} 
+                    disabled={loading}
+                    className="text-[11px] font-bold bg-[#f97316] text-white rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {loading && <Loader2 className="h-3 w-3 animate-spin" />}
+                    Create
+                  </button>
                   <button onClick={() => setCreating(false)} className="text-[11px] text-[#9a8880] px-2" aria-label="Cancel new branch">✕</button>
                 </div>
               ) : (
@@ -1496,12 +1509,17 @@ function PushPage() {
   const handleCreateBranch = async (name: string, from: string) => {
     if (!selectedRepo) return;
     const [owner, repo] = selectedRepo.full_name.split("/");
+    setBranchLoading(true);
     try {
       await createRepoBranch({ data: { token: creds.githubToken!, owner, repo, branchName: name, fromBranch: from } });
       setBranches(prev => [...prev, { name, sha: "", protected: false }]);
       setBranch(name);
       toast.success(`Branch "${name}" created`);
-    } catch (e: any) { toast.error(e.message || "Failed to create the branch. Please try again."); }
+    } catch (e: any) { 
+      toast.error(e.message || "Failed to create the branch. Please try again."); 
+    } finally {
+      setBranchLoading(false);
+    }
   };
 
   const handleCreateRepo = async () => {
@@ -1564,7 +1582,7 @@ function PushPage() {
       toast.success(`Pushed ${stagedFiles.length} files to ${selectedRepo.full_name}`);
     } catch (e: any) {
       const msg = e.message ?? "Push failed";
-      if (e.status === 401 || msg.includes("Bad credentials")) setTokenExpired("github");
+      if (e.status === 401 || e.status === 403 || msg.includes("Bad credentials")) setTokenExpired("github");
       setErrorMsg(msg || "An unexpected error occurred during the push. Please try again."); setStatus("error"); setPushProgress(null);
       addHistory({
         id: Date.now().toString(), appName: selectedApp.name, platform, repo: selectedRepo.full_name,
@@ -2148,8 +2166,17 @@ function PushPage() {
                 onChange={e => setCommitMsg(e.target.value)}
                 placeholder="Describe your changes…"
                 rows={2}
-                className="w-full text-[13px] rounded-xl border border-[#f0ece4] bg-[#faf7f3] pl-9 pr-3.5 py-2.5 outline-none font-semibold placeholder:text-[#c8b8a2] resize-none focus:border-[#f97316]/50"
+                aria-label="Commit message"
+                aria-invalid={!commitMsg.trim()}
+                className={`w-full text-[13px] rounded-xl border bg-[#faf7f3] pl-9 pr-3.5 py-2.5 outline-none font-semibold placeholder:text-[#c8b8a2] resize-none transition-colors ${
+                  !commitMsg.trim()
+                    ? "border-[#fca5a5] focus:border-[#ef4444]/60"
+                    : "border-[#f0ece4] focus:border-[#f97316]/50"
+                }`}
               />
+              {!commitMsg.trim() && (
+                <p className="text-[10px] text-[#ef4444] font-semibold mt-1 ml-0.5">A commit message is required before pushing.</p>
+              )}
             </div>
 
             {/* Summary row */}

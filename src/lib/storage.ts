@@ -17,10 +17,12 @@ export interface Credentials {
   defaultOwner: string;
 }
 
+export type Platform = "base44" | "rocket" | "floot" | "zite";
+
 export interface PushRecord {
   id: string;
   appName: string;
-  platform?: "base44" | "rocket" | "floot" | "zite";
+  platform?: Platform;
   repo: string;
   branch: string;
   commitMessage: string;
@@ -131,17 +133,15 @@ export function resetOnboarding(): void {
   try { localStorage.removeItem(ONBOARDING_KEY); } catch {}
 }
 
-function getSnapshots(): Record<string, FileSnapshot> {
-  try { const raw = localStorage.getItem(SNAPSHOTS_KEY); return raw ? JSON.parse(raw) : {}; }
-  catch { return {}; }
+function getSnapshotKey(appId: string): string {
+  return `${SNAPSHOTS_KEY}_${appId}`;
 }
 
 const MAX_CONTENT_BYTES = 100_000;
 
 export function saveAppSnapshot(appId: string, files: { path: string; content: string }[]): void {
   try {
-    const all = getSnapshots();
-    all[appId] = {
+    const snapshot: FileSnapshot = {
       files: files.map(f => {
         const truncated = f.content.length > MAX_CONTENT_BYTES;
         return {
@@ -153,19 +153,24 @@ export function saveAppSnapshot(appId: string, files: { path: string; content: s
       }),
       timestamp: Date.now(),
     };
-    localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(all));
-  } catch {}
+    localStorage.setItem(getSnapshotKey(appId), JSON.stringify(snapshot));
+  } catch (e) {
+    console.error("[Push44] Failed to save snapshot", e);
+  }
 }
 
 export function getAppSnapshot(appId: string): FileSnapshot | null {
-  return getSnapshots()[appId] ?? null;
+  try {
+    const raw = localStorage.getItem(getSnapshotKey(appId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function deleteAppSnapshot(appId: string): void {
   try {
-    const all = getSnapshots();
-    delete all[appId];
-    localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(all));
+    localStorage.removeItem(getSnapshotKey(appId));
   } catch {}
 }
 
@@ -210,18 +215,23 @@ export function computeFileDiff(
   return result;
 }
 
+function toUtcDay(ts: number): string {
+  const d = new Date(ts);
+  return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+}
+
 export function getPushStreak(): number {
   const history = getHistory().filter(h => h.status === "success");
   if (!history.length) return 0;
-  const days = new Set(history.map(h => new Date(h.timestamp).toDateString()));
-  const today = new Date().toDateString();
-  if (!days.has(today) && !days.has(new Date(Date.now() - 86400000).toDateString())) return 0;
+  const days = new Set(history.map(h => toUtcDay(h.timestamp)));
+  const today = toUtcDay(Date.now());
+  const yesterday = toUtcDay(Date.now() - 86400000);
+  if (!days.has(today) && !days.has(yesterday)) return 0;
   let streak = 0;
-  let cursor = new Date();
-  if (!days.has(cursor.toDateString())) cursor = new Date(Date.now() - 86400000);
-  while (days.has(cursor.toDateString())) {
+  let cursor = days.has(today) ? Date.now() : Date.now() - 86400000;
+  while (days.has(toUtcDay(cursor))) {
     streak++;
-    cursor = new Date(cursor.getTime() - 86400000);
+    cursor -= 86400000;
   }
   return streak;
 }

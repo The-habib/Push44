@@ -166,7 +166,7 @@ export async function fetchBase44AppFiles({ data }: { data: { token: string; app
     .map(
       ([path, content]): Base44File => ({
         path,
-        content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+        content: typeof content === "string" ? content : (() => { try { return JSON.stringify(content, null, 2); } catch { return String(content); } })(),
       })
     );
 }

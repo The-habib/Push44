@@ -5,7 +5,7 @@ import {
 } from "@/components/PageTransition";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight, Clock, GitBranch, Loader2, AlertTriangle,
   Zap, LayoutGrid, Archive, CheckCircle2, XCircle,
@@ -32,12 +32,13 @@ const SP = { type: "spring", stiffness: 440, damping: 32 } as const;
 
 /** Animated green/grey status dot */
 function StatusDot({ connected }: { connected: boolean }) {
+  const reducedMotion = useReducedMotion();
   return (
     <motion.span
       className={`inline-block h-1.5 w-1.5 rounded-full shrink-0 ${
         connected ? "bg-[#22c55e]" : "bg-[#d4ccc4]"
       }`}
-      animate={connected ? { scale: [1, 1.6, 1], opacity: [1, 0.4, 1] } : {}}
+      animate={connected && !reducedMotion ? { scale: [1, 1.6, 1], opacity: [1, 0.4, 1] } : {}}
       transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
     />
   );
