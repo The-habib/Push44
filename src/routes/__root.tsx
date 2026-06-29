@@ -3,70 +3,35 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-
 import { AppProvider, useApp } from "../contexts/AppContext";
 import { isOnboardingDone, markOnboardingDone } from "../lib/storage";
 import { AppShell } from "../components/AppShell";
+import { Toaster } from "sonner";
 
 const APP_ROUTES = ["/dashboard", "/push", "/repositories", "/history", "/settings"];
 
-function NotFoundComponent() {
+function NotFoundPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12 }}>
+      <span style={{ fontSize: 48, fontWeight: 800, color: "#0f172a" }}>404</span>
+      <p style={{ color: "#64748b", margin: 0 }}>Page not found</p>
+      <Link to="/" className="btn btn-primary" style={{ marginTop: 8 }}>Go home</Link>
     </div>
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
-  const router = useRouter();
-
+function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12, padding: 24 }}>
+      <span style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Something went wrong</span>
+      <p style={{ color: "#64748b", margin: 0, textAlign: "center", maxWidth: 360 }}>{error.message}</p>
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <button className="btn btn-primary" onClick={reset}>Try again</button>
+        <a href="/" className="btn btn-secondary">Go home</a>
       </div>
     </div>
   );
@@ -74,8 +39,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
+  notFoundComponent: NotFoundPage,
+  errorComponent: ErrorPage,
 });
 
 function OnboardingGuard() {
@@ -85,20 +50,16 @@ function OnboardingGuard() {
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (pathname === "/onboarding") return;
-    if (pathname === "/") return;
-
+    if (pathname === "/onboarding" || pathname === "/") return;
     if ((creds.base44Token || creds.rocketToken) && creds.githubToken) {
       markOnboardingDone();
       return;
     }
-
     if (!isOnboardingDone()) {
       navigate({ to: "/onboarding" });
     }
   }, [isLoaded, pathname, creds.base44Token, creds.rocketToken, creds.githubToken]);
 
-  // Prevent flash of protected content while auth state is loading
   if (!isLoaded && APP_ROUTES.includes(pathname)) return null;
 
   if (APP_ROUTES.includes(pathname)) {
@@ -114,11 +75,11 @@ function OnboardingGuard() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <OnboardingGuard />
+        <Toaster position="top-right" richColors closeButton />
       </AppProvider>
     </QueryClientProvider>
   );
