@@ -8,5 +8,6 @@
 - [Push44 Version Control Features](push44-version-control-features.md) — diff viewer, deleted files, ZIP, test buttons, re-push flow; snapshot must save ALL files not just staged
 - [Rocket APK Max Failed Attempt](rocket-apk-max-failed-attempt.md) — isMaxApkBuildFailedAttempt=true requires reset-apk-build endpoint call before make-apk-build will succeed
 - [Floot Auth Reverse Engineering](floot-auth-reverse-engineering.md) — NextAuth magic link on floot.com (.co is wrong); magic link confirmed working; no public API; session token = Bearer JWT
+- [Floot Reference API](floot-reference-api.md) — /_api/workspace/reference with action:"getInfo"/"readItems" + sourceWorkspaceId reads full project source; discriminator is "action" not "type"
 - [Zite Integration Pattern](zite-integration.md) — build.fillout.com apps; proxy to server.zite.com with Origin: build.fillout.com; session+csrf cookies; files at /admin/zite/apps/{id} → ziteSnapshot.template.files
 - [Push44 Design System](push44-design-system.md) — glassmorphism pattern for all inner-page cards; floating glass nav pill (in-flow not fixed); warm cream #faf8f5 background with orange gradient mesh

@@ -1287,7 +1287,6 @@ function PushPage() {
   const [showRocketModal, setShowRocketModal] = useState(false);
   const [needsOtpLogin, setNeedsOtpLogin]     = useState(false);
   const [containerDown, setContainerDown]     = useState<{ appId: string; appName: string } | null>(null);
-  const [flootNoApi, setFlootNoApi]           = useState<{ appId: string; appName: string } | null>(null);
   const [rocketStage, setRocketStage]         = useState<"pinging" | "listing" | "downloading" | "">("");
   const [tokenExpired, setTokenExpired]       = useState<"github" | "platform" | null>(null);
   const [pushStats, setPushStats]             = useState<{ newCount: number; modifiedCount: number; unchangedCount: number; deletedCount: number } | null>(null);
@@ -1345,7 +1344,6 @@ function PushPage() {
     setStagedPaths(new Set());
     setDeletedPaths(new Set());
     setContainerDown(null);
-    setFlootNoApi(null);
     setAppsError("");
     setNeedsOtpLogin(false);
     setTokenExpired(null);
@@ -1449,7 +1447,7 @@ function PushPage() {
   const handleSelectApp = async (app: App) => {
     setSelectedApp(app); setFiles([]); setDiffMap(new Map()); setStagedPaths(new Set()); setDeletedPaths(new Set());
     setCommitMsg(`Push ${app.name} to GitHub`);
-    setLF(true); setWaking(false); setContainerDown(null); setFlootNoApi(null); setRocketStage(""); setExpandedDiffPath(null);
+    setLF(true); setWaking(false); setContainerDown(null); setRocketStage(""); setExpandedDiffPath(null);
     const t = setTimeout(() => setWaking(true), 3000);
     try {
       let loadedFiles: FileEntry[] = [];
@@ -1485,9 +1483,6 @@ function PushPage() {
       const msg: string = e.message ?? "";
       if (platform === "rocket" && msg.startsWith("Your Rocket.new project container is not running")) {
         setContainerDown({ appId: app.id, appName: app.name });
-      } else if (platform === "floot" && msg.startsWith("FLOOT_NO_API:")) {
-        const parts = msg.split(":");
-        setFlootNoApi({ appId: parts[1] ?? app.id, appName: parts.slice(2).join(":") || app.name });
       } else if (e.status === 401 || e.status === 403 || msg.toLowerCase().includes("unauthorized")) {
         setTokenExpired("platform");
       } else {
@@ -1812,7 +1807,6 @@ function PushPage() {
           onChange={p => {
             if (p === platform) return;
             setContainerDown(null);
-            setFlootNoApi(null);
             setAppsError("");
             setNeedsOtpLogin(false);
             setTokenExpired(null);
@@ -2019,58 +2013,6 @@ function PushPage() {
           </motion.div>
         )}
 
-        {/* Floot — no file-export API */}
-        {platform === "floot" && flootNoApi && (
-          <motion.div
-            className="mt-3 rounded-2xl border overflow-hidden"
-            style={{ background: FLOOT_LIGHT, borderColor: FLOOT_BORDER }}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b" style={{ borderColor: FLOOT_BORDER }}>
-              <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: FLOOT_GRAD }}>
-                <FlootLogo size={14} white />
-              </div>
-              <span className="text-[13px] font-bold" style={{ color: FLOOT_TEXT }}>
-                File export not yet available
-              </span>
-            </div>
-            <div className="px-4 py-3 space-y-3">
-              <p className="text-[11px] leading-relaxed" style={{ color: `${FLOOT_TEXT}bb` }}>
-                <strong style={{ color: FLOOT_TEXT }}>{flootNoApi.appName}</strong> was found, but Floot doesn't yet expose
-                a source-code export API. You can access your files through Floot's editor directly.
-              </p>
-              <div className="rounded-xl border px-3 py-2.5 space-y-1.5" style={{ background: "rgba(255,255,255,0.6)", borderColor: FLOOT_BORDER }}>
-                <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: `${FLOOT_TEXT}99` }}>How to push your Floot project</div>
-                <div className="text-[11px] space-y-1" style={{ color: `${FLOOT_TEXT}cc` }}>
-                  <div>1. Open your project in Floot's editor below</div>
-                  <div>2. Click the <strong>Download</strong> button (top-right) to get a ZIP</div>
-                  <div>3. Or use Floot's built-in <strong>GitHub Sync</strong> in the editor</div>
-                </div>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <a
-                  href={`https://floot.com/project/${flootNoApi.appId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[11px] font-bold text-white rounded-xl px-3 py-2 inline-flex items-center gap-1.5"
-                  style={{ background: FLOOT_GRAD }}
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Open in Floot →
-                </a>
-                <MotionButton
-                  onClick={() => { setFlootNoApi(null); setSelectedApp(null); }}
-                  className="text-[11px] font-bold bg-white rounded-xl px-3 py-2 border"
-                  style={{ color: FLOOT_TEXT, borderColor: FLOOT_BORDER }}
-                >
-                  Choose another app
-                </MotionButton>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Staging browser + ZIP download */}
         <AnimatePresence>
