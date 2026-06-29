@@ -44,23 +44,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function OnboardingGuard() {
-  const { creds, isLoaded } = useApp();
+  const { creds } = useApp();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    if (!isLoaded) return;
     if (pathname === "/onboarding" || pathname === "/") return;
-    if ((creds.base44Token || creds.rocketToken) && creds.githubToken) {
+    if ((creds.base44Token || creds.rocketToken || creds.ziteSession || creds.flootToken) && creds.githubToken) {
       markOnboardingDone();
       return;
     }
     if (!isOnboardingDone()) {
       navigate({ to: "/onboarding" });
     }
-  }, [isLoaded, pathname, creds.base44Token, creds.rocketToken, creds.githubToken]);
-
-  if (!isLoaded && APP_ROUTES.includes(pathname)) return null;
+  }, [pathname, creds.base44Token, creds.rocketToken, creds.ziteSession, creds.flootToken, creds.githubToken]);
 
   if (APP_ROUTES.includes(pathname)) {
     return (

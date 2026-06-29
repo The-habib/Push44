@@ -2,7 +2,6 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   type ReactNode,
 } from "react";
@@ -31,22 +30,20 @@ interface AppState {
 const AppContext = createContext<AppState>({
   creds: {},
   githubUser: null,
-  isLoaded: false,
+  isLoaded: true,
   updateCreds: () => {},
   signOut: () => {},
   setGitHubUser: () => {},
 });
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [creds, setCreds] = useState<Partial<Credentials>>({});
-  const [githubUser, setGitHubUser] = useState<GitHubUser | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+function readCredsSync(): Partial<Credentials> {
+  if (typeof window === "undefined") return {};
+  try { return getCredentials(); } catch { return {}; }
+}
 
-  useEffect(() => {
-    const stored = getCredentials();
-    setCreds(stored);
-    setIsLoaded(true);
-  }, []);
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [creds, setCreds] = useState<Partial<Credentials>>(readCredsSync);
+  const [githubUser, setGitHubUser] = useState<GitHubUser | null>(null);
 
   const updateCreds = useCallback((partial: Partial<Credentials>) => {
     saveCredentials(partial);
@@ -61,7 +58,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider
-      value={{ creds, githubUser, isLoaded, updateCreds, signOut, setGitHubUser }}
+      value={{ creds, githubUser, isLoaded: true, updateCreds, signOut, setGitHubUser }}
     >
       {children}
     </AppContext.Provider>
