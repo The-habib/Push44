@@ -152,16 +152,6 @@ export async function triggerFlootDeploy({
   }
 }
 
-export async function checkFlootSubdomainAvailable(subdomain: string): Promise<boolean> {
-  try {
-    const res = await fetch(`/api/floot-check?subdomain=${encodeURIComponent(subdomain)}`);
-    if (!res.ok) return false;
-    const d = await res.json();
-    return !!d.available;
-  } catch {
-    return false;
-  }
-}
 
 // ─── Reference API ────────────────────────────────────────────────────────────
 // Floot exposes /_api/workspace/reference with two actions:
