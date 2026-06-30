@@ -57,6 +57,7 @@
 .spinner-sm { width: 12px; height: 12px; }
 .spinner-lg { width: 20px; height: 20px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes apkProgress { from { transform: translateX(-40%); } to { transform: translateX(140%); } }
 
 /* ── Buttons ── */
 .btn {
