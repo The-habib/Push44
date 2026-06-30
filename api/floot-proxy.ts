@@ -30,10 +30,12 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const headers = req.headers as Record<string, string>;
   const token   = (headers["x-floot-token"] ?? "") as string;
 
+  const customReferer = headers["x-floot-referer"] as string | undefined;
+
   const forwardHeaders: Record<string, string> = {
     "Accept":     (headers["accept"]       as string) ?? "application/json",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Referer":    "https://floot.com/",
+    "Referer":    customReferer ?? "https://floot.com/",
     "sec-fetch-site": "same-origin",
     "sec-fetch-mode": "cors",
   };

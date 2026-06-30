@@ -153,6 +153,128 @@ export async function triggerFlootDeploy({
 }
 
 
+// ─── Badge Removal ────────────────────────────────────────────────────────────
+
+const BADGE_SELECTOR = "#__Floot-madewithFloot";
+const BADGE_CSS_RULE = "\n#__Floot-madewithFloot { display: none !important; }\n";
+
+/**
+ * Check whether the badge-hiding CSS rule is already present in the workspace's sketchCss.
+ */
+export async function getFlootBadgeHidden({
+  data,
+}: {
+  data: { token: string; workspaceId: string };
+}): Promise<boolean> {
+  const res = await proxyFetch("/_api/workspace/list", data.token);
+  if (!res.ok) return false;
+  const d = await res.json().catch(() => null);
+  if (!d) return false;
+  const ws =
+    (d.ownedWorkspaces ?? []).find((w: any) => w.id === data.workspaceId) ??
+    (d.sharedWorkspaces ?? []).find((w: any) => w.id === data.workspaceId);
+  return String(ws?.sketchCss ?? "").includes(BADGE_SELECTOR);
+}
+
+/**
+ * Inject a CSS rule that hides the "Made with Floot" badge into the workspace's
+ * sketchCss via Floot's internal globalChatAndStore mutation API.
+ *
+ * After this call returns the caller MUST trigger a redeploy — the badge is
+ * only visually hidden on the live site after the next build.
+ *
+ * Approach discovered by reverse-engineering the Floot project-page bundle (June 2026).
+ */
+export async function removeFlootBadge({
+  data,
+}: {
+  data: { token: string; workspaceId: string };
+}): Promise<void> {
+  const { token, workspaceId } = data;
+
+  // ── Step 1: Extract serverLastMessageId from project-page HTML ────────────
+  // The ID is embedded as JSON in the Next.js RSC payload. It is validated
+  // server-side on every /api/llm call — using a wrong ID returns 400.
+  const pageRes = await proxyFetch(`/project/${workspaceId}`, token, {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "X-Floot-Referer": `https://floot.com/project/${workspaceId}`,
+    },
+  });
+  if (!pageRes.ok) {
+    throw new Error(`Could not load Floot project page (${pageRes.status}). Check your session token.`);
+  }
+  const pageHtml = await pageRes.text();
+  const msgIdMatch = pageHtml.match(/"serverLastMessageId":"([^"]+)"/);
+  if (!msgIdMatch) {
+    throw new Error(
+      "Could not find the Floot message ID needed for badge removal. " +
+      "Make sure you have at least opened the project in Floot once."
+    );
+  }
+  const serverLastMessageId = msgIdMatch[1];
+
+  // ── Step 2: Get current sketchCss ─────────────────────────────────────────
+  const listRes = await proxyFetch("/_api/workspace/list", token);
+  if (!listRes.ok) throw new Error(`Failed to load workspace list (${listRes.status})`);
+  const listData = await listRes.json();
+
+  const workspace =
+    (listData.ownedWorkspaces ?? []).find((w: any) => w.id === workspaceId) ??
+    (listData.sharedWorkspaces ?? []).find((w: any) => w.id === workspaceId);
+
+  if (!workspace) throw new Error("This workspace was not found in your Floot account.");
+
+  const currentSketchCss: string = workspace.sketchCss ?? "";
+
+  // Idempotent — skip if rule is already there
+  if (currentSketchCss.includes(BADGE_SELECTOR)) return;
+
+  const newCss = currentSketchCss + BADGE_CSS_RULE;
+
+  // ── Step 3: Persist via globalChatAndStore + userModification ─────────────
+  // This is the same mutation Floot's editor uses when the user edits globalCss.
+  const llmRes = await proxyFetch("/api/llm", token, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Floot-Referer": `https://floot.com/project/${workspaceId}`,
+    },
+    body: JSON.stringify({
+      type: "globalChatAndStore",
+      workspaceId,
+      lastMessageId: serverLastMessageId,
+      retryTimes: 0,
+      chatVersion: 11,
+      toolCallId: "",
+      messages: {
+        type: "userModification",
+        changes: {},
+        workspaceChange: {
+          globalCss: {
+            changes: newCss,
+            previous: currentSketchCss,
+          },
+        },
+      },
+    }),
+  });
+
+  if (!llmRes.ok) {
+    const errBody = await llmRes.json().catch(() => ({}));
+    const msg =
+      errBody?.error ??
+      errBody?.message ??
+      `Badge CSS injection failed (${llmRes.status})`;
+    throw new Error(msg);
+  }
+
+  const result = await llmRes.json().catch(() => null);
+  if (!result?.id) {
+    throw new Error("Badge rule was not saved by Floot. Please try again.");
+  }
+}
+
 // ─── Reference API ────────────────────────────────────────────────────────────
 // Floot exposes /_api/workspace/reference with two actions:
 //   • action:"getInfo"   → returns project structure (file list, design info)

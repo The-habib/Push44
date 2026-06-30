@@ -20,6 +20,7 @@ import {
 import {
   listFlootApps, fetchFlootAppFiles,
   getFlootDeploymentStatus, triggerFlootDeploy,
+  removeFlootBadge,
   type FlootDeployStatus,
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
@@ -155,6 +156,9 @@ export default function PushPage() {
   const [flootCurrentSub, setFlootCurrentSub] = useState<string | null>(null);
   const [showFlootPanel, setShowFlootPanel] = useState(false);
   const flootPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  type BadgePhase = "idle" | "removing" | "done" | "failed";
+  const [badgePhase, setBadgePhase]   = useState<BadgePhase>("idle");
+  const [badgeError, setBadgeError]   = useState("");
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const platformConnected = useCallback((id: PlatformId) => {
@@ -449,6 +453,20 @@ export default function PushPage() {
       stopFlootPolling();
       setFlootError(e?.message ?? "Deploy failed");
       setFlootPhase("failed");
+    }
+  };
+
+  const handleRemoveBadge = async () => {
+    if (!selectedApp || !creds.flootToken || !flootCurrentSub) return;
+    setBadgePhase("removing");
+    setBadgeError("");
+    try {
+      await removeFlootBadge({ data: { token: creds.flootToken, workspaceId: selectedApp.id } });
+      handleFlootPublish(flootCurrentSub, true);
+      setBadgePhase("done");
+    } catch (e: any) {
+      setBadgeError(e?.message ?? "Failed to remove badge");
+      setBadgePhase("failed");
     }
   };
 
@@ -784,6 +802,9 @@ export default function PushPage() {
           onSubdomainChange={onFlootSubdomainChange}
           onPublish={(slug, isUpdate) => handleFlootPublish(slug, isUpdate)}
           onClose={() => { stopFlootPolling(); setShowFlootPanel(false); setFlootPhase("idle"); }}
+          badgePhase={badgePhase}
+          badgeError={badgeError}
+          onRemoveBadge={handleRemoveBadge}
         />
       )}
 
@@ -1089,6 +1110,9 @@ export default function PushPage() {
                 onSubdomainChange={onFlootSubdomainChange}
                 onPublish={(slug, isUpdate) => handleFlootPublish(slug, isUpdate)}
                 autoOpen={flootPhase === "idle"}
+                badgePhase={badgePhase}
+                badgeError={badgeError}
+                onRemoveBadge={handleRemoveBadge}
               />
             </div>
           )}
@@ -1128,6 +1152,9 @@ interface FlootPublishPanelProps {
   onPublish: (slug: string, isUpdate?: boolean) => void;
   onClose?: () => void;
   autoOpen?: boolean;
+  badgePhase?: "idle" | "removing" | "done" | "failed";
+  badgeError?: string;
+  onRemoveBadge?: () => void;
 }
 
 const FLOOT_GRADIENT = "linear-gradient(135deg,#0284c7,#0ea5e9)";
@@ -1136,6 +1163,7 @@ const SUBDOMAIN_VALID = /^[a-z0-9-]{3,}$/;
 function FlootPublishPanel({
   appName, phase, subdomain, liveUrl, currentSub,
   error, onSubdomainChange, onPublish, onClose, autoOpen,
+  badgePhase = "idle", badgeError = "", onRemoveBadge,
 }: FlootPublishPanelProps) {
   const slugOk = SUBDOMAIN_VALID.test(subdomain);
 
@@ -1237,6 +1265,57 @@ function FlootPublishPanel({
           <a href={liveUrl} target="_blank" rel="noopener" className="btn btn-primary" style={{ background: FLOOT_GRADIENT, justifyContent: "center" }}>
             <ExternalLink size={13} /> Open {liveUrl.replace("https://", "")}
           </a>
+          {/* Remove badge */}
+          {onRemoveBadge && (
+            <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>
+                Hide "Made with Floot" badge
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+                Injects a CSS rule into your app and republishes — the badge disappears from the live site.
+              </div>
+
+              {badgePhase === "idle" && (
+                <button
+                  className="btn btn-secondary"
+                  style={{ width: "100%", justifyContent: "center" }}
+                  onClick={onRemoveBadge}
+                >
+                  <XCircle size={13} /> Remove Badge
+                </button>
+              )}
+
+              {badgePhase === "removing" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                  <Loader2 size={13} color="#64748b" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "#475569" }}>Injecting CSS rule… this takes a few seconds</span>
+                </div>
+              )}
+
+              {badgePhase === "done" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                  <CheckCircle size={13} color="#16a34a" />
+                  <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>Badge hidden — rebuilding app (~30s)</span>
+                </div>
+              )}
+
+              {badgePhase === "failed" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ padding: "9px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <XCircle size={13} color="#dc2626" />
+                      <span style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600 }}>Badge removal failed</span>
+                    </div>
+                    {badgeError && <p style={{ fontSize: 11, color: "#b91c1c", margin: "4px 0 0 21px" }}>{badgeError}</p>}
+                  </div>
+                  <button className="btn btn-secondary" style={{ width: "100%", justifyContent: "center" }} onClick={onRemoveBadge}>
+                    <RefreshCw size={12} /> Retry
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Redeploy with different subdomain */}
           <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 10 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Republish with a different subdomain</div>
