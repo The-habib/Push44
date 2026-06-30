@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import {
   UploadCloud, Search, Check, AlertCircle, Plus, Lock, Globe,
   ExternalLink, RefreshCw, GitBranch, ChevronDown, ChevronRight,
-  FileText, CheckCircle, XCircle,
+  FileText, CheckCircle, XCircle, FolderOpen,
 } from "lucide-react";
+import { FileExplorer } from "@/components/FileExplorer";
 import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
@@ -113,6 +114,9 @@ export default function PushPage() {
   const [branch, setBranch]             = useState(savedPrefs.branch ?? creds.defaultBranch ?? "main");
   const [commitMsg, setCommitMsg]       = useState("");
   const [showRepoList, setShowRepoList] = useState(false);
+
+  // ── File explorer ──────────────────────────────────────────────────────────
+  const [showExplorer, setShowExplorer] = useState(false);
 
   // ── Push ───────────────────────────────────────────────────────────────────
   const [pushStatus, setPushStatus]   = useState<PushStatus>("idle");
@@ -306,6 +310,14 @@ export default function PushPage() {
 
   return (
     <div className="page">
+      {showExplorer && selectedApp && files.length > 0 && (
+        <FileExplorer
+          files={files}
+          appName={selectedApp.name}
+          onClose={() => setShowExplorer(false)}
+        />
+      )}
+
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>Push to GitHub</h1>
         <p style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}>Fetch all source files and commit them in one atomic push.</p>
@@ -433,12 +445,19 @@ export default function PushPage() {
           </div>
         )}
 
-        {/* Proceed to step 2 */}
+        {/* Files ready bar + Browse button */}
         {canGoStep2 && (
-          <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 13, color: "#64748b" }}>
+          <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, color: "#64748b", flex: 1, minWidth: 0 }}>
               <strong>{selectedApp!.name}</strong> · {files.length} files ready
             </span>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowExplorer(true)}
+              style={{ display: "flex", alignItems: "center", gap: 5 }}
+            >
+              <FolderOpen size={13} /> Browse files
+            </button>
             <button className="btn btn-primary" onClick={goToStep2}>
               Choose Repo →
             </button>
