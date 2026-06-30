@@ -119,13 +119,25 @@ function githubOAuthPlugin(): Plugin {
     const clientSecret = process.env.GITHUB_CLIENT_SECRET ?? "";
     const devBase = `http://localhost:5000`;
 
+    const encodeState = (nonce: string, returnTo: string) => `${nonce}|${returnTo}`;
+    const decodeState = (s: string) => {
+      const idx = s.indexOf("|");
+      return idx === -1 ? { nonce: s, returnTo: "/settings" } : { nonce: s.slice(0, idx), returnTo: s.slice(idx + 1) || "/settings" };
+    };
+    const fallback = (returnTo: string, msg: string) => {
+      res.writeHead(302, { Location: `${returnTo}?github_error=${encodeURIComponent(msg)}` });
+      res.end();
+    };
+
     if (!clientId) {
-      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent("Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in your Replit secrets to use OAuth in dev.")}` });
-      return res.end();
+      fallback("/settings", "Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in your Replit secrets to use OAuth in dev.");
+      return;
     }
 
     if (action === "start") {
-      const state = url.searchParams.get("state") ?? Math.random().toString(36).slice(2);
+      const nonce = Math.random().toString(36).slice(2);
+      const returnTo = url.searchParams.get("return_to") ?? "/settings";
+      const state = encodeState(nonce, returnTo);
       const params = new URLSearchParams({
         client_id: clientId,
         scope: "repo user",
@@ -137,12 +149,12 @@ function githubOAuthPlugin(): Plugin {
     }
 
     const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state") ?? "";
+    const { returnTo } = decodeState(url.searchParams.get("state") ?? "");
 
     if (!code) {
       const errMsg = url.searchParams.get("error_description") ?? url.searchParams.get("error") ?? "GitHub OAuth cancelled";
-      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent(errMsg)}` });
-      return res.end();
+      fallback(returnTo, errMsg);
+      return;
     }
 
     try {
@@ -154,16 +166,14 @@ function githubOAuthPlugin(): Plugin {
       const data: any = await tokenRes.json();
 
       if (data.error || !data.access_token) {
-        const errMsg = data.error_description ?? data.error ?? "OAuth token exchange failed";
-        res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent(errMsg)}` });
-        return res.end();
+        fallback(returnTo, data.error_description ?? data.error ?? "OAuth token exchange failed");
+        return;
       }
 
-      res.writeHead(302, { Location: `/settings?github_token=${data.access_token}&state=${encodeURIComponent(state)}` });
+      res.writeHead(302, { Location: `${returnTo}?github_token=${data.access_token}` });
       return res.end();
     } catch (err: any) {
-      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent("Network error: " + (err?.message ?? "unknown"))}` });
-      return res.end();
+      fallback(returnTo, "Network error: " + (err?.message ?? "unknown"));
     }
   };
 

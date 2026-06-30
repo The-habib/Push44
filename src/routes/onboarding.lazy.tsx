@@ -1,6 +1,6 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { CheckCircle, Eye, EyeOff, ExternalLink, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle, Eye, EyeOff, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
@@ -38,6 +38,26 @@ export default function OnboardingPage() {
   const [showRocketModal, setShowRocketModal] = useState(false);
 
   const platform = step === 3 ? (creds.base44Token ? "base44" : creds.rocketToken ? "rocket" : null) : null;
+
+  // ── GitHub OAuth callback capture ──────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("github_token");
+    const error = params.get("github_error");
+    if (token || error) window.history.replaceState({}, "", "/onboarding");
+    if (error) { setGhError(decodeURIComponent(error)); return; }
+    if (token) {
+      setGhLoading(true);
+      getGitHubUser({ data: { token } })
+        .then((user) => {
+          updateCreds({ githubToken: token, githubUsername: user.login });
+          setGhUser(user);
+          setTimeout(() => setStep(2), 700);
+        })
+        .catch(() => setGhError("Token received but validation failed — try again."))
+        .finally(() => setGhLoading(false));
+    }
+  }, []);
 
   const connectGitHub = async () => {
     if (!ghToken.trim()) { setGhError("Paste your GitHub token"); return; }
@@ -149,13 +169,25 @@ export default function OnboardingPage() {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 12px" }}>
-                  Create a token at{" "}
-                  <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noopener" style={{ color: "#f97316" }}>
-                    github.com/settings/tokens <ExternalLink size={11} style={{ display: "inline" }} />
-                  </a>{" "}
-                  with <strong>repo</strong> scope.
-                </p>
+                <button
+                  className="btn btn-primary"
+                  style={{ width: "100%", justifyContent: "center", gap: 8, marginBottom: 16 }}
+                  disabled={ghLoading}
+                  onClick={() => {
+                    window.location.href = `/api/github-oauth?action=start&return_to=/onboarding`;
+                  }}
+                >
+                  {ghLoading
+                    ? <><Loader2 size={14} style={{ animation: "spin 0.6s linear infinite" }} /> Connecting…</>
+                    : <><GitHubLogo size={14} /> Continue with GitHub</>}
+                </button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+                  <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>or paste a token manually</span>
+                  <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+                </div>
+
                 <div style={{ position: "relative", marginBottom: 10 }}>
                   <input
                     className="input"
@@ -171,13 +203,10 @@ export default function OnboardingPage() {
                   </button>
                 </div>
                 {ghError && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dc2626", fontSize: 13, marginBottom: 10 }}><AlertCircle size={14} />{ghError}</div>}
+                <button className="btn btn-secondary" style={{ width: "100%" }} disabled={ghLoading || !ghToken.trim()} onClick={connectGitHub}>
+                  Connect GitHub →
+                </button>
               </>
-            )}
-
-            {!ghUser && (
-              <button className="btn btn-primary" style={{ width: "100%" }} disabled={ghLoading} onClick={connectGitHub}>
-                {ghLoading ? <><span className="spinner spinner-sm" />Connecting…</> : "Connect GitHub →"}
-              </button>
             )}
           </div>
         )}

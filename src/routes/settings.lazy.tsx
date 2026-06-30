@@ -253,7 +253,7 @@ export default function SettingsPage() {
           onClick={() => {
             const state = Math.random().toString(36).slice(2);
             sessionStorage.setItem("gh_oauth_state", state);
-            window.location.href = `/api/github-oauth?action=start&state=${state}`;
+            window.location.href = `/api/github-oauth?action=start&return_to=/settings`;
           }}
           disabled={ghSaving}
         >
