@@ -456,7 +456,7 @@ export default function PushPage() {
     if (!selectedApp || !creds.flootToken) return;
     setShowFlootPanel(true);
     setFlootPhase("checking");
-    setFlootSubdomain(""); setFlootSubAvail(null); setFlootError(""); setFlootLiveUrl(""); setFlootCurrentSub(null);
+    setFlootSubdomain(""); setFlootError(""); setFlootLiveUrl(""); setFlootCurrentSub(null);
     try {
       const status = await getFlootDeploymentStatus({ data: { token: creds.flootToken, workspaceId: selectedApp.id } });
       if (status.type === "deployed") {
