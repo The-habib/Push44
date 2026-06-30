@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, AlertCircle, Loader2, ExternalLink, LogOut, RefreshCw } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
@@ -103,6 +103,34 @@ export default function SettingsPage() {
 
   // ── Prefs ──────────────────────────────────────────────────────────────────
   const [branch, setBranch] = useState(creds.defaultBranch ?? "main");
+
+  // ── GitHub OAuth callback capture ──────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("github_token");
+    const error = params.get("github_error");
+    if (token || error) {
+      window.history.replaceState({}, "", "/settings");
+    }
+    if (error) {
+      toast.error(decodeURIComponent(error));
+    }
+    if (token) {
+      setGhToken(token);
+      setGhSaving(true);
+      getGitHubUser({ data: { token } })
+        .then((user) => {
+          updateCreds({ githubToken: token, githubUsername: user.login });
+          setGhTest("ok");
+          toast.success(`Connected as @${user.login}`);
+        })
+        .catch(() => {
+          toast.error("Token received but GitHub validation failed — try again.");
+          setGhTest("fail");
+        })
+        .finally(() => setGhSaving(false));
+    }
+  }, []);
 
   // ── GitHub actions ─────────────────────────────────────────────────────────
   const saveGitHub = async () => {
@@ -219,6 +247,27 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+        <button
+          className="btn btn-primary"
+          style={{ width: "100%", marginBottom: 16, justifyContent: "center", gap: 8 }}
+          onClick={() => {
+            const state = Math.random().toString(36).slice(2);
+            sessionStorage.setItem("gh_oauth_state", state);
+            window.location.href = `/api/github-oauth?action=start&state=${state}`;
+          }}
+          disabled={ghSaving}
+        >
+          {ghSaving
+            ? <><Loader2 size={14} style={{ animation: "spin 0.6s linear infinite" }} /> Connecting…</>
+            : <><GitHubLogo size={14} /> Connect with GitHub</>}
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+          <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>or paste a token manually</span>
+          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+        </div>
+
         <label className="label">Personal Access Token</label>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <div style={{ position: "relative", flex: 1 }}>

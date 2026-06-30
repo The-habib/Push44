@@ -109,6 +109,71 @@ function ziteProxyPlugin(): Plugin {
   };
 }
 
+function githubOAuthPlugin(): Plugin {
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith("/api/github-oauth")) return next();
+
+    const url = new URL(req.url, "http://localhost");
+    const action = url.searchParams.get("action");
+    const clientId = process.env.GITHUB_CLIENT_ID ?? "";
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET ?? "";
+    const devBase = `http://localhost:5000`;
+
+    if (!clientId) {
+      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent("Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in your Replit secrets to use OAuth in dev.")}` });
+      return res.end();
+    }
+
+    if (action === "start") {
+      const state = url.searchParams.get("state") ?? Math.random().toString(36).slice(2);
+      const params = new URLSearchParams({
+        client_id: clientId,
+        scope: "repo user",
+        state,
+        redirect_uri: `${devBase}/api/github-oauth`,
+      });
+      res.writeHead(302, { Location: `https://github.com/login/oauth/authorize?${params}` });
+      return res.end();
+    }
+
+    const code = url.searchParams.get("code");
+    const state = url.searchParams.get("state") ?? "";
+
+    if (!code) {
+      const errMsg = url.searchParams.get("error_description") ?? url.searchParams.get("error") ?? "GitHub OAuth cancelled";
+      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent(errMsg)}` });
+      return res.end();
+    }
+
+    try {
+      const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
+      });
+      const data: any = await tokenRes.json();
+
+      if (data.error || !data.access_token) {
+        const errMsg = data.error_description ?? data.error ?? "OAuth token exchange failed";
+        res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent(errMsg)}` });
+        return res.end();
+      }
+
+      res.writeHead(302, { Location: `/settings?github_token=${data.access_token}&state=${encodeURIComponent(state)}` });
+      return res.end();
+    } catch (err: any) {
+      res.writeHead(302, { Location: `/settings?github_error=${encodeURIComponent("Network error: " + (err?.message ?? "unknown"))}` });
+      return res.end();
+    }
+  };
+
+  return {
+    name: "github-oauth",
+    configureServer(server) { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
 function flootProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     if (!req.url?.startsWith("/api/floot")) {
@@ -182,6 +247,7 @@ export default defineConfig({
     tailwindcss(),
     ziteProxyPlugin(),
     flootProxyPlugin(),
+    githubOAuthPlugin(),
   ],
   resolve: {
     tsconfigPaths: true,
