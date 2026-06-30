@@ -352,6 +352,120 @@ export async function removeFlootBadge({
   }
 }
 
+// ─── Native Mobile Build API ──────────────────────────────────────────────────
+// Reverse-engineered from the Floot project-page bundle (June 2026).
+// Requires Floot 100k (ultra) plan — free accounts get "Mobile builds not enabled".
+
+export type FlootMobileBuildStatus =
+  | { type: "building" }
+  | { type: "completed"; buildId: string; completedAt: string }
+  | { type: "failed"; message?: string }
+  | { type: "notEnabled" };
+
+/**
+ * Set the Android/iOS bundle ID on a workspace.
+ * Uses SuperJSON encoding — must wrap body in {"json": {...}}.
+ */
+export async function setFlootMobileAppId({
+  data,
+}: {
+  data: { token: string; workspaceId: string; mobileAppId: string; name: string };
+}): Promise<void> {
+  const res = await proxyFetch("/_api/workspace/update", data.token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      json: { id: data.workspaceId, name: data.name, mobileAppId: data.mobileAppId },
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.json?.error ?? err?.error ?? `Failed to set bundle ID (${res.status})`);
+  }
+}
+
+/**
+ * Trigger a Floot deploy with buildMobileApps:true.
+ * For free accounts the server silently downgrades to false; ultra accounts get an APK build queued.
+ */
+export async function triggerFlootMobileBuild({
+  data,
+}: {
+  data: { token: string; workspaceId: string; subdomain: string; isUpdate?: boolean };
+}): Promise<void> {
+  const body = {
+    type: data.isUpdate ? "prodUpdate" : "prod",
+    id: data.workspaceId,
+    subdomain: data.subdomain,
+    includeMadeWithFloot: true,
+    buildMobileApps: true,
+  };
+  const res = await proxyFetch("/api/trpc/workspace.requestDeploy", data.token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg =
+      err?.error?.message ??
+      err?.error?.data?.message ??
+      err?.message ??
+      `Mobile build trigger failed (${res.status})`;
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Poll the mobile build status for a workspace.
+ * Returns { type: "notEnabled" } when account is on free plan.
+ */
+export async function getFlootMobileBuildStatus({
+  data,
+}: {
+  data: { token: string; workspaceId: string };
+}): Promise<FlootMobileBuildStatus> {
+  const res = await proxyFetch(
+    `/_api/workspace/mobile-build-status?workspaceId=${encodeURIComponent(data.workspaceId)}`,
+    data.token
+  );
+  if (res.status === 404) {
+    const body = await res.json().catch(() => ({}));
+    const msg: string = body?.error ?? "";
+    if (msg.toLowerCase().includes("not enabled") || msg.toLowerCase().includes("mobile")) {
+      return { type: "notEnabled" };
+    }
+    return { type: "notEnabled" };
+  }
+  if (!res.ok) throw new Error(`Mobile build status error ${res.status}`);
+  const d = await res.json();
+  return d as FlootMobileBuildStatus;
+}
+
+/**
+ * Get a pre-signed APK download URL for a completed mobile build.
+ */
+export async function getFlootMobileDownloadUrl({
+  data,
+}: {
+  data: { token: string; workspaceId: string; buildId: string; forAndroid?: boolean };
+}): Promise<string> {
+  const params = new URLSearchParams({
+    workspaceId: data.workspaceId,
+    buildId: data.buildId,
+    forAndroidApk: String(data.forAndroid !== false),
+  });
+  const res = await proxyFetch(
+    `/_api/workspace/mobile-build-download-url?${params}`,
+    data.token
+  );
+  if (!res.ok) throw new Error(`Download URL error ${res.status}`);
+  const d = await res.json();
+  const url = d?.value?.downloadUrl ?? d?.downloadUrl;
+  if (!url) throw new Error("No download URL in response");
+  return String(url);
+}
+
 // ─── Reference API ────────────────────────────────────────────────────────────
 // Floot exposes /_api/workspace/reference with two actions:
 //   • action:"getInfo"   → returns project structure (file list, design info)

@@ -1,39 +1,63 @@
 ---
 name: Push44 Platform Feature Split
-description: Which post-push extra features belong to which platform — Floot gets Publish, Rocket gets Build APK.
+description: Which post-push extra features belong to which platform — Floot gets Publish + Native Mobile Build, Rocket gets Build APK.
 ---
 
 # Push44 Platform Feature Split
 
 ## Rule
-- **Floot** → "Publish to Floot" (web deploy via `FlootPublishPanel`)
-- **Rocket.new** → "Build APK" (mobile compile via APK build panel)
+- **Floot** → "Publish to Floot" (web deploy via `FlootPublishPanel`) + "Generate Native App" (Android APK via `FlootMobileBuildPanel`)
+- **Rocket.new** → "Build APK" (Flutter APK compile via APK build panel)
 
-Never cross these: no APK UI for Floot, no Publish UI for Rocket.
+Never add Rocket-style APK UI to Floot; never add Floot-style web Publish UI to Rocket.
+Floot now has TWO post-select features: web publish AND native mobile build.
 
-**Why:** The platforms have different post-push capabilities. Floot deploys web apps to `*.floot.app`; Rocket.new compiles Flutter APKs.
+**Why:** Floot's `requestDeploy` API accepts `buildMobileApps:true` to queue a native Android APK build server-side. Rocket.new directly compiles Flutter apps with a dedicated APK builder.
 
-## Floot Publish Implementation (June 2026)
-
-### Proxy added to vite.config.ts
-- `flootCheckPlugin` — handles `GET /api/floot-check?subdomain=xxx` → `HEAD https://{subdomain}.floot.app` → returns `{ available: bool }` (404 = available, 200 = taken)
-- Existing `flootProxyPlugin` already handles tRPC deploy calls: `POST /api/floot/api/trpc/workspace.requestDeploy` → `POST https://floot.com/api/trpc/workspace.requestDeploy`
+## Floot Publish Implementation
 
 ### API functions in src/lib/floot-api.ts
-- `getFlootDeploymentStatus({ data: { token, workspaceId } })` — GET `/_api/workspace/deployment?workspaceId=...` via existing proxy
-- `triggerFlootDeploy({ data: { token, workspaceId, subdomain, isUpdate? } })` — POST `workspace.requestDeploy` tRPC (raw body, no `{"json":...}` wrapper)
-- `checkFlootSubdomainAvailable(subdomain)` — GET `/api/floot-check?subdomain=...`
-
-### UI in src/routes/push.lazy.tsx
-- "Publish to Floot" button shown in files-ready bar when `platform === "floot"`
-- `FlootPublishPanel` component handles all phases: checking → subdomain picker → deploying → polling → done/failed
-- Panel appears standalone at step 1, and auto-opens in step 3 success state
-- Polls `getFlootDeploymentStatus` every 10s during build (takes 2–5 min)
-- Subdomain validated client-side: `/^[a-z0-9-]{3,}$/`, availability debounced 600ms
+- `getFlootDeploymentStatus` — GET `/_api/workspace/deployment?workspaceId=...`
+- `triggerFlootDeploy` — POST `workspace.requestDeploy` tRPC (raw body, no `{"json":...}` wrapper)
 
 ### tRPC body format (CRITICAL)
 Raw object — NO `{"json":...}` wrapper:
 ```json
-{ "type": "prod", "id": "workspaceId", "subdomain": "slug", "includeMadeWithFloot": false, "buildMobileApps": false }
+{ "type": "prod", "id": "workspaceId", "subdomain": "slug", "includeMadeWithFloot": true, "buildMobileApps": false }
 ```
 Use `"prodUpdate"` for republish of already-deployed workspace.
+
+## Floot Native Mobile Build (June 2026)
+
+### Plan Gate
+- Requires Floot 100k (ultra) plan server-side — free accounts get HTTP 404 `{"error":"Mobile builds not enabled"}`
+- PostHog feature flag `mobile_builds` controls UI visibility only (client-side gate)
+- `getFlootMobileBuildStatus` returns `{type:"notEnabled"}` for free accounts → show upgrade prompt
+
+### API functions in src/lib/floot-api.ts
+- `setFlootMobileAppId({ token, workspaceId, mobileAppId, name })` — POST `/_api/workspace/update` with **SuperJSON body** `{"json":{...}}` (must include `name` or it resets)
+- `triggerFlootMobileBuild({ token, workspaceId, subdomain, isUpdate? })` — POST `workspace.requestDeploy` with `buildMobileApps:true`
+- `getFlootMobileBuildStatus({ token, workspaceId })` — GET `/_api/workspace/mobile-build-status?workspaceId=...`
+- `getFlootMobileDownloadUrl({ token, workspaceId, buildId, forAndroid? })` — GET `/_api/workspace/mobile-build-download-url?workspaceId=...&buildId=...&forAndroidApk=true`
+
+### Status Poll Shapes
+```json
+{"type":"building"}
+{"type":"completed","buildId":"...","completedAt":"..."}
+{"type":"failed"}
+{"error":"Mobile builds not enabled"}  ← HTTP 404, free plan
+```
+
+### UI Component
+`FlootMobileBuildPanel` — shown below `FlootPublishPanel` whenever a Floot app is selected.
+Phases: idle → setting → polling → done / failed / upgrade
+- Bundle ID validated with `/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*){1,}$/`
+- Polling: every 10s, max 60 attempts (10 min timeout)
+- Upgrade prompt links to `https://floot.com/pricing`
+
+### workspace/update SuperJSON format (CRITICAL)
+```json
+POST /_api/workspace/update
+Body: {"json": {"id":"...", "name":"...", "mobileAppId":"com.example.app"}}
+```
+Must always include `name` — omitting it resets the workspace name to null.

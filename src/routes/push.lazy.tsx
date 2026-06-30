@@ -21,7 +21,9 @@ import {
   listFlootApps, fetchFlootAppFiles,
   getFlootDeploymentStatus, triggerFlootDeploy,
   removeFlootBadge,
-  type FlootDeployStatus,
+  setFlootMobileAppId, triggerFlootMobileBuild,
+  getFlootMobileBuildStatus, getFlootMobileDownloadUrl,
+  type FlootDeployStatus, type FlootMobileBuildStatus,
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
@@ -159,6 +161,15 @@ export default function PushPage() {
   type BadgePhase = "idle" | "removing" | "done" | "failed";
   const [badgePhase, setBadgePhase]   = useState<BadgePhase>("idle");
   const [badgeError, setBadgeError]   = useState("");
+
+  // ── Floot Native Mobile Build ───────────────────────────────────────────────
+  type FlootMobilePhase = "idle" | "setting" | "polling" | "done" | "failed" | "upgrade";
+  const [flootMobilePhase, setFlootMobilePhase]     = useState<FlootMobilePhase>("idle");
+  const [flootBundleId, setFlootBundleId]           = useState("");
+  const [flootMobileBuildId, setFlootMobileBuildId] = useState("");
+  const [flootApkUrl, setFlootApkUrl]               = useState("");
+  const [flootMobileError, setFlootMobileError]     = useState("");
+  const flootMobilePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const platformConnected = useCallback((id: PlatformId) => {
@@ -453,6 +464,74 @@ export default function PushPage() {
       stopFlootPolling();
       setFlootError(e?.message ?? "Deploy failed");
       setFlootPhase("failed");
+    }
+  };
+
+  const stopFlootMobilePolling = () => {
+    if (flootMobilePollRef.current) { clearInterval(flootMobilePollRef.current); flootMobilePollRef.current = null; }
+  };
+
+  const handleFlootMobileBuild = async () => {
+    if (!selectedApp || !creds.flootToken) return;
+    const bundleId = flootBundleId.trim();
+    if (!bundleId) { toast.error("Enter a bundle ID first (e.g. com.mycompany.myapp)"); return; }
+
+    stopFlootMobilePolling();
+    setFlootMobilePhase("setting");
+    setFlootMobileError("");
+    setFlootApkUrl("");
+    setFlootMobileBuildId("");
+
+    try {
+      await setFlootMobileAppId({
+        data: { token: creds.flootToken, workspaceId: selectedApp.id, mobileAppId: bundleId, name: selectedApp.name },
+      });
+
+      const generatedSlug = selectedApp.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "my-app";
+      const subdomain = flootCurrentSub ?? generatedSlug;
+
+      await triggerFlootMobileBuild({
+        data: { token: creds.flootToken, workspaceId: selectedApp.id, subdomain, isUpdate: !!flootCurrentSub },
+      });
+
+      setFlootMobilePhase("polling");
+      let attempts = 0;
+
+      const pollMobile = async () => {
+        attempts++;
+        try {
+          const status = await getFlootMobileBuildStatus({ data: { token: creds.flootToken!, workspaceId: selectedApp.id } });
+          if (status.type === "notEnabled") {
+            stopFlootMobilePolling();
+            setFlootMobilePhase("upgrade");
+          } else if (status.type === "completed") {
+            stopFlootMobilePolling();
+            setFlootMobileBuildId(status.buildId);
+            try {
+              const url = await getFlootMobileDownloadUrl({
+                data: { token: creds.flootToken!, workspaceId: selectedApp.id, buildId: status.buildId },
+              });
+              setFlootApkUrl(url);
+            } catch { /* download URL might arrive later */ }
+            setFlootMobilePhase("done");
+            toast.success("Native APK is ready to download!");
+          } else if (status.type === "failed") {
+            stopFlootMobilePolling();
+            setFlootMobileError((status as any).message ?? "Build failed");
+            setFlootMobilePhase("failed");
+          } else if (attempts >= 60) {
+            stopFlootMobilePolling();
+            setFlootMobileError("Build timed out after 10 minutes");
+            setFlootMobilePhase("failed");
+          }
+        } catch { /* transient network error — keep polling */ }
+      };
+
+      flootMobilePollRef.current = setInterval(pollMobile, 10000);
+      await pollMobile();
+    } catch (e: any) {
+      setFlootMobileError(e?.message ?? "Failed to start build");
+      setFlootMobilePhase("failed");
     }
   };
 
@@ -1114,6 +1193,19 @@ export default function PushPage() {
                 badgeError={badgeError}
                 onRemoveBadge={handleRemoveBadge}
               />
+              <div style={{ marginTop: 10 }}>
+                <FlootMobileBuildPanel
+                  appName={selectedApp.name}
+                  phase={flootMobilePhase}
+                  bundleId={flootBundleId}
+                  apkUrl={flootApkUrl}
+                  buildId={flootMobileBuildId}
+                  error={flootMobileError}
+                  onBundleIdChange={setFlootBundleId}
+                  onBuild={handleFlootMobileBuild}
+                  onReset={() => { stopFlootMobilePolling(); setFlootMobilePhase("idle"); setFlootMobileError(""); setFlootApkUrl(""); setFlootMobileBuildId(""); }}
+                />
+              </div>
             </div>
           )}
         </>
@@ -1136,6 +1228,181 @@ export default function PushPage() {
 
 function BookOpen14() {
   return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+}
+
+// ── FlootMobileBuildPanel ─────────────────────────────────────────────────────
+const MOBILE_GRADIENT = "linear-gradient(135deg,#7c3aed,#a855f7)";
+const BUNDLE_ID_RE = /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*){1,}$/;
+
+interface FlootMobileBuildPanelProps {
+  appName: string;
+  phase: "idle" | "setting" | "polling" | "done" | "failed" | "upgrade";
+  bundleId: string;
+  apkUrl: string;
+  buildId: string;
+  error: string;
+  onBundleIdChange: (val: string) => void;
+  onBuild: () => void;
+  onReset: () => void;
+}
+
+function FlootMobileBuildPanel({
+  appName, phase, bundleId, apkUrl, buildId, error,
+  onBundleIdChange, onBuild, onReset,
+}: FlootMobileBuildPanelProps) {
+  const bundleOk = BUNDLE_ID_RE.test(bundleId.trim());
+  const busy = phase === "setting" || phase === "polling";
+
+  return (
+    <div className="card" style={{ padding: 18 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: MOBILE_GRADIENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Smartphone size={16} color="#fff" />
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Generate Native App</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{appName} — build Android APK via Floot</div>
+        </div>
+      </div>
+
+      {/* Idle — bundle ID input */}
+      {phase === "idle" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+              Android bundle ID
+            </label>
+            <input
+              className="input"
+              placeholder="com.yourcompany.appname"
+              value={bundleId}
+              onChange={(e) => onBundleIdChange(e.target.value.trim())}
+              style={{ fontFamily: "monospace", fontSize: 13 }}
+            />
+            <div style={{ marginTop: 5, fontSize: 12 }}>
+              {!bundleId ? (
+                <span style={{ color: "#94a3b8" }}>Unique ID for your app on Android — e.g. com.acme.myapp</span>
+              ) : bundleOk ? (
+                <span style={{ color: "#7c3aed" }}>✓ Valid bundle ID</span>
+              ) : (
+                <span style={{ color: "#f97316" }}>At least 2 dot-separated segments (e.g. com.example.app)</span>
+              )}
+            </div>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ background: MOBILE_GRADIENT, justifyContent: "center", opacity: bundleOk ? 1 : 0.5 }}
+            disabled={!bundleOk}
+            onClick={onBuild}
+          >
+            <Smartphone size={14} /> Generate Native App
+          </button>
+          <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.5 }}>
+            Requires Floot 100k (ultra) plan. Triggers an Android APK build on Floot's servers (~5–10 min).
+          </div>
+        </div>
+      )}
+
+      {/* Setting bundle ID */}
+      {phase === "setting" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#faf5ff", border: "1px solid #e9d5ff" }}>
+          <Loader2 size={14} color="#7c3aed" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "#6d28d9" }}>Setting bundle ID and queuing build…</span>
+        </div>
+      )}
+
+      {/* Polling */}
+      {phase === "polling" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#faf5ff", border: "1px solid #e9d5ff" }}>
+            <Loader2 size={14} color="#7c3aed" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, color: "#6d28d9", fontWeight: 600 }}>Building native app…</div>
+              <div style={{ fontSize: 11, color: "#7c3aed", marginTop: 2 }}>Checking every 10 s — typical build takes 5–10 min.</div>
+            </div>
+          </div>
+          <div style={{ height: 4, borderRadius: 2, background: "#e9d5ff", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: "50%", background: MOBILE_GRADIENT, borderRadius: 2, animation: "apkProgress 3s ease-in-out infinite alternate" }} />
+          </div>
+        </div>
+      )}
+
+      {/* Done */}
+      {phase === "done" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+            <CheckCircle size={15} color="#16a34a" />
+            <span style={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>APK build complete!</span>
+          </div>
+          {apkUrl ? (
+            <a
+              href={apkUrl}
+              target="_blank"
+              rel="noopener"
+              className="btn btn-primary"
+              style={{ background: MOBILE_GRADIENT, justifyContent: "center" }}
+            >
+              <Download size={14} /> Download APK
+            </a>
+          ) : (
+            <div style={{ fontSize: 12, color: "#64748b", padding: "8px 12px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+              Build ID: <code style={{ fontFamily: "monospace", fontSize: 11 }}>{buildId}</code>
+              <br />
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>Download link not available — check your Floot dashboard.</span>
+            </div>
+          )}
+          <button className="btn btn-secondary" style={{ width: "100%", justifyContent: "center" }} onClick={onReset}>
+            <RefreshCw size={12} /> Build Again
+          </button>
+        </div>
+      )}
+
+      {/* Upgrade required */}
+      {phase === "upgrade" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ padding: "10px 14px", borderRadius: 8, background: "#fffbeb", border: "1px solid #fde68a" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <AlertCircle size={14} color="#d97706" />
+              <span style={{ fontSize: 13, color: "#92400e", fontWeight: 600 }}>Floot 100k plan required</span>
+            </div>
+            <p style={{ fontSize: 12, color: "#78350f", margin: 0, lineHeight: 1.5 }}>
+              Native mobile builds are gated to Floot's 100k (ultra) subscription.
+              Upgrade your Floot account, then try again.
+            </p>
+          </div>
+          <a
+            href="https://floot.com/pricing"
+            target="_blank"
+            rel="noopener"
+            className="btn btn-secondary"
+            style={{ justifyContent: "center" }}
+          >
+            <ExternalLink size={13} /> View Floot Pricing
+          </a>
+          <button className="btn btn-secondary" style={{ width: "100%", justifyContent: "center" }} onClick={onReset}>
+            <RefreshCw size={12} /> Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Failed */}
+      {phase === "failed" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <XCircle size={14} color="#dc2626" />
+              <span style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>Build failed</span>
+            </div>
+            {error && <p style={{ fontSize: 12, color: "#b91c1c", margin: "4px 0 0 22px" }}>{error}</p>}
+          </div>
+          <button className="btn btn-primary" style={{ background: MOBILE_GRADIENT, justifyContent: "center" }} onClick={onReset}>
+            <RefreshCw size={14} /> Try Again
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── FlootPublishPanel ────────────────────────────────────────────────────────
