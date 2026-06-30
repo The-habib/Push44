@@ -14,7 +14,7 @@ async function readBody(req: IncomingMessage): Promise<string> {
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,X-Floot-Token,RSC,Next-Router-State-Tree");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,X-Floot-Token,X-Floot-Referer,X-Floot-Fetch-Mode,RSC,Next-Router-State-Tree");
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
@@ -30,14 +30,16 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const headers = req.headers as Record<string, string>;
   const token   = (headers["x-floot-token"] ?? "") as string;
 
-  const customReferer = headers["x-floot-referer"] as string | undefined;
+  const customReferer   = headers["x-floot-referer"]    as string | undefined;
+  const customFetchMode = headers["x-floot-fetch-mode"] as string | undefined;
 
   const forwardHeaders: Record<string, string> = {
-    "Accept":     (headers["accept"]       as string) ?? "application/json",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Referer":    customReferer ?? "https://floot.com/",
+    "Accept":         (headers["accept"] as string) ?? "application/json",
+    "User-Agent":     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Referer":        customReferer ?? "https://floot.com/",
     "sec-fetch-site": "same-origin",
-    "sec-fetch-mode": "cors",
+    "sec-fetch-mode": customFetchMode ?? "cors",
+    "sec-fetch-dest": customFetchMode === "navigate" ? "document" : "empty",
   };
 
   if (token) {

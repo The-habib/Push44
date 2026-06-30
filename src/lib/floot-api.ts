@@ -185,6 +185,102 @@ export async function getFlootBadgeHidden({
  *
  * Approach discovered by reverse-engineering the Floot project-page bundle (June 2026).
  */
+/** UUID pattern (8-4-4-4-12 hex digits) */
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/**
+ * Try every strategy in order to find serverLastMessageId.
+ * Floot's Next.js RSC payload encodes strings differently depending on
+ * the rendering context, so we try multiple patterns and endpoints.
+ */
+async function resolveLastMessageId(
+  token: string,
+  workspaceId: string,
+  workspace: any
+): Promise<string> {
+  // ── Strategy 1: field already on the workspace object from list API ───────
+  const direct =
+    workspace?.lastMessageId ??
+    workspace?.latestMessageId ??
+    workspace?.serverLastMessageId ??
+    workspace?.chat?.lastMessageId ??
+    workspace?.chatState?.lastMessageId;
+  if (direct && UUID_RE.test(String(direct))) return String(direct);
+
+  // ── Strategy 2: project page HTML — plain + escaped RSC variants ──────────
+  // Floot embeds state in <script>self.__next_f.push([...])</script> tags.
+  // Plain JSON:   "serverLastMessageId":"UUID"
+  // Escaped JSON: \"serverLastMessageId\":\"UUID\"   (inside script strings)
+  const pagePatterns = [
+    /"serverLastMessageId"\s*:\s*"([0-9a-f-]{36})"/i,
+    /"lastMessageId"\s*:\s*"([0-9a-f-]{36})"/i,
+    /\\"serverLastMessageId\\":\\"([0-9a-f-]{36})\\"/i,
+    /\\"lastMessageId\\":\\"([0-9a-f-]{36})\\"/i,
+    /serverLastMessageId[^0-9a-f]*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+  ];
+
+  // Request variants: navigate mode first (matches real browser), then RSC stream
+  const pageHeaderVariants: Record<string, string>[] = [
+    {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "X-Floot-Fetch-Mode": "navigate",
+    },
+    {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    },
+    {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      RSC: "1",
+      "Next-Router-State-Tree": "%5B%22%22%2C%7B%7D%2Cnull%2Cnull%2Ctrue%5D",
+    },
+  ];
+
+  for (const extraHeaders of pageHeaderVariants) {
+    try {
+      const pageRes = await proxyFetch(`/project/${workspaceId}`, token, {
+        headers: {
+          ...extraHeaders,
+          "X-Floot-Referer": `https://floot.com/project/${workspaceId}`,
+        },
+      });
+      if (pageRes.ok) {
+        const text = await pageRes.text();
+        for (const pat of pagePatterns) {
+          const m = text.match(pat);
+          if (m?.[1] && UUID_RE.test(m[1])) return m[1];
+        }
+      }
+    } catch { /* continue */ }
+  }
+
+  // ── Strategy 3: dedicated workspace / messages REST endpoints ─────────────
+  const restPaths = [
+    `/_api/workspace/${workspaceId}`,
+    `/_api/workspace/messages?workspaceId=${workspaceId}`,
+    `/_api/workspace/${workspaceId}/messages`,
+  ];
+  for (const path of restPaths) {
+    try {
+      const r = await proxyFetch(path, token);
+      if (r.ok) {
+        const d = await r.json().catch(() => null);
+        const id =
+          d?.lastMessageId ??
+          d?.latestMessageId ??
+          d?.serverLastMessageId ??
+          d?.workspace?.lastMessageId ??
+          d?.messages?.[0]?.id;
+        if (id && UUID_RE.test(String(id))) return String(id);
+      }
+    } catch { /* continue */ }
+  }
+
+  throw new Error(
+    "Could not find the Floot project message ID.\n\n" +
+    "Open your app in the Floot editor (floot.com/project/...), wait for it to load fully, then come back and try again."
+  );
+}
+
 export async function removeFlootBadge({
   data,
 }: {
@@ -192,29 +288,7 @@ export async function removeFlootBadge({
 }): Promise<void> {
   const { token, workspaceId } = data;
 
-  // ── Step 1: Extract serverLastMessageId from project-page HTML ────────────
-  // The ID is embedded as JSON in the Next.js RSC payload. It is validated
-  // server-side on every /api/llm call — using a wrong ID returns 400.
-  const pageRes = await proxyFetch(`/project/${workspaceId}`, token, {
-    headers: {
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "X-Floot-Referer": `https://floot.com/project/${workspaceId}`,
-    },
-  });
-  if (!pageRes.ok) {
-    throw new Error(`Could not load Floot project page (${pageRes.status}). Check your session token.`);
-  }
-  const pageHtml = await pageRes.text();
-  const msgIdMatch = pageHtml.match(/"serverLastMessageId":"([^"]+)"/);
-  if (!msgIdMatch) {
-    throw new Error(
-      "Could not find the Floot message ID needed for badge removal. " +
-      "Make sure you have at least opened the project in Floot once."
-    );
-  }
-  const serverLastMessageId = msgIdMatch[1];
-
-  // ── Step 2: Get current sketchCss ─────────────────────────────────────────
+  // ── Step 1: Get workspace (sketchCss) ─────────────────────────────────────
   const listRes = await proxyFetch("/_api/workspace/list", token);
   if (!listRes.ok) throw new Error(`Failed to load workspace list (${listRes.status})`);
   const listData = await listRes.json();
@@ -229,6 +303,9 @@ export async function removeFlootBadge({
 
   // Idempotent — skip if rule is already there
   if (currentSketchCss.includes(BADGE_SELECTOR)) return;
+
+  // ── Step 2: Resolve serverLastMessageId via multi-strategy fallback ────────
+  const serverLastMessageId = await resolveLastMessageId(token, workspaceId, workspace);
 
   const newCss = currentSketchCss + BADGE_CSS_RULE;
 
