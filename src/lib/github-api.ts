@@ -295,15 +295,29 @@ export async function pushFilesToGitHub({ data }: {
     body: JSON.stringify(commitBody),
   });
 
-  // Inject "Restore to Platform" button into README.md if it doesn't exist or update it
+  // Update the branch ref FIRST before any other API calls that create commits
+  if (parentCommitSha) {
+    await ghFetch(token, `${repoPath}/git/refs/heads/${branch}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sha: commit.sha, force: false }),
+    });
+  } else {
+    await ghFetch(token, `${repoPath}/git/refs`, {
+      method: "POST",
+      body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: commit.sha }),
+    });
+  }
+
+  // Inject "Restore to Platform" button into README.md AFTER updating the branch ref
+  // (Contents API creates a new commit on top of the now-updated branch)
   try {
     const readmePath = "README.md";
     let readmeContent = "";
     let readmeSha: string | null = null;
-    
+
     try {
       const existingReadme = await ghFetch(token, `${repoPath}/contents/${readmePath}?ref=${branch}`);
-      readmeContent = atob(existingReadme.content);
+      readmeContent = atob(existingReadme.content.replace(/\n/g, ""));
       readmeSha = existingReadme.sha;
     } catch (e) {
       // README doesn't exist, start fresh
@@ -324,26 +338,14 @@ export async function pushFilesToGitHub({ data }: {
         method: "PUT",
         body: JSON.stringify({
           message: "chore: add restore button to README",
-          content: btoa(newReadmeContent),
-          sha: readmeSha || undefined,
+          content: btoa(unescape(encodeURIComponent(newReadmeContent))),
+          ...(readmeSha ? { sha: readmeSha } : {}),
           branch,
         }),
       });
     }
   } catch (e) {
     console.error("Failed to inject README button", e);
-  }
-
-  if (parentCommitSha) {
-    await ghFetch(token, `${repoPath}/git/refs/heads/${branch}`, {
-      method: "PATCH",
-      body: JSON.stringify({ sha: commit.sha, force: false }),
-    });
-  } else {
-    await ghFetch(token, `${repoPath}/git/refs`, {
-      method: "POST",
-      body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: commit.sha }),
-    });
   }
 
   return {
