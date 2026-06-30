@@ -138,6 +138,7 @@ export default function PushPage() {
   const [apkDownloadUrl, setApkDownloadUrl] = useState("");
   const [apkBuildId, setApkBuildId]   = useState<string | undefined>(undefined);
   const [showApkLogs, setShowApkLogs] = useState(false);
+  const [showApkPanel, setShowApkPanel] = useState(false);
   const apkPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const logEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -312,6 +313,7 @@ export default function PushPage() {
     setSelectedApp(null); setFiles([]); setFilesError("");
     setCommitMsg(""); setContainerSleeping(false);
     setApkPhase("idle"); setApkLogs([]); setApkError(""); setApkDownloadUrl("");
+    setShowApkPanel(false);
     loadApps(platform);
   };
 
@@ -547,12 +549,128 @@ export default function PushPage() {
             >
               <FolderOpen size={13} /> Browse files
             </button>
+            {platform === "rocket" && (
+              <button
+                className="btn btn-sm"
+                style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
+                onClick={() => { setShowApkPanel(true); setApkPhase("idle"); setApkLogs([]); setApkError(""); setApkDownloadUrl(""); }}
+              >
+                <Smartphone size={13} /> Build APK
+              </button>
+            )}
             <button className="btn btn-primary" onClick={goToStep2}>
               Choose Repo →
             </button>
           </div>
         )}
       </StepCard>
+
+      {/* ── Standalone APK Build Panel (Rocket.new, step 1, no push needed) ── */}
+      {showApkPanel && platform === "rocket" && selectedApp && step === 1 && (
+        <div className="card" style={{ marginBottom: 12, padding: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#7c3aed,#a855f7)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Smartphone size={16} color="#fff" />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>Build APK</div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>{selectedApp.name} — builds on Rocket.new servers</div>
+              </div>
+            </div>
+            <button onClick={() => { stopApkPolling(); setShowApkPanel(false); setApkPhase("idle"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1 }}>×</button>
+          </div>
+
+          {apkPhase === "idle" && (
+            <button
+              className="btn btn-primary"
+              style={{ width: "100%", background: "linear-gradient(135deg,#7c3aed,#a855f7)", justifyContent: "center" }}
+              onClick={handleApkBuild}
+            >
+              <Smartphone size={14} />Trigger APK Build
+            </button>
+          )}
+
+          {(apkPhase === "keystore" || apkPhase === "resetting" || apkPhase === "queued" || apkPhase === "building") && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#faf5ff", border: "1px solid #e9d5ff" }}>
+                <Loader2 size={15} color="#7c3aed" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: "#6d28d9", fontWeight: 600 }}>
+                  {apkPhase === "keystore"  && "Generating keystore…"}
+                  {apkPhase === "resetting" && "Resetting build state…"}
+                  {apkPhase === "queued"    && "Queued — waiting for build slot…"}
+                  {apkPhase === "building"  && "Building APK… (3–6 min)"}
+                </span>
+              </div>
+              {apkPhase === "building" && (
+                <div style={{ height: 4, borderRadius: 2, background: "#e9d5ff", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: "40%", background: "linear-gradient(90deg,#7c3aed,#a855f7)", borderRadius: 2, animation: "apkProgress 3s ease-in-out infinite alternate" }} />
+                </div>
+              )}
+              {apkLogs.length > 0 && (
+                <button onClick={() => setShowApkLogs(v => !v)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7c3aed", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 600 }}>
+                  <Terminal size={12} />{showApkLogs ? "Hide" : "Show"} build logs ({apkLogs.length} lines){showApkLogs ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                </button>
+              )}
+            </div>
+          )}
+
+          {apkPhase === "done" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <CheckCircle size={15} color="#16a34a" />
+                <span style={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>APK build completed!</span>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {apkDownloadUrl && (
+                  <a href={apkDownloadUrl} target="_blank" rel="noopener" className="btn btn-primary" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", flex: 1, justifyContent: "center" }}>
+                    <Download size={13} />Download APK
+                  </a>
+                )}
+                <button className="btn btn-secondary" style={{ flex: 1, justifyContent: "center" }} onClick={handleApkBuild}>
+                  <RefreshCw size={13} />Rebuild
+                </button>
+              </div>
+              {apkLogs.length > 0 && (
+                <button onClick={() => setShowApkLogs(v => !v)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#64748b", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  <Terminal size={12} />{showApkLogs ? "Hide" : "Show"} build logs ({apkLogs.length} lines){showApkLogs ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                </button>
+              )}
+            </div>
+          )}
+
+          {apkPhase === "failed" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <XCircle size={14} color="#dc2626" />
+                  <span style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>Build failed</span>
+                </div>
+                {apkError && <p style={{ fontSize: 12, color: "#b91c1c", margin: "4px 0 0 22px" }}>{apkError}</p>}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center", background: "linear-gradient(135deg,#7c3aed,#a855f7)" }} onClick={handleApkBuild}>
+                  <RefreshCw size={13} />Retry Build
+                </button>
+                {apkLogs.length > 0 && (
+                  <button className="btn btn-secondary" style={{ flex: 1, justifyContent: "center" }} onClick={() => setShowApkLogs(v => !v)}>
+                    <Terminal size={13} />{showApkLogs ? "Hide" : "Show"} Logs
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {showApkLogs && apkLogs.length > 0 && (
+            <div style={{ marginTop: 10, borderRadius: 8, background: "#0f172a", padding: "12px 14px", maxHeight: 220, overflowY: "auto", fontFamily: "monospace", fontSize: 11, lineHeight: 1.6 }}>
+              {apkLogs.map((line, i) => (
+                <div key={i} style={{ color: line.toLowerCase().includes("error") ? "#f87171" : line.toLowerCase().includes("warn") ? "#fbbf24" : line.toLowerCase().includes("success") || line.toLowerCase().includes("built") ? "#4ade80" : "#94a3b8" }}>{line}</div>
+              ))}
+              <div ref={logEndRef} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Step 2: GitHub Repo ───────────────────────────────────────────── */}
       <StepCard n={2} step={step} label="Choose Repository" active={step === 2} done={step === 3 && pushStatus === "done"}>
