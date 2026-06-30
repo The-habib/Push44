@@ -65,13 +65,20 @@ export default function DashboardPage() {
   return (
     <div className="page-wide">
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0 }}>
-          {greeting}{creds.displayName ? `, ${creds.displayName.split(" ")[0]}` : ""}
-        </h1>
-        <p style={{ color: "#64748b", margin: "4px 0 0", fontSize: 14 }}>
-          {hasCredentials ? "Everything is connected. Ready to push." : "Connect your accounts in Settings to get started."}
-        </p>
+      <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0 }}>
+            {greeting}{creds.displayName ? `, ${creds.displayName.split(" ")[0]}` : ""}
+          </h1>
+          <p style={{ color: "#64748b", margin: "4px 0 0", fontSize: 14 }}>
+            {hasCredentials ? "Everything is connected. Ready to push." : "Connect your accounts in Settings to get started."}
+          </p>
+        </div>
+        {hasCredentials && (
+          <Link to="/push" className="btn btn-primary" style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
+            <UploadCloud size={15} /> Push an App
+          </Link>
+        )}
       </div>
 
       {/* Stats */}
@@ -147,13 +154,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {hasCredentials && (
-        <div style={{ marginTop: 20 }}>
-          <Link to="/push" className="btn btn-primary">
-            <UploadCloud size={15} /> Push an App
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
