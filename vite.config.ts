@@ -252,6 +252,34 @@ function flootProxyPlugin(): Plugin {
   };
 }
 
+function flootCheckPlugin(): Plugin {
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith("/api/floot-check")) return next();
+
+    const url = new URL(req.url, "http://localhost");
+    const subdomain = url.searchParams.get("subdomain") ?? "";
+    if (!subdomain) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Missing subdomain" }));
+    }
+
+    try {
+      const checkRes = await fetch(`https://${subdomain}.floot.app`, { method: "HEAD" });
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" });
+      res.end(JSON.stringify({ available: checkRes.status === 404 }));
+    } catch {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ available: true }));
+    }
+  };
+
+  return {
+    name: "floot-check",
+    configureServer(server) { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
 export default defineConfig({
   plugins: [
     TanStackRouterVite({ routesDirectory: "./src/routes", generatedRouteTree: "./src/routeTree.gen.ts" }),
@@ -259,6 +287,7 @@ export default defineConfig({
     tailwindcss(),
     ziteProxyPlugin(),
     flootProxyPlugin(),
+    flootCheckPlugin(),
     githubOAuthPlugin(),
   ],
   resolve: {

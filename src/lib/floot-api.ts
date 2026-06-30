@@ -103,6 +103,66 @@ export async function listFlootApps({ data }: { data: { token: string } }): Prom
   return [];
 }
 
+// ─── Publish / Deploy API ─────────────────────────────────────────────────────
+
+export type FlootDeployStatus =
+  | { type: "notDeployed" }
+  | { type: "deploying";  subdomain: string; deploymentInfo?: any }
+  | { type: "deployed";   subdomain: string; deploymentInfo?: any }
+  | { type: "error";      subdomain?: string; message: string; deploymentInfo?: any };
+
+export async function getFlootDeploymentStatus({
+  data,
+}: {
+  data: { token: string; workspaceId: string };
+}): Promise<FlootDeployStatus> {
+  const res = await proxyFetch(
+    `/_api/workspace/deployment?workspaceId=${encodeURIComponent(data.workspaceId)}`,
+    data.token
+  );
+  if (!res.ok) throw new Error(`Deployment status error ${res.status}`);
+  return res.json();
+}
+
+export async function triggerFlootDeploy({
+  data,
+}: {
+  data: { token: string; workspaceId: string; subdomain: string; isUpdate?: boolean };
+}): Promise<void> {
+  const body = {
+    type: data.isUpdate ? "prodUpdate" : "prod",
+    id: data.workspaceId,
+    subdomain: data.subdomain,
+    includeMadeWithFloot: false,
+    buildMobileApps: false,
+  };
+  const res = await proxyFetch("/api/trpc/workspace.requestDeploy", data.token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg =
+      err?.error?.message ??
+      err?.error?.data?.message ??
+      err?.message ??
+      `Deploy trigger failed (${res.status})`;
+    throw new Error(msg);
+  }
+}
+
+export async function checkFlootSubdomainAvailable(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/floot-check?subdomain=${encodeURIComponent(subdomain)}`);
+    if (!res.ok) return false;
+    const d = await res.json();
+    return !!d.available;
+  } catch {
+    return false;
+  }
+}
+
 // ─── Reference API ────────────────────────────────────────────────────────────
 // Floot exposes /_api/workspace/reference with two actions:
 //   • action:"getInfo"   → returns project structure (file list, design info)

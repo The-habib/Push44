@@ -11,3 +11,4 @@
 - [Floot Reference API](floot-reference-api.md) — /_api/workspace/reference with action:"getInfo"/"readItems" + sourceWorkspaceId reads full project source; discriminator is "action" not "type"
 - [Zite Integration Pattern](zite-integration.md) — build.fillout.com apps; proxy to server.zite.com with Origin: build.fillout.com; session+csrf cookies; files at /admin/zite/apps/{id} → ziteSnapshot.template.files
 - [Push44 Design System](push44-design-system.md) — glassmorphism pattern for all inner-page cards; floating glass nav pill (in-flow not fixed); warm cream #faf8f5 background with orange gradient mesh
+- [Push44 Platform Feature Split](push44-platform-features.md) — Floot = Publish to web (FlootPublishPanel); Rocket = Build APK only. Never add publish UI to Rocket or APK UI to Floot.

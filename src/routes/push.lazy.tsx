@@ -17,7 +17,11 @@ import {
   fetchRocketApkBuildLog, downloadRocketApk,
   APK_STATUS, type ApkBuildState,
 } from "@/lib/rocket-api";
-import { listFlootApps, fetchFlootAppFiles } from "@/lib/floot-api";
+import {
+  listFlootApps, fetchFlootAppFiles,
+  getFlootDeploymentStatus, triggerFlootDeploy, checkFlootSubdomainAvailable,
+  type FlootDeployStatus,
+} from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
 import {
@@ -141,6 +145,19 @@ export default function PushPage() {
   const [showApkPanel, setShowApkPanel] = useState(false);
   const apkPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const logEndRef = useRef<HTMLDivElement | null>(null);
+
+  // ── Floot Publish ──────────────────────────────────────────────────────────
+  type FlootPublishPhase = "idle" | "checking" | "subdomain" | "deploying" | "polling" | "done" | "failed";
+  const [flootPhase, setFlootPhase]           = useState<FlootPublishPhase>("idle");
+  const [flootSubdomain, setFlootSubdomain]   = useState("");
+  const [flootSubAvail, setFlootSubAvail]     = useState<boolean | null>(null);
+  const [flootSubChecking, setFlootSubChecking] = useState(false);
+  const [flootLiveUrl, setFlootLiveUrl]       = useState("");
+  const [flootError, setFlootError]           = useState("");
+  const [flootCurrentSub, setFlootCurrentSub] = useState<string | null>(null);
+  const [showFlootPanel, setShowFlootPanel]   = useState(false);
+  const flootPollingRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const flootDebounceRef = useRef<ReturnType<typeof setTimeout>  | null>(null);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const platformConnected = useCallback((id: PlatformId) => {
@@ -314,6 +331,8 @@ export default function PushPage() {
     setCommitMsg(""); setContainerSleeping(false);
     setApkPhase("idle"); setApkLogs([]); setApkError(""); setApkDownloadUrl("");
     setShowApkPanel(false);
+    stopFlootPolling(); setFlootPhase("idle"); setFlootError(""); setFlootLiveUrl("");
+    setFlootCurrentSub(null); setShowFlootPanel(false); setFlootSubdomain(""); setFlootSubAvail(null);
     loadApps(platform);
   };
 
@@ -385,8 +404,92 @@ export default function PushPage() {
     }
   };
 
-  useEffect(() => () => stopApkPolling(), []);
+  useEffect(() => () => { stopApkPolling(); stopFlootPolling(); }, []);
   useEffect(() => { if (showApkLogs) logEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [apkLogs, showApkLogs]);
+
+  // ── Floot publish handlers ──────────────────────────────────────────────────
+  const stopFlootPolling = () => {
+    if (flootPollingRef.current) { clearInterval(flootPollingRef.current); flootPollingRef.current = null; }
+  };
+
+  const SUBDOMAIN_RE = /^[a-z0-9-]{3,}$/;
+
+  const onFlootSubdomainChange = (val: string) => {
+    const slug = val.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setFlootSubdomain(slug);
+    setFlootSubAvail(null);
+    if (flootDebounceRef.current) clearTimeout(flootDebounceRef.current);
+    if (!SUBDOMAIN_RE.test(slug)) return;
+    setFlootSubChecking(true);
+    flootDebounceRef.current = setTimeout(async () => {
+      const avail = await checkFlootSubdomainAvailable(slug);
+      setFlootSubAvail(avail);
+      setFlootSubChecking(false);
+    }, 600);
+  };
+
+  const flootPollOnce = async (workspaceId: string) => {
+    if (!creds.flootToken) return;
+    try {
+      const status = await getFlootDeploymentStatus({ data: { token: creds.flootToken, workspaceId } });
+      if (status.type === "deployed") {
+        stopFlootPolling();
+        setFlootLiveUrl(`https://${status.subdomain}.floot.app`);
+        setFlootCurrentSub(status.subdomain);
+        setFlootPhase("done");
+      } else if (status.type === "error") {
+        stopFlootPolling();
+        setFlootError((status as any).message ?? "Build failed on Floot's servers");
+        setFlootPhase("failed");
+      }
+    } catch (e: any) {
+      console.warn("[push44:floot] poll error", e?.message);
+    }
+  };
+
+  const handleFlootPublish = async (subdomain: string, isUpdate = false) => {
+    if (!selectedApp || !creds.flootToken) return;
+    stopFlootPolling();
+    setFlootError("");
+    setFlootPhase("deploying");
+    try {
+      await triggerFlootDeploy({ data: { token: creds.flootToken, workspaceId: selectedApp.id, subdomain, isUpdate } });
+      setFlootPhase("polling");
+      flootPollingRef.current = setInterval(() => flootPollOnce(selectedApp.id), 10000);
+      await flootPollOnce(selectedApp.id);
+    } catch (e: any) {
+      stopFlootPolling();
+      setFlootError(e?.message ?? "Deploy failed");
+      setFlootPhase("failed");
+    }
+  };
+
+  const openFlootPanel = async () => {
+    if (!selectedApp || !creds.flootToken) return;
+    setShowFlootPanel(true);
+    setFlootPhase("checking");
+    setFlootSubdomain(""); setFlootSubAvail(null); setFlootError(""); setFlootLiveUrl(""); setFlootCurrentSub(null);
+    try {
+      const status = await getFlootDeploymentStatus({ data: { token: creds.flootToken, workspaceId: selectedApp.id } });
+      if (status.type === "deployed") {
+        setFlootCurrentSub(status.subdomain);
+        setFlootLiveUrl(`https://${status.subdomain}.floot.app`);
+        setFlootPhase("done");
+      } else if (status.type === "deploying") {
+        setFlootCurrentSub(status.subdomain);
+        setFlootPhase("polling");
+        flootPollingRef.current = setInterval(() => flootPollOnce(selectedApp.id), 10000);
+      } else if (status.type === "error") {
+        if ((status as any).subdomain) setFlootCurrentSub((status as any).subdomain);
+        setFlootError((status as any).message ?? "Previous build failed");
+        setFlootPhase("failed");
+      } else {
+        setFlootPhase("subdomain");
+      }
+    } catch {
+      setFlootPhase("subdomain");
+    }
+  };
 
   // ── Filtered apps ──────────────────────────────────────────────────────────
   const filteredApps = apps.filter((a) =>
@@ -558,6 +661,15 @@ export default function PushPage() {
                 <Smartphone size={13} /> Build APK
               </button>
             )}
+            {platform === "floot" && (
+              <button
+                className="btn btn-sm"
+                style={{ background: "linear-gradient(135deg,#0284c7,#0ea5e9)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
+                onClick={openFlootPanel}
+              >
+                <Globe size={13} /> Publish to Floot
+              </button>
+            )}
             <button className="btn btn-primary" onClick={goToStep2}>
               Choose Repo →
             </button>
@@ -670,6 +782,23 @@ export default function PushPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── Standalone Floot Publish Panel (step 1, before push) ────────── */}
+      {showFlootPanel && platform === "floot" && selectedApp && step === 1 && (
+        <FlootPublishPanel
+          appName={selectedApp.name}
+          phase={flootPhase}
+          subdomain={flootSubdomain}
+          subAvail={flootSubAvail}
+          subChecking={flootSubChecking}
+          liveUrl={flootLiveUrl}
+          currentSub={flootCurrentSub}
+          error={flootError}
+          onSubdomainChange={onFlootSubdomainChange}
+          onPublish={(slug, isUpdate) => handleFlootPublish(slug, isUpdate)}
+          onClose={() => { stopFlootPolling(); setShowFlootPanel(false); setFlootPhase("idle"); }}
+        />
       )}
 
       {/* ── Step 2: GitHub Repo ───────────────────────────────────────────── */}
@@ -960,6 +1089,25 @@ export default function PushPage() {
               )}
             </div>
           )}
+
+          {/* ── Floot Publish (Floot only) ────────────────────────────────── */}
+          {platform === "floot" && selectedApp && (
+            <div style={{ marginTop: 12 }}>
+              <FlootPublishPanel
+                appName={selectedApp.name}
+                phase={flootPhase}
+                subdomain={flootSubdomain}
+                subAvail={flootSubAvail}
+                subChecking={flootSubChecking}
+                liveUrl={flootLiveUrl}
+                currentSub={flootCurrentSub}
+                error={flootError}
+                onSubdomainChange={onFlootSubdomainChange}
+                onPublish={(slug, isUpdate) => handleFlootPublish(slug, isUpdate)}
+                autoOpen={flootPhase === "idle"}
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -980,4 +1128,212 @@ export default function PushPage() {
 
 function BookOpen14() {
   return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+}
+
+// ── FlootPublishPanel ────────────────────────────────────────────────────────
+type FlootPublishPhaseT = "idle" | "checking" | "subdomain" | "deploying" | "polling" | "done" | "failed";
+
+interface FlootPublishPanelProps {
+  appName: string;
+  phase: FlootPublishPhaseT;
+  subdomain: string;
+  subAvail: boolean | null;
+  subChecking: boolean;
+  liveUrl: string;
+  currentSub: string | null;
+  error: string;
+  onSubdomainChange: (val: string) => void;
+  onPublish: (slug: string, isUpdate?: boolean) => void;
+  onClose?: () => void;
+  autoOpen?: boolean;
+}
+
+const FLOOT_GRADIENT = "linear-gradient(135deg,#0284c7,#0ea5e9)";
+const SUBDOMAIN_VALID = /^[a-z0-9-]{3,}$/;
+
+function FlootPublishPanel({
+  appName, phase, subdomain, subAvail, subChecking, liveUrl, currentSub,
+  error, onSubdomainChange, onPublish, onClose, autoOpen,
+}: FlootPublishPanelProps) {
+  const canPublish = SUBDOMAIN_VALID.test(subdomain) && subAvail === true && !subChecking;
+
+  return (
+    <div className="card" style={{ padding: 18 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: FLOOT_GRADIENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Globe size={16} color="#fff" />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>Publish to Floot</div>
+            <div style={{ fontSize: 12, color: "#64748b" }}>{appName} — deploys on Floot's servers</div>
+          </div>
+        </div>
+        {onClose && (
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1 }}>×</button>
+        )}
+      </div>
+
+      {/* Checking status */}
+      {phase === "checking" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+          <Loader2 size={14} color="#0284c7" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "#0369a1" }}>Checking deployment status…</span>
+        </div>
+      )}
+
+      {/* Subdomain picker — not yet deployed */}
+      {(phase === "subdomain" || (phase === "idle" && autoOpen)) && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+              Choose a subdomain
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                className="input"
+                placeholder="my-app-name"
+                value={subdomain}
+                onChange={(e) => onSubdomainChange(e.target.value)}
+                style={{ paddingRight: 110 }}
+              />
+              <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#94a3b8", pointerEvents: "none" }}>
+                .floot.app
+              </span>
+            </div>
+            <div style={{ marginTop: 5, fontSize: 12 }}>
+              {!subdomain || !SUBDOMAIN_VALID.test(subdomain) ? (
+                <span style={{ color: "#94a3b8" }}>Lowercase letters, digits and hyphens — min 3 characters</span>
+              ) : subChecking ? (
+                <span style={{ color: "#64748b", display: "flex", alignItems: "center", gap: 4 }}>
+                  <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> Checking availability…
+                </span>
+              ) : subAvail === true ? (
+                <span style={{ color: "#16a34a", display: "flex", alignItems: "center", gap: 4 }}>
+                  <CheckCircle size={11} /> <strong>{subdomain}.floot.app</strong> is available ✓
+                </span>
+              ) : subAvail === false ? (
+                <span style={{ color: "#dc2626", display: "flex", alignItems: "center", gap: 4 }}>
+                  <XCircle size={11} /> That subdomain is already taken
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ background: FLOOT_GRADIENT, justifyContent: "center", opacity: canPublish ? 1 : 0.5 }}
+            disabled={!canPublish}
+            onClick={() => onPublish(subdomain, false)}
+          >
+            <Globe size={14} /> Publish App
+          </button>
+        </div>
+      )}
+
+      {/* Deploying / polling */}
+      {(phase === "deploying" || phase === "polling") && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+            <Loader2 size={15} color="#0284c7" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, color: "#0369a1", fontWeight: 600 }}>
+                {phase === "deploying" ? "Triggering deploy…" : "Building on Floot's servers…"}
+              </div>
+              {phase === "polling" && <div style={{ fontSize: 11, color: "#0284c7", marginTop: 2 }}>First publish takes 2–5 minutes. Checking every 10s.</div>}
+            </div>
+          </div>
+          {phase === "polling" && (
+            <div style={{ height: 4, borderRadius: 2, background: "#bae6fd", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: "50%", background: FLOOT_GRADIENT, borderRadius: 2, animation: "apkProgress 3s ease-in-out infinite alternate" }} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Done */}
+      {phase === "done" && liveUrl && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+            <CheckCircle size={15} color="#16a34a" />
+            <span style={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>Published successfully!</span>
+          </div>
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener"
+            className="btn btn-primary"
+            style={{ background: FLOOT_GRADIENT, justifyContent: "center" }}
+          >
+            <ExternalLink size={13} /> Open {liveUrl.replace("https://", "")}
+          </a>
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Republish with new subdomain</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <input
+                    className="input"
+                    placeholder={currentSub ?? "new-name"}
+                    value={subdomain}
+                    onChange={(e) => onSubdomainChange(e.target.value)}
+                    style={{ paddingRight: 68, fontSize: 12 }}
+                  />
+                  <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#94a3b8", pointerEvents: "none" }}>.floot.app</span>
+                </div>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  disabled={!canPublish}
+                  style={{ opacity: canPublish ? 1 : 0.5, whiteSpace: "nowrap" }}
+                  onClick={() => onPublish(subdomain, true)}
+                >
+                  <RefreshCw size={12} /> Redeploy
+                </button>
+              </div>
+              {subChecking && <div style={{ fontSize: 11, color: "#64748b", marginTop: 3, display: "flex", alignItems: "center", gap: 3 }}><Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} /> checking…</div>}
+              {!subChecking && subAvail === true && SUBDOMAIN_VALID.test(subdomain) && <div style={{ fontSize: 11, color: "#16a34a", marginTop: 3 }}>✓ available</div>}
+              {!subChecking && subAvail === false && <div style={{ fontSize: 11, color: "#dc2626", marginTop: 3 }}>✗ taken</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Failed */}
+      {phase === "failed" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <XCircle size={14} color="#dc2626" />
+              <span style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>Publish failed</span>
+            </div>
+            {error && <p style={{ fontSize: 12, color: "#b91c1c", margin: "4px 0 0 22px" }}>{error}</p>}
+          </div>
+          {/* Retry — reuse whatever subdomain is known */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ position: "relative" }}>
+              <input
+                className="input"
+                placeholder={currentSub ?? "my-app-name"}
+                value={subdomain}
+                onChange={(e) => onSubdomainChange(e.target.value)}
+                style={{ paddingRight: 68 }}
+              />
+              <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#94a3b8", pointerEvents: "none" }}>.floot.app</span>
+            </div>
+            {subChecking && <div style={{ fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}><Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} /> checking…</div>}
+            {!subChecking && subAvail === true && SUBDOMAIN_VALID.test(subdomain) && <div style={{ fontSize: 11, color: "#16a34a" }}>✓ available</div>}
+            {!subChecking && subAvail === false && <div style={{ fontSize: 11, color: "#dc2626" }}>✗ taken</div>}
+            <button
+              className="btn btn-primary"
+              style={{ background: FLOOT_GRADIENT, justifyContent: "center", opacity: canPublish ? 1 : 0.5 }}
+              disabled={!canPublish}
+              onClick={() => onPublish(subdomain, !!currentSub)}
+            >
+              <RefreshCw size={14} /> Retry Publish
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
