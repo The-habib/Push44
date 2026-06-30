@@ -236,6 +236,8 @@ export default function PushPage() {
           files: filesToPush,
           filesToDelete,
           commitMessage: message,
+          authorName: creds.githubName || creds.githubUsername,
+          authorEmail: creds.githubEmail,
           onProgress: (done, total) => setPushProgress(Math.round((done / total) * 100)),
         },
       });

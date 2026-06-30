@@ -120,7 +120,7 @@ export default function SettingsPage() {
       setGhSaving(true);
       getGitHubUser({ data: { token } })
         .then((user) => {
-          updateCreds({ githubToken: token, githubUsername: user.login });
+          updateCreds({ githubToken: token, githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
           setGhTest("ok");
           toast.success(`Connected as @${user.login}`);
         })
@@ -138,7 +138,7 @@ export default function SettingsPage() {
     setGhSaving(true);
     try {
       const user = await getGitHubUser({ data: { token: ghToken.trim() } });
-      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login });
+      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
       setGhTest("ok");
       toast.success(`Connected as @${user.login}`);
     } catch (e: any) {

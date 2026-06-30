@@ -30,7 +30,13 @@ async function ghFetch(token: string, path: string, opts?: RequestInit) {
     }
     if (res.status === 422) {
       const raw: string = String(err.message ?? "");
-      if (raw.toLowerCase().includes("already exists") || raw.toLowerCase().includes("name already")) {
+      const errorsRaw: string = JSON.stringify(err.errors ?? "");
+      if (
+        raw.toLowerCase().includes("already exists") ||
+        raw.toLowerCase().includes("name already") ||
+        errorsRaw.toLowerCase().includes("already exists") ||
+        errorsRaw.toLowerCase().includes("name already")
+      ) {
         throw new Error("A repository with that name already exists on GitHub. Please choose a different name.");
       }
       throw new Error("GitHub rejected the request. Check that the repository name is valid and try again.");
@@ -45,11 +51,16 @@ async function ghFetch(token: string, path: string, opts?: RequestInit) {
 
 export async function getGitHubUser({ data }: { data: { token: string } }) {
   const user = await ghFetch(data.token, "/user");
+  const login = user.login as string;
+  const id = user.id as number;
+  // Use verified email if available; fall back to GitHub's no-reply address
+  const email = (user.email as string | null) ?? `${id}+${login}@users.noreply.github.com`;
   return {
-    login: user.login as string,
-    name: (user.name as string) || user.login,
+    id,
+    login,
+    name: (user.name as string) || login,
     avatar_url: user.avatar_url as string,
-    email: user.email as string,
+    email,
   };
 }
 
@@ -220,6 +231,8 @@ export async function pushFilesToGitHub({ data }: {
     files: FileEntry[];
     filesToDelete?: string[];
     commitMessage: string;
+    authorName?: string;
+    authorEmail?: string;
     onProgress?: (done: number, total: number) => void;
   }
 }) {
@@ -266,7 +279,16 @@ export async function pushFilesToGitHub({ data }: {
     body: JSON.stringify(treeBody),
   });
 
-  const commitBody: any = { message: commitMessage, tree: tree.sha };
+  const now = new Date().toISOString();
+  const authorInfo = data.authorName && data.authorEmail
+    ? { name: data.authorName, email: data.authorEmail, date: now }
+    : undefined;
+
+  const commitBody: any = {
+    message: commitMessage,
+    tree: tree.sha,
+    ...(authorInfo ? { author: authorInfo, committer: authorInfo } : {}),
+  };
   if (parentCommitSha) commitBody.parents = [parentCommitSha];
   const commit = await ghFetch(token, `${repoPath}/git/commits`, {
     method: "POST",

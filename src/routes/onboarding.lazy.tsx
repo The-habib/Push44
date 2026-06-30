@@ -50,7 +50,7 @@ export default function OnboardingPage() {
       setGhLoading(true);
       getGitHubUser({ data: { token } })
         .then((user) => {
-          updateCreds({ githubToken: token, githubUsername: user.login });
+          updateCreds({ githubToken: token, githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
           setGhUser(user);
           setTimeout(() => setStep(2), 700);
         })
@@ -64,7 +64,7 @@ export default function OnboardingPage() {
     setGhLoading(true); setGhError("");
     try {
       const user = await getGitHubUser({ data: { token: ghToken.trim() } });
-      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login });
+      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
       setGhUser(user);
       setTimeout(() => setStep(2), 700);
     } catch (e: any) {

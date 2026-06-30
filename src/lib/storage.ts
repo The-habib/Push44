@@ -2,6 +2,9 @@ export interface Credentials {
   displayName: string;
   githubToken: string;
   githubUsername: string;
+  githubName: string;
+  githubEmail: string;
+  githubId: number;
   base44Token: string;
   base44Email: string;
   rocketToken: string;
