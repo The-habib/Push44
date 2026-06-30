@@ -67,13 +67,13 @@ src/
 ```
 User action
   → React component (routes/)
-      → server function call (lib/*.ts)
+      → async function call (lib/*.ts)
           → fetch() directly to external API
               → response back to component
                   → state update → re-render
 ```
 
-There is no intermediary server. All `fetch()` calls go directly to the external platform APIs (Base44, Rocket.new, GitHub) from the user's browser.
+There is no intermediary server. All `fetch()` calls go directly to the external platform APIs from the user's browser.
 
 ### Routing
 
@@ -96,6 +96,8 @@ const { creds, setCreds, isLoaded } = useApp();
   githubToken, githubUsername,
   base44Token, base44Email,
   rocketToken, rocketEmail, rocketCompanyId,
+  flootToken,  flootEmail,
+  ziteToken,   ziteEmail,
   defaultBranch, displayName,
 }
 ```
@@ -110,6 +112,8 @@ Each platform has its own file. All functions that make network requests are pla
 src/lib/
 ├── base44-api.ts    Base44 REST API (login, list apps, sandbox, files)
 ├── rocket-api.ts    Rocket.new (OTP auth, list apps, file fetch, APK build)
+├── floot-api.ts     Floot (magic link auth, list apps, fetch files)
+├── zite-api.ts      Zite (login, list apps, fetch files)
 ├── github-api.ts    GitHub REST API (user, repos, branches, Trees API push)
 └── storage.ts       localStorage read/write helpers
 ```
@@ -122,7 +126,6 @@ src/lib/
 
 - **TypeScript everywhere** — no `any` unless you're intentionally handling an unknown external payload
 - **Tailwind CSS 4** — no config file, utility classes inline in JSX
-- **Framer Motion** for all animations — use `AnimatePresence` for enter/exit, `motion.div` for transitions
 - **sonner** for toast notifications — `toast.success()`, `toast.error()`
 - **lucide-react** for icons
 
@@ -161,22 +164,28 @@ import logo from "@/assets/logo.png";
 ### Brand colors
 
 ```ts
-const ROCKET_COLOR  = "#7f22fe";
-const ROCKET_GRAD   = "linear-gradient(135deg,#9810fa,#7008e7)";
-const ROCKET_LIGHT  = "rgba(127,34,254,0.06)";
-const ROCKET_BORDER = "rgba(127,34,254,0.2)";
-const ROCKET_TEXT   = "#6d28d9";
-
 // Base44
-const B44_GRAD   = "linear-gradient(135deg,#fb923c,#f97316)";
 const B44_COLOR  = "#f97316";
+const B44_GRAD   = "linear-gradient(135deg,#fb923c,#f97316)";
+
+// Rocket.new
+const ROCKET_COLOR  = "#8b5cf6";
+const ROCKET_GRAD   = "linear-gradient(135deg,#9810fa,#7008e7)";
+
+// Floot
+const FLOOT_COLOR = "#6366f1";
+const FLOOT_GRAD  = "linear-gradient(135deg,#6366f1,#4f46e5)";
+
+// Zite
+const ZITE_COLOR = "#0ea5e9";
+const ZITE_GRAD  = "linear-gradient(135deg,#0ea5e9,#0284c7)";
 ```
 
 ### File placement rule
 
 > **Never put files in a `server/` subdirectory.**
 
-`@lovable.dev/vite-tanstack-config` blocks any import whose path matches `**/server/**`. All API functions (including `createServerFn` calls) must live directly in `src/lib/`, not in `src/lib/server/`.
+`@lovable.dev/vite-tanstack-config` blocks any import whose path matches `**/server/**`. All API functions must live directly in `src/lib/`, not in `src/lib/server/`.
 
 ---
 
@@ -193,15 +202,14 @@ const API_BASE = "https://api.myplatform.com";
 
 // ── Auth ────────────────────────────────────────────────────────────────────
 
-export async function loginToMyPlatform({
-  data,
-}: {
-  data: { email: string; password: string };
-}): Promise<{ token: string; username: string }> {
+export async function loginToMyPlatform(
+  email: string,
+  password: string
+): Promise<{ token: string; username: string }> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: data.email, password: data.password }),
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) throw new Error(`Login failed (${res.status})`);
   const json = await res.json();
@@ -210,13 +218,11 @@ export async function loginToMyPlatform({
 
 // ── Apps ────────────────────────────────────────────────────────────────────
 
-export async function listMyPlatformApps({
-  data,
-}: {
-  data: { token: string };
-}): Promise<Array<{ id: string; name: string }>> {
+export async function listMyPlatformApps(
+  token: string
+): Promise<Array<{ id: string; name: string }>> {
   const res = await fetch(`${API_BASE}/apps`, {
-    headers: { Authorization: `Bearer ${data.token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Failed to list apps (${res.status})`);
   const json = await res.json();
@@ -225,13 +231,12 @@ export async function listMyPlatformApps({
 
 // ── Files ────────────────────────────────────────────────────────────────────
 
-export async function fetchMyPlatformFiles({
-  data,
-}: {
-  data: { token: string; appId: string };
-}): Promise<Array<{ path: string; content: string }>> {
-  const res = await fetch(`${API_BASE}/apps/${data.appId}/files`, {
-    headers: { Authorization: `Bearer ${data.token}` },
+export async function fetchMyPlatformFiles(
+  token: string,
+  appId: string
+): Promise<Array<{ path: string; content: string }>> {
+  const res = await fetch(`${API_BASE}/apps/${appId}/files`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Failed to fetch files (${res.status})`);
   const json = await res.json();
@@ -256,7 +261,7 @@ export interface Credentials {
 
 ### Step 3 — Add a login UI to Settings
 
-Open `src/routes/settings.tsx`. Add a new credential card following the same pattern as the Base44 or Rocket.new card. The card should:
+Open `src/routes/settings.lazy.tsx`. Add a new credential card following the same pattern as the Base44 or Rocket.new card. The card should:
 - Show a "Connected" badge when `creds.myPlatformToken` is set
 - Have a form to enter credentials
 - Call your login API function on submit
@@ -264,32 +269,32 @@ Open `src/routes/settings.tsx`. Add a new credential card following the same pat
 
 ### Step 4 — Wire into the push flow
 
-Open `src/routes/push.tsx`:
+Open `src/routes/push.lazy.tsx`:
 
-1. Add your platform to the `Platform` type:
+1. Add your platform to the `Platform` type in `src/lib/storage.ts`:
    ```ts
-   type Platform = "base44" | "rocket" | "myplatform";
+   export type Platform = "base44" | "rocket" | "floot" | "zite" | "myplatform";
    ```
 
-2. Add a tab to `PlatformToggle` following the existing pattern.
+2. Add a tab to the `PlatformToggle` section following the existing pattern.
 
 3. Add a branch to `loadApps()`:
    ```ts
    } else if (platform === "myplatform") {
-     setApps(await listMyPlatformApps({ data: { token: creds.myPlatformToken! } }));
+     setApps(await listMyPlatformApps(creds.myPlatformToken!));
    }
    ```
 
 4. Add a branch to `handleSelectApp()`:
    ```ts
    } else if (platform === "myplatform") {
-     loadedFiles = await fetchMyPlatformFiles({ data: { token: creds.myPlatformToken!, appId: app.id } });
+     loadedFiles = await fetchMyPlatformFiles(creds.myPlatformToken!, app.id);
    }
    ```
 
-5. Add a brand logo to `src/components/BrandLogos.tsx`.
+5. Add a brand logo to `src/components/BrandLogos.tsx` — save the logo PNG/SVG to `src/assets/` and import it as an ES module.
 
-### Step 5 — Add to `storage.ts` localStorage key
+### Step 5 — Add to `storage.ts`
 
 Open `src/lib/storage.ts` and add your token to the `Credentials` interface and the `b44push_credentials` localStorage key shape. No migration is needed — missing fields default to `undefined`.
 
@@ -314,6 +319,15 @@ const time = new Date().toLocaleTimeString();
 
 `@lovable.dev/vite-tanstack-config` statically blocks imports from any path matching `**/server/**`. This is enforced at build time. Keep all API functions in `src/lib/*.ts`.
 
+### Static assets in dev
+
+The Vite dev server does **not** serve `public/` in development. Import all images as ES modules from `src/assets/`:
+
+```ts
+import myLogo from "@/assets/my-logo.png"; // ✅ works in dev + prod
+// <img src="/my-logo.png" />              // ❌ 404 in dev
+```
+
 ### Base44Logo white prop
 
 Always pass `white` when the logo sits on an orange or dark background:
@@ -327,11 +341,11 @@ Without `white`, the orange PNG is invisible against an orange background.
 
 ### Rocket.new response encryption
 
-Many Rocket.new API responses are AES-256-CBC encrypted (shape: `{ requestAnchor, processedContent }`). Always pipe them through `rocketDecrypt()` (defined at the top of `rocket-api.ts`) before reading any fields. The AES key is hardcoded from the Rocket.new JS bundle.
+Many Rocket.new API responses are AES-256-CBC encrypted (shape: `{ requestAnchor, processedContent }`). Always pipe them through `rocketDecrypt()` (defined at the top of `rocket-api.ts`) before reading any fields.
 
 ### Rocket.new companyId header
 
-Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it the endpoint returns `context: "general"` — an empty app list with no error. Pass `companyId` from `creds.rocketCompanyId`.
+Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it the endpoint returns `context: "general"` — an empty app list with no error.
 
 ### Rocket.new auth header format varies by server
 
@@ -343,6 +357,14 @@ Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it t
 | `appcodeformat.dhiwise.com` | `Authorization: JWT {token}` |
 | `{backendUrl}/api/file-content` | **No auth header** |
 
+### Floot magic link auth
+
+Floot uses NextAuth magic links — not OAuth, not password. The session token is a Bearer JWT valid for the browser session. There is no public API; all endpoints were reverse-engineered from the Floot Next.js bundle.
+
+### Zite proxy pattern
+
+Zite (build.fillout.com) proxies its backend through `server.zite.com` with `Origin: build.fillout.com` required on every request. Requests without this origin header are rejected.
+
 ---
 
 ## 6. Pull Request Process
@@ -350,9 +372,9 @@ Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it t
 1. **Fork** the repo and create a branch: `git checkout -b feature/your-feature`
 2. Make your changes. Run `bun run dev` and test the affected flows manually.
 3. Keep commits focused — one logical change per commit using [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat: add Rocket.new APK download`
+   - `feat: add Zite platform integration`
    - `fix: handle empty repo on first push`
-   - `docs: update Rocket.new API reference`
+   - `docs: update API reference for Floot`
 4. Push and open a PR against `main`. Fill in the PR template with:
    - **What** — what does this PR add or fix?
    - **Why** — what problem does it solve?
@@ -367,7 +389,9 @@ Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it t
 feat(rocket):   add APK build progress polling
 fix(github):    handle empty repo on first push
 fix(base44):    detect Google-linked account on login error
-docs:           update Rocket.new API reference in README
+feat(zite):     add Zite platform integration
+feat(floot):    add Floot magic link auth
+docs:           update API reference in README
 refactor(push): extract StagingBrowser into its own component
 ```
 
@@ -381,8 +405,9 @@ If you're new to the codebase, these are self-contained and well-scoped:
 - **iOS/IPA export** — Rocket.new may support IPA builds; research the bundle endpoint and add support alongside the APK panel
 - **Dark mode** — Add a `prefers-color-scheme` toggle; the Tailwind 4 setup should make this straightforward
 - **OG image** — Create a proper 1200×630 social preview image and update the `<meta og:image>` tag in `__root.tsx`
-- **Token expiry banner** — Detect 401 responses and show a persistent re-auth banner without a full page error (partial support already exists in `push.tsx`)
+- **Token expiry banner** — Detect 401 responses and show a persistent re-auth banner without a full page error
 - **GitHub OAuth** — Replace manual PAT entry with a proper OAuth flow (requires a small redirect-handling server or a serverless function)
+- **Multiple branches** — Add branch selection per push (currently always pushes to the default branch)
 
 ---
 

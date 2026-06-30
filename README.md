@@ -2,10 +2,10 @@
   <br />
   <img src="public/logo.png" alt="Push44" width="88" style="border-radius:20px" />
   <h1>Push44</h1>
-  <p><strong>Push your Base44 or Rocket.new app source code to GitHub — in one tap.</strong><br/>
-  Free, open source, no backend, no accounts.</p>
+  <p><strong>Push your AI-built app source code to GitHub — in one tap.</strong><br/>
+  Supports Base44, Rocket.new, Floot, and Zite. Free, open source, no backend, no accounts.</p>
 
-  <a href="https://push44.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-push--44.vercel.app-8b5cf6?style=flat-square&logo=vercel&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://push-44.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-push--44.vercel.app-8b5cf6?style=flat-square&logo=vercel&logoColor=white" alt="Live Demo" /></a>
   &nbsp;
   <a href="https://github.com/The-habib/Push44/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square" alt="MIT License" /></a>
   &nbsp;
@@ -22,9 +22,20 @@
 
 ## What is Push44?
 
-Push44 is a free, open-source web app that lets you **version-control your vibe-coded apps to GitHub in a single click** — with support for both **Base44** and **Rocket.new** projects.
+Push44 is a free, open-source web app that lets you **version-control your AI-built apps to GitHub in a single click** — with support for **Base44**, **Rocket.new**, **Floot**, and **Zite**.
 
 It fetches all your source files directly from the platform's API and commits them to any GitHub repository using one atomic push — no CLI, no copy-pasting, no manual uploads. For Rocket.new (Flutter/Dart) apps it can also **trigger and download an APK build** directly from the UI.
+
+---
+
+## Supported Platforms
+
+| Platform | Login | App Listing | File Fetch | APK Build |
+|---|---|---|---|---|
+| [Base44](https://app.base44.com) | Email/password + API token | ✅ | ✅ (sandbox wake) | — |
+| [Rocket.new](https://rocket.new) | OTP email | ✅ | ✅ (container ping) | ✅ |
+| [Floot](https://floot.com) | Magic link | ✅ | ✅ | — |
+| [Zite](https://build.fillout.com) | Google / Microsoft / Email | ✅ | ✅ | — |
 
 ---
 
@@ -33,8 +44,8 @@ It fetches all your source files directly from the platform's API and commits th
 | | Feature | Description |
 |---|---|---|
 | ⚡ | **One-tap push** | All source files committed in a single click via GitHub Trees API |
-| 🚀 | **Base44 + Rocket.new** | Supports both platforms — switch with one tap |
-| 📱 | **APK Build** | Trigger & download Android APK builds for Rocket.new apps |
+| 🌐 | **4 platforms** | Base44, Rocket.new, Floot, Zite — switch with one tap |
+| 📱 | **APK Build** | Trigger & download Android APK builds for Rocket.new apps (no push required) |
 | 🔄 | **Auto sandbox wake** | Sleeping sandboxes/containers woken automatically before fetching |
 | 🌳 | **GitHub Trees API** | Efficient bulk commits — no file-by-file uploads |
 | 🔍 | **File diff viewer** | See which files are new, modified, or unchanged before pushing |
@@ -51,9 +62,9 @@ It fetches all your source files directly from the platform's API and commits th
 ## How It Works
 
 ```
-1. Connect Base44 or Rocket.new  →  2. Select your app
-3. Review & stage files          →  4. Pick a GitHub repo
-5. Tap Push                      →  Done ✓
+1. Connect Base44, Rocket.new, Floot, or Zite  →  2. Select your app
+3. Review & stage files                         →  4. Pick a GitHub repo
+5. Tap Push                                     →  Done ✓
 
 Push44 fetches all files from the platform API,
 then commits them to GitHub using the Trees API —
@@ -95,7 +106,7 @@ Empty repos (no HEAD) are handled automatically — uses `POST /git/refs` instea
 ### Prerequisites
 
 - [Bun](https://bun.sh/) installed
-- A [Base44](https://app.base44.com) account **and/or** a [Rocket.new](https://rocket.new) account
+- An account on one or more of the supported platforms
 - A [GitHub](https://github.com) Personal Access Token with `repo` + `user` scopes
 
 ### Run locally
@@ -128,31 +139,35 @@ bun run build
 src/
 ├── routes/
 │   ├── __root.tsx         Root layout, global SEO meta, JSON-LD, OnboardingGuard
-│   ├── index.tsx          Dashboard (greeting, stats, last push, recent repo)
+│   ├── index.tsx          Redirects to /dashboard or /onboarding
+│   ├── dashboard.tsx      Dashboard (greeting, stats, recent pushes)
 │   ├── push.tsx           Core push flow (select app → fetch → diff → pick repo → commit)
-│   ├── settings.tsx       Credential management (Base44, Rocket.new, GitHub PAT)
+│   ├── settings.tsx       Credential management (all platforms + GitHub PAT)
 │   ├── repositories.tsx   GitHub repo browser
 │   ├── history.tsx        Push history from localStorage
 │   └── onboarding.tsx     First-run setup wizard
 ├── lib/
 │   ├── base44-api.ts      Base44 API client (login, list apps, wake sandbox, fetch files)
 │   ├── rocket-api.ts      Rocket.new API client (OTP login, list apps, fetch files, APK build)
+│   ├── floot-api.ts       Floot API client (magic link auth, list apps, fetch files)
+│   ├── zite-api.ts        Zite API client (login, list apps, fetch files)
 │   ├── github-api.ts      GitHub API client (user, repos, branches, push via Trees API)
 │   ├── storage.ts         localStorage helpers (credentials, push history, file snapshots)
 │   └── utils.ts           Tailwind cn() helper
 ├── components/
 │   ├── AppShell.tsx       Mobile shell (header, bottom nav) + desktop sidebar
-│   ├── BrandLogos.tsx     Base44Logo, GitHubLogo, RocketLogo SVG components
+│   ├── BrandLogos.tsx     Base44Logo, GitHubLogo, RocketLogo, FlootLogo, ZiteLogo
 │   ├── RocketModal.tsx    Rocket.new OTP login modal
 │   ├── FileDiffViewer.tsx Side-by-side file diff viewer
-│   ├── AnimatedCorner.tsx Decorative animated background corner
 │   └── ui/               shadcn/ui components
 ├── contexts/
 │   └── AppContext.tsx     Global credential state, persisted to localStorage
 └── assets/
     ├── logo.png
-    ├── base44-logo.png
-    └── base44-logo-transparent.png
+    ├── base44-logo-transparent.webp
+    ├── rocket-logo.png
+    ├── floot-logo.png
+    └── zite-logo.png
 
 public/
 ├── logo.png       OG image (served in production only)
@@ -168,6 +183,8 @@ Push44 has **no backend server**. Everything runs in your browser:
 
 - Your Base44 credentials go directly to `app.base44.com`
 - Your Rocket.new credentials go directly to `appuser.dhiwise.com` and `back.rocket.new`
+- Your Floot credentials go directly to `floot.com`
+- Your Zite credentials go directly to `build.fillout.com`
 - Your GitHub token goes directly to `api.github.com`
 - Nothing is ever stored, logged, or transmitted through our infrastructure
 - All data is kept in browser `localStorage` only
@@ -187,6 +204,8 @@ Contributions are welcome! Here's how to get started:
 5. Push: `git push origin feature/my-feature`
 6. Open a **Pull Request**
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full guide including how to add a new platform integration.
+
 ### Ideas for contributions
 
 - [ ] GitHub OAuth flow (replace manual PAT entry)
@@ -196,12 +215,13 @@ Contributions are welcome! Here's how to get started:
 - [ ] Organisation/workspace app support
 - [ ] Proper OG image (1200×630)
 - [ ] Dark mode
+- [ ] Token expiry detection — show re-login banner on 401
 
 ---
 
 ## API References
 
-> All endpoints below were discovered by reverse-engineering the Rocket.new JS bundle and Base44 live testing — no public API documentation exists for either platform.
+> All endpoints below were discovered by reverse-engineering platform JS bundles and confirmed by live testing — no public API documentation exists for any of these platforms.
 
 ### Base44 API
 
@@ -233,18 +253,12 @@ Token key is `access_token` (not `token`). User name is `full_name` (not `name`)
 | `BACK_BASE` | `https://back.rocket.new` |
 | `APP_BASE` | `https://application.rocket.new` |
 | `APP_CODE_BASE` | `https://appcodeformat.dhiwise.com` |
-| `GATEWAY_BASE` | `https://gateway.rocket.new` |
-
-#### Response Encryption
-
-Many responses are **AES-256-CBC encrypted**. Detect by shape `{ requestAnchor, processedContent }`. Hardcoded AES key from the bundle: `dqf8SIWZdQtptMTEH45CHo4A0DJLrkq02y80wmirLYo` (base64, 32 bytes).
 
 #### Authentication — OTP Flow
 
 ```
 1. POST https://appuser.dhiwise.com/auth/v3/rocket/send-otp
    Body: { email }
-   → triggers OTP email
 
 2. POST https://appuser.dhiwise.com/auth/v3/rocket/verify-email-otp
    Body: { email, otp }
@@ -253,15 +267,7 @@ Many responses are **AES-256-CBC encrypted**. Detect by shape `{ requestAnchor, 
 
 `companyId` from `data.user.companyId` — required as HTTP header for all `back.rocket.new` calls.
 
-#### List Apps
-
-```
-POST https://back.rocket.new/api/v1/chat-thread/search
-Headers: { Authorization: "Bearer {token}", companyId: "{companyId}", pageURL: "https://rocket.new" }
-Body: { page: 1, limit: 50 }
-```
-
-Response list item: `{ _id (thread ID), displayName, threadDetails: { applicationId, languageType } }`. Paginate until fewer than `limit` items returned.
+Many responses are **AES-256-CBC encrypted** (shape: `{ requestAnchor, processedContent }`). The app handles decryption automatically.
 
 #### Fetch Files — 3 Steps
 
@@ -269,7 +275,7 @@ Response list item: `{ _id (thread ID), displayName, threadDetails: { applicatio
 ```
 POST https://application.rocket.new/apis/v1/application/production-deploy/ping
 Body: { applicationId }
-→ { data: { production: { backendUrl: "https://xxx.builtwithrocket.new", status: { Name: "running" } } } }
+→ { data: { production: { backendUrl, status: { Name: "running" } } } }
 ```
 
 **Step 2 — File tree (JWT auth)**
@@ -277,45 +283,52 @@ Body: { applicationId }
 POST https://appcodeformat.dhiwise.com/app-preview/v1/rocket/project-structure
 Authorization: JWT {token}
 Body: { applicationId }
-→ directory tree { name, path, type, children }
 ```
 
 **Step 3 — Fetch each file (no auth)**
 ```
 POST {backendUrl}/api/file-content
 Body: { path: "lib/main.dart" }   ← key MUST be "path"
-→ { path, content }
 ```
 
 #### APK Build
 
-DEPLOY_PROGRESS status codes (numeric): `IN_QUEUE=1, IN_PROCESS=2, COMPLETED=3, FAILED=4, QUEUE_BUILD_REJECTED=5, IDLE=6`
-
 ```
-# Check status
-POST https://application.rocket.new/web/v1/playground/apk-build-status
-Body: { threadId }   ← _id from app listing, NOT applicationId
-→ { data: { status: 1–6, updatedAt } }
-
-# Trigger build
-POST https://application.rocket.new/web/v1/playground/make-apk-build
-Body: { threadId }
-
-# Get download URL (when status === 3)
-POST https://application.rocket.new/web/v1/playground/download-apk
-Body: { threadId }
-→ { data: { url: "https://s3.amazonaws.com/..." } }
+POST https://application.rocket.new/web/v1/playground/make-apk-build    { threadId }
+POST https://application.rocket.new/web/v1/playground/apk-build-status  { threadId }
+POST https://application.rocket.new/web/v1/playground/download-apk      { threadId }
 ```
 
-All APK endpoints: `Authorization: Bearer {token}`, `companyId` header, `pageURL: https://rocket.new`.
+Status codes: `IN_QUEUE=1, IN_PROCESS=2, COMPLETED=3, FAILED=4, REJECTED=5, IDLE=6`
 
-#### Critical Gotchas
+---
 
-- ❌ **Never call `loginToBack()`** — tries 10+ failing endpoints, adds 20-30s delay, always returns `null`
-- ❌ **Never use SSE** at `gateway.rocket.new/api/v1/thread/conversation` for file fetching — only sends `heartbeat` then `PLACEHOLDER`, backendUrl never arrives
-- ❌ **`back.rocket.new` without `companyId` header** — returns empty list with `context: "general"`
-- ❌ **Body key `file` on `{backendUrl}/api/file-content`** — must be `path`, anything else returns 422
-- ❌ **`GET /api/download-project`** — returns `400 "You don't have active subscription"`
+### Floot API
+
+> Reverse-engineered from the Floot Next.js bundle. Confirmed by live testing.
+
+| Action | Method | Endpoint |
+|---|---|---|
+| Request magic link | POST | `https://floot.com/_api/auth/magic-link` |
+| Session (via magic link token) | GET | `https://floot.com/_api/auth/session` |
+| List apps | POST | `https://floot.com/_api/workspace/reference` with `action: "getInfo"` |
+| Fetch files | POST | `https://floot.com/_api/workspace/reference` with `action: "readItems"` |
+
+Auth header: `Authorization: Bearer {JWT session token}`
+
+---
+
+### Zite API
+
+> Reverse-engineered from the Zite/Fillout JS bundle. Confirmed by live testing.
+
+| Action | Method | Endpoint |
+|---|---|---|
+| Login (proxy) | POST | `https://server.zite.com/admin/zite/auth/login` |
+| List apps | GET | `https://server.zite.com/admin/zite/apps` |
+| Fetch files | GET | `https://server.zite.com/admin/zite/apps/{id}` |
+
+Files are nested in `response.ziteSnapshot.template.files`.
 
 ---
 
@@ -327,7 +340,7 @@ MIT — see [LICENSE](./LICENSE) for details.
 
 <div align="center">
   <p>
-    Built with ❤️ for the Base44 and Rocket.new community<br/>
+    Built with ❤️ for the AI app-building community<br/>
     <a href="https://push-44.vercel.app">push-44.vercel.app</a>
     &nbsp;·&nbsp;
     <a href="https://github.com/The-habib/Push44/issues">Report a bug</a>
