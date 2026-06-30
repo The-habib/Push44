@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "NMSoFNURoDjDTGNPozEa6"
+uri = "file://attached_assets/floot-badge-removal-research.md"
+type = "text"
+title = "Floot Badge Removal — Complete Research Report"
