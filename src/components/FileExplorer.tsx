@@ -100,7 +100,7 @@ function getLang(name: string): string {
     json: "JSON", yaml: "YAML", yml: "YAML", html: "HTML", css: "CSS", scss: "SCSS",
     md: "Markdown", sh: "Shell", bash: "Bash", toml: "TOML", xml: "XML", svg: "SVG",
   };
-  return map[ext] ?? ext.toUpperCase() || "Plain text";
+  return map[ext] ?? (ext.toUpperCase() || "Plain text");
 }
 
 // ── Tree item ───────────────────────────────────────────────────────────────

@@ -117,7 +117,9 @@ function githubOAuthPlugin(): Plugin {
     const action = url.searchParams.get("action");
     const clientId = process.env.GITHUB_CLIENT_ID ?? "";
     const clientSecret = process.env.GITHUB_CLIENT_SECRET ?? "";
-    const devBase = `http://localhost:5000`;
+    const devBase = process.env.REPLIT_DEV_DOMAIN
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : `http://localhost:5000`;
 
     const encodeState = (nonce: string, returnTo: string) => `${nonce}|${returnTo}`;
     const decodeState = (s: string) => {
