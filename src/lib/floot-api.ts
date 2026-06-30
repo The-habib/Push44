@@ -133,7 +133,7 @@ export async function triggerFlootDeploy({
     type: data.isUpdate ? "prodUpdate" : "prod",
     id: data.workspaceId,
     subdomain: data.subdomain,
-    includeMadeWithFloot: false,
+    includeMadeWithFloot: true,
     buildMobileApps: false,
   };
   const res = await proxyFetch("/api/trpc/workspace.requestDeploy", data.token, {
