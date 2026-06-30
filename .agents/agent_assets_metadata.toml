@@ -6,3 +6,9 @@ id = "NMSoFNURoDjDTGNPozEa6"
 uri = "file://attached_assets/floot-badge-removal-research.md"
 type = "text"
 title = "Floot Badge Removal — Complete Research Report"
+
+[[outputs]]
+id = "iofh3pn4a9S4fKl8YTxjt"
+uri = "file://docs/floot-native-mobile-builds.md"
+type = "text"
+title = "Floot Native Mobile Builds — Full API Reference"
