@@ -1,21 +1,17 @@
 import base44Logo from "@/assets/base44-logo-transparent.webp";
 import rocketLogo from "@/assets/rocket-logo.png";
+import flootLogo from "@/assets/floot-logo.png";
+import ziteLogo from "@/assets/zite-logo.png";
 
 export function FlootLogo({ className = "", size = 20 }: { className?: string; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-      <rect width="24" height="24" rx="5" fill="#6366f1" />
-      <path d="M7 12h10M12 7v10" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    <img src={flootLogo} alt="Floot" width={size} height={size} style={{ objectFit: "contain" }} className={className} />
   );
 }
 
 export function ZiteLogo({ className = "", size = 20 }: { className?: string; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-      <rect width="24" height="24" rx="5" fill="#0ea5e9" />
-      <path d="M6 8h12L8 16h10" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img src={ziteLogo} alt="Zite" width={size} height={size} style={{ objectFit: "contain" }} className={className} />
   );
 }
 
