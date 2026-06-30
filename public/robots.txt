@@ -9,4 +9,4 @@ Disallow: /settings
 Disallow: /repositories
 Disallow: /history
 
-Sitemap: https://push-44.vercel.app/sitemap.xml
+Sitemap: https://push44.vercel.app/sitemap.xml

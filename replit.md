@@ -3,7 +3,7 @@
 A mobile-first web app that lets users push their **Base44** or **Rocket.new** app source code directly to GitHub — in one tap.
 
 **Dev:** runs on port 5000 via `bun run dev`
-**Live:** https://push-44.vercel.app
+**Live:** https://push44.vercel.app
 
 ---
 
@@ -476,7 +476,7 @@ All SEO lives in `src/routes/__root.tsx`:
 - Twitter Card: summary card with image
 - JSON-LD: `WebApplication` schema
 - Favicon + Apple touch icon: Vite-imported logo
-- Canonical URL: `https://push-44.vercel.app`
+- Canonical URL: `https://push44.vercel.app`
 
 Each route has its own `head()` with specific `<title>` and `<meta description>`.
 
@@ -514,7 +514,7 @@ bun run dev    # starts on port 5000
 - ✅ Mobile-first responsive design (~390px, bottom nav, cream `#f3f2ee` palette)
 - ✅ Desktop layout — sidebar nav + topbar
 - ✅ SEO — meta, OG, Twitter Card, JSON-LD, sitemap, robots
-- ✅ Deployed to Vercel at https://push-44.vercel.app
+- ✅ Deployed to Vercel at https://push44.vercel.app
 
 ---
 
@@ -525,7 +525,7 @@ bun run dev    # starts on port 5000
 - **Multiple branches** — support branch selection per push (currently always pushes to default branch)
 - **GitHub OAuth** — replace manual PAT entry with proper OAuth flow
 - **OG image** — create a proper 1200×630 social preview image
-- **Google Search Console** — submit sitemap at https://push-44.vercel.app/sitemap.xml
+- **Google Search Console** — submit sitemap at https://push44.vercel.app/sitemap.xml
 
 ---
 

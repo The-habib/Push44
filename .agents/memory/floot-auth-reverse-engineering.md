@@ -102,7 +102,7 @@ Added a Vite middleware plugin (`flootProxyPlugin`) that:
 - Forwards request to `https://floot.com{rest_of_path}` with `Cookie: nextauth.session-token={token}; next-auth.session-token={token}` (both sent for robustness; `nextauth.session-token` is the real one)
 - Returns the response to the browser
 - Available in both `configureServer` (dev) and `configurePreviewServer` (preview)
-- **ONLY available in Replit dev environment — NOT on push-44.vercel.app**
+- **ONLY available in Replit dev environment — NOT on push44.vercel.app**
 
 ### Correct UX (implemented in FlootModal / settings.tsx)
 1. "Open Floot Login" button → opens `https://floot.com/login` in a new tab

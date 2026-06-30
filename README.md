@@ -5,7 +5,7 @@
   <p><strong>Push your AI-built app source code to GitHub — in one tap.</strong><br/>
   Supports Base44, Rocket.new, Floot, and Zite. Free, open source, no backend, no accounts.</p>
 
-  <a href="https://push-44.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-push--44.vercel.app-8b5cf6?style=flat-square&logo=vercel&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://push44.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-push--44.vercel.app-8b5cf6?style=flat-square&logo=vercel&logoColor=white" alt="Live Demo" /></a>
   &nbsp;
   <a href="https://github.com/The-habib/Push44/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square" alt="MIT License" /></a>
   &nbsp;
@@ -341,7 +341,7 @@ MIT — see [LICENSE](./LICENSE) for details.
 <div align="center">
   <p>
     Built with ❤️ for the AI app-building community<br/>
-    <a href="https://push-44.vercel.app">push-44.vercel.app</a>
+    <a href="https://push44.vercel.app">push44.vercel.app</a>
     &nbsp;·&nbsp;
     <a href="https://github.com/The-habib/Push44/issues">Report a bug</a>
     &nbsp;·&nbsp;

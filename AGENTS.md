@@ -8,7 +8,7 @@ This file contains guidance for AI coding agents (GitHub Copilot, Cursor, Claude
 
 Push44 is a **fully client-side** React + Vite web app. There is no backend server, no database, and no environment variables. All credentials are stored in the user's browser `localStorage` and all API calls go directly from the browser to external services (Base44, Rocket.new, Floot, Zite, GitHub).
 
-**Live:** https://push-44.vercel.app  
+**Live:** https://push44.vercel.app  
 **Stack:** TanStack Start v1 · React 19 · Tailwind CSS 4 · Vite 8 · Bun
 
 ---

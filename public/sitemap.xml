@@ -4,13 +4,13 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://push-44.vercel.app/</loc>
+    <loc>https://push44.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <lastmod>2026-06-25</lastmod>
   </url>
   <url>
-    <loc>https://push-44.vercel.app/onboarding</loc>
+    <loc>https://push44.vercel.app/onboarding</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <lastmod>2026-06-25</lastmod>

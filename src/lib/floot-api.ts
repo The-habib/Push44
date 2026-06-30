@@ -34,7 +34,7 @@ async function fetchFlootSession(token: string): Promise<{ user: any } | null> {
   throw new Error(
     "Floot connection requires the Replit-hosted version of Push44.\n\n" +
     "Please open Push44 from your Replit preview (the URL in your Replit editor), " +
-    "not push-44.vercel.app. The Replit version has the secure proxy needed to connect Floot."
+    "not push44.vercel.app. The Replit version has the secure proxy needed to connect Floot."
   );
 }
 
@@ -93,7 +93,7 @@ export async function listFlootApps({ data }: { data: { token: string } }): Prom
     if (res.status === 404) {
       throw new Error(
         "Floot connection requires the Replit-hosted version of Push44.\n\n" +
-        "Please open Push44 from your Replit preview, not push-44.vercel.app."
+        "Please open Push44 from your Replit preview, not push44.vercel.app."
       );
     }
   } catch (e: any) {
