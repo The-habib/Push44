@@ -272,6 +272,110 @@ The SSE stream at `gateway.rocket.new/api/v1/thread/conversation` was the previo
 
 ---
 
+## ⚠️ Critical: Floot Publish API
+
+Reverse-engineered June 2026 by live bundle analysis and API probing. All endpoints confirmed working.
+
+### Authentication
+
+Every request uses the session cookie. The Push44 proxy (`/api/floot`) converts the `X-Floot-Token` header into `Cookie: nextauth.session-token={token}` server-side.
+
+### tRPC Body Format
+
+Floot uses **legacy raw tRPC input** — no `{"json":...}` wrapper:
+
+```
+✅ POST body: {"type":"prod","id":"..."}
+❌ POST body: {"json":{"type":"prod","id":"..."}}   ← returns 400 "Workspace ID is required"
+```
+
+Same for queries: `?input={"id":"..."}` raw — never `?input={"json":{...}}`.
+
+### Endpoint: Check Deployment Status
+
+```
+GET /_api/workspace/deployment?workspaceId={workspaceId}
+```
+
+Response shapes:
+```json
+{ "type": "notDeployed" }
+
+{ "type": "deploying", "subdomain": "my-app", "status": "building",
+  "customDomains": [], "includeMadeWithFloot": true, "buildMobileApps": false }
+
+{ "type": "deployed", "subdomain": "my-app", "customDomains": [],
+  "deploymentInfo": { "lastDeployedAt": "2026-06-30T...", "deploymentStatus": "completed" },
+  "includeMadeWithFloot": true, "buildMobileApps": false }
+
+{ "type": "error", "subdomain": "my-app", "message": "Build failed: ..." }
+```
+
+### Endpoint: Trigger Deploy
+
+```
+POST /api/trpc/workspace.requestDeploy
+Content-Type: application/json
+```
+
+First deploy:
+```json
+{ "type": "prod", "id": "{workspaceId}", "subdomain": "{slug}",
+  "includeMadeWithFloot": true, "buildMobileApps": false }
+```
+
+Republish (workspace already deployed):
+```json
+{ "type": "prodUpdate", "id": "{workspaceId}", "subdomain": "{existing_or_new_slug}",
+  "includeMadeWithFloot": true, "buildMobileApps": false }
+```
+
+Success response: `{ "result": { "data": {} } }` or `{ "result": { "data": "building" } }`
+
+Live URL after deploy: `https://{slug}.floot.app`
+
+### ⚠️ Corrections vs Research Doc
+
+The original research doc has two errors (disproved by live testing June 2026):
+
+1. **`includeMadeWithFloot: false` does NOT trigger a build.** The API returns `{}` (no error) but the status never leaves `notDeployed`. Must use `true`.
+2. **Status is NOT `notDeployed` while building.** Real flow: `notDeployed` → `deploying` (status: `"building"`) → `deployed`.
+
+### Full Publish Flow
+
+```
+1. GET /_api/workspace/deployment?workspaceId={id}
+   → notDeployed: show subdomain picker
+   → deployed:    show live URL + Update option
+   → deploying:   show "building…" spinner and start polling
+
+2. Validate subdomain client-side: /^[a-z0-9-]{3,}$/
+   (No server-side availability check — none exists; format validation is enough)
+
+3. POST /api/trpc/workspace.requestDeploy  (raw body, includeMadeWithFloot: true)
+   → 200 = deploy queued
+
+4. Poll GET /_api/workspace/deployment?workspaceId={id} every 10s
+   → deployed: show https://{subdomain}.floot.app  ✅
+   → error:    show error message
+   Build takes ~45s for first deploy, ~30s for updates
+```
+
+### Real-Time Alternative
+
+Floot uses **PartyKit WebSocket** (`publish.completed` / `publish.failed` events) as its in-browser notification mechanism. REST polling via `/_api/workspace/deployment` is equivalent and simpler.
+
+### Error Codes
+
+| Error | Meaning |
+|---|---|
+| `"Workspace ID is required"` | Used `{"json":{...}}` wrapper — send raw body instead |
+| `"Removing Floot logo is a paid feature"` | Sent `includeMadeWithFloot: false` — use `true` |
+| 400 with Zod errors | Missing required fields |
+| 401 | Session token expired |
+
+---
+
 ## ⚠️ Critical: Vite Import Rule
 
 `@lovable.dev/vite-tanstack-config` **blocks any file whose path matches `**/server/**`** from being imported in client code.
