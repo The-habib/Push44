@@ -7,6 +7,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { AppProvider, useApp } from "../contexts/AppContext";
 import { isOnboardingDone, markOnboardingDone } from "../lib/storage";
 import { AppShell } from "../components/AppShell";
@@ -77,6 +78,7 @@ function RootComponent() {
       <AppProvider>
         <OnboardingGuard />
         <Toaster position="top-right" richColors closeButton />
+        <Analytics />
       </AppProvider>
     </QueryClientProvider>
   );
