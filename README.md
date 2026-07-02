@@ -492,6 +492,52 @@ Auth requires session + CSRF cookies from the initial login response.
 
 <br/>
 
+## ✦ Built with Replit Agent
+
+This entire project was designed, coded, debugged, and iterated on using **Replit Agent** — an AI coding assistant. No terminal was touched manually. No editor was opened. Every file you see was written through natural language conversation.
+
+> **Want to know your exact credit spend?**  
+> Go to your Replit dashboard → **Billing** → **Usage History**. That's the only accurate source — the numbers below are scope metrics, not billing figures.
+
+### Project scope by the numbers
+
+| Metric | Value |
+|---|---|
+| Agent checkpoint commits | **10** |
+| Source files (`.ts` / `.tsx`) | **76** |
+| Lines of code (current) | **~12,400** |
+| Total lines written across all iterations | **~19,100** |
+| Platform integrations reverse-engineered | **4** (Base44, Rocket.new, Floot, Zite) |
+| Major sessions | **~8** |
+
+### What was built, session by session
+
+| Session | What the Agent did |
+|---|---|
+| 1 | Scaffolded the full app — TanStack Start, routing, AppShell, bottom nav, onboarding wizard |
+| 2 | Built all 4 platform API clients — reverse-engineered endpoints, login flows, file fetch |
+| 3 | Built the GitHub Trees API push flow — blobs, tree, commit, ref update |
+| 4 | Added APK build (Rocket.new), Floot web publish, Zite snapshot support |
+| 5 | Built the landing page — hero, problem section, features, how-it-works, FAQ, CTA, footer |
+| 6 | Premium redesign — replaced all emojis with lucide-react SVGs, Linear/Vercel-quality design |
+| 7 | Animated the diff card — 3D mouse-tracking tilt, specular highlight, stat counters, shimmer |
+| 8 | Polished — logo fixes, mobile layout, GitHub repo links, README demo screenshots |
+
+### Why this matters
+
+Building this app conventionally would require:
+- A senior full-stack engineer familiar with API reverse engineering
+- 4–6 weeks of development time
+- Knowledge of GitHub's Trees API, AES-256 decryption, tRPC, OTP flows, and 4 undocumented internal APIs
+
+With Replit Agent it was built in **a single session sprint** — proving that AI-assisted development can compress weeks of work into hours, even for complex, production-grade tooling.
+
+<br/>
+
+---
+
+<br/>
+
 ## ✦ Contributing
 
 Push44 is community-driven. Every platform integration, bug fix, and feature improvement is welcome.
