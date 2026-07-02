@@ -2,6 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { isOnboardingDone } from "@/lib/storage";
 import appLogo from "@/assets/logo.png";
+import base44LogoImg from "@/assets/base44-logo-transparent.webp";
+import rocketLogoImg from "@/assets/rocket-logo.png";
+import flootLogoImg from "@/assets/floot-logo.png";
+import ziteLogoImg from "@/assets/zite-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -324,11 +328,12 @@ export default function LandingPage() {
 
           {/* mobile hamburger */}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lp-mobile-only" style={{
-            background: "none", border: "none", cursor: "pointer", padding: 8, marginLeft: 8,
+            background: "none", border: "none", cursor: "pointer", padding: 8, marginLeft: 4,
+            flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, width: 36, height: 36,
           }}>
-            <div style={{ width: 20, height: 2, background: "#374151", marginBottom: 5, transition: "all 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
-            <div style={{ width: 20, height: 2, background: "#374151", marginBottom: 5, opacity: mobileMenuOpen ? 0 : 1 }} />
-            <div style={{ width: 20, height: 2, background: "#374151", transition: "all 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
+            <span style={{ display: "block", width: 20, height: 2, background: "#374151", borderRadius: 2, transition: "all 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
+            <span style={{ display: "block", width: 20, height: 2, background: "#374151", borderRadius: 2, opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 0.2s" }} />
+            <span style={{ display: "block", width: 20, height: 2, background: "#374151", borderRadius: 2, transition: "all 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
           </button>
         </div>
 
@@ -527,10 +532,10 @@ export default function LandingPage() {
             </p>
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
               {[
-                { name: "Base44", bg: "#f97316", text: "#fff", icon: "B" },
-                { name: "Rocket.new", bg: "#1f2937", text: "#fff", icon: "🚀" },
-                { name: "Floot", bg: "#7c3aed", text: "#fff", icon: "P" },
-                { name: "Zite", bg: "#0f172a", text: "#fff", icon: "Z" },
+                { name: "Base44",     logo: base44LogoImg,  bg: "#f97316" },
+                { name: "Rocket.new", logo: rocketLogoImg,  bg: "#0f172a" },
+                { name: "Floot",      logo: flootLogoImg,   bg: "#7c3aed" },
+                { name: "Zite",       logo: ziteLogoImg,    bg: "#1e3a5f" },
               ].map(p => (
                 <div key={p.name} style={{
                   display: "flex", alignItems: "center", gap: 12,
@@ -541,8 +546,10 @@ export default function LandingPage() {
                   <div style={{
                     width: 32, height: 32, borderRadius: 8, background: p.bg,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: p.icon.length > 1 ? 18 : 15, fontWeight: 800, color: p.text,
-                  }}>{p.icon}</div>
+                    flexShrink: 0, overflow: "hidden",
+                  }}>
+                    <img src={p.logo} alt={p.name} style={{ width: 24, height: 24, objectFit: "contain" }} />
+                  </div>
                   <span style={{ fontWeight: 600, color: "#f9fafb", fontSize: 15 }}>{p.name}</span>
                 </div>
               ))}
