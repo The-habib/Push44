@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { isOnboardingDone } from "@/lib/storage";
 import appLogo from "@/assets/logo.png";
 import base44LogoImg from "@/assets/base44-logo-transparent.webp";
@@ -118,93 +118,248 @@ function Terminal() {
   );
 }
 
-// ── DIFF UI CARD ───────────────────────────────────────────────────────────────
+// ── DIFF UI CARD (ANIMATED) ────────────────────────────────────────────────────
 const DIFF_FILES = [
-  { name: "src/App.tsx",                 status: "modified" },
-  { name: "src/components/Navbar.tsx",   status: "added" },
-  { name: "src/utils/api.ts",            status: "added" },
-  { name: "package.json",               status: "modified" },
-  { name: "README.md",                  status: "added" },
-  { name: "old/config.js",             status: "deleted" },
+  { name: "src/App.tsx",               status: "modified" },
+  { name: "src/components/Navbar.tsx", status: "added" },
+  { name: "src/utils/api.ts",          status: "added" },
+  { name: "package.json",             status: "modified" },
+  { name: "README.md",                status: "added" },
+  { name: "old/config.js",           status: "deleted" },
 ];
 const STATUS_COLOR = { modified: "#f97316", added: "#22c55e", deleted: "#ef4444" } as const;
 const STATUS_LABEL = { modified: "Modified", added: "Added", deleted: "Deleted" } as const;
 
+const STAT_TARGETS = [
+  { raw: 42,  prefix: "",  suffix: "",   label: "Changed",  color: "#18181b" },
+  { raw: 28,  prefix: "+", suffix: "",   label: "Added",    color: "#16a34a" },
+  { raw: 10,  prefix: "−", suffix: "",   label: "Modified", color: "#f97316" },
+  { raw: 4,   prefix: "−", suffix: "",   label: "Deleted",  color: "#ef4444" },
+];
+
+function useCountUp(target: number, duration = 1200, delay = 0) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let raf: number;
+    const t = setTimeout(() => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        setVal(Math.round(ease * target));
+        if (p < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }, delay);
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); };
+  }, [target, duration, delay]);
+  return val;
+}
+
 function DiffCard() {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const shinRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [btnHover, setBtnHover] = useState(false);
+  const raf = useRef<number>(0);
+  const cur = useRef({ rx: 0, ry: 0, sx: 50, sy: 50 });
+  const target = useRef({ rx: 0, ry: 0, sx: 50, sy: 50 });
+
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 80); return () => clearTimeout(t); }, []);
+
+  const onMove = useCallback((e: MouseEvent) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top)  / r.height;
+    target.current = {
+      rx: (y - 0.5) * -18,
+      ry: (x - 0.5) *  18,
+      sx: x * 100,
+      sy: y * 100,
+    };
+  }, []);
+
+  const onEnter = useCallback(() => setHovered(true), []);
+  const onLeave = useCallback(() => {
+    setHovered(false);
+    target.current = { rx: 0, ry: 0, sx: 50, sy: 50 };
+  }, []);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseenter", onEnter);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseenter", onEnter);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, [onMove, onEnter, onLeave]);
+
+  useEffect(() => {
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const loop = () => {
+      const c = cur.current, t = target.current;
+      const speed = hovered ? 0.09 : 0.06;
+      c.rx = lerp(c.rx, t.rx, speed);
+      c.ry = lerp(c.ry, t.ry, speed);
+      c.sx = lerp(c.sx, t.sx, speed);
+      c.sy = lerp(c.sy, t.sy, speed);
+
+      if (cardRef.current) {
+        cardRef.current.style.transform =
+          `perspective(900px) rotateX(${c.rx}deg) rotateY(${c.ry}deg) scale(${hovered ? 1.025 : 1})`;
+      }
+      if (shinRef.current) {
+        const dist = Math.hypot(c.sx - 50, c.sy - 50);
+        const opacity = hovered ? Math.max(0, 0.18 - dist * 0.002) : 0;
+        shinRef.current.style.background =
+          `radial-gradient(circle at ${c.sx}% ${c.sy}%, rgba(255,255,255,${opacity * 5}) 0%, transparent 55%)`;
+        shinRef.current.style.opacity = String(opacity > 0 ? 1 : 0);
+      }
+      raf.current = requestAnimationFrame(loop);
+    };
+    raf.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf.current);
+  }, [hovered]);
+
+  const c0 = useCountUp(STAT_TARGETS[0].raw, 1000, 400);
+  const c1 = useCountUp(STAT_TARGETS[1].raw, 1000, 550);
+  const c2 = useCountUp(STAT_TARGETS[2].raw, 1000, 700);
+  const c3 = useCountUp(STAT_TARGETS[3].raw, 1000, 850);
+  const counts = [c0, c1, c2, c3];
+
   return (
     <div style={{
-      background: "#fff", borderRadius: 20,
-      boxShadow: "0 32px 80px rgba(0,0,0,0.12), 0 4px 20px rgba(0,0,0,0.06)",
-      border: "1px solid rgba(0,0,0,0.07)",
-      overflow: "hidden", maxWidth: 460,
+      perspective: "900px", maxWidth: 460, width: "100%",
+      opacity: mounted ? 1 : 0,
+      transform: mounted ? "none" : "translateY(32px)",
+      transition: "opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1)",
+      animation: mounted ? "diffFloat 5s ease-in-out 1.5s infinite" : "none",
     }}>
-      {/* header */}
-      <div style={{ padding: "14px 18px", borderBottom: "1px solid #f4f4f5", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fafafa" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <FileCode2 size={15} color="#52525b" />
-          <span style={{ fontWeight: 700, fontSize: 13, color: "#18181b" }}>awesome-ai-app</span>
-          <span style={{ fontSize: 11, color: "#a1a1aa", background: "#f4f4f5", padding: "2px 7px", borderRadius: 6 }}>private</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#dcfce7", padding: "4px 10px", borderRadius: 20 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "block" }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#16a34a" }}>Ready to push</span>
-        </div>
-      </div>
-      {/* tabs */}
-      <div style={{ display: "flex", borderBottom: "1px solid #f4f4f5", paddingLeft: 18 }}>
-        {["Changes","Preview"].map((t, i) => (
-          <span key={t} style={{
-            padding: "10px 0", marginRight: 20, fontSize: 13,
-            fontWeight: i === 0 ? 600 : 400,
-            color: i === 0 ? "#f97316" : "#a1a1aa",
-            borderBottom: i === 0 ? "2px solid #f97316" : "2px solid transparent",
-            cursor: "pointer",
-          }}>{t}</span>
-        ))}
-      </div>
-      {/* stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", padding: "14px 18px", borderBottom: "1px solid #f4f4f5", gap: 0 }}>
-        {[
-          { v: "42", l: "Changed", c: "#18181b" },
-          { v: "+28", l: "Added", c: "#16a34a" },
-          { v: "−10", l: "Modified", c: "#f97316" },
-          { v: "−4",  l: "Deleted",  c: "#ef4444" },
-        ].map(s => (
-          <div key={s.l} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: s.c, letterSpacing: "-0.03em" }}>{s.v}</div>
-            <div style={{ fontSize: 10, color: "#a1a1aa", marginTop: 2, fontWeight: 500 }}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-      {/* files */}
-      <div style={{ padding: "8px 18px 4px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0 8px", borderBottom: "1px solid #f9f9f9" }}>
-          <span style={{ fontSize: 10, color: "#a1a1aa", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>File</span>
-          <span style={{ fontSize: 10, color: "#a1a1aa", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>Status</span>
-        </div>
-        {DIFF_FILES.map(f => (
-          <div key={f.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #fafafa" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <FileCode2 size={12} color="#d4d4d8" />
-              <span style={{ fontSize: 12, color: "#52525b", fontFamily: "monospace" }}>{f.name}</span>
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: STATUS_COLOR[f.status as keyof typeof STATUS_COLOR] }}>
-              {STATUS_LABEL[f.status as keyof typeof STATUS_LABEL]}
-            </span>
-          </div>
-        ))}
-      </div>
-      {/* push button */}
-      <div style={{ padding: "14px 18px 18px" }}>
+      <div ref={cardRef} style={{
+        background: "#fff", borderRadius: 20,
+        boxShadow: hovered
+          ? "0 48px 100px rgba(0,0,0,0.18), 0 8px 32px rgba(249,115,22,0.12)"
+          : "0 32px 80px rgba(0,0,0,0.12), 0 4px 20px rgba(0,0,0,0.06)",
+        border: "1px solid rgba(0,0,0,0.07)",
+        overflow: "hidden", position: "relative",
+        transformStyle: "preserve-3d",
+        transition: "box-shadow 0.4s ease",
+        willChange: "transform",
+      }}>
+
+        {/* specular light layer */}
+        <div ref={shinRef} style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          zIndex: 10, borderRadius: 20, transition: "opacity 0.3s ease",
+          mixBlendMode: "screen",
+        }} />
+
+        {/* shimmer sweep — runs every 4s */}
         <div style={{
-          background: "linear-gradient(135deg,#f97316,#ea580c)",
-          borderRadius: 10, padding: "13px 0",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 9, overflow: "hidden", borderRadius: 20,
         }}>
-          <Github size={15} color="#fff" />
-          <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>Push to GitHub</span>
+          <div style={{
+            position: "absolute", top: 0, left: 0, width: "40%", height: "100%",
+            background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)",
+            animation: "diffShimmer 4s cubic-bezier(0.4,0,0.6,1) 1.2s infinite",
+            transform: "translateX(-150%)",
+          }} />
+        </div>
+
+        {/* header */}
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid #f4f4f5", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fafafa" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <FileCode2 size={15} color="#52525b" />
+            <span style={{ fontWeight: 700, fontSize: 13, color: "#18181b" }}>awesome-ai-app</span>
+            <span style={{ fontSize: 11, color: "#a1a1aa", background: "#f4f4f5", padding: "2px 7px", borderRadius: 6 }}>private</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#dcfce7", padding: "4px 10px", borderRadius: 20 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "block", animation: "diffPulse 2s ease-in-out infinite" }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#16a34a" }}>Ready to push</span>
+          </div>
+        </div>
+
+        {/* tabs */}
+        <div style={{ display: "flex", borderBottom: "1px solid #f4f4f5", paddingLeft: 18 }}>
+          {["Changes","Preview"].map((t, i) => (
+            <span key={t} style={{
+              padding: "10px 0", marginRight: 20, fontSize: 13,
+              fontWeight: i === 0 ? 600 : 400,
+              color: i === 0 ? "#f97316" : "#a1a1aa",
+              borderBottom: i === 0 ? "2px solid #f97316" : "2px solid transparent",
+              cursor: "pointer",
+            }}>{t}</span>
+          ))}
+        </div>
+
+        {/* stats — animated counters */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", padding: "14px 18px", borderBottom: "1px solid #f4f4f5" }}>
+          {STAT_TARGETS.map((s, i) => (
+            <div key={s.label} style={{ textAlign: "center", opacity: mounted ? 1 : 0, transform: mounted ? "none" : "translateY(8px)", transition: `opacity 0.5s ${0.3 + i * 0.1}s ease, transform 0.5s ${0.3 + i * 0.1}s ease` }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, letterSpacing: "-0.03em" }}>{s.prefix}{counts[i]}</div>
+              <div style={{ fontSize: 10, color: "#a1a1aa", marginTop: 2, fontWeight: 500 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* file list — staggered entrance */}
+        <div style={{ padding: "8px 18px 4px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0 8px", borderBottom: "1px solid #f9f9f9" }}>
+            <span style={{ fontSize: 10, color: "#a1a1aa", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>File</span>
+            <span style={{ fontSize: 10, color: "#a1a1aa", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>Status</span>
+          </div>
+          {DIFF_FILES.map((f, i) => (
+            <div key={f.name} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "7px 0", borderBottom: "1px solid #fafafa",
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "none" : "translateX(-10px)",
+              transition: `opacity 0.45s ${0.55 + i * 0.08}s cubic-bezier(0.22,1,0.36,1), transform 0.45s ${0.55 + i * 0.08}s cubic-bezier(0.22,1,0.36,1)`,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <FileCode2 size={12} color="#d4d4d8" />
+                <span style={{ fontSize: 12, color: "#52525b", fontFamily: "monospace" }}>{f.name}</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: STATUS_COLOR[f.status as keyof typeof STATUS_COLOR] }}>
+                {STATUS_LABEL[f.status as keyof typeof STATUS_LABEL]}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* push button — pulsing glow */}
+        <div style={{ padding: "14px 18px 18px" }}>
+          <div
+            onMouseEnter={() => setBtnHover(true)}
+            onMouseLeave={() => setBtnHover(false)}
+            style={{
+              background: "linear-gradient(135deg,#f97316,#ea580c)",
+              borderRadius: 10, padding: "13px 0",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              cursor: "pointer", position: "relative", overflow: "hidden",
+              boxShadow: btnHover
+                ? "0 8px 28px rgba(249,115,22,0.6)"
+                : "0 4px 14px rgba(249,115,22,0.35)",
+              transform: btnHover ? "scale(1.02)" : "scale(1)",
+              transition: "all 0.25s ease",
+              animation: "btnGlow 2.8s ease-in-out 2s infinite",
+            }}>
+            {/* ripple overlay */}
+            <div style={{
+              position: "absolute", inset: 0, borderRadius: 10,
+              background: "linear-gradient(135deg,rgba(255,255,255,0.15),transparent)",
+              opacity: btnHover ? 1 : 0, transition: "opacity 0.2s",
+            }} />
+            <Github size={15} color="#fff" />
+            <span style={{ color: "#fff", fontWeight: 700, fontSize: 14, position: "relative" }}>Push to GitHub</span>
+          </div>
         </div>
       </div>
     </div>
@@ -256,13 +411,21 @@ export default function LandingPage() {
           from { opacity:0; transform: translateY(8px); }
           to   { opacity:1; transform: translateY(0);   }
         }
-        @keyframes pulse-ring {
-          0%  { transform: scale(1);   opacity: 0.6; }
-          100%{ transform: scale(1.6); opacity: 0;   }
+        @keyframes diffFloat {
+          0%,100% { transform: translateY(0px); }
+          50%     { transform: translateY(-8px); }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-6px); }
+        @keyframes diffShimmer {
+          0%   { transform: translateX(-150%); }
+          100% { transform: translateX(350%); }
+        }
+        @keyframes diffPulse {
+          0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(22,163,74,0.6); }
+          50%     { opacity:0.7; box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+        }
+        @keyframes btnGlow {
+          0%,100% { box-shadow: 0 4px 14px rgba(249,115,22,0.35); }
+          50%     { box-shadow: 0 4px 28px rgba(249,115,22,0.65); }
         }
 
         .lp-feat-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.09) !important; transform: translateY(-3px) !important; }
