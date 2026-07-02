@@ -316,8 +316,8 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* CTA */}
-          <button onClick={launch} style={{
+          {/* CTA — hidden on mobile, shown in hamburger menu instead */}
+          <button onClick={launch} className="lp-nav-cta" style={{
             background: "#f97316", color: "#fff", border: "none",
             padding: "9px 18px", borderRadius: 8, fontWeight: 600, fontSize: 14,
             cursor: "pointer", flexShrink: 0, transition: "background 0.15s",
@@ -356,7 +356,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ───────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", paddingTop: 72, paddingBottom: 80 }}>
+      <section className="lp-hero-section" style={{ background: "#fff", paddingTop: 72, paddingBottom: 80 }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
           {/* badges */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 28 }}>
@@ -890,11 +890,14 @@ export default function LandingPage() {
 
         .lp-desktop-nav { display: flex !important; }
         .lp-mobile-only { display: none !important; }
+        .lp-nav-cta { display: inline-flex !important; }
 
         @media (max-width: 768px) {
           .lp-desktop-nav { display: none !important; }
           .lp-mobile-only { display: flex !important; }
-          .lp-hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .lp-nav-cta { display: none !important; }
+          .lp-hero-section { padding-top: 32px !important; padding-bottom: 48px !important; }
+          .lp-hero-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
           .lp-hero-right { display: block !important; }
           .lp-problem-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .lp-feat-header { grid-template-columns: 1fr !important; }
