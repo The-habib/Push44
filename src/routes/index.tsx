@@ -515,7 +515,7 @@ export default function LandingPage() {
                 onMouseLeave={e => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.background = "none"; }}
               >{l.label}</button>
             ))}
-            <a href="https://github.com/push44/push44" target="_blank" rel="noopener noreferrer" style={{
+            <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{
               display: "flex", alignItems: "center", gap: 6,
               fontSize: 14, color: "#71717a", textDecoration: "none",
               fontWeight: 500, padding: "6px 12px", borderRadius: 8, transition: "all 0.15s",
@@ -582,7 +582,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", position: "relative" }}>
           {/* top badge */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 36 }}>
-            <a href="https://github.com/push44/push44" target="_blank" rel="noopener noreferrer" style={{
+            <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{
               display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none",
               background: "#fafafa", border: "1px solid #e4e4e7",
               padding: "7px 16px", borderRadius: 30,
@@ -644,7 +644,7 @@ export default function LandingPage() {
                 <button onClick={go} className="lp-btn-primary" style={{ fontSize: 15, padding: "13px 24px" }}>
                   Start Exporting Now <ArrowRight size={15} />
                 </button>
-                <a href="https://github.com/push44/push44" target="_blank" rel="noopener noreferrer" className="lp-btn-ghost" style={{ fontSize: 15, padding: "12px 22px", textDecoration: "none" }}>
+                <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" className="lp-btn-ghost" style={{ fontSize: 15, padding: "12px 22px", textDecoration: "none" }}>
                   <Github size={16} /> View on GitHub
                 </a>
               </div>
@@ -899,7 +899,7 @@ export default function LandingPage() {
             <button onClick={go} className="lp-btn-primary" style={{ fontSize: 16, padding: "14px 28px" }}>
               Launch Push44 Now <ArrowRight size={16} />
             </button>
-            <a href="https://github.com/push44/push44" target="_blank" rel="noopener noreferrer" style={{
+            <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{
               display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none",
               background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
               color: "#e4e4e7", padding: "13px 24px", borderRadius: 10, fontWeight: 600, fontSize: 16,
@@ -935,7 +935,7 @@ export default function LandingPage() {
                 Open source tool to export and version control AI-generated projects. Built for builders.
               </p>
               <div style={{ display: "flex", gap: 8 }}>
-                <a href="https://github.com/push44/push44" target="_blank" rel="noopener noreferrer" style={{
+                <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{
                   width: 34, height: 34, borderRadius: 8, background: "#111113",
                   border: "1px solid rgba(255,255,255,0.07)",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -951,16 +951,16 @@ export default function LandingPage() {
               { label: "Features",    fn: () => smooth("features") },
               { label: "How it Works",fn: () => smooth("how-it-works") },
               { label: "Platforms",   fn: () => smooth("platforms") },
-              { label: "Changelog",   href: "https://github.com/push44/push44/releases" },
+              { label: "Changelog",   href: "https://github.com/The-habib/Push44/releases" },
             ]} />
             <FooterCol title="Resources" links={[
-              { label: "Documentation", href: "https://github.com/push44/push44#readme" },
-              { label: "API Reference",  href: "https://github.com/push44/push44/wiki" },
+              { label: "Documentation", href: "https://github.com/The-habib/Push44#readme" },
+              { label: "API Reference",  href: "https://github.com/The-habib/Push44/wiki" },
               { label: "FAQ",            fn: () => smooth("faq") },
             ]} />
             <FooterCol title="Community" links={[
-              { label: "GitHub",       href: "https://github.com/push44/push44" },
-              { label: "Discussions",  href: "https://github.com/push44/push44/discussions" },
+              { label: "GitHub",       href: "https://github.com/The-habib/Push44" },
+              { label: "Discussions",  href: "https://github.com/The-habib/Push44/discussions" },
               { label: "Twitter / X",  href: "https://twitter.com" },
             ]} />
           </div>
@@ -969,7 +969,7 @@ export default function LandingPage() {
             <span style={{ fontSize: 12, color: "#3f3f46" }}>© 2024 Push44. Open source under the MIT License.</span>
             <div style={{ display: "flex", gap: 20 }}>
               {["Privacy","Terms","GitHub"].map((l, i) => (
-                <a key={l} href={i === 2 ? "https://github.com/push44/push44" : "#"} style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
+                <a key={l} href={i === 2 ? "https://github.com/The-habib/Push44" : "#"} style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
                   onMouseEnter={e => e.currentTarget.style.color = "#a1a1aa"}
                   onMouseLeave={e => e.currentTarget.style.color = "#52525b"}
                 >{l}</a>
