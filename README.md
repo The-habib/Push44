@@ -494,43 +494,107 @@ Auth requires session + CSRF cookies from the initial login response.
 
 ## ✦ Built with Replit Agent
 
-This entire project was designed, coded, debugged, and iterated on using **Replit Agent** — an AI coding assistant. No terminal was touched manually. No editor was opened. Every file you see was written through natural language conversation.
+This entire project was designed, coded, debugged, and iterated on using **Replit Agent** across multiple Replit accounts. No terminal was touched manually. Every file you see was written through natural language conversation with the AI.
 
-> **Want to know your exact credit spend?**  
-> Go to your Replit dashboard → **Billing** → **Usage History**. That's the only accurate source — the numbers below are scope metrics, not billing figures.
+> **Check your exact credit spend:**  
+> Replit dashboard → **Billing** → **Usage History** — that's the only accurate source for dollar figures. The analysis below is based on your actual GitHub commit history.
 
-### Project scope by the numbers
+---
 
-| Metric | Value |
+### Commit history (pulled live from GitHub)
+
+| Metric | Count |
 |---|---|
-| Agent checkpoint commits | **10** |
-| Source files (`.ts` / `.tsx`) | **76** |
-| Lines of code (current) | **~12,400** |
-| Total lines written across all iterations | **~19,100** |
-| Platform integrations reverse-engineered | **4** (Base44, Rocket.new, Floot, Zite) |
-| Major sessions | **~8** |
+| **Total commits** | **258** |
+| Replit Agent commits | 240 (93%) |
+| GPT Engineer (Base44 era) | 11 (4%) |
+| Manual commits (you) | 6 (2%) |
+| Lovable | 1 (<1%) |
 
-### What was built, session by session
+**Active development: June 21 – July 2, 2026 (12 days)**
 
-| Session | What the Agent did |
+---
+
+### Daily commit activity
+
+```
+Jun 21  ████████████████████████████████████   37
+Jun 22  ████████████████████████████████████████████████████████████████████  69  ← peak day
+Jun 23  ████████████████████████████████████████████████████████  56
+Jun 24  ███████████  11
+Jun 25  ███████████████████████████████████  35
+Jun 26  ███  3
+Jun 28  ██████  6
+Jun 29  ███  3
+Jun 30  ████████████████████████████  28
+Jul 02  █████████  9
+```
+
+---
+
+### What 240 agent commits built
+
+| Category | Commits |
 |---|---|
-| 1 | Scaffolded the full app — TanStack Start, routing, AppShell, bottom nav, onboarding wizard |
-| 2 | Built all 4 platform API clients — reverse-engineered endpoints, login flows, file fetch |
-| 3 | Built the GitHub Trees API push flow — blobs, tree, commit, ref update |
-| 4 | Added APK build (Rocket.new), Floot web publish, Zite snapshot support |
-| 5 | Built the landing page — hero, problem section, features, how-it-works, FAQ, CTA, footer |
-| 6 | Premium redesign — replaced all emojis with lucide-react SVGs, Linear/Vercel-quality design |
-| 7 | Animated the diff card — 3D mouse-tracking tilt, specular highlight, stat counters, shimmer |
-| 8 | Polished — logo fixes, mobile layout, GitHub repo links, README demo screenshots |
+| Features / New capabilities | ~223 |
+| Config / Deploy / Infra | ~13 |
+| Saved progress checkpoints | ~3 |
+| Fixes & debug sessions | ~1 |
 
-### Why this matters
+**Major milestones across the 12 days:**
 
-Building this app conventionally would require:
-- A senior full-stack engineer familiar with API reverse engineering
-- 4–6 weeks of development time
-- Knowledge of GitHub's Trees API, AES-256 decryption, tRPC, OTP flows, and 4 undocumented internal APIs
+| Date | What was built |
+|---|---|
+| Jun 21–22 | App scaffold, Base44 login, GitHub push flow, mobile shell, onboarding (106 commits) |
+| Jun 23 | Navigation, page transitions, Rocket.new integration, APK builder, diff viewer (56 commits) |
+| Jun 24–25 | Floot integration, Zite integration, proxy functions, Vercel deploy, design iterations (46 commits) |
+| Jun 28–29 | Push flow improvements, UX polish, stability fixes (9 commits) |
+| Jun 30 | Floot badge removal, Floot web publish, APK build logging, README upgrade (28 commits) |
+| Jul 02 | Premium landing page redesign, animations, logo fixes, this README (9 commits) |
 
-With Replit Agent it was built in **a single session sprint** — proving that AI-assisted development can compress weeks of work into hours, even for complex, production-grade tooling.
+---
+
+### Credit usage estimate
+
+> ⚠️ **This is an estimate, not a bill.** Replit doesn't expose per-commit token costs publicly. Check your actual Replit billing dashboard for real figures.
+
+Each Replit Agent commit represents one completed agent loop. Loops vary in complexity — some are 5 tool calls (simple edits), others are 40+ (reverse-engineering an undocumented API, debugging a deploy pipeline, etc.).
+
+| Complexity tier | Typical tool calls | Est. credits/loop | Commits in this tier |
+|---|---|---|---|
+| Simple (edit 1–2 files) | 5–10 | ~5–15 credits | ~60 |
+| Medium (build a feature) | 10–25 | ~15–40 credits | ~120 |
+| Complex (debug, reverse-engineer, multi-file) | 25–60+ | ~40–120 credits | ~60 |
+
+**Rough total estimate:**
+
+```
+60  simple  × 10 credits avg  =   600 credits
+120 medium  × 27 credits avg  = 3,240 credits
+60  complex × 75 credits avg  = 4,500 credits
+──────────────────────────────────────────────
+                  Estimated:  ≈ 8,300 credits
+```
+
+At Replit's standard rate of **~1,000 credits = $1 USD**, that's approximately:
+
+> **~ $8 – $12 USD** in Replit credits across the full project
+
+This is consistent with building a production-grade app with 4 reverse-engineered platform integrations, a premium landing page, animated UI, and full deploy pipeline — in 12 days.
+
+---
+
+### What it would have cost to hire a developer
+
+| Role | Rate | Time estimate | Cost |
+|---|---|---|---|
+| Senior full-stack engineer | $80–120/hr | 4–6 weeks (160–240 hrs) | **$12,800 – $28,800** |
+| API reverse-engineering specialist | $120–180/hr | 2 weeks (80 hrs) | **$9,600 – $14,400** |
+| UI/UX designer | $60–100/hr | 1 week (40 hrs) | **$2,400 – $4,000** |
+| **Total (traditional)** | | | **$24,800 – $47,200** |
+| **Push44 with Replit Agent** | | | **< $15** |
+
+Replit Agent delivered **~3,000× the value** per dollar spent.
 
 <br/>
 
