@@ -684,10 +684,10 @@ export default function LandingPage() {
           </p>
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             {[
-              { name: "Base44",     logo: base44LogoImg,  bg: "#f97316" },
-              { name: "Rocket.new", logo: rocketLogoImg,  bg: "#09090b" },
-              { name: "Floot",      logo: flootLogoImg,   bg: "#7c3aed" },
-              { name: "Zite",       logo: ziteLogoImg,    bg: "#1e40af" },
+              { name: "Base44",     logo: base44LogoImg,  iconBg: "#fff3eb", logoPad: 4 },
+              { name: "Rocket.new", logo: rocketLogoImg,  iconBg: "#f4f4f5", logoPad: 2 },
+              { name: "Floot",      logo: flootLogoImg,   iconBg: "#f3f0ff", logoPad: 2 },
+              { name: "Zite",       logo: ziteLogoImg,    iconBg: "#eff6ff", logoPad: 2 },
             ].map(p => (
               <div key={p.name} style={{
                 display: "flex", alignItems: "center", gap: 10,
@@ -699,8 +699,8 @@ export default function LandingPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}
               >
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: p.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <img src={p.logo} alt={p.name} style={{ width: 22, height: 22, objectFit: "contain" }} />
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: p.iconBg, border: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: p.logoPad }}>
+                  <img src={p.logo} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                 </div>
                 <span style={{ fontWeight: 700, color: "#18181b", fontSize: 14 }}>{p.name}</span>
               </div>
