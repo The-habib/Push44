@@ -55,6 +55,28 @@ Supports Base44 · Rocket.new · Floot · Zite
 
 <br/>
 
+## ✦ Demo
+
+<div align="center">
+
+**Landing Page — Hero**
+
+<img src="screenshots/hero.jpg" alt="Push44 Hero — Export AI-Generated Code from Any Platform" width="100%" style="border-radius:12px;" />
+
+<br/><br/>
+
+**Supported Platforms & Problem Section**
+
+<img src="screenshots/platforms.jpg" alt="Push44 — Supported Platforms and Problem Section" width="100%" style="border-radius:12px;" />
+
+</div>
+
+<br/>
+
+---
+
+<br/>
+
 ## ✦ Why Push44 Exists
 
 AI app builders (Base44, Rocket.new, Floot, Zite) are incredible for creating full-stack apps in minutes. But they share one critical flaw: **your source code is locked inside their platform.**
