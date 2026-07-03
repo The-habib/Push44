@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RepositoriesRouteImport } from './routes/repositories'
 import { Route as PushRouteImport } from './routes/push'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -21,6 +23,11 @@ import { Route as PlatformsPlatformRouteImport } from './routes/platforms/$platf
 import { Route as CompareSlugRouteImport } from './routes/compare/$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -36,6 +43,11 @@ const PushRoute = PushRouteImport.update({
   path: '/push',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/push.lazy').then((d) => d.Route))
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -82,9 +94,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/platforms/$platform': typeof PlatformsPlatformRoute
@@ -95,9 +109,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/platforms/$platform': typeof PlatformsPlatformRoute
@@ -109,9 +125,11 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/platforms/$platform': typeof PlatformsPlatformRoute
@@ -124,9 +142,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/history'
     | '/onboarding'
+    | '/privacy'
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/terms'
     | '/blog/$slug'
     | '/compare/$slug'
     | '/platforms/$platform'
@@ -137,9 +157,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/history'
     | '/onboarding'
+    | '/privacy'
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/terms'
     | '/blog/$slug'
     | '/compare/$slug'
     | '/platforms/$platform'
@@ -150,9 +172,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/history'
     | '/onboarding'
+    | '/privacy'
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/terms'
     | '/blog/$slug'
     | '/compare/$slug'
     | '/platforms/$platform'
@@ -164,9 +188,11 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   HistoryRoute: typeof HistoryRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrivacyRoute: typeof PrivacyRoute
   PushRoute: typeof PushRoute
   RepositoriesRoute: typeof RepositoriesRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   BlogSlugRoute: typeof BlogSlugRoute
   CompareSlugRoute: typeof CompareSlugRoute
   PlatformsPlatformRoute: typeof PlatformsPlatformRoute
@@ -175,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -194,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/push'
       fullPath: '/push'
       preLoaderRoute: typeof PushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -260,9 +300,11 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   HistoryRoute: HistoryRoute,
   OnboardingRoute: OnboardingRoute,
+  PrivacyRoute: PrivacyRoute,
   PushRoute: PushRoute,
   RepositoriesRoute: RepositoriesRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   BlogSlugRoute: BlogSlugRoute,
   CompareSlugRoute: CompareSlugRoute,
   PlatformsPlatformRoute: PlatformsPlatformRoute,

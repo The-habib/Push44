@@ -4,29 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f97316" />
-  <title>Base44 GitHub Export Guide — Push44</title>
-  <meta name="description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
+  <title>Push44 Export Failed? How to Fix Common Errors | Push44</title>
+  <meta name="description" content="Fix the most common Push44 export errors: expired tokens, sleeping containers, permission issues, and rate limits. Step-by-step troubleshooting guide." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="https://push44.vercel.app/platforms/base44" />
+  <link rel="canonical" href="https://push44.vercel.app/blog/push44-export-failed-fix" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta property="og:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
-  <meta property="og:url" content="https://push44.vercel.app/platforms/base44" />
-  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Push44 Export Failed? How to Fix Common Errors | Push44" />
+  <meta property="og:description" content="Fix the most common Push44 export errors: expired tokens, sleeping containers, permission issues, and rate limits. Step-by-step troubleshooting guide." />
+  <meta property="og:url" content="https://push44.vercel.app/blog/push44-export-failed-fix" />
+  <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Push44" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:image" content="https://push44.vercel.app/og-image.png" />
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Base44 GitHub Export Guide — Push44" />
+  <meta property="og:image:alt" content="Push44 Export Failed? How to Fix Common Errors | Push44" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@push44app" />
-  <meta name="twitter:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta name="twitter:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
+  <meta name="twitter:title" content="Push44 Export Failed? How to Fix Common Errors | Push44" />
+  <meta name="twitter:description" content="Fix the most common Push44 export errors: expired tokens, sleeping containers, permission issues, and rate limits. Step-by-step troubleshooting guide." />
   <meta name="twitter:image" content="https://push44.vercel.app/og-image.png" />
 
   <!-- Fonts (async) -->
@@ -267,9 +267,10 @@
       .footer-grid{grid-template-columns:1fr}
     }
   </style>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Base44 Export Guide — Push44","description":"Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.","url":"https://push44.vercel.app/platforms/base44","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Push44 work with all Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 uses the Base44 API to read any project associated with your account."}},{"@type":"Question","name":"Do I need a paid Base44 plan?","acceptedAnswer":{"@type":"Answer","text":"No. The Base44 API used by Push44 is available to all account tiers."}},{"@type":"Question","name":"How long does a Base44 export take?","acceptedAnswer":{"@type":"Answer","text":"Typically under 30 seconds for most projects."}},{"@type":"Question","name":"Can I export multiple Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Run Push44 separately for each project, pointing to different GitHub repos."}},{"@type":"Question","name":"Is my Base44 API token safe in Push44?","acceptedAnswer":{"@type":"Answer","text":"Yes. It's stored in your browser's localStorage and never sent to any Push44 server."}}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44","item":"https://push44.vercel.app/platforms/base44"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Push44 Export Failed — How to Fix It","description":"Fix the most common Push44 export errors: expired tokens, sleeping containers, permission issues, and rate limits. Step-by-step troubleshooting guide.","url":"https://push44.vercel.app/blog/push44-export-failed-fix","datePublished":"2026-06-16","dateModified":"2026-07-02","author":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"},"publisher":{"@type":"Organization","name":"Push44","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png"}},"keywords":"push44 export failed, push44 error, fix ai export error, github push failed ai, push44 troubleshooting","articleSection":"troubleshooting"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Push44 Export Failed — How to Fix It","description":"Exports can fail for a handful of predictable reasons: an expired or malformed token, a sleeping platform container, insufficient GitHub permissions, or hitting an API rate limit. Without knowing what each error means, it's easy to get stuck.","step":[{"@type":"HowToStep","position":1,"name":"\"401 Unauthorized\" or \"Bad credentials\"","text":"Your platform token or GitHub token has expired or was typed incorrectly. Regenerate the token from the platform's settings page and re-paste it into Push44 — don't reuse an old token from clipboard history."},{"@type":"HowToStep","position":2,"name":"\"404 Not Found\" on GitHub push","text":"The repository name doesn't exist and Push44 couldn't create it, usually because your GitHub PAT is missing the 'repo' scope. Regenerate your token at github.com/settings/tokens with the full 'repo' scope checked."},{"@type":"HowToStep","position":3,"name":"\"Container is sleeping\" (Rocket.new)","text":"Rocket.new puts inactive project containers to sleep. Open the project directly in Rocket.new's editor to wake it, wait about 15 seconds, then retry the export in Push44."},{"@type":"HowToStep","position":4,"name":"\"Rate limit exceeded\"","text":"GitHub's API allows 5,000 authenticated requests per hour. This is rarely hit by normal use, but if you're exporting very large projects repeatedly, wait an hour or use a token with a higher rate limit tier."},{"@type":"HowToStep","position":5,"name":"\"Session expired\" (Floot or Zite)","text":"Session-based tokens (Floot, Zite) expire after a period of inactivity. Log back into the platform in your browser, copy a fresh session cookie value, and update it in Push44's credentials screen."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does a failed Push44 export corrupt my GitHub repo?","acceptedAnswer":{"@type":"Answer","text":"No. Push44 uses the GitHub Trees API, which builds the entire commit before updating the branch reference. If any step fails, nothing is written to your repo."}},{"@type":"Question","name":"Why does Push44 say my token is invalid right after I generated it?","acceptedAnswer":{"@type":"Answer","text":"Some platforms take a few seconds to activate new tokens. Wait 10-15 seconds after generating a token before using it in Push44."}},{"@type":"Question","name":"Can I retry a failed export without redoing everything?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 keeps your session credentials and project selection — just fix the underlying issue and click 'Push to GitHub' again."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Push44 Export Failed — How to Fix It","item":"https://push44.vercel.app/blog/push44-export-failed-fix"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
@@ -282,280 +283,265 @@
       Push44
     </a>
     <div class="nav-links" role="list">
-      <a href="/blog" class="nav-link" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link active" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
+      <a href="/blog" class="nav-link active" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
       <a href="https://github.com/The-habib/Push44" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </div>
     <a href="/#" class="nav-cta" onclick="location.href='/'">Launch App →</a>
   </div>
 </nav>
 
-<!-- PLATFORM HERO -->
-<div style="background:linear-gradient(135deg,#f9731622,#fff7ed);border-bottom:1px solid #f9731633;padding:64px 24px">
-  <div style="max-width:1200px;margin:0 auto">
+<!-- ARTICLE HERO -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:48px 24px 64px;margin-bottom:0">
+  <div style="max-width:800px;margin:0 auto">
 
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="/">Push44</a><span aria-hidden="true">›</span>
-      <a href="/blog">Blog</a><span aria-hidden="true">›</span>
-      <span aria-current="page">Base44</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
+      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a>
+      <span aria-hidden="true">›</span>
+      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a>
+      <span aria-hidden="true">›</span>
+      
+      <span style="color:#94a3b8" aria-current="page">Push44 Export Failed — How to Fix It</span>
     </nav>
 
-    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">B</div>
-      <div>
-        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">Base44 Export Hub</h1>
-        <p style="font-size:16px;color:var(--muted)">Export your complete Base44 source code to GitHub</p>
-      </div>
+    <!-- Meta -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      
+      <span class="badge badge-difficulty-beginner">beginner</span>
+      <span style="font-size:13px;color:#64748b">⏱ 7 min read</span>
+      <span style="font-size:13px;color:#64748b">• 👁 9,800 views</span>
     </div>
 
-    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.</p>
+    <h1 style="font-size:clamp(28px,4.5vw,42px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">Push44 Export Failed — How to Fix It</h1>
+    <p style="font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:24px;max-width:640px">Push44 shows the exact error whenever something goes wrong — it never fails silently. This guide walks through the most common error messages and exactly how to resolve each one.</p>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <a href="/" class="btn-primary">Start Exporting Base44 →</a>
-      <a href="/blog" class="btn-ghost">All Guides</a>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0">Push44 Team</div>
+          <div style="font-size:12px;color:#64748b">Updated July 2, 2026</div>
+        </div>
+      </div>
+      <!-- Share -->
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://twitter.com/intent/tweet?text=Push44%20Export%20Failed%20%E2%80%94%20How%20to%20Fix%20It&url=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fpush44-export-failed-fix" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">Share on X</a>
+        <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fpush44-export-failed-fix&t=Push44%20Export%20Failed%20%E2%80%94%20How%20to%20Fix%20It" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">HN</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section style="padding:48px 24px;background:#fafafa;border-bottom:1px solid var(--border)" aria-labelledby="features-heading">
-  <div class="container">
-    <h2 id="features-heading" style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:24px">What Push44 Does with Base44</h2>
-    <div class="grid-3">
-      
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Read all project files via Base44 API</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Push complete source tree to GitHub</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Version history for every session</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">ZIP download option</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Works with email/password and API token auth</span>
-        </div>
-    </div>
-  </div>
-</section>
+<!-- ARTICLE BODY -->
+<div class="article-layout" role="main">
+  <!-- Content -->
+  <article class="article-content" aria-label="Push44 Export Failed — How to Fix It">
 
-<!-- HOW TO EXPORT -->
-<section style="padding:64px 24px" aria-labelledby="how-to-heading">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start" class="grid-platform">
-      <div>
-        <p class="section-badge" style="color:#f97316">Quick Start</p>
-        <h2 id="how-to-heading" class="section-title">How to Export Base44</h2>
-        
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 1">1</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Get Base44 API token from account settings</span>
+    <!-- Quick Summary -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:36px">
+      <h2 style="font-size:15px;font-weight:800;color:#15803d;margin-bottom:12px;margin-top:0;display:flex;align-items:center;gap:6px">
+        ✅ Quick Summary
+      </h2>
+      <p style="font-size:15px;color:#166534;line-height:1.6;margin:0">Match the error message you're seeing to the fixes below. Most Push44 errors are caused by credentials, not by Push44 itself, so re-checking your tokens resolves the vast majority of failures.</p>
+    </div>
+
+    <!-- Problem -->
+    <section id="the-problem" aria-labelledby="problem-heading">
+      <h2 id="problem-heading">The Problem</h2>
+      <p>Exports can fail for a handful of predictable reasons: an expired or malformed token, a sleeping platform container, insufficient GitHub permissions, or hitting an API rate limit. Without knowing what each error means, it's easy to get stuck.</p>
+    </section>
+
+    <!-- Solution -->
+    <section id="the-solution" aria-labelledby="solution-heading">
+      <h2 id="solution-heading">How Push44 Solves It</h2>
+      <p>Match the error message you're seeing to the fixes below. Most Push44 errors are caused by credentials, not by Push44 itself, so re-checking your tokens resolves the vast majority of failures.</p>
+    </section>
+
+    <!-- Steps -->
+    <section id="step-by-step" aria-labelledby="steps-heading">
+      <h2 id="steps-heading">Step-by-Step Guide</h2>
+      
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 1">1</div>
+          <div class="step-content">
+            <h3>&quot;401 Unauthorized&quot; or &quot;Bad credentials&quot;</h3>
+            <p>Your platform token or GitHub token has expired or was typed incorrectly. Regenerate the token from the platform's settings page and re-paste it into Push44 — don't reuse an old token from clipboard history.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 2">2</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with your token</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 2">2</div>
+          <div class="step-content">
+            <h3>&quot;404 Not Found&quot; on GitHub push</h3>
+            <p>The repository name doesn't exist and Push44 couldn't create it, usually because your GitHub PAT is missing the 'repo' scope. Regenerate your token at github.com/settings/tokens with the full 'repo' scope checked.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 3">3</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your Base44 project</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 3">3</div>
+          <div class="step-content">
+            <h3>&quot;Container is sleeping&quot; (Rocket.new)</h3>
+            <p>Rocket.new puts inactive project containers to sleep. Open the project directly in Rocket.new's editor to wake it, wait about 15 seconds, then retry the export in Push44.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 4">4</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Enter GitHub repo details</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 4">4</div>
+          <div class="step-content">
+            <h3>&quot;Rate limit exceeded&quot;</h3>
+            <p>GitHub's API allows 5,000 authenticated requests per hour. This is rarely hit by normal use, but if you're exporting very large projects repeatedly, wait an hour or use a token with a higher rate limit tier.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 5">5</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Click Push to GitHub</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 5">5</div>
+          <div class="step-content">
+            <h3>&quot;Session expired&quot; (Floot or Zite)</h3>
+            <p>Session-based tokens (Floot, Zite) expire after a period of inactivity. Log back into the platform in your browser, copy a fresh session cookie value, and update it in Push44's credentials screen.</p>
+            
           </div>
-        <a href="/blog/how-to-export-code-from-base44" class="btn-primary" style="margin-top:8px">Full Step-by-Step Guide →</a>
+        </div>
+    </section>
+
+    <!-- Tips -->
+    
+    <section id="tips" aria-labelledby="tips-heading">
+      <h2 id="tips-heading">Pro Tips</h2>
+      <ul>
+        <li>Copy tokens directly — never retype them by hand, as a single wrong character causes silent auth failures.</li><li>If an export fails midway, no partial commit is created — GitHub Trees API pushes are atomic, so your repo is never left in a broken state.</li><li>Check the browser console (F12) for the raw API error if Push44's message isn't specific enough.</li>
+      </ul>
+    </section>
+
+    <!-- Mistakes -->
+    
+    <section aria-labelledby="mistakes-heading">
+      <h2 id="mistakes-heading">Common Mistakes to Avoid</h2>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ Watch Out For</div>
+        <ul style="margin:8px 0 0 20px;padding:0">
+          <li style="margin-bottom:6px">Assuming a failed export means data loss — Push44 never writes anything until the full commit is ready.</li><li style="margin-bottom:6px">Retrying immediately without fixing the underlying token issue — this just repeats the same error.</li><li style="margin-bottom:6px">Using a fine-grained GitHub PAT without repository access explicitly granted to the target repo.</li>
+        </ul>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f9731633;border-radius:16px;padding:28px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:20px">All Base44 Guides</h3>
-        
-          <a href="/blog/how-to-export-code-from-base44" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Export Code from Base44">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Export Code from Base44</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 6 min · 18,400 views</span>
-          </a>
-          <a href="/blog/download-base44-source-code" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Download Base44 Source Code">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Download Base44 Source Code</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 12,300 views</span>
-          </a>
-          <a href="/blog/base44-github-integration" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 GitHub Integration — Complete Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 GitHub Integration — Complete Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 7 min · 22,100 views</span>
-          </a>
-          <a href="/blog/base44-version-control-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Version Control Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Version Control Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 8 min · 9,800 views</span>
-          </a>
-          <a href="/blog/base44-project-backup-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Project Backup Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Project Backup Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 8,200 views</span>
-          </a>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-section" style="margin:40px 0">
+      <h2>Ready to Export?</h2>
+      <p>Push44 is free, open source, and takes under 2 minutes to set up.</p>
+      <div class="cta-buttons">
+        <a href="/" class="btn-primary">Start Exporting Now →</a>
+        <a href="https://github.com/The-habib/Push44" class="btn-ghost" style="color:#94a3b8;border-color:rgba(255,255,255,0.15)" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ALL ARTICLES -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="all-guides-heading">
-  <div class="container">
-    <h2 id="all-guides-heading" class="section-title">Base44 Guides</h2>
-    <div class="grid-3" style="margin-top:32px">
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
       
-<a href="/blog/how-to-export-code-from-base44" class="article-card" aria-label="How to Export Code from Base44">
+        <div class="faq-item">
+          <div class="faq-question">Does a failed Push44 export corrupt my GitHub repo?</div>
+          <div class="faq-answer">No. Push44 uses the GitHub Trees API, which builds the entire commit before updating the branch reference. If any step fails, nothing is written to your repo.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Why does Push44 say my token is invalid right after I generated it?</div>
+          <div class="faq-answer">Some platforms take a few seconds to activate new tokens. Wait 10-15 seconds after generating a token before using it in Push44.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Can I retry a failed export without redoing everything?</div>
+          <div class="faq-answer">Yes. Push44 keeps your session credentials and project selection — just fix the underlying issue and click 'Push to GitHub' again.</div>
+        </div>
+    </section>
+
+    <!-- Related -->
+    
+    <section id="related" aria-labelledby="related-heading" style="margin-top:48px">
+      <h2 id="related-heading">Related Guides</h2>
+      <div class="grid-2">
+        
+<a href="/blog/backup-ai-generated-apps" class="article-card" aria-label="How to Backup AI-Generated Apps">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
+    
     <span class="badge badge-difficulty-beginner">beginner</span>
   </div>
-  <div class="article-card-title">How to Export Code from Base44</div>
-  <div class="article-card-desc">Step-by-step guide to exporting your full Base44 source code to GitHub using Push44. Free, no subscription, wo...</div>
-  <div class="article-card-footer">
-    <span>⏱ 6 min read</span>
-    <span>•</span>
-    <span>18,400 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/download-base44-source-code" class="article-card" aria-label="How to Download Base44 Source Code">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">How to Download Base44 Source Code</div>
-  <div class="article-card-desc">Download your complete Base44 project source code to your local machine or GitHub. Free tool, no subscription ...</div>
-  <div class="article-card-footer">
-    <span>⏱ 5 min read</span>
-    <span>•</span>
-    <span>12,300 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-github-integration" class="article-card" aria-label="Base44 GitHub Integration — Complete Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">Base44 GitHub Integration — Complete Guide</div>
-  <div class="article-card-desc">Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. F...</div>
+  <div class="article-card-title">How to Backup AI-Generated Apps</div>
+  <div class="article-card-desc">Protect your AI-built apps with regular GitHub backups. Complete guide covering Base44, Rocket.new, Floot, and...</div>
   <div class="article-card-footer">
     <span>⏱ 7 min read</span>
     <span>•</span>
-    <span>22,100 views</span>
+    <span>31,200 views</span>
     <span>•</span>
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-version-control-guide" class="article-card" aria-label="Base44 Version Control Guide">
+<a href="/blog/how-to-export-rocket-new-project" class="article-card" aria-label="How to Export Your Rocket.new Project">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-intermediate">intermediate</span>
-  </div>
-  <div class="article-card-title">Base44 Version Control Guide</div>
-  <div class="article-card-desc">Add Git version control to your Base44 projects with Push44. Track every change, roll back to any version, and...</div>
-  <div class="article-card-footer">
-    <span>⏱ 8 min read</span>
-    <span>•</span>
-    <span>9,800 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-project-backup-guide" class="article-card" aria-label="Base44 Project Backup Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
+    <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
   </div>
-  <div class="article-card-title">Base44 Project Backup Guide</div>
-  <div class="article-card-desc">Create automatic, reliable backups of your Base44 projects with Push44. Keep your AI-built apps safe from data...</div>
+  <div class="article-card-title">How to Export Your Rocket.new Project</div>
+  <div class="article-card-desc">Complete guide to exporting your Rocket.new source code to GitHub using Push44. Get your full project files, b...</div>
   <div class="article-card-footer">
-    <span>⏱ 5 min read</span>
+    <span>⏱ 6 min read</span>
     <span>•</span>
-    <span>8,200 views</span>
+    <span>14,200 views</span>
     <span>•</span>
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
+<a href="/blog/how-to-export-floot-project" class="article-card" aria-label="How to Export Your Floot Project">
+  <div class="article-card-meta">
+    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
+    <span class="badge badge-difficulty-beginner">beginner</span>
+  </div>
+  <div class="article-card-title">How to Export Your Floot Project</div>
+  <div class="article-card-desc">Export your Floot project source code to GitHub using Push44. Step-by-step guide for Floot developers. Free, n...</div>
+  <div class="article-card-footer">
+    <span>⏱ 6 min read</span>
+    <span>•</span>
+    <span>7,800 views</span>
+    <span>•</span>
+    <span>Updated Jul 2, 2026</span>
+  </div>
+</a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="complementary" aria-label="Article sidebar">
+
+    <!-- TOC -->
+    <div class="sidebar-card">
+      <h4>On This Page</h4>
+      <a href="#introduction" class="toc-link">Introduction</a><a href="#the-problem" class="toc-link">The Problem</a><a href="#the-solution" class="toc-link">The Solution</a><a href="#step-by-step" class="toc-link">Step-by-Step Guide</a><a href="#tips" class="toc-link">Pro Tips</a><a href="#faq" class="toc-link">FAQ</a><a href="#related" class="toc-link">Related Guides</a>
     </div>
-  </div>
-</section>
 
-<!-- FAQ -->
+    <!-- Start Exporting CTA -->
+    <div class="sidebar-card" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-color:rgba(255,255,255,0.08)">
+      <h4 style="color:#94a3b8">Free Tool</h4>
+      <div style="font-weight:800;font-size:15px;color:#f8fafc;margin-bottom:8px">Push44 — Export to GitHub</div>
+      <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
+      <a href="/" class="btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:11px 0">Start Exporting →</a>
+    </div>
 
-<section style="padding:64px 24px" aria-labelledby="faq-platform-heading">
-  <div class="container" style="max-width:800px">
-    <h2 id="faq-platform-heading" class="section-title">Base44 FAQ</h2>
-    
-      <div class="faq-item">
-        <div class="faq-question">Does Push44 work with all Base44 projects?</div>
-        <div class="faq-answer">Yes. Push44 uses the Base44 API to read any project associated with your account.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Do I need a paid Base44 plan?</div>
-        <div class="faq-answer">No. The Base44 API used by Push44 is available to all account tiers.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">How long does a Base44 export take?</div>
-        <div class="faq-answer">Typically under 30 seconds for most projects.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Can I export multiple Base44 projects?</div>
-        <div class="faq-answer">Yes. Run Push44 separately for each project, pointing to different GitHub repos.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Is my Base44 API token safe in Push44?</div>
-        <div class="faq-answer">Yes. It's stored in your browser's localStorage and never sent to any Push44 server.</div>
-      </div>
-  </div>
-</section>
-
-<!-- RELATED PLATFORMS -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="other-platforms-heading">
-  <div class="container">
-    <h2 id="other-platforms-heading" class="section-title">Other Platforms</h2>
-    <div class="grid-4" style="margin-top:24px">
+    <!-- Popular Searches -->
+    <div class="sidebar-card">
+      <h4>People Also Search</h4>
       
-        <a href="/platforms/rocket-new" class="cat-card" style="background:#f0fdf4" aria-label="Rocket.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#22c55e;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">R</div>
-          <div class="cat-name">Rocket.new</div>
-          <div class="cat-desc">4 guides</div>
-        </a>
-        <a href="/platforms/floot" class="cat-card" style="background:#eff6ff" aria-label="Floot export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">F</div>
-          <div class="cat-name">Floot</div>
-          <div class="cat-desc">5 guides</div>
-        </a>
-        <a href="/platforms/zite" class="cat-card" style="background:#fdf4ff" aria-label="Zite export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">Z</div>
-          <div class="cat-name">Zite</div>
-          <div class="cat-desc">3 guides</div>
-        </a>
+        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
+        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
+        <a href="/blog/download-base44-source-code" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Download Base44 source code</a>
+        <a href="/blog/export-rocket-new-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Rocket.new to GitHub</a>
+        <a href="/blog/how-to-export-floot-project" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Floot project</a>
+        <a href="/blog/zite-github-export-guide" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Zite to GitHub</a>
     </div>
-  </div>
-</section>
 
-<!-- CTA -->
-<section style="padding:64px 24px">
-  <div class="container">
-    <div class="cta-section">
-      <h2>Export Your Base44 Code Now</h2>
-      <p>Free, open source, takes under 2 minutes. No subscription required.</p>
-      <div class="cta-buttons">
-        <a href="/" class="btn-primary">Start Exporting →</a>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- Platform Hub -->
+    
+
+  </aside>
+</div>
 
 
 <footer class="footer" role="contentinfo">

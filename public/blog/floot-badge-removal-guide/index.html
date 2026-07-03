@@ -4,29 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f97316" />
-  <title>Base44 GitHub Export Guide — Push44</title>
-  <meta name="description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
+  <title>How to Remove the 'Made with Floot' Badge | Push44 Guide</title>
+  <meta name="description" content="Guide to removing the 'Made with Floot' badge from your published Floot app, and why exporting to GitHub with Push44 gives you full control over your app's branding." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="https://push44.vercel.app/platforms/base44" />
+  <link rel="canonical" href="https://push44.vercel.app/blog/floot-badge-removal-guide" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta property="og:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
-  <meta property="og:url" content="https://push44.vercel.app/platforms/base44" />
-  <meta property="og:type" content="website" />
+  <meta property="og:title" content="How to Remove the 'Made with Floot' Badge | Push44 Guide" />
+  <meta property="og:description" content="Guide to removing the 'Made with Floot' badge from your published Floot app, and why exporting to GitHub with Push44 gives you full control over your app's branding." />
+  <meta property="og:url" content="https://push44.vercel.app/blog/floot-badge-removal-guide" />
+  <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Push44" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:image" content="https://push44.vercel.app/og-image.png" />
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Base44 GitHub Export Guide — Push44" />
+  <meta property="og:image:alt" content="How to Remove the 'Made with Floot' Badge | Push44 Guide" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@push44app" />
-  <meta name="twitter:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta name="twitter:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
+  <meta name="twitter:title" content="How to Remove the 'Made with Floot' Badge | Push44 Guide" />
+  <meta name="twitter:description" content="Guide to removing the 'Made with Floot' badge from your published Floot app, and why exporting to GitHub with Push44 gives you full control over your app's branding." />
   <meta name="twitter:image" content="https://push44.vercel.app/og-image.png" />
 
   <!-- Fonts (async) -->
@@ -267,9 +267,10 @@
       .footer-grid{grid-template-columns:1fr}
     }
   </style>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Base44 Export Guide — Push44","description":"Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.","url":"https://push44.vercel.app/platforms/base44","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Push44 work with all Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 uses the Base44 API to read any project associated with your account."}},{"@type":"Question","name":"Do I need a paid Base44 plan?","acceptedAnswer":{"@type":"Answer","text":"No. The Base44 API used by Push44 is available to all account tiers."}},{"@type":"Question","name":"How long does a Base44 export take?","acceptedAnswer":{"@type":"Answer","text":"Typically under 30 seconds for most projects."}},{"@type":"Question","name":"Can I export multiple Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Run Push44 separately for each project, pointing to different GitHub repos."}},{"@type":"Question","name":"Is my Base44 API token safe in Push44?","acceptedAnswer":{"@type":"Answer","text":"Yes. It's stored in your browser's localStorage and never sent to any Push44 server."}}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44","item":"https://push44.vercel.app/platforms/base44"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Removing the Floot Badge from Your App","description":"Guide to removing the 'Made with Floot' badge from your published Floot app, and why exporting to GitHub with Push44 gives you full control over your app's branding.","url":"https://push44.vercel.app/blog/floot-badge-removal-guide","datePublished":"2026-06-21","dateModified":"2026-07-02","author":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"},"publisher":{"@type":"Organization","name":"Push44","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png"}},"keywords":"remove made with floot badge, floot badge removal, floot white label, floot custom branding","articleSection":"tutorials"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Removing the Floot Badge from Your App","description":"The default badge is fine for prototypes, but many builders want a fully white-labeled app before sharing it with customers or clients.","step":[{"@type":"HowToStep","position":1,"name":"Export your Floot project with Push44","text":"Connect your Floot session token and push your project's full source code to a GitHub repository."},{"@type":"HowToStep","position":2,"name":"Locate the badge markup","text":"Search your exported code for the badge component — it's typically a fixed-position element injected near the root of your app layout."},{"@type":"HowToStep","position":3,"name":"Remove or restyle it","text":"Delete the badge component, or restyle it to match your brand, directly in your codebase."},{"@type":"HowToStep","position":4,"name":"Deploy your customized version","text":"Since you now have the full source code in GitHub, you can deploy it anywhere — Vercel, Netlify, or your own infrastructure — without the badge."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does removing the badge violate Floot's terms?","acceptedAnswer":{"@type":"Answer","text":"This depends on Floot's current terms of service and your plan — always check Floot's own policies before making branding changes to apps hosted on their platform."}},{"@type":"Question","name":"Is badge removal easier after exporting to GitHub?","acceptedAnswer":{"@type":"Answer","text":"Yes. Once your code lives in your own GitHub repo and you deploy it independently, you have full control over every element, including any injected badges."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Removing the Floot Badge from Your App","item":"https://push44.vercel.app/blog/floot-badge-removal-guide"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
@@ -282,280 +283,258 @@
       Push44
     </a>
     <div class="nav-links" role="list">
-      <a href="/blog" class="nav-link" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link active" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
+      <a href="/blog" class="nav-link active" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
       <a href="https://github.com/The-habib/Push44" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </div>
     <a href="/#" class="nav-cta" onclick="location.href='/'">Launch App →</a>
   </div>
 </nav>
 
-<!-- PLATFORM HERO -->
-<div style="background:linear-gradient(135deg,#f9731622,#fff7ed);border-bottom:1px solid #f9731633;padding:64px 24px">
-  <div style="max-width:1200px;margin:0 auto">
+<!-- ARTICLE HERO -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:48px 24px 64px;margin-bottom:0">
+  <div style="max-width:800px;margin:0 auto">
 
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="/">Push44</a><span aria-hidden="true">›</span>
-      <a href="/blog">Blog</a><span aria-hidden="true">›</span>
-      <span aria-current="page">Base44</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
+      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a>
+      <span aria-hidden="true">›</span>
+      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a>
+      <span aria-hidden="true">›</span>
+      <a href="/platforms/floot" style="color:rgba(148,163,184,0.7)">Floot</a><span aria-hidden="true">›</span>
+      <span style="color:#94a3b8" aria-current="page">Removing the Floot Badge from Your App</span>
     </nav>
 
-    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">B</div>
-      <div>
-        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">Base44 Export Hub</h1>
-        <p style="font-size:16px;color:var(--muted)">Export your complete Base44 source code to GitHub</p>
-      </div>
+    <!-- Meta -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:rgba(255,255,255,0.1);color:#3b82f6">Floot</span>
+      <span class="badge badge-difficulty-intermediate">intermediate</span>
+      <span style="font-size:13px;color:#64748b">⏱ 4 min read</span>
+      <span style="font-size:13px;color:#64748b">• 👁 3,700 views</span>
     </div>
 
-    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.</p>
+    <h1 style="font-size:clamp(28px,4.5vw,42px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">Removing the Floot Badge from Your App</h1>
+    <p style="font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:24px;max-width:640px">Floot adds a small 'Made with Floot' badge to published apps by default. This guide explains your options for removing it, including exporting your code with Push44 for full control.</p>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <a href="/" class="btn-primary">Start Exporting Base44 →</a>
-      <a href="/blog" class="btn-ghost">All Guides</a>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0">Push44 Team</div>
+          <div style="font-size:12px;color:#64748b">Updated July 2, 2026</div>
+        </div>
+      </div>
+      <!-- Share -->
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://twitter.com/intent/tweet?text=Removing%20the%20Floot%20Badge%20from%20Your%20App&url=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Ffloot-badge-removal-guide" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">Share on X</a>
+        <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Ffloot-badge-removal-guide&t=Removing%20the%20Floot%20Badge%20from%20Your%20App" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">HN</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section style="padding:48px 24px;background:#fafafa;border-bottom:1px solid var(--border)" aria-labelledby="features-heading">
-  <div class="container">
-    <h2 id="features-heading" style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:24px">What Push44 Does with Base44</h2>
-    <div class="grid-3">
-      
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Read all project files via Base44 API</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Push complete source tree to GitHub</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Version history for every session</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">ZIP download option</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Works with email/password and API token auth</span>
-        </div>
-    </div>
-  </div>
-</section>
+<!-- ARTICLE BODY -->
+<div class="article-layout" role="main">
+  <!-- Content -->
+  <article class="article-content" aria-label="Removing the Floot Badge from Your App">
 
-<!-- HOW TO EXPORT -->
-<section style="padding:64px 24px" aria-labelledby="how-to-heading">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start" class="grid-platform">
-      <div>
-        <p class="section-badge" style="color:#f97316">Quick Start</p>
-        <h2 id="how-to-heading" class="section-title">How to Export Base44</h2>
-        
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 1">1</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Get Base44 API token from account settings</span>
+    <!-- Quick Summary -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:36px">
+      <h2 style="font-size:15px;font-weight:800;color:#15803d;margin-bottom:12px;margin-top:0;display:flex;align-items:center;gap:6px">
+        ✅ Quick Summary
+      </h2>
+      <p style="font-size:15px;color:#166534;line-height:1.6;margin:0">Once you export your Floot project's source code to GitHub with Push44, you own the actual markup and styling — meaning you can remove or customize the badge exactly as you'd edit any other piece of your app's HTML/CSS.</p>
+    </div>
+
+    <!-- Problem -->
+    <section id="the-problem" aria-labelledby="problem-heading">
+      <h2 id="problem-heading">The Problem</h2>
+      <p>The default badge is fine for prototypes, but many builders want a fully white-labeled app before sharing it with customers or clients.</p>
+    </section>
+
+    <!-- Solution -->
+    <section id="the-solution" aria-labelledby="solution-heading">
+      <h2 id="solution-heading">How Push44 Solves It</h2>
+      <p>Once you export your Floot project's source code to GitHub with Push44, you own the actual markup and styling — meaning you can remove or customize the badge exactly as you'd edit any other piece of your app's HTML/CSS.</p>
+    </section>
+
+    <!-- Steps -->
+    <section id="step-by-step" aria-labelledby="steps-heading">
+      <h2 id="steps-heading">Step-by-Step Guide</h2>
+      
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 1">1</div>
+          <div class="step-content">
+            <h3>Export your Floot project with Push44</h3>
+            <p>Connect your Floot session token and push your project's full source code to a GitHub repository.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 2">2</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with your token</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 2">2</div>
+          <div class="step-content">
+            <h3>Locate the badge markup</h3>
+            <p>Search your exported code for the badge component — it's typically a fixed-position element injected near the root of your app layout.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 3">3</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your Base44 project</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 3">3</div>
+          <div class="step-content">
+            <h3>Remove or restyle it</h3>
+            <p>Delete the badge component, or restyle it to match your brand, directly in your codebase.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 4">4</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Enter GitHub repo details</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 4">4</div>
+          <div class="step-content">
+            <h3>Deploy your customized version</h3>
+            <p>Since you now have the full source code in GitHub, you can deploy it anywhere — Vercel, Netlify, or your own infrastructure — without the badge.</p>
+            
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 5">5</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Click Push to GitHub</span>
-          </div>
-        <a href="/blog/how-to-export-code-from-base44" class="btn-primary" style="margin-top:8px">Full Step-by-Step Guide →</a>
+        </div>
+    </section>
+
+    <!-- Tips -->
+    
+    <section id="tips" aria-labelledby="tips-heading">
+      <h2 id="tips-heading">Pro Tips</h2>
+      <ul>
+        <li>Check Floot's terms of service regarding badge removal on apps still hosted directly on Floot's infrastructure.</li><li>Exporting with Push44 is the cleanest way to get pixel-level control over every part of your app's UI.</li>
+      </ul>
+    </section>
+
+    <!-- Mistakes -->
+    
+    <section aria-labelledby="mistakes-heading">
+      <h2 id="mistakes-heading">Common Mistakes to Avoid</h2>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ Watch Out For</div>
+        <ul style="margin:8px 0 0 20px;padding:0">
+          <li style="margin-bottom:6px">Trying to hide the badge with CSS overrides inside Floot's own editor, which can be fragile and get reset on republish.</li>
+        </ul>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f9731633;border-radius:16px;padding:28px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:20px">All Base44 Guides</h3>
-        
-          <a href="/blog/how-to-export-code-from-base44" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Export Code from Base44">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Export Code from Base44</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 6 min · 18,400 views</span>
-          </a>
-          <a href="/blog/download-base44-source-code" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Download Base44 Source Code">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Download Base44 Source Code</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 12,300 views</span>
-          </a>
-          <a href="/blog/base44-github-integration" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 GitHub Integration — Complete Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 GitHub Integration — Complete Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 7 min · 22,100 views</span>
-          </a>
-          <a href="/blog/base44-version-control-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Version Control Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Version Control Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 8 min · 9,800 views</span>
-          </a>
-          <a href="/blog/base44-project-backup-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Project Backup Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Project Backup Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 8,200 views</span>
-          </a>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-section" style="margin:40px 0">
+      <h2>Ready to Export?</h2>
+      <p>Push44 is free, open source, and takes under 2 minutes to set up.</p>
+      <div class="cta-buttons">
+        <a href="/" class="btn-primary">Start Exporting Now →</a>
+        <a href="https://github.com/The-habib/Push44" class="btn-ghost" style="color:#94a3b8;border-color:rgba(255,255,255,0.15)" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ALL ARTICLES -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="all-guides-heading">
-  <div class="container">
-    <h2 id="all-guides-heading" class="section-title">Base44 Guides</h2>
-    <div class="grid-3" style="margin-top:32px">
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
       
-<a href="/blog/how-to-export-code-from-base44" class="article-card" aria-label="How to Export Code from Base44">
+        <div class="faq-item">
+          <div class="faq-question">Does removing the badge violate Floot's terms?</div>
+          <div class="faq-answer">This depends on Floot's current terms of service and your plan — always check Floot's own policies before making branding changes to apps hosted on their platform.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Is badge removal easier after exporting to GitHub?</div>
+          <div class="faq-answer">Yes. Once your code lives in your own GitHub repo and you deploy it independently, you have full control over every element, including any injected badges.</div>
+        </div>
+    </section>
+
+    <!-- Related -->
+    
+    <section id="related" aria-labelledby="related-heading" style="margin-top:48px">
+      <h2 id="related-heading">Related Guides</h2>
+      <div class="grid-2">
+        
+<a href="/blog/how-to-export-floot-project" class="article-card" aria-label="How to Export Your Floot Project">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
+    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
   </div>
-  <div class="article-card-title">How to Export Code from Base44</div>
-  <div class="article-card-desc">Step-by-step guide to exporting your full Base44 source code to GitHub using Push44. Free, no subscription, wo...</div>
+  <div class="article-card-title">How to Export Your Floot Project</div>
+  <div class="article-card-desc">Export your Floot project source code to GitHub using Push44. Step-by-step guide for Floot developers. Free, n...</div>
   <div class="article-card-footer">
     <span>⏱ 6 min read</span>
     <span>•</span>
-    <span>18,400 views</span>
+    <span>7,800 views</span>
     <span>•</span>
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/download-base44-source-code" class="article-card" aria-label="How to Download Base44 Source Code">
+<a href="/blog/export-floot-to-github" class="article-card" aria-label="Export Floot to GitHub">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
+    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
   </div>
-  <div class="article-card-title">How to Download Base44 Source Code</div>
-  <div class="article-card-desc">Download your complete Base44 project source code to your local machine or GitHub. Free tool, no subscription ...</div>
+  <div class="article-card-title">Export Floot to GitHub</div>
+  <div class="article-card-desc">Connect your Floot project to GitHub using Push44. Push your source code, track changes, and own your Floot ap...</div>
   <div class="article-card-footer">
     <span>⏱ 5 min read</span>
     <span>•</span>
-    <span>12,300 views</span>
+    <span>6,200 views</span>
     <span>•</span>
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-github-integration" class="article-card" aria-label="Base44 GitHub Integration — Complete Guide">
+<a href="/blog/floot-magic-link-token-guide" class="article-card" aria-label="Getting Your Floot Session Token">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">Base44 GitHub Integration — Complete Guide</div>
-  <div class="article-card-desc">Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. F...</div>
-  <div class="article-card-footer">
-    <span>⏱ 7 min read</span>
-    <span>•</span>
-    <span>22,100 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-version-control-guide" class="article-card" aria-label="Base44 Version Control Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
+    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>
   </div>
-  <div class="article-card-title">Base44 Version Control Guide</div>
-  <div class="article-card-desc">Add Git version control to your Base44 projects with Push44. Track every change, roll back to any version, and...</div>
-  <div class="article-card-footer">
-    <span>⏱ 8 min read</span>
-    <span>•</span>
-    <span>9,800 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-project-backup-guide" class="article-card" aria-label="Base44 Project Backup Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">Base44 Project Backup Guide</div>
-  <div class="article-card-desc">Create automatic, reliable backups of your Base44 projects with Push44. Keep your AI-built apps safe from data...</div>
+  <div class="article-card-title">Getting Your Floot Session Token</div>
+  <div class="article-card-desc">Step-by-step guide to retrieving your Floot session token through the magic link login flow, so you can connec...</div>
   <div class="article-card-footer">
     <span>⏱ 5 min read</span>
     <span>•</span>
-    <span>8,200 views</span>
+    <span>4,900 views</span>
     <span>•</span>
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="complementary" aria-label="Article sidebar">
+
+    <!-- TOC -->
+    <div class="sidebar-card">
+      <h4>On This Page</h4>
+      <a href="#introduction" class="toc-link">Introduction</a><a href="#the-problem" class="toc-link">The Problem</a><a href="#the-solution" class="toc-link">The Solution</a><a href="#step-by-step" class="toc-link">Step-by-Step Guide</a><a href="#tips" class="toc-link">Pro Tips</a><a href="#faq" class="toc-link">FAQ</a><a href="#related" class="toc-link">Related Guides</a>
     </div>
-  </div>
-</section>
 
-<!-- FAQ -->
+    <!-- Start Exporting CTA -->
+    <div class="sidebar-card" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-color:rgba(255,255,255,0.08)">
+      <h4 style="color:#94a3b8">Free Tool</h4>
+      <div style="font-weight:800;font-size:15px;color:#f8fafc;margin-bottom:8px">Push44 — Export to GitHub</div>
+      <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
+      <a href="/" class="btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:11px 0">Start Exporting →</a>
+    </div>
 
-<section style="padding:64px 24px" aria-labelledby="faq-platform-heading">
-  <div class="container" style="max-width:800px">
-    <h2 id="faq-platform-heading" class="section-title">Base44 FAQ</h2>
-    
-      <div class="faq-item">
-        <div class="faq-question">Does Push44 work with all Base44 projects?</div>
-        <div class="faq-answer">Yes. Push44 uses the Base44 API to read any project associated with your account.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Do I need a paid Base44 plan?</div>
-        <div class="faq-answer">No. The Base44 API used by Push44 is available to all account tiers.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">How long does a Base44 export take?</div>
-        <div class="faq-answer">Typically under 30 seconds for most projects.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Can I export multiple Base44 projects?</div>
-        <div class="faq-answer">Yes. Run Push44 separately for each project, pointing to different GitHub repos.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Is my Base44 API token safe in Push44?</div>
-        <div class="faq-answer">Yes. It's stored in your browser's localStorage and never sent to any Push44 server.</div>
-      </div>
-  </div>
-</section>
-
-<!-- RELATED PLATFORMS -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="other-platforms-heading">
-  <div class="container">
-    <h2 id="other-platforms-heading" class="section-title">Other Platforms</h2>
-    <div class="grid-4" style="margin-top:24px">
+    <!-- Popular Searches -->
+    <div class="sidebar-card">
+      <h4>People Also Search</h4>
       
-        <a href="/platforms/rocket-new" class="cat-card" style="background:#f0fdf4" aria-label="Rocket.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#22c55e;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">R</div>
-          <div class="cat-name">Rocket.new</div>
-          <div class="cat-desc">4 guides</div>
-        </a>
-        <a href="/platforms/floot" class="cat-card" style="background:#eff6ff" aria-label="Floot export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">F</div>
-          <div class="cat-name">Floot</div>
-          <div class="cat-desc">5 guides</div>
-        </a>
-        <a href="/platforms/zite" class="cat-card" style="background:#fdf4ff" aria-label="Zite export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">Z</div>
-          <div class="cat-name">Zite</div>
-          <div class="cat-desc">3 guides</div>
-        </a>
+        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
+        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
+        <a href="/blog/download-base44-source-code" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Download Base44 source code</a>
+        <a href="/blog/export-rocket-new-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Rocket.new to GitHub</a>
+        <a href="/blog/how-to-export-floot-project" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Floot project</a>
+        <a href="/blog/zite-github-export-guide" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Zite to GitHub</a>
     </div>
-  </div>
-</section>
 
-<!-- CTA -->
-<section style="padding:64px 24px">
-  <div class="container">
-    <div class="cta-section">
-      <h2>Export Your Base44 Code Now</h2>
-      <p>Free, open source, takes under 2 minutes. No subscription required.</p>
-      <div class="cta-buttons">
-        <a href="/" class="btn-primary">Start Exporting →</a>
-      </div>
+    <!-- Platform Hub -->
+    
+    <div class="sidebar-card">
+      <h4>Floot Hub</h4>
+      <a href="/blog/how-to-export-floot-project" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Export Your Floot Project</a><a href="/blog/export-floot-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Floot to GitHub</a><a href="/blog/floot-source-code-backup" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Backup Your Floot Source Code</a><a href="/blog/floot-magic-link-token-guide" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Getting Your Floot Session Token</a>
+      <a href="/platforms/floot" style="display:block;margin-top:10px;font-size:13px;font-weight:600;color:var(--orange)">View all Floot guides →</a>
     </div>
-  </div>
-</section>
+
+  </aside>
+</div>
 
 
 <footer class="footer" role="contentinfo">

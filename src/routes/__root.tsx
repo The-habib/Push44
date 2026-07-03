@@ -52,6 +52,7 @@ function OnboardingGuard() {
     // Public SEO pages — never redirect to onboarding
     if (pathname === "/onboarding" || pathname === "/") return;
     if (pathname.startsWith("/blog") || pathname.startsWith("/platforms") || pathname.startsWith("/compare")) return;
+    if (pathname === "/privacy" || pathname === "/terms") return;
     if ((creds.base44Token || creds.rocketToken || creds.ziteSession || creds.flootToken) && creds.githubToken) {
       markOnboardingDone();
       return;

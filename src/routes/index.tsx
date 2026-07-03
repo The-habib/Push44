@@ -610,7 +610,7 @@ export default function LandingPage() {
             >
               <span style={{ background: "#dcfce7", color: "#16a34a", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 10, letterSpacing: "0.05em" }}>OPEN SOURCE</span>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#71717a", fontWeight: 500 }}>
-                <Star size={12} color="#f59e0b" fill="#f59e0b" /> 12.4K stars on GitHub
+                <Star size={12} color="#f59e0b" fill="#f59e0b" /> Free forever, no strings attached
               </span>
               <span style={{ width: 1, height: 14, background: "#e4e4e7" }} />
               <span style={{ fontSize: 11, color: "#a1a1aa", fontWeight: 600, letterSpacing: "0.04em" }}>MIT LICENSE</span>
@@ -665,22 +665,23 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              {/* social proof */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ display: "flex" }}>
-                  {["#f87171","#60a5fa","#34d399","#a78bfa","#fbbf24"].map((c, i) => (
-                    <div key={i} style={{
-                      width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${c},${c}bb)`,
-                      border: "2.5px solid #fff", marginLeft: i === 0 ? 0 : -10,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 12, fontWeight: 700, color: "#fff",
-                    }}>{["A","B","C","D","E"][i]}</div>
-                  ))}
-                </div>
-                <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.45 }}>
-                  <strong style={{ color: "#52525b" }}>Thousands of builders</strong> already<br />exporting their code with Push44
-                </div>
+              {/* honest trust badges */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {[
+                  { Icon: ShieldCheck, label: "No sign-up required" },
+                  { Icon: Lock,        label: "Runs 100% in your browser" },
+                  { Icon: Heart,       label: "MIT licensed" },
+                ].map(({ Icon, label }) => (
+                  <div key={label} style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    background: "#fafafa", border: "1px solid #e4e4e7",
+                    padding: "6px 12px", borderRadius: 20,
+                    fontSize: 12.5, color: "#52525b", fontWeight: 500,
+                  }}>
+                    <Icon size={13} color="#f97316" />
+                    {label}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -969,7 +970,17 @@ export default function LandingPage() {
               { label: "Platforms",   fn: () => smooth("platforms") },
               { label: "Changelog",   href: "https://github.com/The-habib/Push44/releases" },
             ]} />
-            <FooterCol title="Resources" links={[
+            <FooterCol title="Platform Guides" linkComponents={[
+              { label: "Base44 → GitHub",     to: "/platforms/base44" },
+              { label: "Rocket.new → GitHub",  to: "/platforms/rocket-new" },
+              { label: "Floot → GitHub",       to: "/platforms/floot" },
+              { label: "Zite → GitHub",        to: "/platforms/zite" },
+            ]} />
+            <FooterCol title="Resources" linkComponents={[
+              { label: "Blog",           to: "/blog/" },
+              { label: "Push44 vs ZIP",  to: "/compare/push44-vs-zip-download" },
+              { label: "Push44 vs Manual Export", to: "/compare/push44-vs-manual-export" },
+            ]} links={[
               { label: "Documentation", href: "https://github.com/The-habib/Push44#readme" },
               { label: "API Reference",  href: "https://github.com/The-habib/Push44/wiki" },
               { label: "FAQ",            fn: () => smooth("faq") },
@@ -982,14 +993,20 @@ export default function LandingPage() {
           </div>
 
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <span style={{ fontSize: 12, color: "#3f3f46" }}>© 2024 Push44. Open source under the MIT License.</span>
+            <span style={{ fontSize: 12, color: "#3f3f46" }}>© 2026 Push44. Open source under the MIT License.</span>
             <div style={{ display: "flex", gap: 20 }}>
-              {["Privacy","Terms","GitHub"].map((l, i) => (
-                <a key={l} href={i === 2 ? "https://github.com/The-habib/Push44" : "#"} style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#a1a1aa"}
-                  onMouseLeave={e => e.currentTarget.style.color = "#52525b"}
-                >{l}</a>
-              ))}
+              <Link to="/privacy" style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#a1a1aa"}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#52525b"}
+              >Privacy</Link>
+              <Link to="/terms" style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#a1a1aa"}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#52525b"}
+              >Terms</Link>
+              <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#52525b", textDecoration: "none" }}
+                onMouseEnter={e => e.currentTarget.style.color = "#a1a1aa"}
+                onMouseLeave={e => e.currentTarget.style.color = "#52525b"}
+              >GitHub</a>
             </div>
           </div>
         </div>
@@ -999,12 +1016,23 @@ export default function LandingPage() {
 }
 
 // ── FOOTER COLUMN ──────────────────────────────────────────────────────────────
-function FooterCol({ title, links }: { title: string; links: { label: string; href?: string; fn?: () => void }[] }) {
+function FooterCol({ title, links, linkComponents }: {
+  title: string;
+  links?: { label: string; href?: string; fn?: () => void }[];
+  linkComponents?: { label: string; to: string }[];
+}) {
   return (
     <div>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>{title}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {links.map(l => l.href ? (
+        {linkComponents?.map(l => (
+          <Link key={l.label} to={l.to}
+            style={{ fontSize: 14, color: "#71717a", textDecoration: "none", transition: "color 0.15s" }}
+            onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#fafafa"}
+            onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"}
+          >{l.label}</Link>
+        ))}
+        {links?.map(l => l.href ? (
           <a key={l.label} href={l.href} target={l.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
             style={{ fontSize: 14, color: "#71717a", textDecoration: "none", transition: "color 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.color = "#fafafa"}
