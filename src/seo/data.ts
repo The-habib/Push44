@@ -1666,6 +1666,13 @@ export function getArticlesByPlatform(platform: string): Article[] {
   return ARTICLES.filter(a => a.platform === platform);
 }
 
+// Topic cards on the blog hub mix platform slugs (base44, rocket-new, floot,
+// zite) with content categories (github, export, backup, etc). This matches
+// against whichever field applies so every topic card returns real results.
+export function getArticlesByTopic(topic: string): Article[] {
+  return ARTICLES.filter(a => a.platform === topic || a.category === topic);
+}
+
 export const PLATFORM_META: Record<string, { name: string; color: string; bgColor: string }> = {
   "base44":     { name: "Base44",     color: "#f97316", bgColor: "#fff7ed" },
   "rocket-new": { name: "Rocket.new", color: "#22c55e", bgColor: "#f0fdf4" },

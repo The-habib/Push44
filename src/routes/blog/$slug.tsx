@@ -73,7 +73,7 @@ export default function ArticlePage() {
       />
 
       {/* HERO */}
-      <header className="pt-32 pb-16 px-6 bg-white border-b border-[#f0ece4] relative overflow-hidden">
+      <header className="pt-16 md:pt-32 pb-16 px-6 bg-white border-b border-[#f0ece4] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-50/50 to-transparent" />
         <div className="max-w-4xl mx-auto relative z-10">
           

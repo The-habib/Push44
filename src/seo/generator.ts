@@ -516,7 +516,7 @@ ${nav("Blog")}
     </div>
     <div class="grid-4">
       ${CATEGORIES.map(c => `
-        <a href="/blog?category=${c.slug}" class="cat-card" style="background:${c.color}" aria-label="Browse ${c.name} guides">
+        <a href="/blog?category=${c.slug}#all-guides" class="cat-card" data-cat-card="${c.slug}" style="background:${c.color}" aria-label="Browse ${c.name} guides">
           <div class="cat-icon" aria-hidden="true">${c.icon}</div>
           <div class="cat-name">${escHtml(c.name)}</div>
           <div class="cat-desc">${escHtml(c.description)}</div>
@@ -533,13 +533,71 @@ ${nav("Blog")}
         <p class="section-badge">🌟 Trending Now</p>
         <h2 id="guides-heading" class="section-title" style="margin-bottom:0">Featured Guides</h2>
       </div>
-      <a href="/blog" style="font-size:14px;font-weight:600;color:var(--orange)">View all guides →</a>
+      <a href="/blog#all-guides" style="font-size:14px;font-weight:600;color:var(--orange)">View all guides →</a>
     </div>
     <div class="grid-3">
       ${featured.map(a => articleCard(a)).join("")}
     </div>
   </div>
 </section>
+
+<!-- ALL GUIDES -->
+<section id="all-guides" style="padding:64px 24px;scroll-margin-top:80px" aria-labelledby="all-guides-heading">
+  <div class="container">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;gap:16px;flex-wrap:wrap">
+      <div>
+        <p class="section-badge" id="all-guides-badge">📖 Library</p>
+        <h2 id="all-guides-heading" class="section-title" style="margin-bottom:0">All Guides</h2>
+        <p class="section-subtitle" id="all-guides-count" style="margin-top:6px;margin-bottom:0">${ARTICLES.length} articles</p>
+      </div>
+      <a href="/blog#all-guides" id="clear-filter-link" style="display:none;font-size:14px;font-weight:600;color:#52525b;background:#f4f4f5;padding:8px 16px;border-radius:10px">✕ Clear filter</a>
+    </div>
+    <div class="grid-3" id="all-guides-grid">
+      ${ARTICLES.map(a => articleCard(a)).join("")}
+    </div>
+    <p id="all-guides-empty" style="display:none;text-align:center;color:var(--muted);padding:48px 0">No guides found for this topic yet.</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var category = params.get('category');
+  if(!category) return;
+
+  var cards = document.querySelectorAll('#all-guides-grid .article-card');
+  var visible = 0;
+  cards.forEach(function(card){
+    var matches = card.getAttribute('data-category') === category || card.getAttribute('data-platform') === category;
+    card.style.display = matches ? '' : 'none';
+    if(matches) visible++;
+  });
+
+  var catCard = document.querySelector('[data-cat-card="' + category + '"]');
+  var label = catCard ? catCard.querySelector('.cat-name').textContent : category;
+
+  var badge = document.getElementById('all-guides-badge');
+  var heading = document.getElementById('all-guides-heading');
+  var count = document.getElementById('all-guides-count');
+  var clearLink = document.getElementById('clear-filter-link');
+  var emptyMsg = document.getElementById('all-guides-empty');
+  var grid = document.getElementById('all-guides-grid');
+
+  if(badge) badge.textContent = '📖 ' + label;
+  if(heading) heading.textContent = label + ' Guides';
+  if(count) count.textContent = visible + (visible === 1 ? ' article' : ' articles') + ' about ' + label;
+  if(clearLink) clearLink.style.display = 'inline-block';
+
+  document.querySelectorAll('.cat-card').forEach(function(c){
+    c.style.outline = c.getAttribute('data-cat-card') === category ? '2px solid #f97316' : '';
+  });
+
+  if(visible === 0){
+    if(grid) grid.style.display = 'none';
+    if(emptyMsg) emptyMsg.style.display = 'block';
+  }
+})();
+</script>
 
 <!-- PLATFORM HUB -->
 <section style="padding:64px 24px" aria-labelledby="platforms-heading">
@@ -631,7 +689,7 @@ ${footer()}`;
 function articleCard(a: Article): string {
   const pm = PLATFORM_META[a.platform] || PLATFORM_META.general;
   return `
-<a href="/blog/${a.slug}" class="article-card" aria-label="${escHtml(a.h1)}">
+<a href="/blog/${a.slug}" class="article-card" data-category="${escHtml(a.category)}" data-platform="${escHtml(a.platform)}" aria-label="${escHtml(a.h1)}">
   <div class="article-card-meta">
     ${a.platform !== "general" ? `<span class="badge badge-platform" style="--platform-color:${pm.color};--platform-bg:${pm.bgColor}">${pm.name}</span>` : ""}
     <span class="badge badge-difficulty-${a.difficulty}">${a.difficulty}</span>
@@ -1211,6 +1269,36 @@ ${footer()}`;
       { name: "Blog", url: "/blog" },
       { name: comparison.h1, url: `/compare/${comparison.slug}` },
     ],
+  });
+}
+
+// ─── 404 Page ──────────────────────────────────────────────────────────────────
+
+export function generate404Page(): string {
+  const body = `
+${nav()}
+
+<section style="padding:120px 24px;text-align:center">
+  <div class="container" style="max-width:560px">
+    <p class="section-badge" style="color:#f97316">404</p>
+    <h1 style="font-size:clamp(26px,4vw,36px);font-weight:900;color:var(--dark);letter-spacing:-0.03em;margin-bottom:14px">Page not found</h1>
+    <p style="font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:32px">The guide or page you're looking for doesn't exist or may have been moved.</p>
+    <div class="cta-buttons" style="justify-content:center">
+      <a href="/blog" class="btn-primary">Browse All Guides →</a>
+      <a href="/" class="btn-ghost">Go Home</a>
+    </div>
+  </div>
+</section>
+
+${footer()}`;
+
+  return generateHtmlShell({
+    title: "Page Not Found — Push44",
+    description: "The page you're looking for doesn't exist or may have been moved.",
+    canonical: `${BASE_URL}/404`,
+    ogType: "website",
+    schemas: [],
+    body,
   });
 }
 

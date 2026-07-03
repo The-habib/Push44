@@ -1,10 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ARTICLES, CATEGORIES, POPULAR_SEARCHES, PLATFORMS, COMPARISONS, PLATFORM_META } from "@/seo/data";
+import { ARTICLES, CATEGORIES, POPULAR_SEARCHES, PLATFORMS, COMPARISONS, PLATFORM_META, getArticlesByTopic } from "@/seo/data";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 
+type BlogSearch = { category?: string };
+
 export const Route = createFileRoute("/blog/")({
+  validateSearch: (search: Record<string, unknown>): BlogSearch => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Push44 Blog — Guides to Export AI-Generated Code" },
@@ -57,6 +62,7 @@ function useTypingPlaceholder() {
 
 export default function BlogHome() {
   const navigate = useNavigate();
+  const { category } = Route.useSearch();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof ARTICLES>([]);
   const placeholder = useTypingPlaceholder();
@@ -76,6 +82,14 @@ export default function BlogHome() {
   };
 
   const featured = ARTICLES.slice(0, 9);
+  const activeCategory = category ? CATEGORIES.find(c => c.slug === category) : undefined;
+  const allGuides = category ? getArticlesByTopic(category) : ARTICLES;
+
+  useEffect(() => {
+    if (category) {
+      document.getElementById("all-guides")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [category]);
 
   return (
     <div className="min-h-[100dvh] bg-[#faf8f5] selection:bg-orange-500/30 font-sans overflow-hidden">
@@ -195,20 +209,30 @@ export default function BlogHome() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {CATEGORIES.map((c, i) => (
-                <motion.div
-                  key={c.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                >
-                  <Link to="/blog" search={{ category: c.slug }} className="block h-full bg-white/60 backdrop-blur-md border border-[#f0ece4] rounded-2xl p-5 text-center hover:bg-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-300">
-                    <div className="text-3xl mb-3">{c.icon}</div>
-                    <div className="font-bold text-sm text-stone-800 mb-1">{c.name}</div>
-                  </Link>
-                </motion.div>
-              ))}
+              {CATEGORIES.map((c, i) => {
+                const isActive = category === c.slug;
+                return (
+                  <motion.div
+                    key={c.slug}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                  >
+                    <Link
+                      to="/blog"
+                      search={{ category: c.slug }}
+                      hash="all-guides"
+                      className={`block h-full backdrop-blur-md border rounded-2xl p-5 text-center hover:bg-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-300 ${
+                        isActive ? "bg-white border-orange-300 shadow-[0_8px_30px_rgba(0,0,0,0.06)]" : "bg-white/60 border-[#f0ece4]"
+                      }`}
+                    >
+                      <div className="text-3xl mb-3">{c.icon}</div>
+                      <div className={`font-bold text-sm mb-1 ${isActive ? "text-orange-600" : "text-stone-800"}`}>{c.name}</div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -222,13 +246,50 @@ export default function BlogHome() {
                 <span className="text-orange-600 font-bold text-sm tracking-wider uppercase mb-2 block">Trending</span>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight">Featured Guides</h2>
               </div>
-              <Link to="/blog" className="text-orange-600 font-semibold hover:text-orange-700 transition-colors">View all &rarr;</Link>
+              <Link to="/blog" search={{}} hash="all-guides" className="text-orange-600 font-semibold hover:text-orange-700 transition-colors">View all &rarr;</Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featured.slice(0, 6).map((a, i) => (
                 <ArticleCard key={a.slug} article={a} index={i} />
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ALL GUIDES */}
+        <section id="all-guides" className="py-24 px-6 scroll-mt-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+              <div>
+                <span className="text-orange-600 font-bold text-sm tracking-wider uppercase mb-2 block">
+                  {activeCategory ? activeCategory.name : "Library"}
+                </span>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight">
+                  {activeCategory ? `${activeCategory.name} Guides` : "All Guides"}
+                </h2>
+                <p className="text-stone-500 mt-2">
+                  {allGuides.length} {allGuides.length === 1 ? "article" : "articles"}
+                  {activeCategory ? ` about ${activeCategory.name}` : ""}
+                </p>
+              </div>
+              {activeCategory && (
+                <Link to="/blog" search={{}} hash="all-guides" className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold rounded-xl transition-colors text-sm">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  Clear filter
+                </Link>
+              )}
+            </div>
+            {allGuides.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {allGuides.map((a, i) => (
+                  <ArticleCard key={a.slug} article={a} index={i % 6} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-white/60 border border-[#f0ece4] rounded-2xl">
+                <p className="text-stone-500">No guides found for this topic yet.</p>
+              </div>
+            )}
           </div>
         </section>
 
