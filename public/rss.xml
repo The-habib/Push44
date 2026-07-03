@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Push44 Blog</title>
+    <link>https://push44.vercel.app/blog</link>
+    <atom:link href="https://push44.vercel.app/rss.xml" rel="self" type="application/rss+xml" />
+    <description>Guides, tutorials and comparisons for exporting AI-generated source code to GitHub.</description>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 03 Jul 2026 00:23:24 GMT</lastBuildDate>
+    <managingEditor>team@push44.app (Push44 Team)</managingEditor>
+    <webMaster>team@push44.app (Push44 Team)</webMaster>
+    <image>
+      <url>https://push44.vercel.app/logo.png</url>
+      <title>Push44 Blog</title>
+      <link>https://push44.vercel.app/blog</link>
+    </image>
+    
+  <item>
+    <title><![CDATA[How to Export Code from Base44]]></title>
+    <link>https://push44.vercel.app/blog/how-to-export-code-from-base44</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/how-to-export-code-from-base44</guid>
+    <description><![CDATA[Step-by-step guide to exporting your full Base44 source code to GitHub using Push44. Free, no subscription, works with any Base44 project in under 2 minutes.]]></description>
+    <pubDate>Mon, 01 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Download Base44 Source Code]]></title>
+    <link>https://push44.vercel.app/blog/download-base44-source-code</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/download-base44-source-code</guid>
+    <description><![CDATA[Download your complete Base44 project source code to your local machine or GitHub. Free tool, no subscription needed. Works with all Base44 projects.]]></description>
+    <pubDate>Wed, 03 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Base44 GitHub Integration — Complete Guide]]></title>
+    <link>https://push44.vercel.app/blog/base44-github-integration</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/base44-github-integration</guid>
+    <description><![CDATA[Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. Free, open source, no subscription required.]]></description>
+    <pubDate>Fri, 05 Jun 2026 00:00:00 GMT</pubDate>
+    <category>github</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Base44 Version Control Guide]]></title>
+    <link>https://push44.vercel.app/blog/base44-version-control-guide</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/base44-version-control-guide</guid>
+    <description><![CDATA[Add Git version control to your Base44 projects with Push44. Track every change, roll back to any version, and collaborate with your team. Free forever.]]></description>
+    <pubDate>Mon, 08 Jun 2026 00:00:00 GMT</pubDate>
+    <category>version-control</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Base44 Project Backup Guide]]></title>
+    <link>https://push44.vercel.app/blog/base44-project-backup-guide</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/base44-project-backup-guide</guid>
+    <description><![CDATA[Create automatic, reliable backups of your Base44 projects with Push44. Keep your AI-built apps safe from data loss, platform changes, and account issues.]]></description>
+    <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
+    <category>backup</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Export Your Rocket.new Project]]></title>
+    <link>https://push44.vercel.app/blog/how-to-export-rocket-new-project</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/how-to-export-rocket-new-project</guid>
+    <description><![CDATA[Complete guide to exporting your Rocket.new source code to GitHub using Push44. Get your full project files, build APKs, and own your code. Free.]]></description>
+    <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Export Rocket.new to GitHub]]></title>
+    <link>https://push44.vercel.app/blog/export-rocket-new-to-github</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/export-rocket-new-to-github</guid>
+    <description><![CDATA[Push your Rocket.new project source code to GitHub in one click using Push44. Free, open source, works with all Rocket.new projects.]]></description>
+    <pubDate>Sun, 14 Jun 2026 00:00:00 GMT</pubDate>
+    <category>github</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Download Rocket.new Source Code]]></title>
+    <link>https://push44.vercel.app/blog/rocket-new-source-code-download</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/rocket-new-source-code-download</guid>
+    <description><![CDATA[Download your complete Rocket.new project source code to GitHub or as a ZIP file using Push44. Free, no paywall, includes all backend and frontend files.]]></description>
+    <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Rocket.new APK Export & Build Guide]]></title>
+    <link>https://push44.vercel.app/blog/rocket-new-apk-export-guide</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/rocket-new-apk-export-guide</guid>
+    <description><![CDATA[Build and export Android APKs from Rocket.new projects using Push44. Trigger builds, download APKs, and manage your Android app files.]]></description>
+    <pubDate>Thu, 18 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Export Your Floot Project]]></title>
+    <link>https://push44.vercel.app/blog/how-to-export-floot-project</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/how-to-export-floot-project</guid>
+    <description><![CDATA[Export your Floot project source code to GitHub using Push44. Step-by-step guide for Floot developers. Free, no subscription, works with all Floot apps.]]></description>
+    <pubDate>Sat, 20 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Export Floot to GitHub]]></title>
+    <link>https://push44.vercel.app/blog/export-floot-to-github</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/export-floot-to-github</guid>
+    <description><![CDATA[Connect your Floot project to GitHub using Push44. Push your source code, track changes, and own your Floot app. Free, open source.]]></description>
+    <pubDate>Mon, 22 Jun 2026 00:00:00 GMT</pubDate>
+    <category>github</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Backup Your Floot Source Code]]></title>
+    <link>https://push44.vercel.app/blog/floot-source-code-backup</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/floot-source-code-backup</guid>
+    <description><![CDATA[Create complete backups of your Floot projects to GitHub with Push44. Protect your work from data loss and platform changes. Free.]]></description>
+    <pubDate>Wed, 24 Jun 2026 00:00:00 GMT</pubDate>
+    <category>backup</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Export Your Zite Project]]></title>
+    <link>https://push44.vercel.app/blog/how-to-export-zite-project</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/how-to-export-zite-project</guid>
+    <description><![CDATA[Export your Zite project source code to GitHub using Push44. Complete guide, free, includes all templates and components.]]></description>
+    <pubDate>Fri, 26 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Zite GitHub Export Guide]]></title>
+    <link>https://push44.vercel.app/blog/zite-github-export-guide</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/zite-github-export-guide</guid>
+    <description><![CDATA[Push your Zite app source code to GitHub with Push44. Own your Zite project, enable version control, and back up your work. Free.]]></description>
+    <pubDate>Sun, 28 Jun 2026 00:00:00 GMT</pubDate>
+    <category>github</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Backup AI-Generated Apps]]></title>
+    <link>https://push44.vercel.app/blog/backup-ai-generated-apps</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/backup-ai-generated-apps</guid>
+    <description><![CDATA[Protect your AI-built apps with regular GitHub backups. Complete guide covering Base44, Rocket.new, Floot, and Zite. Free tool, no limits.]]></description>
+    <pubDate>Mon, 01 Jun 2026 00:00:00 GMT</pubDate>
+    <category>backup</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[GitHub Version Control for AI-Generated Apps]]></title>
+    <link>https://push44.vercel.app/blog/github-version-control-for-ai-apps</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/github-version-control-for-ai-apps</guid>
+    <description><![CDATA[Add Git version control to any AI-built app. Track every change, collaborate with developers, and own your history. Works with Base44, Rocket.new, Floot, Zite.]]></description>
+    <pubDate>Fri, 05 Jun 2026 00:00:00 GMT</pubDate>
+    <category>version-control</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[How to Export AI Code Without a Subscription]]></title>
+    <link>https://push44.vercel.app/blog/export-code-without-subscription</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/export-code-without-subscription</guid>
+    <description><![CDATA[Export your AI-built app source code for free — no subscription required. Push44 bypasses export restrictions on Base44, Rocket.new, Floot, and Zite.]]></description>
+    <pubDate>Mon, 08 Jun 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[The Complete Guide to AI Code Ownership]]></title>
+    <link>https://push44.vercel.app/blog/ai-code-ownership-guide</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/ai-code-ownership-guide</guid>
+    <description><![CDATA[Own 100% of your AI-generated source code. Export, backup, and version-control apps built with any AI platform. No subscription. No lock-in.]]></description>
+    <pubDate>Wed, 10 Jun 2026 00:00:00 GMT</pubDate>
+    <category>open-source</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[Free AI Code Export Tools — 2025 Comparison]]></title>
+    <link>https://push44.vercel.app/blog/free-ai-code-export-tools</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/free-ai-code-export-tools</guid>
+    <description><![CDATA[Compare free tools for exporting AI-generated code to GitHub. Push44 vs manual methods vs zip downloads. Find the best approach for Base44, Rocket.new, Floot, Zite.]]></description>
+    <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+    <category>comparisons</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  <item>
+    <title><![CDATA[AI Project Backup Best Practices]]></title>
+    <link>https://push44.vercel.app/blog/ai-project-backup-best-practices</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/ai-project-backup-best-practices</guid>
+    <description><![CDATA[Best practices for backing up AI-generated apps to GitHub. Frequency, organization, naming conventions, and recovery testing. Free guide.]]></description>
+    <pubDate>Mon, 15 Jun 2026 00:00:00 GMT</pubDate>
+    <category>backup</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
+  </channel>
+</rss>

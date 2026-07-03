@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { seoPlugin } from "./src/seo/vite-plugin";
 
 function ziteProxyPlugin(): Plugin {
   const ZITE_BASE = "https://server.zite.com";
@@ -258,6 +259,7 @@ export default defineConfig({
     TanStackRouterVite({ routesDirectory: "./src/routes", generatedRouteTree: "./src/routeTree.gen.ts" }),
     react(),
     tailwindcss(),
+    seoPlugin(),
     ziteProxyPlugin(),
     flootProxyPlugin(),
     githubOAuthPlugin(),

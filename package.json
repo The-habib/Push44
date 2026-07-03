@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate-seo": "bun scripts/generate-seo.ts",
+    "prebuild": "bun run generate-seo",
     "build": "vite build",
     "preview": "vite preview"
   },

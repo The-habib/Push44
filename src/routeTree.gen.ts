@@ -16,6 +16,10 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as PlatformsPlatformRouteImport } from './routes/platforms/$platform'
+import { Route as CompareSlugRouteImport } from './routes/compare/$slug'
+import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -52,6 +56,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformsPlatformRoute = PlatformsPlatformRouteImport.update({
+  id: '/platforms/$platform',
+  path: '/platforms/$platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareSlugRoute = CompareSlugRouteImport.update({
+  id: '/compare/$slug',
+  path: '/compare/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +85,10 @@ export interface FileRoutesByFullPath {
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/compare/$slug': typeof CompareSlugRoute
+  '/platforms/$platform': typeof PlatformsPlatformRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +98,10 @@ export interface FileRoutesByTo {
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/compare/$slug': typeof CompareSlugRoute
+  '/platforms/$platform': typeof PlatformsPlatformRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +112,10 @@ export interface FileRoutesById {
   '/push': typeof PushRoute
   '/repositories': typeof RepositoriesRoute
   '/settings': typeof SettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/compare/$slug': typeof CompareSlugRoute
+  '/platforms/$platform': typeof PlatformsPlatformRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +127,10 @@ export interface FileRouteTypes {
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/blog/$slug'
+    | '/compare/$slug'
+    | '/platforms/$platform'
+    | '/blog/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +140,10 @@ export interface FileRouteTypes {
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/blog/$slug'
+    | '/compare/$slug'
+    | '/platforms/$platform'
+    | '/blog'
   id:
     | '__root__'
     | '/'
@@ -109,6 +153,10 @@ export interface FileRouteTypes {
     | '/push'
     | '/repositories'
     | '/settings'
+    | '/blog/$slug'
+    | '/compare/$slug'
+    | '/platforms/$platform'
+    | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +167,10 @@ export interface RootRouteChildren {
   PushRoute: typeof PushRoute
   RepositoriesRoute: typeof RepositoriesRoute
   SettingsRoute: typeof SettingsRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  CompareSlugRoute: typeof CompareSlugRoute
+  PlatformsPlatformRoute: typeof PlatformsPlatformRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +224,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms/$platform': {
+      id: '/platforms/$platform'
+      path: '/platforms/$platform'
+      fullPath: '/platforms/$platform'
+      preLoaderRoute: typeof PlatformsPlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/$slug': {
+      id: '/compare/$slug'
+      path: '/compare/$slug'
+      fullPath: '/compare/$slug'
+      preLoaderRoute: typeof CompareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +263,10 @@ const rootRouteChildren: RootRouteChildren = {
   PushRoute: PushRoute,
   RepositoriesRoute: RepositoriesRoute,
   SettingsRoute: SettingsRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  CompareSlugRoute: CompareSlugRoute,
+  PlatformsPlatformRoute: PlatformsPlatformRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

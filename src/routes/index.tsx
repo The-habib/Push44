@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { isOnboardingDone } from "@/lib/storage";
 import appLogo from "@/assets/logo.png";
@@ -7,7 +7,7 @@ import rocketLogoImg from "@/assets/rocket-logo.png";
 import flootLogoImg from "@/assets/floot-logo.png";
 import ziteLogoImg from "@/assets/zite-logo.png";
 import {
-  Zap, GitCompare, Heart, ShieldCheck, Download, History,
+  Zap, GitCompare, Heart, ShieldCheck, Download, History, BookOpen,
   Lock, Ban, CreditCard, AlertCircle,
   Link2, Layers, Code2, UploadCloud,
   CheckCircle2, Github, Star, ArrowRight, Menu, X,
@@ -515,6 +515,17 @@ export default function LandingPage() {
                 onMouseLeave={e => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.background = "none"; }}
               >{l.label}</button>
             ))}
+            <Link to="/blog/" style={{
+              display: "flex", alignItems: "center", gap: 5,
+              fontSize: 14, color: "#71717a", textDecoration: "none",
+              fontWeight: 500, padding: "6px 12px", borderRadius: 8, transition: "all 0.15s",
+            }}
+              onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = "#18181b"; e.currentTarget.style.background = "#f4f4f5"; }}
+              onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.background = "none"; }}
+            >
+              <BookOpen size={14} />
+              <span>Blog</span>
+            </Link>
             <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{
               display: "flex", alignItems: "center", gap: 6,
               fontSize: 14, color: "#71717a", textDecoration: "none",
@@ -556,6 +567,11 @@ export default function LandingPage() {
                 borderBottom: "1px solid #fafafa", fontFamily: "inherit",
               }}>{l.label}</button>
             ))}
+            <Link to="/blog/" onClick={() => setMenuOpen(false)} style={{
+              display: "block", padding: "12px 0",
+              fontSize: 16, color: "#52525b", fontWeight: 500, textDecoration: "none",
+              borderBottom: "1px solid #fafafa",
+            }}>Blog</Link>
             <button onClick={() => { go(); setMenuOpen(false); }} className="lp-btn-primary" style={{ width: "100%", marginTop: 16, padding: "13px 0", fontSize: 15, justifyContent: "center" }}>
               Launch App <ArrowRight size={15} />
             </button>
