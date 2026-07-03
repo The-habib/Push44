@@ -106,7 +106,7 @@ export const POPULAR_SEARCHES = [
   { label: "Free AI code export tool",            slug: "free-ai-code-export-tools" },
   { label: "AI project backup guide",             slug: "ai-project-backup-best-practices" },
   { label: "Source code ownership for AI apps",   slug: "ai-code-ownership-guide" },
-  { label: "One-click GitHub export",             slug: "base44-github-integration" },
+  { label: "One-click GitHub export",             slug: "github-version-control-for-ai-apps" },
   { label: "Rocket.new source code download",     slug: "rocket-new-source-code-download" },
   { label: "Floot source code backup",            slug: "floot-source-code-backup" },
 ];
@@ -233,7 +233,7 @@ export const ARTICLES: Article[] = [
 
   {
     slug: "base44-github-integration",
-    title: "Base44 GitHub Integration: Push Your Code in One Click | Push44",
+    title: "Base44 GitHub Integration: One-Click Code Push | Push44",
     h1: "Base44 GitHub Integration — Complete Guide",
     description: "Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. Free, open source, no subscription required.",
     platform: "base44",
@@ -296,7 +296,7 @@ export const ARTICLES: Article[] = [
 
   {
     slug: "base44-version-control-guide",
-    title: "Base44 Version Control: Git History for Your AI Apps | Push44",
+    title: "Base44 Version Control Guide for AI Apps | Push44",
     h1: "Base44 Version Control Guide",
     description: "Add Git version control to your Base44 projects with Push44. Track every change, roll back to any version, and collaborate with your team. Free forever.",
     platform: "base44",
@@ -1104,7 +1104,7 @@ export const PLATFORMS: PlatformData[] = [
 export const COMPARISONS: Comparison[] = [
   {
     slug: "push44-vs-zip-download",
-    title: "Push44 vs ZIP Download: Which is Better for AI Code Export? | Push44",
+    title: "Push44 vs ZIP Download: Best AI Code Export | Push44",
     h1: "Push44 vs ZIP Download",
     description: "Compare Push44 (automated GitHub push) vs ZIP download for exporting AI-generated code. Git history, automation, and long-term value compared.",
     summary: "ZIP downloads give you files. Push44 gives you files plus Git history, automation, and a proper development workflow. For anything beyond a one-time export, Push44 wins.",
@@ -1190,7 +1190,7 @@ export const COMPARISONS: Comparison[] = [
   },
   {
     slug: "version-control-vs-zip-backup",
-    title: "Version Control vs ZIP Backup: What's Better for AI Apps? | Push44",
+    title: "Version Control vs ZIP Backup for AI Apps | Push44",
     h1: "Version Control vs ZIP Backup",
     description: "Version control or ZIP backups for AI-generated apps? Compare both approaches for ongoing AI projects, team use, and long-term code preservation.",
     summary: "Version control (Git/GitHub) is the industry standard for a reason: it's more complete, more useful, and ultimately simpler for ongoing work. ZIP backups are a fallback, not a strategy.",

@@ -1,5 +1,16 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "GPQiYSWzEPGs46EVCoAji"
+uri = "file://attached_assets/generated_images/og_image_base.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "V9IbLPe7Ji2a3GESQI6R_"
+uri = "file://attached_assets/generated_images/og_bg_clean.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "NMSoFNURoDjDTGNPozEa6"

@@ -202,6 +202,21 @@ export default function BlogHome() {
               </Link>
             ))}
           </div>
+
+          {/* Trust bar */}
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 32px", marginTop: 40, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            {[
+              [`${ARTICLES.length}+`, "Guides & Tutorials"],
+              [`${PLATFORMS.length}`, "Platforms Covered"],
+              ["100%", "Free, No Sign-Up"],
+              ["MIT", "Open Source License"],
+            ].map(([stat, label]) => (
+              <div key={label} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#f97316", letterSpacing: "-0.02em" }}>{stat}</div>
+                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -342,9 +357,10 @@ function ArticleCard({ article: a }: { article: typeof ARTICLES[0] }) {
   const pm = PLATFORM_META[a.platform] || PLATFORM_META.general;
   return (
     <Link to="/blog/$slug" params={{ slug: a.slug }}
-      style={{ display: "flex", flexDirection: "column", gap: 14, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 14, padding: 24, textDecoration: "none", color: "inherit", transition: "all 0.2s" }}
+      style={{ display: "flex", flexDirection: "column", gap: 14, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 14, padding: 24, textDecoration: "none", color: "inherit", transition: "all 0.2s", position: "relative", overflow: "hidden" }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.borderColor = "#d4d4d8"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ""; (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.borderColor = "#e4e4e7"; }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${pm.color}, ${pm.color}88)` }} />
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         {a.platform !== "general" && <span style={{ fontSize: 12, fontWeight: 600, color: pm.color, background: pm.bgColor, border: `1px solid ${pm.color}44`, padding: "2px 8px", borderRadius: 20 }}>{pm.name}</span>}
         <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: a.difficulty === "beginner" ? "#f0fdf4" : a.difficulty === "intermediate" ? "#fff7ed" : "#fef2f2", color: a.difficulty === "beginner" ? "#16a34a" : a.difficulty === "intermediate" ? "#f97316" : "#ef4444", border: `1px solid ${a.difficulty === "beginner" ? "#bbf7d0" : a.difficulty === "intermediate" ? "#fed7aa" : "#fecaca"}` }}>{a.difficulty}</span>
