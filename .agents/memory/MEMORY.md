@@ -14,3 +14,4 @@
 - [Push44 Platform Feature Split](push44-platform-features.md) — Floot = Publish to web (FlootPublishPanel); Rocket = Build APK only. Never add publish UI to Rocket or APK UI to Floot.
 - [Floot Subdomain Availability](floot-subdomain-availability.md) — no tRPC endpoint exists to check; requestDeploy always returns success regardless; validate format only, never server-check.
 - [Floot Badge Removal](floot-badge-removal.md) — CSS injection via globalChatAndStore+userModification persists #__Floot-madewithFloot{display:none!important} to sketchCss; requires serverLastMessageId from page HTML.
+- [Push44 SEO-safe redesign](push44-seo-safe-redesign.md) — constrain DESIGN subagent to visual layer only when redesigning SEO blog pages; re-run generate-seo after every redesign.

@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ARTICLES, CATEGORIES, POPULAR_SEARCHES, PLATFORMS, COMPARISONS, PLATFORM_META } from "@/seo/data";
+import { ArticleCard } from "@/components/blog/ArticleCard";
 
 export const Route = createFileRoute("/blog/")({
   head: () => ({
@@ -16,7 +18,6 @@ export const Route = createFileRoute("/blog/")({
   component: BlogHome,
 });
 
-// ── Typing animation for search ───────────────────────────────────────────────
 const PLACEHOLDERS = [
   "How to export code from Base44",
   "Download Rocket.new source code",
@@ -77,303 +78,250 @@ export default function BlogHome() {
   const featured = ARTICLES.slice(0, 9);
 
   return (
-    <div className="blog-wrap" style={{ fontFamily: "Inter, -apple-system, sans-serif", color: "#18181b" }}>
-      {/* responsive overrides */}
-      
-<style>{`
-  /* ── Mobile nav safety ─────────────────────────────────── */
-  .blog-wrap { overflow-x: hidden; }
+    <div className="min-h-[100dvh] bg-[#faf8f5] selection:bg-orange-500/30 font-sans overflow-hidden">
+      {/* Dynamic Background Mesh */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/5 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[120px]" />
+      </div>
 
-  /* ── Hero ──────────────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .b-hero  { padding: 48px 16px 56px !important; }
-    .b-hero h1 { font-size: 32px !important; }
-    .b-search  { padding: 12px 14px !important; }
-    .b-chips   { gap: 8px !important; }
-    .b-chip    { font-size: 12px !important; padding: 6px 12px !important; }
-    .b-section { padding: 40px 16px !important; }
-    .b-cats-grid   { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-    .b-cta-inner   { padding: 36px 20px !important; border-radius: 14px !important; }
-    .b-cta-btns    { flex-direction: column !important; gap: 10px !important; }
-    .b-cta-btns > * { width: 100% !important; justify-content: center !important; text-align: center !important; }
-    .b-hdr { flex-direction: column !important; align-items: flex-start !important; }
-  }
-  @media (max-width: 480px) {
-    .b-cats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  }
+      <div className="relative z-10">
+        {/* HERO */}
+        <section className="pt-32 pb-24 px-6 relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            >
+              <span className="inline-block bg-orange-500/10 border border-orange-500/20 text-orange-600 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-8">
+                Knowledge Base & Documentation
+              </span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] mb-6">
+                Export Code from <br className="hidden md:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
+                  Every AI Builder
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-stone-500 leading-relaxed mb-12 max-w-2xl mx-auto font-medium">
+                Step-by-step guides, tutorials, comparisons, and documentation to export, backup, and own your AI-generated source code.
+              </p>
+            </motion.div>
 
-  /* ── Article page ───────────────────────────────────────── */
-  @media (max-width: 1024px) {
-    .art-body    { grid-template-columns: 1fr !important; padding: 28px 16px !important; gap: 0 !important; }
-    .art-sidebar { display: none !important; }
-    .art-hero    { padding: 36px 16px 48px !important; }
-  }
-  @media (max-width: 640px) {
-    .art-related { grid-template-columns: 1fr !important; }
-    .art-breadcrumb { font-size: 12px !important; }
-    .art-meta    { flex-wrap: wrap !important; }
-    .art-step    { gap: 12px !important; padding: 16px !important; }
-    .art-step-num { width: 26px !important; height: 26px !important; font-size: 12px !important; flex-shrink: 0 !important; }
-    .art-cta     { padding: 28px 20px !important; border-radius: 14px !important; }
-  }
+            {/* Search */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+              className="relative max-w-2xl mx-auto mb-10"
+            >
+              <div className="bg-white/80 backdrop-blur-xl border border-stone-200/60 rounded-2xl p-4 flex items-center gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.04)] focus-within:border-orange-500/50 focus-within:ring-4 focus-within:ring-orange-500/10 transition-all duration-300">
+                <svg className="w-6 h-6 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={e => handleSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && searchResults[0]) navigate({ to: "/blog/$slug", params: { slug: searchResults[0].slug } }); }}
+                  placeholder={placeholder || "Search guides..."}
+                  className="bg-transparent border-none outline-none text-stone-800 text-lg flex-1 placeholder:text-stone-400"
+                  aria-label="Search guides"
+                  autoComplete="off"
+                />
+                {query && (
+                  <button onClick={() => { setQuery(""); setSearchResults([]); }} className="text-stone-400 hover:text-stone-600 transition-colors">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </div>
 
-  /* ── Platform hub ───────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .plat-howto  { grid-template-columns: 1fr !important; gap: 32px !important; }
-    .plat-hero   { padding: 40px 16px !important; }
-    .plat-section { padding: 40px 16px !important; }
-  }
+              {/* Autocomplete */}
+              <AnimatePresence>
+                {searchResults.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-[110%] left-0 right-0 bg-white/95 backdrop-blur-2xl border border-stone-200/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-50 overflow-hidden"
+                  >
+                    {searchResults.map(a => {
+                      const pm = PLATFORM_META[a.platform] || PLATFORM_META.general;
+                      return (
+                        <Link key={a.slug} to="/blog/$slug" params={{ slug: a.slug }} className="flex items-start gap-4 p-4 hover:bg-stone-50/80 transition-colors border-b border-stone-100 last:border-0">
+                          <span className="text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 mt-0.5" style={{ color: pm.color, backgroundColor: pm.bgColor, borderColor: `${pm.color}44` }}>
+                            {a.platform !== "general" ? pm.name : "Guide"}
+                          </span>
+                          <div className="text-left">
+                            <div className="text-[15px] font-semibold text-stone-800 leading-snug">{a.h1}</div>
+                            <div className="text-xs text-stone-500 mt-1.5 flex items-center gap-2">
+                              <span>{a.readTime} min read</span>
+                              <span>&middot;</span>
+                              <span>{a.views.toLocaleString()} views</span>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-  /* ── Comparison page ────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .cmp-hero    { padding: 40px 16px !important; }
-    .cmp-scores  { gap: 10px !important; }
-    .cmp-score   { min-width: 80px !important; padding: 12px 14px !important; }
-    .cmp-body    { padding: 28px 16px !important; }
-    .cmp-cta     { padding: 32px 20px !important; border-radius: 14px !important; }
-  }
-  @media (max-width: 640px) {
-    .cmp-others  { grid-template-columns: 1fr !important; }
-    .cmp-verdict { padding: 12px 16px !important; }
-    table th, table td { padding: 10px 10px !important; font-size: 12px !important; }
-  }
-`}</style>
+            {/* Popular chips */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex flex-wrap gap-2.5 justify-center max-w-3xl mx-auto"
+            >
+              {POPULAR_SEARCHES.slice(0, 6).map(s => (
+                <Link key={s.slug} to="/blog/$slug" params={{ slug: s.slug }} className="inline-flex items-center px-4 py-2 bg-white/50 backdrop-blur-sm border border-stone-200/60 rounded-full text-sm font-medium text-stone-600 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50/50 transition-all duration-200">
+                  {s.label}
+                </Link>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
-      {/* HERO */}
-      <section className="b-hero" style={{ background: "linear-gradient(135deg,#0f172a 0%,#1e293b 100%)", padding: "80px 24px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 60% at 50% 0%,rgba(249,115,22,.15) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
-          <span style={{ display: "inline-block", background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.3)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 14px", borderRadius: 20, marginBottom: 20 }}>
-            📚 Knowledge Base &amp; Documentation
-          </span>
-          <h1 style={{ fontSize: "clamp(32px,5vw,52px)", fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 18 }}>
-            Export Code from{" "}
-            <span style={{ background: "linear-gradient(135deg,#f97316,#fb923c)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Every AI Builder</span>
-          </h1>
-          <p style={{ fontSize: 17, color: "#94a3b8", lineHeight: 1.7, marginBottom: 32, maxWidth: 560, margin: "0 auto 32px" }}>
-            Step-by-step guides, tutorials, comparisons and documentation to export, backup and own your AI-generated source code.
-          </p>
-
-          {/* Search */}
-          <div style={{ position: "relative", maxWidth: 520, margin: "0 auto 32px" }}>
-            <div style={{ background: "rgba(255,255,255,0.08)", border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ color: "#64748b", fontSize: 18 }}>🔍</span>
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={e => handleSearch(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && searchResults[0]) navigate({ to: "/blog/$slug", params: { slug: searchResults[0].slug } }); }}
-                placeholder={placeholder || "Search guides..."}
-                style={{ background: "none", border: "none", outline: "none", color: "#f8fafc", fontSize: 15, flex: 1, fontFamily: "inherit", width: "100%" }}
-                aria-label="Search guides"
-                autoComplete="off"
-              />
-              {query && <button onClick={() => { setQuery(""); setSearchResults([]); }} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>}
+        {/* CATEGORIES */}
+        <section className="py-20 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-stone-900 tracking-tight">Browse by Topic</h2>
+                <p className="text-stone-500 mt-2">Find exactly what you need to master your AI workflow.</p>
+              </div>
             </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {CATEGORIES.map((c, i) => (
+                <motion.div
+                  key={c.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                >
+                  <Link to="/blog" search={{ category: c.slug }} className="block h-full bg-white/60 backdrop-blur-md border border-[#f0ece4] rounded-2xl p-5 text-center hover:bg-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-300">
+                    <div className="text-3xl mb-3">{c.icon}</div>
+                    <div className="font-bold text-sm text-stone-800 mb-1">{c.name}</div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            {/* Autocomplete */}
-            {searchResults.length > 0 && (
-              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,.15)", zIndex: 100, marginTop: 6, overflow: "hidden" }}>
-                {searchResults.map(a => {
-                  const pm = PLATFORM_META[a.platform] || PLATFORM_META.general;
-                  return (
-                    <Link key={a.slug} to="/blog/$slug" params={{ slug: a.slug }} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 16px", textDecoration: "none", borderBottom: "1px solid #f4f4f5" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#fafafa"}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: pm.color, background: pm.bgColor, border: `1px solid ${pm.color}44`, padding: "2px 8px", borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0 }}>{a.platform !== "general" ? pm.name : "Guide"}</span>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#18181b" }}>{a.h1}</div>
-                        <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>⏱ {a.readTime} min · {a.views.toLocaleString()} views</div>
+        {/* FEATURED GUIDES */}
+        <section className="py-24 px-6 relative">
+          <div className="absolute inset-0 bg-stone-100/50 skew-y-[-2deg] origin-top-left -z-10" />
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+              <div>
+                <span className="text-orange-600 font-bold text-sm tracking-wider uppercase mb-2 block">Trending</span>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight">Featured Guides</h2>
+              </div>
+              <Link to="/blog" className="text-orange-600 font-semibold hover:text-orange-700 transition-colors">View all &rarr;</Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.slice(0, 6).map((a, i) => (
+                <ArticleCard key={a.slug} article={a} index={i} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* PLATFORM HUB */}
+        <section className="py-24 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-4">Export from Every Platform</h2>
+              <p className="text-lg text-stone-500 max-w-2xl mx-auto">Dedicated hubs with step-by-step instructions for your favorite AI app builders.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {PLATFORMS.map((p, i) => (
+                <motion.div
+                  key={p.slug}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <Link to="/platforms/$platform" params={{ platform: p.slug }} className="group block h-full bg-white/70 backdrop-blur-xl border border-[#f0ece4] rounded-[24px] p-6 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at top right, ${p.color}15, transparent 70%)` }} />
+                    <div className="flex items-center gap-4 mb-5 relative z-10">
+                      <div className="w-12 h-12 rounded-[14px] flex items-center justify-center text-xl font-black text-white shadow-sm" style={{ backgroundColor: p.color }}>
+                        {p.name[0]}
                       </div>
-                    </Link>
-                  );
-                })}
+                      <div>
+                        <div className="font-extrabold text-lg text-stone-900">{p.name}</div>
+                        <div className="text-xs text-stone-500 font-medium tracking-wide uppercase mt-0.5">{p.articles.length} guides</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-stone-600 leading-relaxed mb-6 relative z-10">{p.tagline}</p>
+                    <div className="text-sm font-bold relative z-10" style={{ color: p.color }}>Explore hub &rarr;</div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* COMPARISONS */}
+        <section className="py-24 px-6 bg-stone-900 text-stone-100 relative overflow-hidden rounded-t-[40px] md:rounded-t-[80px]">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-stone-800 to-stone-950 pointer-events-none" />
+          <div className="max-w-6xl mx-auto relative z-10">
+            <div className="flex items-end justify-between mb-16 flex-wrap gap-6">
+              <div>
+                <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4">Side-by-Side Comparisons</h2>
+                <p className="text-stone-400 text-lg max-w-xl">Make informed decisions about how to export, backup, and version-control your AI apps.</p>
               </div>
-            )}
-          </div>
-
-          {/* Popular chips */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-            {POPULAR_SEARCHES.slice(0, 8).map(s => (
-              <Link key={s.slug} to="/blog/$slug" params={{ slug: s.slug }} style={{ display: "inline-flex", alignItems: "center", padding: "8px 16px", background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: 30, fontSize: 13, fontWeight: 500, color: "#cbd5e1", textDecoration: "none", transition: "all 0.15s", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#f97316"; (e.currentTarget as HTMLElement).style.color = "#f97316"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)"; (e.currentTarget as HTMLElement).style.color = "#cbd5e1"; }}>
-                {s.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Trust bar */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 32px", marginTop: 40, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-            {[
-              [`${ARTICLES.length}+`, "Guides & Tutorials"],
-              [`${PLATFORMS.length}`, "Platforms Covered"],
-              ["100%", "Free, No Sign-Up"],
-              ["MIT", "Open Source License"],
-            ].map(([stat, label]) => (
-              <div key={label} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#f97316", letterSpacing: "-0.02em" }}>{stat}</div>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* POPULAR SEARCHES */}
-      <section className="b-section" style={{ padding: "48px 24px", background: "#fafafa", borderBottom: "1px solid #e4e4e7" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#18181b", marginBottom: 6 }}>Popular Searches</h2>
-            <p style={{ fontSize: 14, color: "#71717a" }}>What developers search for most</p>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-            {POPULAR_SEARCHES.map(s => (
-              <Link key={s.slug} to="/blog/$slug" params={{ slug: s.slug }}
-                style={{ display: "inline-flex", alignItems: "center", padding: "8px 16px", background: "#fff", border: "1.5px solid #e4e4e7", borderRadius: 30, fontSize: 13, fontWeight: 500, color: "#52525b", textDecoration: "none", transition: "all 0.15s", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#f97316"; (e.currentTarget as HTMLElement).style.color = "#f97316"; (e.currentTarget as HTMLElement).style.background = "#fff7ed"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLElement).style.color = "#52525b"; (e.currentTarget as HTMLElement).style.background = "#fff"; }}>
-                {s.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="b-section" style={{ padding: "64px 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <span style={{ display: "inline-block", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 12px", borderRadius: 20, marginBottom: 12 }}>Browse by Topic</span>
-            <h2 style={{ fontSize: "clamp(24px,3.5vw,32px)", fontWeight: 800, color: "#18181b", letterSpacing: "-0.03em", marginBottom: 10 }}>All Categories</h2>
-          </div>
-          <div className="b-cats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 16 }}>
-            {CATEGORIES.map(c => (
-              <Link key={c.slug} to="/blog" search={{ category: c.slug }}
-                style={{ display: "block", background: c.color, border: "1px solid #e4e4e7", borderRadius: 12, padding: 20, textAlign: "center", textDecoration: "none", color: "inherit", transition: "all 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(0,0,0,.07)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = ""; }}>
-                <div style={{ fontSize: 28, marginBottom: 10 }}>{c.icon}</div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "#18181b", marginBottom: 4 }}>{c.name}</div>
-                <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.4 }}>{c.description}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURED GUIDES */}
-      <section style={{ padding: "64px 24px", background: "#fafafa", borderTop: "1px solid #e4e4e7", borderBottom: "1px solid #e4e4e7" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="b-hdr" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, gap: 16, flexWrap: "wrap" }}>
-            <div>
-              <span style={{ display: "inline-block", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 12px", borderRadius: 20, marginBottom: 12 }}>🌟 Trending</span>
-              <h2 style={{ fontSize: "clamp(24px,3.5vw,32px)", fontWeight: 800, color: "#18181b", letterSpacing: "-0.03em" }}>Featured Guides</h2>
             </div>
-            <Link to="/blog" style={{ fontSize: 14, fontWeight: 600, color: "#f97316", textDecoration: "none" }}>View all →</Link>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
-            {featured.map(a => <ArticleCard key={a.slug} article={a} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* PLATFORM HUB */}
-      <section style={{ padding: "64px 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <span style={{ display: "inline-block", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 12px", borderRadius: 20, marginBottom: 12 }}>🔗 Platform Hub</span>
-            <h2 style={{ fontSize: "clamp(24px,3.5vw,32px)", fontWeight: 800, color: "#18181b", letterSpacing: "-0.03em", marginBottom: 10 }}>Export from Every Platform</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
-            {PLATFORMS.map(p => (
-              <Link key={p.slug} to="/platforms/$platform" params={{ platform: p.slug }}
-                style={{ display: "block", background: p.bgColor, border: `1.5px solid ${p.color}33`, borderRadius: 16, padding: 28, textDecoration: "none", color: "inherit", transition: "all 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,.09)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = ""; }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: p.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, color: "#fff" }}>{p.name[0]}</div>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: 18, color: "#18181b" }}>{p.name}</div>
-                    <div style={{ fontSize: 13, color: "#71717a" }}>{p.articles.length} guides</div>
-                  </div>
-                </div>
-                <p style={{ fontSize: 14, color: "#52525b", lineHeight: 1.6, marginBottom: 14 }}>{p.tagline}</p>
-                <span style={{ fontSize: 14, fontWeight: 600, color: p.color }}>View all guides →</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* COMPARISONS */}
-      <section style={{ padding: "64px 24px", background: "#fafafa", borderTop: "1px solid #e4e4e7" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, gap: 16, flexWrap: "wrap" }}>
-            <div>
-              <span style={{ display: "inline-block", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 12px", borderRadius: 20, marginBottom: 12 }}>⚖️ Compare</span>
-              <h2 style={{ fontSize: "clamp(24px,3.5vw,32px)", fontWeight: 800, color: "#18181b", letterSpacing: "-0.03em" }}>Side-by-Side Comparisons</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {COMPARISONS.map((c, i) => (
+                <motion.div
+                  key={c.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <Link to="/compare/$slug" params={{ slug: c.slug }} className="group flex flex-col gap-4 bg-stone-800/50 backdrop-blur-md border border-stone-700/50 rounded-[20px] p-6 hover:bg-stone-800 hover:border-stone-600 transition-all duration-300 h-full">
+                    <div className="inline-flex items-center self-start bg-stone-950 border border-stone-800 text-stone-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      Compare
+                    </div>
+                    <div className="text-xl font-bold text-white leading-snug mt-2">{c.h1}</div>
+                    <p className="text-sm text-stone-400 leading-relaxed line-clamp-3">{c.summary}</p>
+                    <div className="mt-auto pt-4 text-xs font-medium text-stone-500 uppercase tracking-wide">
+                      {c.aspects.length} aspects compared
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
-            {COMPARISONS.map(c => (
-              <Link key={c.slug} to="/compare/$slug" params={{ slug: c.slug }}
-                style={{ display: "flex", flexDirection: "column", gap: 14, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 14, padding: 24, textDecoration: "none", color: "inherit", transition: "all 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ""; (e.currentTarget as HTMLElement).style.transform = ""; }}>
-                <span style={{ display: "inline-block", background: "#f8fafc", color: "#64748b", border: "1px solid #e4e4e7", padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, width: "fit-content" }}>⚖️ Compare</span>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "#18181b", lineHeight: 1.35 }}>{c.h1}</div>
-                <div style={{ fontSize: 14, color: "#71717a", lineHeight: 1.6 }}>{c.summary.slice(0, 100)}...</div>
-                <div style={{ fontSize: 12, color: "#a1a1aa" }}>{c.aspects.length} aspects compared</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section style={{ padding: "64px 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="b-cta-inner" style={{ background: "linear-gradient(135deg,#0f172a,#1e293b)", borderRadius: 20, padding: "56px 48px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 80% at 50% 50%,rgba(249,115,22,.12) 0%,transparent 70%)", pointerEvents: "none" }} />
-            <h2 style={{ fontSize: 30, fontWeight: 800, color: "#f8fafc", marginBottom: 14, letterSpacing: "-0.03em", position: "relative" }}>Ready to Own Your AI Code?</h2>
-            <p style={{ fontSize: 16, color: "#94a3b8", marginBottom: 28, position: "relative" }}>Export your complete source code from any AI platform to GitHub in under 2 minutes. Free forever.</p>
-            <div className="b-cta-btns" style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", position: "relative" }}>
-              <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: "none", boxShadow: "0 4px 14px rgba(249,115,22,.35)" }}>
-                Start Exporting Now →
-              </Link>
-              <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", background: "transparent", color: "#94a3b8", border: "1.5px solid rgba(255,255,255,.15)", borderRadius: 10, fontWeight: 600, fontSize: 15, textDecoration: "none" }}>
-                View on GitHub
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* CTA */}
+        <section className="py-24 px-6 bg-stone-950 text-center relative overflow-hidden">
+           <div className="absolute inset-0">
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-500/20 rounded-full blur-[120px] pointer-events-none" />
+           </div>
+           <div className="max-w-3xl mx-auto relative z-10">
+             <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">Ready to Own Your AI Code?</h2>
+             <p className="text-xl text-stone-400 mb-10 max-w-2xl mx-auto">Export your complete source code from any AI platform to GitHub in under 2 minutes. Free forever.</p>
+             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+               <Link to="/" className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-bold rounded-2xl shadow-[0_8px_20px_rgba(249,115,22,0.3)] hover:shadow-[0_10px_25px_rgba(249,115,22,0.4)] transition-all transform hover:-translate-y-0.5 text-lg">
+                 Start Exporting Now
+               </Link>
+               <a href="https://github.com/The-habib/Push44" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 transition-all text-lg">
+                 View on GitHub
+               </a>
+             </div>
+           </div>
+        </section>
+      </div>
     </div>
-  );
-}
-
-function ArticleCard({ article: a }: { article: typeof ARTICLES[0] }) {
-  const pm = PLATFORM_META[a.platform] || PLATFORM_META.general;
-  return (
-    <Link to="/blog/$slug" params={{ slug: a.slug }}
-      style={{ display: "flex", flexDirection: "column", gap: 14, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 14, padding: 24, textDecoration: "none", color: "inherit", transition: "all 0.2s", position: "relative", overflow: "hidden" }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,.08)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.borderColor = "#d4d4d8"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ""; (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.borderColor = "#e4e4e7"; }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${pm.color}, ${pm.color}88)` }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        {a.platform !== "general" && <span style={{ fontSize: 12, fontWeight: 600, color: pm.color, background: pm.bgColor, border: `1px solid ${pm.color}44`, padding: "2px 8px", borderRadius: 20 }}>{pm.name}</span>}
-        <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: a.difficulty === "beginner" ? "#f0fdf4" : a.difficulty === "intermediate" ? "#fff7ed" : "#fef2f2", color: a.difficulty === "beginner" ? "#16a34a" : a.difficulty === "intermediate" ? "#f97316" : "#ef4444", border: `1px solid ${a.difficulty === "beginner" ? "#bbf7d0" : a.difficulty === "intermediate" ? "#fed7aa" : "#fecaca"}` }}>{a.difficulty}</span>
-      </div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: "#18181b", lineHeight: 1.35, letterSpacing: "-0.02em" }}>{a.h1}</div>
-      <div style={{ fontSize: 14, color: "#71717a", lineHeight: 1.6 }}>{a.description.slice(0, 110)}...</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#a1a1aa", marginTop: "auto" }}>
-        <span>⏱ {a.readTime} min</span>
-        <span>•</span>
-        <span>👁 {a.views.toLocaleString()}</span>
-        <span>•</span>
-        <span>{new Date(a.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-      </div>
-    </Link>
   );
 }

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { getComparison, COMPARISONS, type Comparison } from "@/seo/data";
 
 export const Route = createFileRoute("/compare/$slug")({
@@ -23,10 +24,10 @@ export const Route = createFileRoute("/compare/$slug")({
   },
   component: ComparisonPage,
   notFoundComponent: () => (
-    <div style={{ textAlign: "center", padding: "80px 24px" }}>
-      <h1 style={{ fontSize: 48, fontWeight: 900, color: "#18181b" }}>404</h1>
-      <p style={{ color: "#71717a", margin: "12px 0 24px" }}>Comparison not found</p>
-      <Link to="/blog/" style={{ color: "#f97316", fontWeight: 600, textDecoration: "none" }}>← Back to Blog</Link>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6">
+      <h1 className="text-6xl font-black text-stone-900 mb-4">404</h1>
+      <p className="text-xl text-stone-500 mb-8">Comparison not found</p>
+      <Link to="/blog" className="text-orange-600 font-bold hover:text-orange-700">&larr; Back to Blog</Link>
     </div>
   ),
 });
@@ -42,177 +43,163 @@ export default function ComparisonPage() {
   const others = COMPARISONS.filter(c => c.slug !== comparison.slug).slice(0, 4);
 
   return (
-    <div className="blog-wrap" style={{ fontFamily: "Inter, -apple-system, sans-serif", color: "#18181b" }}>
+    <div className="min-h-[100dvh] bg-[#faf8f5] selection:bg-orange-500/30 font-sans">
       
-<style>{`
-  /* ── Mobile nav safety ─────────────────────────────────── */
-  .blog-wrap { overflow-x: hidden; }
-
-  /* ── Hero ──────────────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .b-hero  { padding: 48px 16px 56px !important; }
-    .b-hero h1 { font-size: 32px !important; }
-    .b-search  { padding: 12px 14px !important; }
-    .b-chips   { gap: 8px !important; }
-    .b-chip    { font-size: 12px !important; padding: 6px 12px !important; }
-    .b-section { padding: 40px 16px !important; }
-    .b-cats-grid   { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-    .b-cta-inner   { padding: 36px 20px !important; border-radius: 14px !important; }
-    .b-cta-btns    { flex-direction: column !important; gap: 10px !important; }
-    .b-cta-btns > * { width: 100% !important; justify-content: center !important; text-align: center !important; }
-    .b-hdr { flex-direction: column !important; align-items: flex-start !important; }
-  }
-  @media (max-width: 480px) {
-    .b-cats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  }
-
-  /* ── Article page ───────────────────────────────────────── */
-  @media (max-width: 1024px) {
-    .art-body    { grid-template-columns: 1fr !important; padding: 28px 16px !important; gap: 0 !important; }
-    .art-sidebar { display: none !important; }
-    .art-hero    { padding: 36px 16px 48px !important; }
-  }
-  @media (max-width: 640px) {
-    .art-related { grid-template-columns: 1fr !important; }
-    .art-breadcrumb { font-size: 12px !important; }
-    .art-meta    { flex-wrap: wrap !important; }
-    .art-step    { gap: 12px !important; padding: 16px !important; }
-    .art-step-num { width: 26px !important; height: 26px !important; font-size: 12px !important; flex-shrink: 0 !important; }
-    .art-cta     { padding: 28px 20px !important; border-radius: 14px !important; }
-  }
-
-  /* ── Platform hub ───────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .plat-howto  { grid-template-columns: 1fr !important; gap: 32px !important; }
-    .plat-hero   { padding: 40px 16px !important; }
-    .plat-section { padding: 40px 16px !important; }
-  }
-
-  /* ── Comparison page ────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .cmp-hero    { padding: 40px 16px !important; }
-    .cmp-scores  { gap: 10px !important; }
-    .cmp-score   { min-width: 80px !important; padding: 12px 14px !important; }
-    .cmp-body    { padding: 28px 16px !important; }
-    .cmp-cta     { padding: 32px 20px !important; border-radius: 14px !important; }
-  }
-  @media (max-width: 640px) {
-    .cmp-others  { grid-template-columns: 1fr !important; }
-    .cmp-verdict { padding: 12px 16px !important; }
-    table th, table td { padding: 10px 10px !important; font-size: 12px !important; }
-  }
-`}</style>
-
       {/* HERO */}
-      <div className="cmp-hero" style={{ background: "linear-gradient(135deg,#0f172a,#1e293b)", padding: "64px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(148,163,184,0.8)", marginBottom: 20 }}>
-            <Link to="/" style={{ color: "rgba(148,163,184,0.7)", textDecoration: "none" }}>Push44</Link>
-            <span>›</span>
-            <Link to="/blog/" style={{ color: "rgba(148,163,184,0.7)", textDecoration: "none" }}>Blog</Link>
-            <span>›</span>
-            <span style={{ color: "#94a3b8" }}>Comparison</span>
+      <header className="bg-stone-950 text-white pt-32 pb-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-stone-800 to-stone-950 pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto relative z-10 text-center">
+          <nav className="flex items-center justify-center gap-3 text-sm text-stone-400 font-medium mb-10">
+            <Link to="/" className="hover:text-white transition-colors">Push44</Link>
+            <span>/</span>
+            <Link to="/blog/" className="hover:text-white transition-colors">Blog</Link>
+            <span>/</span>
+            <span className="text-stone-300">Compare</span>
           </nav>
-          <span style={{ display: "inline-block", background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.3)", color: "#f97316", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, padding: "5px 14px", borderRadius: 20, marginBottom: 20 }}>⚖️ Comparison</span>
-          <h1 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 18 }}>{comparison.h1}</h1>
-          <p style={{ fontSize: 17, color: "#94a3b8", lineHeight: 1.7, maxWidth: 600, marginBottom: 32 }}>{comparison.description}</p>
-          <div className="cmp-scores" style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            {[
-              { count: aWins, label: `${aLabel} wins`, color: "#f97316", bg: "rgba(249,115,22,0.12)", border: "rgba(249,115,22,0.3)" },
-              { count: bWins, label: `${bLabel} wins`, color: "#22c55e", bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.2)" },
-              ...(ties > 0 ? [{ count: ties, label: "Ties", color: "#64748b", bg: "rgba(100,116,139,0.1)", border: "rgba(100,116,139,0.2)" }] : []),
-            ].map((s, i) => (
-              <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 12, padding: "14px 20px", textAlign: "center", minWidth: 100 }}>
-                <div style={{ fontSize: 24, fontWeight: 900, color: s.color }}>{s.count}</div>
-                <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{s.label}</div>
+
+          <span className="inline-block bg-white/10 border border-white/20 text-stone-300 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-8">
+            Detailed Comparison
+          </span>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8">
+            {comparison.h1}
+          </h1>
+          
+          <p className="text-xl text-stone-400 max-w-3xl mx-auto leading-relaxed mb-16">
+            {comparison.description}
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-6">
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-[24px] px-8 py-6 w-48 shadow-[0_0_40px_rgba(249,115,22,0.15)]">
+              <div className="text-5xl font-black text-orange-500 mb-2">{aWins}</div>
+              <div className="text-sm font-bold text-orange-200/80 uppercase tracking-wide">{aLabel} Wins</div>
+            </div>
+            
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-[24px] px-8 py-6 w-48 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+              <div className="text-5xl font-black text-emerald-400 mb-2">{bWins}</div>
+              <div className="text-sm font-bold text-emerald-200/80 uppercase tracking-wide">{bLabel} Wins</div>
+            </div>
+
+            {ties > 0 && (
+              <div className="bg-stone-500/10 border border-stone-500/30 rounded-[24px] px-8 py-6 w-48">
+                <div className="text-5xl font-black text-stone-400 mb-2">{ties}</div>
+                <div className="text-sm font-bold text-stone-400 uppercase tracking-wide">Ties</div>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* CONTENT */}
-      <div className="cmp-body" style={{ maxWidth: 900, margin: "0 auto", padding: "48px 24px" }}>
+      <div className="max-w-4xl mx-auto px-6 py-20">
+        
+        {/* VERDICT */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-indigo-50 border border-indigo-100 rounded-[32px] p-8 md:p-12 mb-20 shadow-sm relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 text-indigo-100">
+            <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div className="relative z-10">
+            <div className="text-indigo-800 font-black text-xl mb-4 flex items-center gap-3 tracking-tight">
+              <span>🏆</span> The Final Verdict
+            </div>
+            <p className="text-indigo-950 text-xl font-medium leading-relaxed">
+              {comparison.verdict}
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Verdict */}
-        <div className="cmp-verdict" style={{ background: "#eff6ff", borderLeft: "4px solid #3b82f6", borderRadius: "0 10px 10px 0", padding: "16px 20px", marginBottom: 36 }}>
-          <div style={{ fontWeight: 700, color: "#1d4ed8", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>🏆 Verdict</div>
-          <div style={{ fontSize: 15, color: "#1e40af" }}>{comparison.verdict}</div>
-        </div>
+        {/* SUMMARY */}
+        <section className="mb-20">
+          <h2 className="text-3xl font-extrabold text-stone-900 mb-6">Overview</h2>
+          <p className="text-lg text-stone-600 leading-relaxed">{comparison.summary}</p>
+        </section>
 
-        {/* Summary */}
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#18181b", marginBottom: 14, letterSpacing: "-0.02em" }}>Overview</h2>
-        <p style={{ fontSize: 16, color: "#374151", lineHeight: 1.8, marginBottom: 36 }}>{comparison.summary}</p>
-
-        {/* Table */}
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#18181b", marginBottom: 20, letterSpacing: "-0.02em" }}>Detailed Comparison</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }} role="table">
-            <thead>
-              <tr>
-                {[{ label: "Aspect", color: "#71717a" }, { label: aLabel, color: "#f97316" }, { label: bLabel, color: "#22c55e" }, { label: "Winner", color: "#71717a" }].map((h, i) => (
-                  <th key={i} scope="col" style={{ background: "#fafafa", padding: "14px 18px", textAlign: "left", fontSize: 13, fontWeight: 700, color: h.color, letterSpacing: "0.05em", textTransform: "uppercase" as const, borderBottom: "2px solid #e4e4e7" }}>{h.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {comparison.aspects.map((a: Comparison["aspects"][0], i: number) => (
-                <tr key={i} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#fafafa"} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ""}>
-                  <td style={{ padding: "16px 18px", borderBottom: "1px solid #fafafa", fontWeight: 600, color: "#18181b", fontSize: 14 }}>{a.aspect}</td>
-                  <td style={{ padding: "16px 18px", borderBottom: "1px solid #fafafa", fontSize: 14 }}>
-                    <div style={{ marginBottom: 6 }}>{a.a.value}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ height: 6, width: 60, borderRadius: 3, background: "#f4f4f5", display: "inline-block", overflow: "hidden", verticalAlign: "middle" }}>
-                        <div style={{ height: "100%", width: `${(a.a.score / 5) * 100}%`, borderRadius: 3, background: "#f97316" }} />
-                      </div>
-                      <span style={{ fontSize: 12, color: "#71717a" }}>{a.a.score}/5</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: "16px 18px", borderBottom: "1px solid #fafafa", fontSize: 14 }}>
-                    <div style={{ marginBottom: 6 }}>{a.b.value}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ height: 6, width: 60, borderRadius: 3, background: "#f4f4f5", display: "inline-block", overflow: "hidden", verticalAlign: "middle" }}>
-                        <div style={{ height: "100%", width: `${(a.b.score / 5) * 100}%`, borderRadius: 3, background: "#22c55e" }} />
-                      </div>
-                      <span style={{ fontSize: 12, color: "#71717a" }}>{a.b.score}/5</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: "16px 18px", borderBottom: "1px solid #fafafa", fontSize: 14 }}>
-                    <span style={{ fontWeight: 700, color: a.winner === "a" ? "#f97316" : a.winner === "b" ? "#22c55e" : "#64748b" }}>
-                      {a.winner === "a" ? `✓ ${aLabel}` : a.winner === "b" ? `✓ ${bLabel}` : "Tie"}
-                    </span>
-                    <div style={{ fontSize: 12, color: "#71717a", marginTop: 4, lineHeight: 1.4 }}>{a.note}</div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* TABLE */}
+        <section className="mb-24">
+          <h2 className="text-3xl font-extrabold text-stone-900 mb-8">Detailed Breakdown</h2>
+          
+          <div className="overflow-hidden bg-white border border-[#f0ece4] rounded-[32px] shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-stone-50 border-b border-stone-200">
+                    <th className="px-6 py-5 text-sm font-bold text-stone-500 uppercase tracking-wider w-[25%]">Feature</th>
+                    <th className="px-6 py-5 text-sm font-bold text-orange-600 uppercase tracking-wider w-[30%]">{aLabel}</th>
+                    <th className="px-6 py-5 text-sm font-bold text-emerald-600 uppercase tracking-wider w-[30%]">{bLabel}</th>
+                    <th className="px-6 py-5 text-sm font-bold text-stone-500 uppercase tracking-wider w-[15%]">Winner</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {comparison.aspects.map((a: Aspect, i: number) => (
+                    <tr key={i} className="hover:bg-stone-50/50 transition-colors">
+                      <td className="px-6 py-6 font-bold text-stone-900 align-top">{a.aspect}</td>
+                      <td className="px-6 py-6 align-top">
+                        <div className="font-medium text-stone-700 mb-3 leading-relaxed">{a.a.value}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-full max-w-[100px] bg-stone-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${(a.a.score / 5) * 100}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-stone-400">{a.a.score}/5</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6 align-top">
+                        <div className="font-medium text-stone-700 mb-3 leading-relaxed">{a.b.value}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-full max-w-[100px] bg-stone-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(a.b.score / 5) * 100}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-stone-400">{a.b.score}/5</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6 align-top">
+                        <div className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
+                          a.winner === 'a' ? 'bg-orange-100 text-orange-700' :
+                          a.winner === 'b' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-stone-100 text-stone-600'
+                        }`}>
+                          {a.winner === 'a' ? aLabel : a.winner === 'b' ? bLabel : 'Tie'}
+                        </div>
+                        {a.note && <div className="text-xs text-stone-500 font-medium mt-3 leading-relaxed">{a.note}</div>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
         {/* CTA */}
-        <div className="cmp-cta" style={{ background: "linear-gradient(135deg,#0f172a,#1e293b)", borderRadius: 20, padding: "48px 40px", textAlign: "center", margin: "48px 0", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 80% at 50% 50%,rgba(249,115,22,.12) 0%,transparent 70%)", pointerEvents: "none" }} />
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "#f8fafc", marginBottom: 10, letterSpacing: "-0.03em", position: "relative" }}>Start Exporting for Free</h2>
-          <p style={{ fontSize: 15, color: "#94a3b8", marginBottom: 24, position: "relative" }}>Push44 is open source, free forever, and works with Base44, Rocket.new, Floot and Zite.</p>
-          <div style={{ position: "relative" }}>
-            <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: "none", boxShadow: "0 4px 14px rgba(249,115,22,.35)" }}>Try Push44 Now →</Link>
-          </div>
-        </div>
-
-        {/* Other comparisons */}
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: "#18181b", marginBottom: 20, letterSpacing: "-0.02em" }}>More Comparisons</h2>
-        <div className="cmp-others" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          {others.map(c => (
-            <Link key={c.slug} to="/compare/$slug" params={{ slug: c.slug }}
-              style={{ display: "flex", flexDirection: "column", gap: 10, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 12, padding: 20, textDecoration: "none", color: "inherit", transition: "all 0.2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,.07)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ""; (e.currentTarget as HTMLElement).style.transform = ""; }}>
-              <span style={{ display: "inline-block", background: "#f8fafc", color: "#64748b", border: "1px solid #e4e4e7", padding: "2px 8px", borderRadius: 20, fontSize: 11, fontWeight: 600, width: "fit-content" }}>⚖️ Compare</span>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#18181b", lineHeight: 1.35 }}>{c.h1}</div>
-              <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{c.summary.slice(0, 80)}...</div>
+        <section className="bg-stone-900 text-center rounded-[40px] py-16 px-8 relative overflow-hidden mb-24">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800 to-stone-900 pointer-events-none" />
+          <div className="relative z-10">
+            <h2 className="text-3xl font-extrabold text-white mb-4">Export Code on Your Terms</h2>
+            <p className="text-stone-400 text-lg mb-8 max-w-xl mx-auto">Push44 is the completely free, open-source tool for exporting projects from Base44, Floot, and more straight to GitHub.</p>
+            <Link to="/" className="inline-flex items-center justify-center px-8 py-4 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/20 text-lg">
+              Try Push44 Now
             </Link>
-          ))}
-        </div>
+          </div>
+        </section>
+
+        {/* MORE COMPARISONS */}
+        <section>
+          <h2 className="text-2xl font-extrabold text-stone-900 mb-8">More Comparisons</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {others.map(c => (
+              <Link key={c.slug} to="/compare/$slug" params={{ slug: c.slug }} className="group bg-white/70 backdrop-blur-xl border border-[#f0ece4] rounded-[24px] p-6 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all flex flex-col h-full">
+                <span className="self-start text-[10px] font-black uppercase tracking-widest text-stone-400 mb-3 border border-stone-200 px-2 py-1 rounded-md">Compare</span>
+                <h3 className="text-xl font-bold text-stone-900 mb-2 group-hover:text-orange-600 transition-colors">{c.h1}</h3>
+                <p className="text-stone-500 text-sm leading-relaxed mb-4 line-clamp-2">{c.summary}</p>
+                <div className="mt-auto text-orange-600 font-bold text-sm">Read comparison &rarr;</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
       </div>
     </div>
   );
