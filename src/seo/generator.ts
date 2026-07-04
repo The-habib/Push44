@@ -405,8 +405,8 @@ export function generateHtmlShell({ title, description, canonical, ogType = "art
   <meta property="og:type" content="${ogType}" />
   <meta property="og:site_name" content="Push44" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:image" content="${BASE_URL}/og-image.png" />
-  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image" content="${BASE_URL}/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="${escHtml(title)}" />
@@ -416,7 +416,7 @@ export function generateHtmlShell({ title, description, canonical, ogType = "art
   <meta name="twitter:site" content="${SITE.twitter}" />
   <meta name="twitter:title" content="${escHtml(title)}" />
   <meta name="twitter:description" content="${escHtml(description)}" />
-  <meta name="twitter:image" content="${BASE_URL}/og-image.png" />
+  <meta name="twitter:image" content="${BASE_URL}/og-image.jpg" />
 
   <!-- Fonts (async) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />

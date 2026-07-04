@@ -16,3 +16,4 @@
 - [Floot Badge Removal](floot-badge-removal.md) — CSS injection via globalChatAndStore+userModification persists #__Floot-madewithFloot{display:none!important} to sketchCss; requires serverLastMessageId from page HTML.
 - [Push44 SEO-safe redesign](push44-seo-safe-redesign.md) — constrain DESIGN subagent to visual layer only when redesigning SEO blog pages; re-run generate-seo after every redesign.
 - [Google site-name vs Vercel](google-site-name-vercel.md) — align application-name/manifest/JSON-LD/og across every page + re-run generate-seo when Google shows platform name instead of brand.
+- [Push44 image weight](push44-image-weight.md) — logo.png/og-image were 1.3MB+; compress with magick PNG8/JPG and update both src/assets + public copies plus generator.ts refs together.
