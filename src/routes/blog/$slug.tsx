@@ -1,7 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { getArticle, getRelatedArticles, ARTICLES, POPULAR_SEARCHES, PLATFORMS, PLATFORM_META, type Article } from "@/seo/data";
+import { Clock, ChevronRight, CheckCircle2, AlertTriangle, Share2 } from "lucide-react";
+import {
+  getArticle, getRelatedArticles, PLATFORMS, PLATFORM_META, type Article,
+} from "@/seo/data";
+import { ArticleCard } from "@/components/blog/ArticleCard";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 export const Route = createFileRoute("/blog/$slug")({
   head: ({ params }) => {
@@ -27,18 +33,24 @@ export const Route = createFileRoute("/blog/$slug")({
   },
   component: ArticlePage,
   notFoundComponent: () => (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6">
-      <h1 className="text-6xl font-black text-stone-900 mb-4">404</h1>
-      <p className="text-xl text-stone-500 mb-8">Article not found</p>
-      <Link to="/blog" className="text-orange-600 font-bold hover:text-orange-700">&larr; Back to Blog</Link>
+    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
+      <h1 style={{ fontSize: 64, fontWeight: 900, color: "#09090b", margin: "0 0 12px", letterSpacing: "-0.04em" }}>404</h1>
+      <p style={{ fontSize: 18, color: "#71717a", margin: "0 0 28px" }}>Article not found</p>
+      <Link to="/blog" style={{ color: "#f97316", fontWeight: 700, textDecoration: "none" }}>Back to Blog</Link>
     </div>
   ),
 });
 
+const DIFFICULTY_STYLE: Record<string, React.CSSProperties> = {
+  beginner:     { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" },
+  intermediate: { background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" },
+  advanced:     { background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca" },
+};
+
 export default function ArticlePage() {
   const { article } = Route.useLoaderData();
   const [activeSection, setActiveSection] = useState("introduction");
-  
+
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
@@ -58,119 +70,132 @@ export default function ArticlePage() {
   ].filter(Boolean) as Array<{ id: string; label: string }>;
 
   useEffect(() => {
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id); });
-    }, { threshold: 0.2, rootMargin: "-100px 0px -40% 0px" });
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id); }),
+      { threshold: 0.2, rootMargin: "-100px 0px -40% 0px" }
+    );
     toc.forEach(({ id }) => { const el = document.getElementById(id); if (el) obs.observe(el); });
     return () => obs.disconnect();
-  }, [toc]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article.slug]);
+
+  const prose: React.CSSProperties = { fontSize: 15, color: "#3f3f46", lineHeight: 1.75, margin: 0 };
 
   return (
-    <div className="min-h-[100dvh] bg-[#faf8f5] selection:bg-orange-500/30 font-sans">
-      <motion.div 
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-400 origin-left z-50"
-        style={{ scaleX }}
-      />
+    <div style={{ minHeight: "100dvh", background: "#fff", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#09090b" }}>
+      {/* Reading progress */}
+      <motion.div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2, background: "#f97316", transformOrigin: "left", scaleX, zIndex: 100 }} />
 
-      {/* HERO */}
-      <header className="pt-16 md:pt-32 pb-16 px-6 bg-white border-b border-[#f0ece4] relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-50/50 to-transparent" />
-        <div className="max-w-4xl mx-auto relative z-10">
-          
-          <nav className="flex items-center gap-2 text-sm text-stone-500 font-medium mb-8 flex-wrap">
-            <Link to="/" className="hover:text-stone-900 transition-colors">Push44</Link>
-            <span className="text-stone-300">/</span>
-            <Link to="/blog/" className="hover:text-stone-900 transition-colors">Blog</Link>
-            <span className="text-stone-300">/</span>
-            {article.platform !== "general" && (
+      <Navbar />
+
+      {/* ── ARTICLE HEADER ──────────────────────────────────────────────── */}
+      <header style={{ padding: "48px 20px 40px", borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          {/* Breadcrumb */}
+          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#a1a1aa", marginBottom: 24, flexWrap: "wrap" }}>
+            <Link to="/" style={{ color: "#71717a", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"}
+            >Push44</Link>
+            <ChevronRight size={13} color="#d4d4d8" />
+            <Link to="/blog/" style={{ color: "#71717a", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"}
+            >Blog</Link>
+            {article.platform !== "general" && platformData && (
               <>
-                <Link to="/platforms/$platform" params={{ platform: article.platform }} className="hover:text-stone-900 transition-colors">{pm.name}</Link>
-                <span className="text-stone-300">/</span>
+                <ChevronRight size={13} color="#d4d4d8" />
+                <Link to="/platforms/$platform" params={{ platform: article.platform }} style={{ color: "#71717a", textDecoration: "none", fontWeight: 500 }}>{platformData.name}</Link>
               </>
             )}
-            <span className="text-stone-900 truncate max-w-[200px] md:max-w-md">{article.h1}</span>
+            <ChevronRight size={13} color="#d4d4d8" />
+            <span style={{ color: "#09090b", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 260 }}>{article.h1}</span>
           </nav>
 
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
+          {/* Tags */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
             {article.platform !== "general" && (
-              <span className="px-3 py-1 rounded-full text-xs font-bold border" style={{ color: pm.color, backgroundColor: pm.bgColor, borderColor: `${pm.color}44` }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 5, color: pm.color, background: pm.bgColor, border: `1px solid ${pm.color}33` }}>
                 {pm.name}
               </span>
             )}
-            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${article.difficulty === 'beginner' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 5, ...(DIFFICULTY_STYLE[article.difficulty] || DIFFICULTY_STYLE.beginner) }}>
               {article.difficulty.charAt(0).toUpperCase() + article.difficulty.slice(1)}
             </span>
-            <span className="text-sm font-medium text-stone-400 flex items-center gap-1.5"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{article.readTime} min read</span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-stone-900 tracking-tight leading-[1.15] mb-8">
+          {/* Title */}
+          <h1 style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", lineHeight: 1.15, margin: "0 0 14px" }}>
             {article.h1}
           </h1>
-          
-          <p className="text-xl text-stone-600 leading-relaxed mb-10 max-w-3xl">
-            {article.intro}
-          </p>
+          <p style={{ fontSize: 16, color: "#71717a", lineHeight: 1.65, margin: "0 0 24px" }}>{article.intro}</p>
 
-          <div className="flex items-center justify-between border-t border-stone-100 pt-8 flex-wrap gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                P
-              </div>
-              <div>
-                <div className="font-bold text-stone-900">Push44 Team</div>
-                <div className="text-sm text-stone-500 font-medium">Updated {new Date(article.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
-              </div>
-            </div>
-            <a 
+          {/* Meta */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#a1a1aa", alignItems: "center" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <Clock size={13} /> {article.readTime} min read
+            </span>
+            <span>Updated {new Date(article.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+            <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold rounded-xl transition-colors text-sm"
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#a1a1aa", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#a1a1aa"}
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 5.918H5.078z"/></svg>
-              Share Guide
+              <Share2 size={13} /> Share
             </a>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-16 items-start">
-        
-        {/* ARTICLE CONTENT */}
-        <article className="prose prose-stone prose-lg max-w-none prose-headings:font-extrabold prose-headings:tracking-tight prose-a:text-orange-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline">
-          
-          <div id="introduction" className="bg-emerald-50/50 border border-emerald-100 rounded-[24px] p-8 mb-12 shadow-sm">
-            <h2 className="text-emerald-800 text-lg font-bold flex items-center gap-2 m-0 mb-4">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-              Quick Summary
-            </h2>
-            <p className="text-emerald-900 m-0 leading-relaxed font-medium">{article.solution}</p>
+      {/* ── CONTENT AREA ────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 20px", display: "flex", gap: 48, alignItems: "flex-start" }}>
+        {/* Main content */}
+        <main style={{ flex: 1, minWidth: 0 }}>
+          {/* Quick answer */}
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: 20, marginBottom: 40 }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <CheckCircle2 size={16} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ margin: 0, fontSize: 14, color: "#14532d", lineHeight: 1.65, fontWeight: 500 }}>{article.solution}</p>
+            </div>
           </div>
 
-          <section id="the-problem" className="mb-16 scroll-mt-24">
-            <h2 className="text-3xl text-stone-900 mb-6">The Problem</h2>
-            <p>{article.problem}</p>
+          {/* Introduction */}
+          <section id="introduction" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>Introduction</h2>
+            <p style={prose}>{article.intro}</p>
           </section>
 
-          <section id="the-solution" className="mb-16 scroll-mt-24">
-            <h2 className="text-3xl text-stone-900 mb-6">How Push44 Solves It</h2>
-            <p>{article.solution}</p>
+          {/* Problem */}
+          <section id="the-problem" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>The Problem</h2>
+            <p style={prose}>{article.problem}</p>
           </section>
 
-          <section id="step-by-step" className="mb-16 scroll-mt-24">
-            <h2 className="text-3xl text-stone-900 mb-8">Step-by-Step Guide</h2>
-            <div className="space-y-8">
+          {/* Solution */}
+          <section id="the-solution" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>The Solution</h2>
+            <p style={prose}>{article.solution}</p>
+          </section>
+
+          {/* Steps */}
+          <section id="step-by-step" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>Step-by-Step Guide</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {article.steps.map((step: { title: string; content: string; tip?: string }, i: number) => (
-                <div key={i} className="flex gap-6 p-8 bg-white border border-[#f0ece4] rounded-[24px] shadow-sm">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-lg shrink-0 border border-orange-200">
+                <div key={i} style={{ display: "flex", gap: 16 }}>
+                  <div style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", background: "#f97316", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, marginTop: 2 }}>
                     {i + 1}
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-stone-900 m-0 mb-3">{step.title}</h3>
-                    <p className="text-stone-600 m-0 leading-relaxed">{step.content}</p>
+                  <div style={{ flex: 1, paddingTop: 3 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#09090b", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{step.title}</h3>
+                    <p style={{ ...prose, fontSize: 14 }}>{step.content}</p>
                     {step.tip && (
-                      <div className="mt-6 bg-stone-50 border border-stone-200 rounded-xl p-4 flex gap-3 items-start">
-                        <span className="text-xl leading-none">💡</span>
-                        <div className="text-sm text-stone-700 font-medium leading-relaxed">{step.tip}</div>
+                      <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 7, padding: "10px 14px", marginTop: 12 }}>
+                        <p style={{ margin: 0, fontSize: 13, color: "#9a3412", lineHeight: 1.65 }}>
+                          <span style={{ fontWeight: 700, color: "#f97316" }}>Tip: </span>{step.tip}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -179,114 +204,109 @@ export default function ArticlePage() {
             </div>
           </section>
 
+          {/* Tips */}
           {article.tips.length > 0 && (
-            <section id="tips" className="mb-16 scroll-mt-24">
-              <h2 className="text-3xl text-stone-900 mb-6">Pro Tips</h2>
-              <ul className="space-y-3">
-                {article.tips.map((t: string, i: number) => (
-                  <li key={i} className="flex gap-3 m-0 pl-0 before:hidden"><span className="text-orange-500 font-bold">&rarr;</span> <span>{t}</span></li>
+            <section id="tips" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 20px" }}>Pro Tips</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {article.tips.map((tip: string, i: number) => (
+                  <div key={i} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "#fafafa", border: "1px solid #e4e4e7", borderRadius: 8 }}>
+                    <CheckCircle2 size={15} color="#f97316" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ ...prose, fontSize: 14, margin: 0 }}>{tip}</p>
+                  </div>
                 ))}
-              </ul>
-            </section>
-          )}
-
-          {article.mistakes.length > 0 && (
-            <section id="mistakes" className="mb-16 scroll-mt-24">
-              <h2 className="text-3xl text-stone-900 mb-6">Common Mistakes to Avoid</h2>
-              <div className="bg-amber-50/50 border border-amber-200 rounded-[24px] p-8">
-                <div className="text-amber-800 font-bold flex items-center gap-2 mb-4">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                  Watch Out For
-                </div>
-                <ul className="space-y-3 m-0">
-                  {article.mistakes.map((m: string, i: number) => (
-                    <li key={i} className="text-amber-900 m-0 font-medium leading-relaxed pl-0 before:hidden flex gap-3"><span className="text-amber-600 font-bold">&times;</span> <span>{m}</span></li>
-                  ))}
-                </ul>
               </div>
             </section>
           )}
 
-          <div className="my-16 bg-stone-900 rounded-[32px] p-10 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800 to-stone-900 pointer-events-none" />
-            <div className="relative z-10">
-              <h2 className="text-3xl font-extrabold text-white mb-4 m-0">Ready to Export?</h2>
-              <p className="text-stone-400 text-lg mb-8 m-0">Push44 is free, open source, and takes under 2 minutes to set up.</p>
-              <Link to="/" className="inline-flex items-center justify-center px-8 py-4 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition-colors m-0 text-base shadow-lg shadow-orange-500/20">
-                Start Exporting Now
-              </Link>
-            </div>
-          </div>
+          {/* Mistakes */}
+          {article.mistakes.length > 0 && (
+            <section id="mistakes" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 20px" }}>Common Mistakes</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {article.mistakes.map((m: string, i: number) => (
+                  <div key={i} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>
+                    <AlertTriangle size={15} color="#ef4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ ...prose, fontSize: 14, margin: 0, color: "#7f1d1d" }}>{m}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-          <section id="faq" className="mb-16 scroll-mt-24">
-            <h2 className="text-3xl text-stone-900 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6">
+          {/* FAQ */}
+          <section id="faq" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>FAQ</h2>
+            <div style={{ border: "1px solid #e4e4e7", borderRadius: 10, overflow: "hidden" }}>
               {article.faqs.map((faq: { question: string; answer: string }, i: number) => (
-                <div key={i} className="border-b border-stone-200 pb-6 last:border-0">
-                  <h3 className="text-lg font-bold text-stone-900 m-0 mb-3">{faq.question}</h3>
-                  <p className="text-stone-600 m-0">{faq.answer}</p>
+                <div key={i} style={{ padding: "20px 20px", borderTop: i > 0 ? "1px solid #e4e4e7" : "none" }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#09090b", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{faq.question}</h3>
+                  <p style={{ ...prose, fontSize: 14, margin: 0 }}>{faq.answer}</p>
                 </div>
               ))}
             </div>
           </section>
 
-        </article>
-
-        {/* SIDEBAR */}
-        <aside className="hidden lg:block sticky top-8 space-y-6">
-          
-          <div className="bg-white/60 backdrop-blur-xl border border-[#f0ece4] rounded-[24px] p-6 shadow-sm">
-            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">On This Page</h4>
-            <nav className="space-y-1">
-              {toc.map(({ id, label }) => (
-                <a 
-                  key={id} 
-                  href={`#${id}`}
-                  className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    activeSection === id 
-                      ? "bg-orange-50 text-orange-600" 
-                      : "text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          <div className="bg-stone-900 border border-stone-800 rounded-[24px] p-6 shadow-xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10">
-              <h4 className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Free Tool</h4>
-              <div className="text-lg font-black text-white mb-2 leading-tight">Push44 — Export to GitHub</div>
-              <p className="text-sm text-stone-400 mb-6 leading-relaxed">Export your complete source code in one click. Free forever.</p>
-              <Link to="/" className="flex items-center justify-center px-4 py-3 bg-white text-stone-900 hover:bg-orange-500 hover:text-white font-bold rounded-xl transition-colors text-sm">
-                Open App &rarr;
-              </Link>
-            </div>
-          </div>
-
-          {article.platform !== "general" && platformData && (
-            <div className="bg-white/60 backdrop-blur-xl border border-[#f0ece4] rounded-[24px] p-6 shadow-sm">
-              <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">{pm.name} Hub</h4>
-              <div className="space-y-3">
-                {platformData.articles.filter(s => s !== article.slug).slice(0, 4).map(slug => {
-                  const a = ARTICLES.find(x => x.slug === slug);
-                  return a ? (
-                    <Link key={slug} to="/blog/$slug" params={{ slug }} className="block text-sm font-semibold text-stone-700 hover:text-orange-600 leading-snug transition-colors">
-                      {a.h1}
-                    </Link>
-                  ) : null;
-                })}
+          {/* Related */}
+          {relatedArticles.length > 0 && (
+            <section id="related" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>Related Guides</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+                {relatedArticles.map((a, i) => <ArticleCard key={a.slug} article={a} index={i} />)}
               </div>
-              <Link to="/platforms/$platform" params={{ platform: article.platform }} className="inline-block mt-6 text-sm font-bold text-orange-600 hover:text-orange-700">
-                View all {pm.name} guides &rarr;
-              </Link>
-            </div>
+            </section>
           )}
 
+          {/* CTA */}
+          <div style={{ background: "#09090b", borderRadius: 12, padding: "32px", textAlign: "center" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: "#f4f4f5", margin: "0 0 10px", letterSpacing: "-0.03em" }}>Ready to export your code?</h3>
+            <p style={{ fontSize: 14, color: "#71717a", margin: "0 0 24px", lineHeight: 1.65 }}>Push44 is free and takes 30 seconds to set up.</p>
+            <Link to="/onboarding" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 14, borderRadius: 8, textDecoration: "none" }}>
+              Start Exporting Free
+            </Link>
+          </div>
+        </main>
+
+        {/* Sidebar TOC */}
+        <aside style={{ width: 220, flexShrink: 0, position: "sticky", top: 80 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>On this page</div>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {toc.map(({ id, label }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                style={{ display: "block", fontSize: 13, fontWeight: activeSection === id ? 600 : 400, color: activeSection === id ? "#09090b" : "#71717a", textDecoration: "none", padding: "5px 10px", borderRadius: 5, borderLeft: `2px solid ${activeSection === id ? "#f97316" : "transparent"}`, transition: "all 0.12s" }}
+                onMouseEnter={e => { if (activeSection !== id) (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"; }}
+                onMouseLeave={e => { if (activeSection !== id) (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"; }}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Share box */}
+          <div style={{ marginTop: 32, padding: "14px", border: "1px solid #e4e4e7", borderRadius: 9, background: "#fafafa" }}>
+            <p style={{ fontSize: 12, color: "#71717a", margin: "0 0 10px", lineHeight: 1.5 }}>Found this guide helpful?</p>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#09090b", textDecoration: "none", padding: "7px 10px", border: "1px solid #e4e4e7", borderRadius: 7, background: "#fff", transition: "border-color 0.12s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"}
+            >
+              <Share2 size={12} /> Share on X
+            </a>
+          </div>
         </aside>
       </div>
+
+      <Footer />
+
+      <style>{`
+        @media (max-width: 900px) {
+          aside { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

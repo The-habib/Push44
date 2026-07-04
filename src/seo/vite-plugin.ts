@@ -22,19 +22,15 @@ export function seoPlugin(): Plugin {
       server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
         const url = req.url?.split("?")[0] ?? "";
 
-        // ── Blog Homepage ──────────────────────────────────────────────────
-        if (url === "/blog" || url === "/blog/") {
-          return sendHtml(res, generateBlogHome());
+        // Blog homepage and articles — let the React SPA handle them.
+        // In production, public/blog/** static files serve SEO bots directly.
+        if (url === "/blog" || url === "/blog/" || url.match(/^\/blog\/[^/]+\/?$/)) {
+          return next();
         }
 
-        // ── Article ────────────────────────────────────────────────────────
-        const articleMatch = url.match(/^\/blog\/([^/]+)\/?$/);
-        if (articleMatch) {
-          const slug = articleMatch[1];
-          const article = ARTICLES.find(a => a.slug === slug);
-          if (article) return sendHtml(res, generateArticlePage(article));
-          // Not found → fall through to SPA
-        }
+        // ── Article (kept as reference, disabled for dev UX) ──────────────
+        // const articleMatch = url.match(/^\/blog\/([^/]+)\/?$/);
+
 
         // ── Platform Hub ───────────────────────────────────────────────────
         const platformMatch = url.match(/^\/platforms\/([^/]+)\/?$/);
