@@ -1,5 +1,5 @@
 {
-  "name": "Push44 — Push Apps to GitHub",
+  "name": "Push44",
   "short_name": "Push44",
   "description": "Back up your Base44, Rocket.new, Floot, and Zite app source code to GitHub in one tap. Free, no sign-up, runs in your browser.",
   "start_url": "/",
@@ -15,7 +15,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/logo.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

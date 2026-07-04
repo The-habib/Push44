@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/platforms/floot" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Floot GitHub Export Guide — Push44" />
   <meta property="og:description" content="Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub." />
@@ -270,7 +284,7 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Floot Export Guide — Push44","description":"Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub.","url":"https://push44.vercel.app/platforms/floot","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why do I need to get my Floot token from browser cookies?","acceptedAnswer":{"@type":"Answer","text":"Floot doesn't expose a public API token UI. Push44 uses your active session to authenticate, which means reading the session cookie from your browser."}},{"@type":"Question","name":"Does my Floot app stay live after I export?","acceptedAnswer":{"@type":"Answer","text":"Yes. Exporting with Push44 doesn't affect your live Floot app."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Floot","item":"https://push44.vercel.app/platforms/floot"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -411,7 +425,7 @@
     <h2 id="all-guides-heading" class="section-title">Floot Guides</h2>
     <div class="grid-3" style="margin-top:32px">
       
-<a href="/blog/how-to-export-floot-project" class="article-card" aria-label="How to Export Your Floot Project">
+<a href="/blog/how-to-export-floot-project" class="article-card" data-category="export" data-platform="floot" aria-label="How to Export Your Floot Project">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -426,7 +440,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/export-floot-to-github" class="article-card" aria-label="Export Floot to GitHub">
+<a href="/blog/export-floot-to-github" class="article-card" data-category="github" data-platform="floot" aria-label="Export Floot to GitHub">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -441,7 +455,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/floot-source-code-backup" class="article-card" aria-label="How to Backup Your Floot Source Code">
+<a href="/blog/floot-source-code-backup" class="article-card" data-category="backup" data-platform="floot" aria-label="How to Backup Your Floot Source Code">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -456,7 +470,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/floot-magic-link-token-guide" class="article-card" aria-label="Getting Your Floot Session Token">
+<a href="/blog/floot-magic-link-token-guide" class="article-card" data-category="export" data-platform="floot" aria-label="Getting Your Floot Session Token">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>
@@ -471,7 +485,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/floot-badge-removal-guide" class="article-card" aria-label="Removing the Floot Badge from Your App">
+<a href="/blog/floot-badge-removal-guide" class="article-card" data-category="tutorials" data-platform="floot" aria-label="Removing the Floot Badge from Your App">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>

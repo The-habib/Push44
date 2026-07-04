@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/blog/rocket-new-apk-export-guide" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Rocket.new APK Build &amp; Export Guide | Push44" />
   <meta property="og:description" content="Build and export Android APKs from Rocket.new projects using Push44. Trigger builds, download APKs, and manage your Android app files." />
@@ -271,7 +285,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Rocket.new APK Export \u0026 Build Guide","description":"Building an APK in Rocket.new requires navigating their build system, waiting for the build to complete, and downloading the result. If the build fails with a max-attempt error, you need to reset the build state before you can try again — and Rocket.new doesn't always make this obvious.","step":[{"@type":"HowToStep","position":1,"name":"Connect your Rocket.new project","text":"Authenticate with Rocket.new in Push44 and select an Android project."},{"@type":"HowToStep","position":2,"name":"Trigger the APK build","text":"In Push44's APK section, click 'Build APK'. Push44 calls the Rocket.new build API and monitors the build queue."},{"@type":"HowToStep","position":3,"name":"Handle max-attempt errors if they occur","text":"If you see a 'max failed attempts' error, use Push44's 'Reset Build' button to clear the failed state. Then trigger a new build. This calls the reset-apk-build endpoint before make-apk-build."},{"@type":"HowToStep","position":4,"name":"Download your APK","text":"Once the build completes (typically 3–10 minutes), Push44 shows a download button. Click it to save the APK to your device."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long does an APK build take in Rocket.new?","acceptedAnswer":{"@type":"Answer","text":"Typically 3–10 minutes depending on project complexity and server load. Push44 shows live status updates throughout the build."}},{"@type":"Question","name":"What does 'max failed attempts' mean?","acceptedAnswer":{"@type":"Answer","text":"Rocket.new limits build attempts to prevent runaway builds. If a build fails multiple times, it locks the build queue. Push44's reset function clears this lock."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Rocket.new APK Export \u0026 Build Guide","item":"https://push44.vercel.app/blog/rocket-new-apk-export-guide"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -446,7 +460,7 @@
       <h2 id="related-heading">Related Guides</h2>
       <div class="grid-2">
         
-<a href="/blog/how-to-export-rocket-new-project" class="article-card" aria-label="How to Export Your Rocket.new Project">
+<a href="/blog/how-to-export-rocket-new-project" class="article-card" data-category="export" data-platform="rocket-new" aria-label="How to Export Your Rocket.new Project">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -461,7 +475,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/export-rocket-new-to-github" class="article-card" aria-label="Export Rocket.new to GitHub">
+<a href="/blog/export-rocket-new-to-github" class="article-card" data-category="github" data-platform="rocket-new" aria-label="Export Rocket.new to GitHub">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-beginner">beginner</span>

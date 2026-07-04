@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/blog/how-to-export-rocket-new-project" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="How to Export a Rocket.new Project | Push44 Guide" />
   <meta property="og:description" content="Complete guide to exporting your Rocket.new source code to GitHub using Push44. Get your full project files, build APKs, and own your code. Free." />
@@ -271,7 +285,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to Export Your Rocket.new Project","description":"Rocket.new generates complex full-stack projects with backend APIs, databases, and frontend code. Without export capability, all that AI-generated code stays locked in Rocket.new's infrastructure — you can't run it locally, collaborate with developers, or host it yourself.","step":[{"@type":"HowToStep","position":1,"name":"Get your Rocket.new API token","text":"Log into Rocket.new and navigate to your account settings or profile. Find the API token or access token section. Generate a new token and copy it — this authenticates Push44 to your Rocket.new account."},{"@type":"HowToStep","position":2,"name":"Find your project's company ID","text":"In Rocket.new, open your project and look at the URL or project settings. You'll find a company ID (a UUID or alphanumeric identifier) that identifies your workspace. Push44 needs this to access the right project."},{"@type":"HowToStep","position":3,"name":"Connect to Push44","text":"Open Push44, select Rocket.new as your platform, and enter your API token and company ID. Push44 will verify the connection and load your projects."},{"@type":"HowToStep","position":4,"name":"Select and fetch your project","text":"Choose the Rocket.new project you want to export. Push44 connects to the project's container, pings the container to ensure it's running, and then fetches the complete file list."},{"@type":"HowToStep","position":5,"name":"Configure GitHub and push","text":"Enter your GitHub repository details and click 'Push to GitHub'. Push44 pushes all project files as a single atomic commit. Your full Rocket.new project is now on GitHub."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does exporting Rocket.new projects include the backend code?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 fetches all files from the Rocket.new container, including backend API code, database schemas, configuration files, and frontend code."}},{"@type":"Question","name":"Can I run my exported Rocket.new project locally?","acceptedAnswer":{"@type":"Answer","text":"Yes, if you have the required runtime environment. The exported files are the actual source code — you can run them locally with the appropriate setup (Node.js, etc.)."}},{"@type":"Question","name":"Does Push44 work with all Rocket.new project types?","acceptedAnswer":{"@type":"Answer","text":"Push44 works with Rocket.new web projects and Android app projects. For Android, it exports the source code; the APK build happens separately."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"How to Export Your Rocket.new Project","item":"https://push44.vercel.app/blog/how-to-export-rocket-new-project"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -458,7 +472,7 @@
       <h2 id="related-heading">Related Guides</h2>
       <div class="grid-2">
         
-<a href="/blog/export-rocket-new-to-github" class="article-card" aria-label="Export Rocket.new to GitHub">
+<a href="/blog/export-rocket-new-to-github" class="article-card" data-category="github" data-platform="rocket-new" aria-label="Export Rocket.new to GitHub">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -473,7 +487,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/rocket-new-source-code-download" class="article-card" aria-label="How to Download Rocket.new Source Code">
+<a href="/blog/rocket-new-source-code-download" class="article-card" data-category="export" data-platform="rocket-new" aria-label="How to Download Rocket.new Source Code">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -488,7 +502,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/rocket-new-apk-export-guide" class="article-card" aria-label="Rocket.new APK Export &amp; Build Guide">
+<a href="/blog/rocket-new-apk-export-guide" class="article-card" data-category="export" data-platform="rocket-new" aria-label="Rocket.new APK Export &amp; Build Guide">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#22c55e;--platform-bg:#f0fdf4">Rocket.new</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>
@@ -503,7 +517,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/backup-ai-generated-apps" class="article-card" aria-label="How to Backup AI-Generated Apps">
+<a href="/blog/backup-ai-generated-apps" class="article-card" data-category="backup" data-platform="general" aria-label="How to Backup AI-Generated Apps">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>

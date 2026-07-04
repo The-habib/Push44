@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/blog/export-code-without-subscription" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Export AI-Generated Code Without a Subscription | Push44" />
   <meta property="og:description" content="Export your AI-built app source code for free — no subscription required. Push44 bypasses export restrictions on Base44, Rocket.new, Floot, and Zite." />
@@ -271,7 +285,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to Export AI Code Without a Subscription","description":"Platforms like Base44, Rocket.new, and others charge subscription fees partly justified by providing code export. Without paying, you can view your code in the browser but can't download it cleanly. This creates a lock-in: stop paying, lose access to your own work.","step":[{"@type":"HowToStep","position":1,"name":"Install nothing — Push44 runs in the browser","text":"Go to push44.vercel.app. There's nothing to install. Push44 is a web app that makes direct API calls from your browser."},{"@type":"HowToStep","position":2,"name":"Get free credentials","text":"You need a free API token from your AI platform (available to all account tiers) and a free GitHub Personal Access Token. Both are free."},{"@type":"HowToStep","position":3,"name":"Export your project","text":"Select your platform, enter your tokens, choose your project, and click 'Push to GitHub'. Your complete source code is now in GitHub — permanently, for free."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is Push44 legal to use for exporting AI app code?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 uses the same APIs that the platforms expose to their users. It authenticates with your own credentials and reads your own project files."}},{"@type":"Question","name":"Will using Push44 get my account banned?","acceptedAnswer":{"@type":"Answer","text":"No. Push44 uses the same API calls that the platforms' own editors make. It's not scraping or bypassing security — it's using the documented API."}},{"@type":"Question","name":"Why do AI platforms charge for code export?","acceptedAnswer":{"@type":"Answer","text":"Code export is often used as a premium differentiator to encourage upgrades. However, the underlying API access is usually available to all users — platforms just don't surface the export UI to free users."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"How to Export AI Code Without a Subscription","item":"https://push44.vercel.app/blog/export-code-without-subscription"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -442,7 +456,7 @@
       <h2 id="related-heading">Related Guides</h2>
       <div class="grid-2">
         
-<a href="/blog/how-to-export-code-from-base44" class="article-card" aria-label="How to Export Code from Base44">
+<a href="/blog/how-to-export-code-from-base44" class="article-card" data-category="export" data-platform="base44" aria-label="How to Export Code from Base44">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -457,7 +471,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/backup-ai-generated-apps" class="article-card" aria-label="How to Backup AI-Generated Apps">
+<a href="/blog/backup-ai-generated-apps" class="article-card" data-category="backup" data-platform="general" aria-label="How to Backup AI-Generated Apps">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -472,7 +486,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/ai-code-ownership-guide" class="article-card" aria-label="The Complete Guide to AI Code Ownership">
+<a href="/blog/ai-code-ownership-guide" class="article-card" data-category="open-source" data-platform="general" aria-label="The Complete Guide to AI Code Ownership">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -487,7 +501,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/free-ai-code-export-tools" class="article-card" aria-label="Free AI Code Export Tools — 2025 Comparison">
+<a href="/blog/free-ai-code-export-tools" class="article-card" data-category="comparisons" data-platform="general" aria-label="Free AI Code Export Tools — 2025 Comparison">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>

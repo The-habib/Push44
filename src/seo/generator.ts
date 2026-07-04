@@ -329,7 +329,7 @@ function schemaOrg(schemas: object[]): string {
         "@id": `${BASE_URL}/#organization`,
         "name": "Push44",
         "url": BASE_URL,
-        "logo": { "@type": "ImageObject", "url": `${BASE_URL}/logo.png`, "width": 512, "height": 512 },
+        "logo": `${BASE_URL}/icon-512.png`,
         "description": SITE.tagline,
         "sameAs": ["https://github.com/The-habib/Push44"],
       },
@@ -338,6 +338,7 @@ function schemaOrg(schemas: object[]): string {
         "@id": `${BASE_URL}/#website`,
         "url": BASE_URL,
         "name": "Push44",
+        "alternateName": "Push44",
         "publisher": { "@id": `${BASE_URL}/#organization` },
         "potentialAction": {
           "@type": "SearchAction",
@@ -382,6 +383,20 @@ export function generateHtmlShell({ title, description, canonical, ogType = "art
   <meta name="description" content="${escHtml(description)}" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="${escHtml(canonical)}" />
+
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="${BASE_URL}/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="${BASE_URL}/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="${BASE_URL}/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="${BASE_URL}/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="${BASE_URL}/icon-512.png" />
+  <link rel="manifest" href="${BASE_URL}/manifest.json" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="${escHtml(title)}" />

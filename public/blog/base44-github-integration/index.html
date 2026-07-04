@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/blog/base44-github-integration" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Base44 GitHub Integration: One-Click Code Push | Push44" />
   <meta property="og:description" content="Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. Free, open source, no subscription required." />
@@ -271,7 +285,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Base44 GitHub Integration — Complete Guide","description":"Without a GitHub integration, Base44 projects live entirely on Base44's servers. If Base44 has downtime, changes their pricing, or you want to collaborate with developers who use Git, you have no way to access your code externally or build on top of it with standard developer tools.","step":[{"@type":"HowToStep","position":1,"name":"Generate a GitHub Personal Access Token","text":"Go to github.com/settings/tokens and click 'Generate new token (classic)'. Give it a name like 'Push44', set an expiration (or no expiration), and check the 'repo' scope. Copy the token — you'll need it in Push44."},{"@type":"HowToStep","position":2,"name":"Get your Base44 API token","text":"In Base44, open your profile settings and find the API Keys section. Generate a new token and copy it. This token authenticates Push44 to read your project files."},{"@type":"HowToStep","position":3,"name":"Connect both tokens in Push44","text":"Open Push44, select Base44 as your platform, and paste both tokens. Push44 securely stores them in your browser's localStorage — they never leave your device or get sent to any Push44 server."},{"@type":"HowToStep","position":4,"name":"Choose your Base44 project","text":"Push44 loads your Base44 projects. Select the one you want to connect to GitHub. Push44 fetches the complete file tree."},{"@type":"HowToStep","position":5,"name":"Set up the GitHub repository","text":"Enter your GitHub username and repository name. Push44 supports both existing repos and new repos (it creates the repo automatically if it doesn't exist). Set your target branch — 'main' is the default."},{"@type":"HowToStep","position":6,"name":"Push and verify on GitHub","text":"Click 'Push to GitHub'. Push44 creates a GitHub tree with all your files, packages them into a commit, and updates the branch reference. Open GitHub to verify — your files should appear within seconds."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Base44 have a native GitHub integration?","acceptedAnswer":{"@type":"Answer","text":"No. Base44 doesn't currently offer a built-in GitHub export feature. Push44 is a third-party open-source tool that bridges this gap."}},{"@type":"Question","name":"Will Push44 overwrite my existing GitHub repo?","acceptedAnswer":{"@type":"Answer","text":"Push44 pushes to the branch you specify. If that branch has existing commits, Push44 creates a new commit on top of them — your history is preserved."}},{"@type":"Question","name":"Can I use Push44 with a GitHub organization repo?","acceptedAnswer":{"@type":"Answer","text":"Yes. Enter the organization name as the username and the repo name. Make sure your GitHub PAT has access to the organization."}},{"@type":"Question","name":"Is my Base44 API token stored securely?","acceptedAnswer":{"@type":"Answer","text":"Your tokens are stored in your browser's localStorage and never sent to any Push44 server. Push44 makes direct API calls from your browser to Base44 and GitHub."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44 GitHub Integration — Complete Guide","item":"https://push44.vercel.app/blog/base44-github-integration"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -470,7 +484,7 @@
       <h2 id="related-heading">Related Guides</h2>
       <div class="grid-2">
         
-<a href="/blog/how-to-export-code-from-base44" class="article-card" aria-label="How to Export Code from Base44">
+<a href="/blog/how-to-export-code-from-base44" class="article-card" data-category="export" data-platform="base44" aria-label="How to Export Code from Base44">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -485,7 +499,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-version-control-guide" class="article-card" aria-label="Base44 Version Control Guide">
+<a href="/blog/base44-version-control-guide" class="article-card" data-category="version-control" data-platform="base44" aria-label="Base44 Version Control Guide">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>
@@ -500,7 +514,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/export-code-without-subscription" class="article-card" aria-label="How to Export AI Code Without a Subscription">
+<a href="/blog/export-code-without-subscription" class="article-card" data-category="export" data-platform="general" aria-label="How to Export AI Code Without a Subscription">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>

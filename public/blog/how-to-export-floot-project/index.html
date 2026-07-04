@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/blog/how-to-export-floot-project" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="How to Export a Floot Project | Push44 Guide" />
   <meta property="og:description" content="Export your Floot project source code to GitHub using Push44. Step-by-step guide for Floot developers. Free, no subscription, works with all Floot apps." />
@@ -271,7 +285,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to Export Your Floot Project","description":"Floot is a web app builder that publishes apps to the web, but it doesn't provide a native way to download or version-control your source code. Your project files — components, styles, logic — exist only within Floot's platform.","step":[{"@type":"HowToStep","position":1,"name":"Get your Floot session token","text":"The Floot authentication uses a session token. Open Floot in your browser, open Developer Tools (F12), go to Application → Cookies, and find the session cookie. Copy its value. This is your Floot token for Push44."},{"@type":"HowToStep","position":2,"name":"Connect Floot in Push44","text":"Open Push44 and select Floot as your platform. Paste your session token. Push44 verifies the token and loads your Floot workspace."},{"@type":"HowToStep","position":3,"name":"Select your Floot project","text":"Push44 shows your Floot workspace and available projects. Select the app you want to export. Push44 reads the project's source file tree via the workspace reference API."},{"@type":"HowToStep","position":4,"name":"Push to GitHub","text":"Enter your GitHub repository details and click 'Push to GitHub'. Push44 exports all your Floot source files — components, styles, routing, and configuration — to your GitHub repo."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does exporting Floot remove my app from Floot?","acceptedAnswer":{"@type":"Answer","text":"No. Push44 only reads your project. Your Floot app continues to run and be hosted by Floot normally."}},{"@type":"Question","name":"Does the Floot export include published pages or just source code?","acceptedAnswer":{"@type":"Answer","text":"Push44 exports the source code — the actual files and components. The published/hosted version is separate and remains on Floot's servers."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"How to Export Your Floot Project","item":"https://push44.vercel.app/blog/how-to-export-floot-project"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -446,7 +460,7 @@
       <h2 id="related-heading">Related Guides</h2>
       <div class="grid-2">
         
-<a href="/blog/export-floot-to-github" class="article-card" aria-label="Export Floot to GitHub">
+<a href="/blog/export-floot-to-github" class="article-card" data-category="github" data-platform="floot" aria-label="Export Floot to GitHub">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -461,7 +475,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/floot-source-code-backup" class="article-card" aria-label="How to Backup Your Floot Source Code">
+<a href="/blog/floot-source-code-backup" class="article-card" data-category="backup" data-platform="floot" aria-label="How to Backup Your Floot Source Code">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -476,7 +490,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/backup-ai-generated-apps" class="article-card" aria-label="How to Backup AI-Generated Apps">
+<a href="/blog/backup-ai-generated-apps" class="article-card" data-category="backup" data-platform="general" aria-label="How to Backup AI-Generated Apps">
   <div class="article-card-meta">
     
     <span class="badge badge-difficulty-beginner">beginner</span>

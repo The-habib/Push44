@@ -38,6 +38,14 @@ function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  head: () => ({
+    meta: [
+      { name: "application-name", content: "Push44" },
+      { name: "apple-mobile-web-app-title", content: "Push44" },
+      { property: "og:site_name", content: "Push44" },
+      { name: "twitter:site", content: "@push44app" },
+    ],
+  }),
   component: RootComponent,
   notFoundComponent: NotFoundPage,
   errorComponent: ErrorPage,

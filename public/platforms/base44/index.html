@@ -9,6 +9,20 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/platforms/base44" />
 
+  <!-- Site / Application identity -->
+  <meta name="application-name" content="Push44" />
+  <meta name="apple-mobile-web-app-title" content="Push44" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="https://push44.vercel.app/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://push44.vercel.app/logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="https://push44.vercel.app/logo.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="https://push44.vercel.app/icon-512.png" />
+  <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Base44 GitHub Export Guide — Push44" />
   <meta property="og:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click." />
@@ -270,7 +284,7 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Base44 Export Guide — Push44","description":"Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.","url":"https://push44.vercel.app/platforms/base44","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Push44 work with all Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 uses the Base44 API to read any project associated with your account."}},{"@type":"Question","name":"Do I need a paid Base44 plan?","acceptedAnswer":{"@type":"Answer","text":"No. The Base44 API used by Push44 is available to all account tiers."}},{"@type":"Question","name":"How long does a Base44 export take?","acceptedAnswer":{"@type":"Answer","text":"Typically under 30 seconds for most projects."}},{"@type":"Question","name":"Can I export multiple Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Run Push44 separately for each project, pointing to different GitHub repos."}},{"@type":"Question","name":"Is my Base44 API token safe in Push44?","acceptedAnswer":{"@type":"Answer","text":"Yes. It's stored in your browser's localStorage and never sent to any Push44 server."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44","item":"https://push44.vercel.app/platforms/base44"}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png","width":512,"height":512},"description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
   
@@ -411,7 +425,7 @@
     <h2 id="all-guides-heading" class="section-title">Base44 Guides</h2>
     <div class="grid-3" style="margin-top:32px">
       
-<a href="/blog/how-to-export-code-from-base44" class="article-card" aria-label="How to Export Code from Base44">
+<a href="/blog/how-to-export-code-from-base44" class="article-card" data-category="export" data-platform="base44" aria-label="How to Export Code from Base44">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -426,7 +440,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/download-base44-source-code" class="article-card" aria-label="How to Download Base44 Source Code">
+<a href="/blog/download-base44-source-code" class="article-card" data-category="export" data-platform="base44" aria-label="How to Download Base44 Source Code">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -441,7 +455,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-github-integration" class="article-card" aria-label="Base44 GitHub Integration — Complete Guide">
+<a href="/blog/base44-github-integration" class="article-card" data-category="github" data-platform="base44" aria-label="Base44 GitHub Integration — Complete Guide">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
@@ -456,7 +470,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-version-control-guide" class="article-card" aria-label="Base44 Version Control Guide">
+<a href="/blog/base44-version-control-guide" class="article-card" data-category="version-control" data-platform="base44" aria-label="Base44 Version Control Guide">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-intermediate">intermediate</span>
@@ -471,7 +485,7 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-project-backup-guide" class="article-card" aria-label="Base44 Project Backup Guide">
+<a href="/blog/base44-project-backup-guide" class="article-card" data-category="backup" data-platform="base44" aria-label="Base44 Project Backup Guide">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
     <span class="badge badge-difficulty-beginner">beginner</span>
