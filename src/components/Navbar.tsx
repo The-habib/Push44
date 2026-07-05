@@ -1,9 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Menu, X, Github, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import appLogo from "@/assets/logo.png";
-
-const GITHUB_URL = "https://github.com/The-habib/Push44";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,10 +49,6 @@ export function Navbar() {
             )}
             <NavLink to="/blog/" active={isBlog}>Blog</NavLink>
             <NavLink to="/compare/base44-vs-rocket-new" active={isCompare}>Compare</NavLink>
-            <NavLink href={GITHUB_URL} external>
-              <Github size={13} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
-              GitHub
-            </NavLink>
           </nav>
 
           {/* CTA */}
@@ -99,7 +93,6 @@ export function Navbar() {
               </>
             )}
             <MobileNavLink to="/blog/" onClick={() => setMenuOpen(false)}>Blog</MobileNavLink>
-            <MobileNavLink href={GITHUB_URL}>GitHub</MobileNavLink>
             <div style={{ marginTop: 8 }}>
               <Link
                 to="/onboarding"

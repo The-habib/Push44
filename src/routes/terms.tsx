@@ -5,7 +5,7 @@ export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
       { title: "Terms of Service — Push44" },
-      { name: "description", content: "Push44's terms of service. Push44 is free, open source software provided as-is under the MIT License, used to export AI-generated code from Base44, Rocket.new, Floot, and Zite to GitHub." },
+      { name: "description", content: "Push44's terms of service. Push44 is a free client-side tool used to export AI-generated code from Base44, Rocket.new, Floot, Zite, and bolt.new to GitHub." },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Terms of Service — Push44" },
       { property: "og:type", content: "website" },
@@ -22,7 +22,7 @@ const SECTIONS = [
   },
   {
     title: "2. What Push44 is",
-    body: "Push44 is a free, open source, client-side tool that reads project files from AI coding platforms you've connected (Base44, Rocket.new, Floot, Zite) using credentials you provide, and pushes them to a GitHub repository you control, or bundles them into a ZIP file for download.",
+    body: "Push44 is a free, client-side tool that reads project files from AI coding platforms you've connected (Base44, Rocket.new, Floot, Zite, bolt.new) using credentials you provide, and pushes them to a GitHub repository you control, or bundles them into a ZIP file for download.",
   },
   {
     title: "3. No warranty",
@@ -41,16 +41,12 @@ const SECTIONS = [
     body: "You agree not to use Push44 to violate the terms of service of GitHub or any connected AI platform, and not to use it for any unlawful purpose.",
   },
   {
-    title: "7. Open source license",
-    body: "Push44's source code is released under the MIT License. You may fork, modify, and self-host it under the terms of that license. See the GitHub repository for the full license text.",
-  },
-  {
-    title: "8. Changes to the service or terms",
+    title: "7. Changes to the service or terms",
     body: "We may update Push44 or these terms at any time. Continued use after an update constitutes acceptance of the revised terms.",
   },
   {
-    title: "9. Contact",
-    body: "Questions about these terms can be raised as an issue on the Push44 GitHub repository.",
+    title: "8. Contact",
+    body: "Questions about these terms? Reach out via the contact information on the Push44 website.",
   },
 ];
 
@@ -81,7 +77,7 @@ function TermsPage() {
   return (
     <LegalLayout pageTitle="Terms of Service" updated="July 3, 2026">
       <p style={{ fontSize: 15, color: "#52525b", lineHeight: 1.75, marginBottom: 32 }}>
-        These terms govern your use of Push44. Because Push44 is free and open source with no account system,
+        These terms govern your use of Push44. Because Push44 is free with no account system,
         we've kept this as short and plain as possible.
       </p>
       {SECTIONS.map(s => (

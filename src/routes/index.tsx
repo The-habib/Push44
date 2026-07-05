@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Github, ArrowRight, Zap, ShieldCheck, GitBranch, Code2,
-  Download, History, ChevronDown, ChevronUp, Star,
+  ArrowRight, Zap, ShieldCheck, GitBranch, EyeOff,
+  Download, History, ChevronDown, ChevronUp,
 } from "lucide-react";
 import base44LogoImg from "@/assets/base44-logo-transparent.webp";
 import rocketLogoImg from "@/assets/rocket-logo.png";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Push44 — Export AI-Generated Code from Any Platform. Free. Forever." },
-      { name: "description", content: "Push44 lets you export your full source code from Base44, Rocket.new, Floot, and Zite directly to GitHub in one click. No backend. No subscription. 100% open source." },
+      { name: "description", content: "Push44 lets you export your full source code from Base44, Rocket.new, Floot, Zite, and bolt.new directly to GitHub in one click. No backend. No subscription. Completely free." },
       { name: "keywords", content: "AI app export, Base44 GitHub export, Rocket.new export, Floot export, Zite export, AI code ownership, export AI generated code" },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Push44 — Export AI-Generated Code Free. Forever." },
@@ -105,7 +105,7 @@ const FEATURES = [
   { Icon: Zap, title: "Instant Push", desc: "From export to GitHub commit in under 10 seconds. Batch push all files in a single atomic operation." },
   { Icon: GitBranch, title: "Smart Diff Preview", desc: "See exactly what changed before you push — added, modified, and deleted files with full transparency." },
   { Icon: History, title: "Version History", desc: "Every push creates a proper git commit. Roll back to any version, compare changes, and track your progress." },
-  { Icon: Code2, title: "100% Open Source", desc: "MIT licensed. Read the source, fork it, self-host it. No black boxes, no vendor lock-in of any kind." },
+  { Icon: EyeOff, title: "No Data Collection", desc: "Zero servers, zero logs, zero tracking. Push44 runs entirely in your browser — your code and tokens never leave your device." },
 ];
 
 // ── PLATFORMS data ──────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ const STEPS = [
 // ── FAQ data ────────────────────────────────────────────────────────────────
 
 const FAQS = [
-  { q: "Is Push44 really free?", a: "Yes, 100% free forever. No trial, no credit card, no hidden tier. Push44 is open source under the MIT license." },
+  { q: "Is Push44 really free?", a: "Yes, 100% free forever. No trial, no credit card, no hidden tier. No paid plans, ever." },
   { q: "Does Push44 store my code or tokens?", a: "Never. Push44 runs entirely in your browser. Your API tokens and source code never touch any server operated by us." },
   { q: "Which AI platforms are supported?", a: "Base44, Rocket.new, Floot, Zite, and bolt.new are fully supported. Each platform has different capabilities: code export to GitHub (Base44, Rocket, Floot, Zite) and badge removal (bolt.new). More platforms are added regularly." },
   { q: "Do I need a GitHub account?", a: "Yes, you need a GitHub account and a Personal Access Token (or GitHub OAuth) to push to a repository." },
@@ -178,7 +178,7 @@ export default function LandingPage() {
             {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 6px", border: "1px solid #e4e4e7", borderRadius: 999, fontSize: 12, fontWeight: 500, color: "#52525b", marginBottom: 28 }}>
               <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.02em" }}>FREE</span>
-              Open source · MIT License · No signup required
+              Free forever · No signup required · No data collected
             </div>
 
             {/* H1 */}
@@ -188,7 +188,7 @@ export default function LandingPage() {
 
             {/* Subtext */}
             <p style={{ fontSize: 18, color: "#71717a", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 500 }}>
-              Push44 bypasses export restrictions on Base44, Rocket.new, Floot, and Zite.
+              Push44 bypasses export restrictions on Base44, Rocket.new, Floot, Zite, and bolt.new.
               Push your full source code to GitHub in one click — free, forever.
             </p>
 
@@ -202,17 +202,14 @@ export default function LandingPage() {
               >
                 Start Exporting Free <ArrowRight size={16} />
               </Link>
-              <a
-                href="https://github.com/The-habib/Push44"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/blog/"
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#fff", color: "#09090b", fontWeight: 600, fontSize: 15, borderRadius: 9, textDecoration: "none", border: "1px solid #e4e4e7", letterSpacing: "-0.01em", transition: "border-color 0.15s" }}
                 onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"}
                 onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"}
               >
-                <Github size={16} /> Star on GitHub
-                <span style={{ background: "#f4f4f5", borderRadius: 5, padding: "2px 8px", fontSize: 12, color: "#52525b", fontWeight: 600 }}>12.4K</span>
-              </a>
+                View Guides &amp; Tutorials
+              </Link>
             </div>
 
             {/* Product mockup */}
@@ -383,7 +380,7 @@ export default function LandingPage() {
             Start owning your code today.
           </h2>
           <p style={{ fontSize: 16, color: "#71717a", margin: "0 0 40px", lineHeight: 1.65 }}>
-            Free forever. Open source. No account required to start.
+            Free forever. No account required to start.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link
@@ -394,16 +391,6 @@ export default function LandingPage() {
             >
               Launch App Free <ArrowRight size={16} />
             </Link>
-            <a
-              href="https://github.com/The-habib/Push44"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", background: "transparent", color: "#a1a1aa", fontWeight: 600, fontSize: 15, borderRadius: 9, textDecoration: "none", border: "1px solid #3f3f46" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#f4f4f5"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#52525b"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#a1a1aa"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#3f3f46"; }}
-            >
-              <Star size={15} /> Star on GitHub
-            </a>
           </div>
         </div>
       </section>

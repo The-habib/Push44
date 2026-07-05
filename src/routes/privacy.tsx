@@ -33,8 +33,8 @@ const SECTIONS = [
     body: "GitHub, Base44, Rocket.new, Floot, and Zite each have their own privacy policies governing data you send them directly. Push44 is not affiliated with any of these platforms; we simply provide a client-side tool that talks to their public/authenticated APIs on your behalf, using credentials you control.",
   },
   {
-    title: "5. Open source",
-    body: "Push44's full source code is public and MIT licensed. You can audit exactly what the app does with your data at any time — there is no hidden server-side logic.",
+    title: "5. No server-side logic",
+    body: "Push44 has no backend database or server that processes your data. All credential storage and API calls happen entirely in your own browser session. There is nothing to audit server-side because there is no server.",
   },
   {
     title: "6. Changes to this policy",
@@ -42,7 +42,7 @@ const SECTIONS = [
   },
   {
     title: "7. Contact",
-    body: "Questions about this policy can be raised as an issue on the Push44 GitHub repository.",
+    body: "Questions about this policy? Reach out via the contact information on the Push44 website.",
   },
 ];
 

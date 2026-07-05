@@ -18,3 +18,4 @@
 - [Google site-name vs Vercel](google-site-name-vercel.md) — align application-name/manifest/JSON-LD/og across every page + re-run generate-seo when Google shows platform name instead of brand.
 - [Push44 image weight](push44-image-weight.md) — logo.png/og-image were 1.3MB+; compress with magick PNG8/JPG and update both src/assets + public copies plus generator.ts refs together.
 - [Bolt.new API Patterns](bolt-api.md) — cookie=__session; PUT /api/deploy/{pid} ZIP→staging; POST /api/deploy/{pid}/promote→live; badge blocked via MutationObserver on zIndex 2147483647; full docs in docs/research/bolt-new-api.md
+- [Push44 Branding: Not Open Source](push44-not-open-source.md) — removed "Open source", "MIT License", GitHub star CTAs site-wide; now positioned as free tool only

@@ -289,7 +289,7 @@ function boltProxyPlugin(): Plugin {
       const boltRes = await fetch(`https://bolt.new${targetPath}`, {
         method: req.method ?? "GET",
         headers: forwardHeaders,
-        ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf } : {}),
+        ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf as unknown as BodyInit } : {}),
       });
 
       const responseText = await boltRes.text();

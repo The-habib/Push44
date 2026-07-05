@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Github } from "lucide-react";
+import { Shield } from "lucide-react";
 import appLogo from "@/assets/logo.png";
 
 export function Footer() {
@@ -17,18 +17,11 @@ export function Footer() {
               <span style={{ fontWeight: 700, fontSize: 15, color: "#fff", letterSpacing: "-0.02em" }}>Push44</span>
             </Link>
             <p style={{ fontSize: 13, lineHeight: 1.65, color: "#71717a", maxWidth: 240, margin: "0 0 20px" }}>
-              Export AI-generated code from any platform to GitHub. Free, open source, zero backend.
+              Export AI-generated code from any platform to GitHub. Free, zero backend, no data collected.
             </p>
-            <a
-              href="https://github.com/The-habib/Push44"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, color: "#71717a", textDecoration: "none", padding: "6px 12px", border: "1px solid #27272a", borderRadius: 6, transition: "color 0.15s, border-color 0.15s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#fff"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#52525b"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"; (e.currentTarget as HTMLAnchorElement).style.borderColor = "#27272a"; }}
-            >
-              <Github size={13} /> GitHub
-            </a>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, color: "#71717a", padding: "6px 12px", border: "1px solid #27272a", borderRadius: 6 }}>
+              <Shield size={13} /> Free Forever
+            </div>
           </div>
 
           {/* Product */}
@@ -52,14 +45,12 @@ export function Footer() {
             { label: "Blog", to: "/blog/" },
             { label: "Guides", to: "/blog/" },
             { label: "Comparisons", to: "/compare/base44-vs-rocket-new" },
-            { label: "Open Source", href: "https://github.com/The-habib/Push44" },
           ]} />
 
           {/* Legal */}
           <FooterCol title="Company" links={[
             { label: "Privacy Policy", to: "/privacy" },
             { label: "Terms of Service", to: "/terms" },
-            { label: "MIT License", href: "https://github.com/The-habib/Push44/blob/main/LICENSE" },
           ]} />
         </div>
 
@@ -67,7 +58,6 @@ export function Footer() {
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "20px 0", fontSize: 12, color: "#52525b" }}>
           <span>© 2026 Push44. All rights reserved.</span>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ padding: "2px 8px", border: "1px solid #27272a", borderRadius: 4, background: "#18181b", color: "#71717a", fontSize: 11 }}>MIT License</span>
             <span>Made for developers who own their code</span>
           </div>
         </div>

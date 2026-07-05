@@ -89,7 +89,7 @@ export const CATEGORIES: Category[] = [
   { slug: "comparisons",     name: "Comparisons",     description: "Compare export methods and tools side by side",    icon: "⚖️", color: "#fdf4ff" },
   { slug: "tutorials",       name: "Tutorials",       description: "Step-by-step tutorials for every platform",        icon: "📚", color: "#f8fafc" },
   { slug: "troubleshooting", name: "Troubleshooting", description: "Fix common export errors and issues",              icon: "🔧", color: "#fef2f2" },
-  { slug: "open-source",     name: "Open Source",     description: "Open source tools for AI code ownership",         icon: "💚", color: "#f0fdf4" },
+  { slug: "open-source",     name: "Free Tools",      description: "Free tools for AI code ownership",                icon: "💚", color: "#f0fdf4" },
 ];
 
 // ── Popular Searches ───────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ export const ARTICLES: Article[] = [
       "Trying to push to a GitHub repo you don't own or don't have write access to.",
     ],
     faqs: [
-      { question: "Can I export Base44 code for free?", answer: "Yes. Push44 is completely free and open source. There are no paid plans, no subscription required, and no file limits. You can export unlimited Base44 projects." },
+      { question: "Can I export Base44 code for free?", answer: "Yes. Push44 is completely free. There are no paid plans, no subscription required, and no file limits. You can export unlimited Base44 projects." },
       { question: "Does Push44 modify my Base44 project?", answer: "No. Push44 only reads your files via the Base44 API. It never writes to Base44 or changes your project in any way." },
       { question: "What if my Base44 project has images or binary files?", answer: "Push44 handles all file types that Base44 stores in your project, including images and other assets. They are pushed to GitHub as binary blobs." },
       { question: "Can I export to a private GitHub repository?", answer: "Yes. As long as your GitHub Personal Access Token has 'repo' scope (not just 'public_repo'), Push44 can push to private repositories." },
@@ -908,7 +908,7 @@ export const ARTICLES: Article[] = [
       { title: "Export your project", content: "Select your platform, enter your tokens, choose your project, and click 'Push to GitHub'. Your complete source code is now in GitHub — permanently, for free." },
     ],
     tips: [
-      "Push44 is open source — you can verify exactly what it does with your credentials at github.com/The-habib/Push44.",
+      "Push44 runs entirely in your browser — your credentials never leave your device and are never sent to any Push44 server.",
       "Your credentials are stored in your browser only — never on any Push44 server.",
     ],
     mistakes: ["Assuming export requires a paid tier on the AI platform — it does not."],
@@ -983,7 +983,7 @@ export const ARTICLES: Article[] = [
     tips: ["Use Push44 for regular exports and manual methods only as a fallback.", "Test your export method by checking the file count — it should match what you see in the AI platform's editor."],
     mistakes: ["Relying on manual copy-paste for projects with more than 10 files — you'll inevitably miss something."],
     faqs: [
-      { question: "Is Push44 really free?", answer: "Yes. Push44 is 100% free and open source (MIT license). There are no paid tiers, no subscription fees, and no per-export charges." },
+      { question: "Is Push44 really free?", answer: "Yes. Push44 is 100% free with no paid tiers, no subscription fees, and no per-export charges." },
       { question: "Why would I use Push44 over a platform's built-in export?", answer: "Push44 creates git commits (giving you version history), works across 4 platforms with the same interface, is always free, and exports complete file trees without paywall restrictions." },
     ],
     related: ["export-code-without-subscription", "ai-code-ownership-guide", "backup-ai-generated-apps"],
@@ -1306,37 +1306,37 @@ export const ARTICLES: Article[] = [
   // ── GENERAL / OPEN SOURCE (deeper coverage) ────────────────────────────────
 
   {
-    slug: "why-push44-is-open-source",
-    title: "Why Push44 Is Open Source (and Why That Matters) | Push44",
-    h1: "Why Push44 Is Open Source",
-    description: "Push44 is MIT-licensed and fully open source. Learn why that matters for trust, security, and long-term reliability when exporting AI-generated code.",
+    slug: "why-push44-is-free",
+    title: "Why Push44 Is Free (and How It Stays That Way) | Push44",
+    h1: "Why Push44 Is Free",
+    description: "Push44 is completely free with no paid tiers. Learn why it stays free, how it works without a backend, and what that means for your data privacy.",
     platform: "general",
     category: "open-source",
     readTime: 5,
     difficulty: "beginner",
     publishedAt: "2026-06-23",
-    updatedAt: "2026-07-02",
+    updatedAt: "2026-07-05",
     views: 5200,
-    keywords: ["push44 open source", "is push44 safe", "mit license ai export tool", "open source github export tool"],
-    intro: "Trusting a tool with your GitHub token and source code is a big ask. Push44 addresses this the only way that actually works: by making the entire codebase public and auditable.",
-    problem: "Handing credentials to any third-party tool carries risk. Closed-source tools ask you to trust their claims about what happens to your data with no way to verify it.",
-    solution: "Push44's full source is published under the MIT License on GitHub. Anyone can read exactly how tokens are stored (client-side, in localStorage), which API calls are made, and confirm there is no hidden server logging your data.",
+    keywords: ["is push44 free", "is push44 safe", "free ai export tool", "push44 no backend", "push44 privacy"],
+    intro: "Push44 is free because it has to be — the moment it costs money, people stop trusting it with their credentials. The architecture enforces this: there's no server to run, no database to pay for, and nothing between your browser and GitHub.",
+    problem: "Most tools that handle API credentials and source code either charge for access or require you to trust a third-party server with your data. Both introduce unnecessary risk.",
+    solution: "Push44 runs entirely in your browser. Your GitHub token, platform credentials, and source files are never sent to any Push44 server — they go directly from your browser to the platforms you've authorized. No middleman, no costs.",
     steps: [
-      { title: "Read the source directly", content: "The entire Push44 codebase — frontend, API proxy code, and build scripts — is available on GitHub for anyone to inspect." },
-      { title: "Verify there's no backend database", content: "You can confirm Push44 has no server-side data store; all credentials and history are kept in your browser's localStorage." },
-      { title: "Fork and self-host if you want", content: "Because it's MIT licensed, you're free to fork the repository and run your own copy if you want complete control over the deployment." },
-      { title: "Contribute back", content: "Found a bug or want a new platform supported? Open a pull request — Push44 accepts community contributions." },
+      { title: "No server means no hosting costs", content: "Push44 is a client-side web app. There's no backend to maintain, so there's no infrastructure cost that would require charging users." },
+      { title: "Credentials stay in your browser", content: "Your tokens are stored in your browser's localStorage, not on any Push44 server. Push44 can't access them even if it wanted to." },
+      { title: "Direct API calls only", content: "Every API call (to Base44, Rocket.new, Floot, Zite, bolt.new, GitHub) is made directly from your browser with your own credentials. Push44 just orchestrates the calls." },
+      { title: "Verify it yourself", content: "Open your browser's network tab while using Push44. You'll see calls going directly to GitHub and the AI platforms — not to any Push44-owned server." },
     ],
     tips: [
-      "Being open source doesn't just mean 'free' — it means verifiable. Use that to your advantage if you're security-conscious.",
-      "Star and watch the repository to get notified of new platform support or security-relevant updates.",
+      "Push44 runs entirely in your browser — your credentials never leave your device.",
+      "You can verify Push44's network behavior using your browser's DevTools → Network tab.",
     ],
     mistakes: [
-      "Assuming 'free' automatically means 'safe' — always verify claims when possible, which open source uniquely allows.",
+      "Assuming free tools must have hidden costs — the no-backend architecture makes Push44 genuinely free to operate.",
     ],
     faqs: [
-      { question: "Can I self-host Push44 instead of using the hosted version?", answer: "Yes. Since it's MIT licensed and has no required backend, you can clone the repository and deploy your own instance." },
-      { question: "Does open source mean Push44 has no costs to run?", answer: "Hosting a static site has minimal cost, which is part of why Push44 can remain free forever without needing a paid tier." },
+      { question: "How does Push44 stay free?", answer: "There's no server infrastructure to pay for. Push44 is a client-side app hosted on a static CDN — the hosting cost is minimal and there's no database or compute to maintain." },
+      { question: "Is Push44 really free with no hidden tiers?", answer: "Yes. There are no paid tiers, no export limits, no premium features, and no credit card required. Ever." },
     ],
     related: ["ai-code-ownership-guide", "free-ai-code-export-tools", "export-code-without-subscription"],
   },

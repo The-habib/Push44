@@ -40,7 +40,7 @@ async function fetchFlootSession(token: string): Promise<{ user: any } | null> {
 
 export async function validateFlootToken({ data }: { data: { token: string } }): Promise<{ email: string; name: string }> {
   const d = await fetchFlootSession(data.token);
-  const user = d?.user ?? (d?.email ? d : null);
+  const user = d?.user ?? ((d as any)?.email ? d : null);
 
   if (!user?.email) {
     throw new Error(

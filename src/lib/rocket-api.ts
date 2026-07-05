@@ -22,8 +22,8 @@ const AES_KEY_B64 = "dqf8SIWZdQtptMTEH45CHo4A0DJLrkq02y80wmirLYo";
 
 // ─── Decryption ───────────────────────────────────────────────────────────────
 
-function b64ToBytes(b64: string): Uint8Array {
-  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+function b64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) as Uint8Array<ArrayBuffer>;
 }
 
 async function importAesKey(keyB64: string): Promise<CryptoKey> {

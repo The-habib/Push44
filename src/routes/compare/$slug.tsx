@@ -178,7 +178,7 @@ export default function ComparisonPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800 to-stone-900 pointer-events-none" />
           <div className="relative z-10">
             <h2 className="text-3xl font-extrabold text-white mb-4">Export Code on Your Terms</h2>
-            <p className="text-stone-400 text-lg mb-8 max-w-xl mx-auto">Push44 is the completely free, open-source tool for exporting projects from Base44, Floot, and more straight to GitHub.</p>
+            <p className="text-stone-400 text-lg mb-8 max-w-xl mx-auto">Push44 is the completely free tool for exporting projects from Base44, Floot, bolt.new, and more straight to GitHub.</p>
             <Link to="/" className="inline-flex items-center justify-center px-8 py-4 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/20 text-lg">
               Try Push44 Now
             </Link>
