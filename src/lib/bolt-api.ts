@@ -56,7 +56,20 @@ export async function validateBoltProject({
 }: {
   data: { token: string; projectId: string };
 }): Promise<BoltProject> {
-  const { token, projectId } = data;
+  const { token } = data;
+
+  // Normalize: strip full URL prefix if the user pasted the editor URL
+  // e.g. "https://bolt.new/~/sb1-abc" or "~/sb1-abc" → "sb1-abc"
+  const projectId = data.projectId
+    .replace(/^https?:\/\/bolt\.new\/~\//, "")
+    .replace(/^~\//, "")
+    .trim();
+
+  if (!projectId) {
+    throw new Error(
+      "Enter your Project ID from the bolt.new editor URL: bolt.new/~/PROJECT_ID"
+    );
+  }
 
   let res: Response;
   try {
@@ -77,11 +90,27 @@ export async function validateBoltProject({
         "4. Paste it here"
     );
   }
+
   if (res.status === 404) {
-    throw new Error(
-      `Project ${projectId} not found. Double-check the ID from your bolt.new editor URL (bolt.new/~/PROJECT_ID).`
-    );
+    // Newer "sb1-" format projects don't go through /api/deploy — their
+    // published site lives at {projectId}.bolt.host instead.  Check that URL
+    // directly (a HEAD request is enough).
+    const candidateHost = `${projectId}.bolt.host`;
+    try {
+      const liveCheck = await fetch(`https://${candidateHost}/`, {
+        method: "HEAD",
+        signal: AbortSignal.timeout(6000),
+      });
+      if (liveCheck.ok || liveCheck.status < 500) {
+        return { projectId, siteUrl: candidateHost, updatedAt: "" };
+      }
+    } catch {
+      // live check failed — project may not be published yet
+    }
+    // Project authenticated but no live URL detected
+    return { projectId, siteUrl: "", updatedAt: "" };
   }
+
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(
@@ -92,10 +121,8 @@ export async function validateBoltProject({
   const d = await res.json().catch(() => ({}));
   const rawSiteUrl: string = d.site_url ?? "";
 
-  // Normalize to bare host (strip https:// or http://) so URL construction
+  // Normalize to bare host (strip https:// / http://) so URL construction
   // in removeBoltBadge (`https://${siteUrl}/...`) is always well-formed.
-  // siteUrl is empty for projects that have never been deployed — that's OK;
-  // the user can still connect; badge removal will surface a clear message.
   const siteUrl = rawSiteUrl
     ? rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
     : "";
@@ -147,6 +174,17 @@ export async function removeBoltBadge({
 }): Promise<{ siteUrl: string }> {
   const { token, projectId, siteUrl } = data;
   const notify = (s: BoltRemoveStep, d?: string) => onStep?.(s, d);
+
+  // Newer "sb1-" format projects publish to *.bolt.host but their deploy
+  // API does not accept PUT requests — badge removal isn't supported yet.
+  if (/^sb\d+-/i.test(projectId)) {
+    throw new Error(
+      "Badge removal isn't available for this project yet.\n\n" +
+        "bolt.new recently changed its hosting format for newer projects (sb1-… IDs) " +
+        "and the upload API for these projects works differently. " +
+        "We're researching support — check back soon."
+    );
+  }
 
   // ── Step 1: Fetch live HTML ──────────────────────────────────────────────
   notify("fetching-html");
