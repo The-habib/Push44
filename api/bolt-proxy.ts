@@ -60,7 +60,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const boltRes = await fetch(`${BOLT_BASE}${targetPath}`, {
       method:  req.method ?? "GET",
       headers: forwardHeaders,
-      ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf } : {}),
+      ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf as unknown as BodyInit } : {}),
     });
 
     const responseText = await boltRes.text();

@@ -184,35 +184,71 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       ...loginCookies,
     };
 
-    // ── Step 5: GET /oauth/authorize → 302 → bolt.new/oauth2?code=… ────────
-    const authRes = await fetch(`https://stackblitz.com${oauthPath}`, {
-      method:   "GET",
-      redirect: "manual",
-      headers: {
-        "Cookie":       buildCookieHeader({ ...sessionJar, _stackblitz_session: newSbSession }),
-        "Origin":       "https://stackblitz.com",
-        "Referer":      signInUrl,
-        "User-Agent":   UA,
-        "Accept":       "text/html,application/xhtml+xml",
-      },
-    });
+    // ── Step 5: Follow OAuth redirect chain via the sign-in URL ─────────────
+    // Calling /oauth/authorize directly fails — StackBlitz only issues a code
+    // when it arrives via its own sign-in redirect path.  Re-GETting the
+    // sign-in URL with the now-authenticated session causes it to skip the
+    // login form and immediately redirect:
+    //   signInUrl (authenticated) → /oauth/authorize → bolt.new/oauth2?code=…
+    //
+    // We follow each hop manually (redirect:"manual") so we can inspect every
+    // Location header and stop at bolt.new/oauth2 to extract the code before
+    // triggering the code-exchange ourselves with the PKCE verifier.
 
-    const location = authRes.headers.get("location") ?? "";
-    if (!location) {
-      // StackBlitz might return a form page if something went wrong
-      return jsonError(res, 502, "OAuth authorization failed — no redirect received. Please try again.");
+    const ALLOWED_CHAIN_HOSTS = new Set(["stackblitz.com", "bolt.new", "www.bolt.new"]);
+    const cookieHeader = buildCookieHeader({ ...sessionJar, _stackblitz_session: newSbSession });
+
+    let code          = "";
+    let returnedState = "";
+    let nextHop       = signInUrl;
+    const visited     = new Set<string>();
+
+    for (let hop = 0; hop < 10; hop++) {
+      if (visited.has(nextHop)) break;
+      visited.add(nextHop);
+
+      const hopHost = new URL(nextHop).hostname;
+
+      // Stop early if we've reached bolt.new/oauth2 — extract code from URL
+      if (hopHost === "bolt.new" && new URL(nextHop).pathname === "/oauth2") {
+        const u = new URL(nextHop);
+        code          = u.searchParams.get("code")  ?? "";
+        returnedState = u.searchParams.get("state") ?? "";
+        break;
+      }
+
+      // Only follow on known-safe hosts
+      if (!ALLOWED_CHAIN_HOSTS.has(hopHost)) break;
+
+      const hopRes = await fetch(nextHop, {
+        method:   "GET",
+        redirect: "manual",
+        headers: {
+          // Only send StackBlitz session cookies to StackBlitz
+          "Cookie":     hopHost === "stackblitz.com" ? cookieHeader : "",
+          "User-Agent": UA,
+          "Referer":    "https://stackblitz.com/",
+          "Accept":     "text/html,application/xhtml+xml",
+        },
+      });
+
+      const loc = hopRes.headers.get("location");
+      if (!loc) break;
+
+      // Also check if this response itself sets the code in its Location to bolt.new
+      const locUrl = loc.startsWith("https://")
+        ? new URL(loc)
+        : new URL(loc, new URL(nextHop).origin);
+
+      nextHop = locUrl.toString();
     }
 
-    // The redirect should go to https://bolt.new/oauth2?code=…&state=…
-    const redirectUrl = location.startsWith("https://")
-      ? new URL(location)
-      : new URL(location, "https://stackblitz.com");
-
-    const code          = redirectUrl.searchParams.get("code");
-    const returnedState = redirectUrl.searchParams.get("state");
-
     if (!code) {
-      return jsonError(res, 502, "OAuth authorization failed — no code in redirect. Please try again.");
+      return jsonError(res, 502,
+        "OAuth authorization failed — could not get an authorization code from bolt.new. " +
+        "This can happen if the email/password is wrong or if the account uses Google/GitHub sign-in. " +
+        "Please try again or switch to the Session Cookie tab."
+      );
     }
     // Require state to be present and exactly match — missing state is a failure.
     if (!returnedState || returnedState !== state) {
