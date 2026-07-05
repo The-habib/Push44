@@ -222,6 +222,8 @@ export function computeFileDiff(
   return result;
 }
 
+const MS_PER_DAY = 86_400_000;
+
 function toUtcDay(ts: number): string {
   const d = new Date(ts);
   return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
@@ -232,13 +234,13 @@ export function getPushStreak(): number {
   if (!history.length) return 0;
   const days = new Set(history.map(h => toUtcDay(h.timestamp)));
   const today = toUtcDay(Date.now());
-  const yesterday = toUtcDay(Date.now() - 86400000);
+  const yesterday = toUtcDay(Date.now() - MS_PER_DAY);
   if (!days.has(today) && !days.has(yesterday)) return 0;
   let streak = 0;
-  let cursor = days.has(today) ? Date.now() : Date.now() - 86400000;
+  let cursor = days.has(today) ? Date.now() : Date.now() - MS_PER_DAY;
   while (days.has(toUtcDay(cursor))) {
     streak++;
-    cursor -= 86400000;
+    cursor -= MS_PER_DAY;
   }
   return streak;
 }
@@ -247,7 +249,7 @@ export function getWeeklyActivity(): { day: string; pushes: number; files: numbe
   const history = getHistory();
   const result: { day: string; pushes: number; files: number }[] = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
+    const d = new Date(Date.now() - i * MS_PER_DAY);
     const label = d.toLocaleDateString(undefined, { weekday: "short" });
     const dayStr = d.toDateString();
     const dayRecords = history.filter(h => new Date(h.timestamp).toDateString() === dayStr && h.status === "success");
@@ -264,7 +266,9 @@ export interface StalePushApp {
   pushCount: number;
 }
 
-export function getStalePushApps(staleAfterMs = 12 * 60 * 60 * 1000): StalePushApp[] {
+const DEFAULT_STALE_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+export function getStalePushApps(staleAfterMs = DEFAULT_STALE_MS): StalePushApp[] {
   const history = getHistory().filter(h => h.status === "success" && h.platform);
   if (!history.length) return [];
 

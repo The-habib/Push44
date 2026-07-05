@@ -74,6 +74,7 @@ export function RocketModal({ onSuccess, onClose }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {step === "email" ? (
                 <input
+                  aria-label="Email address"
                   className="input"
                   type="email"
                   placeholder="your@email.com"
@@ -86,6 +87,7 @@ export function RocketModal({ onSuccess, onClose }: Props) {
                 <>
                   <input
                     ref={otpRef}
+                    aria-label="One-time verification code"
                     className="input"
                     type="text"
                     inputMode="numeric"

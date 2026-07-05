@@ -1,16 +1,20 @@
 const GH = "https://api.github.com";
+const GH_API_VERSION = "2022-11-28";
+/** Default timeout for all GitHub API calls (30 s). */
+const GH_TIMEOUT_MS = 30_000;
 
 function ghHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
+    "X-GitHub-Api-Version": GH_API_VERSION,
     "Content-Type": "application/json",
   };
 }
 
 async function ghFetch(token: string, path: string, opts?: RequestInit) {
   const res = await fetch(`${GH}${path}`, {
+    signal: AbortSignal.timeout(GH_TIMEOUT_MS),
     ...opts,
     headers: { ...ghHeaders(token), ...(opts?.headers ?? {}) },
   });
@@ -254,7 +258,9 @@ export async function pushFilesToGitHub({ data }: {
   const treeItems: any[] = [];
   for (let i = 0; i < files.length; i += BATCH) {
     const batch = files.slice(i, i + BATCH);
-    const blobs = await Promise.all(
+    // allSettled lets us collect which files failed before deciding to abort,
+    // giving a clear error message instead of a cryptic Promise.all rejection.
+    const results = await Promise.allSettled(
       batch.map(async (f) => {
         const blob = await ghFetch(token, `${repoPath}/git/blobs`, {
           method: "POST",
@@ -263,7 +269,21 @@ export async function pushFilesToGitHub({ data }: {
         return { path: f.path, mode: "100644", type: "blob", sha: blob.sha as string };
       })
     );
-    treeItems.push(...blobs);
+    const failedEntries = results
+      .map((r, idx) => r.status === "rejected"
+        ? `${batch[idx].path} (${(r.reason as Error)?.message ?? "unknown error"})`
+        : null)
+      .filter(Boolean) as string[];
+    if (failedEntries.length > 0) {
+      const preview = failedEntries.slice(0, 3).join("; ");
+      const overflow = failedEntries.length > 3 ? ` … and ${failedEntries.length - 3} more` : "";
+      throw new Error(
+        `Failed to upload ${failedEntries.length} file${failedEntries.length > 1 ? "s" : ""} to GitHub: ${preview}${overflow}. Please try again.`
+      );
+    }
+    for (const r of results) {
+      if (r.status === "fulfilled") treeItems.push(r.value);
+    }
     onProgress?.(Math.min(i + BATCH, files.length), files.length);
   }
 

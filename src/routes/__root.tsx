@@ -40,10 +40,23 @@ function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
+      { charSet: "utf-8" },
       { name: "application-name", content: "Push44" },
       { name: "apple-mobile-web-app-title", content: "Push44" },
+      { name: "description", content: "Export AI-generated code from Base44, Rocket.new, Floot, Zite and bolt.new to GitHub — free, forever, no signup required." },
+      // Open Graph
       { property: "og:site_name", content: "Push44" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: "Push44 — Export AI Code to GitHub" },
+      { property: "og:description", content: "Export AI-generated code from Base44, Rocket.new, Floot, Zite and bolt.new to GitHub — free, forever, no signup required." },
+      { property: "og:image", content: "https://push44.vercel.app/og-image.jpg" },
+      { property: "og:url", content: "https://push44.vercel.app/" },
+      // Twitter / X
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@push44app" },
+      { name: "twitter:title", content: "Push44 — Export AI Code to GitHub" },
+      { name: "twitter:description", content: "Export AI-generated code from Base44, Rocket.new, Floot, Zite and bolt.new to GitHub — free, forever." },
+      { name: "twitter:image", content: "https://push44.vercel.app/og-image.jpg" },
     ],
   }),
   component: RootComponent,

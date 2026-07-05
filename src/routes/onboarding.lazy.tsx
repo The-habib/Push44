@@ -198,7 +198,7 @@ export default function OnboardingPage() {
                     onKeyDown={(e) => e.key === "Enter" && connectGitHub()}
                     style={{ paddingRight: 40 }}
                   />
-                  <button onClick={() => setShowGhToken(!showGhToken)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
+                  <button onClick={() => setShowGhToken(!showGhToken)} aria-label={showGhToken ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
                     {showGhToken ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
                   <input className="input" type="email" placeholder="Email" value={b44Email} onChange={(e) => setB44Email(e.target.value)} />
                   <div style={{ position: "relative" }}>
                     <input className="input" type={showB44Pass ? "text" : "password"} placeholder="Password" value={b44Password} onChange={(e) => setB44Password(e.target.value)} onKeyDown={(e) => e.key === "Enter" && connectBase44Login()} style={{ paddingRight: 40 }} />
-                    <button onClick={() => setShowB44Pass(!showB44Pass)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
+                    <button onClick={() => setShowB44Pass(!showB44Pass)} aria-label={showB44Pass ? "Hide password" : "Show password"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
                       {showB44Pass ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>

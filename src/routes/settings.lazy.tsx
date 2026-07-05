@@ -311,7 +311,7 @@ export default function SettingsPage() {
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <div style={{ position: "relative", flex: 1 }}>
             <input className="input" type={showGhTok ? "text" : "password"} placeholder="ghp_xxxxxxxxxxxx" value={ghToken} onChange={(e) => { setGhToken(e.target.value); setGhTest("idle"); }} style={{ paddingRight: 36 }} onKeyDown={(e) => e.key === "Enter" && saveGitHub()} />
-            <button onClick={() => setShowGhTok(!showGhTok)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
+            <button onClick={() => setShowGhTok(!showGhTok)} aria-label={showGhTok ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
               {showGhTok ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
@@ -400,7 +400,7 @@ export default function SettingsPage() {
             <input className="input" type="email" placeholder="Fillout email" value={ziteEmail} onChange={(e) => setZiteEmail(e.target.value)} />
             <div style={{ position: "relative" }}>
               <input className="input" type={showZitePass ? "text" : "password"} placeholder="Fillout password" value={zitePass} onChange={(e) => setZitePass(e.target.value)} onKeyDown={(e) => e.key === "Enter" && connectZite()} style={{ paddingRight: 36 }} />
-              <button onClick={() => setShowZitePass(!showZitePass)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
+              <button onClick={() => setShowZitePass(!showZitePass)} aria-label={showZitePass ? "Hide password" : "Show password"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
                 {showZitePass ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
@@ -427,7 +427,7 @@ export default function SettingsPage() {
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <div style={{ position: "relative", flex: 1 }}>
             <input className="input" type={showFlootTok ? "text" : "password"} placeholder="nextauth.session-token value…" value={flootToken} onChange={(e) => { setFlootToken(e.target.value); setFlootTest("idle"); }} style={{ paddingRight: 36 }} />
-            <button onClick={() => setShowFlootTok(!showFlootTok)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
+            <button onClick={() => setShowFlootTok(!showFlootTok)} aria-label={showFlootTok ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
               {showFlootTok ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
@@ -454,7 +454,7 @@ export default function SettingsPage() {
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <div style={{ position: "relative", flex: 1 }}>
             <input className="input" type={showBoltTok ? "text" : "password"} placeholder="eyJkIjoiMTVo…" value={boltToken} onChange={(e) => { setBoltToken(e.target.value); setBoltTest("idle"); }} style={{ paddingRight: 36 }} />
-            <button onClick={() => setShowBoltTok(!showBoltTok)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
+            <button onClick={() => setShowBoltTok(!showBoltTok)} aria-label={showBoltTok ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
               {showBoltTok ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>

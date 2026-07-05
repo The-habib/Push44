@@ -283,6 +283,7 @@ export function FileExplorer({
           <div style={{ position: "relative" }}>
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
             <input
+              aria-label="Search files"
               placeholder="Search files…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -291,6 +292,8 @@ export function FileExplorer({
                 borderRadius: 7, fontSize: 12, background: "#f8fafc", outline: "none",
                 boxSizing: "border-box",
               }}
+              onFocus={(e) => { e.target.style.boxShadow = "0 0 0 2px rgba(249,115,22,0.3)"; e.target.style.borderColor = "#f97316"; }}
+              onBlur={(e) => { e.target.style.boxShadow = "none"; e.target.style.borderColor = "#e2e8f0"; }}
               autoFocus
             />
           </div>

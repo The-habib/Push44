@@ -372,8 +372,18 @@ export default function PushPage() {
     if (apkPollingRef.current) { clearInterval(apkPollingRef.current); apkPollingRef.current = null; }
   };
 
+  const apkPollAttemptsRef = useRef(0);
+  const APK_POLL_MAX = 120; // 120 × 5 s = 10 minutes max
+
   const apkPollOnce = async (threadId: string) => {
     if (!creds.rocketToken) return;
+    apkPollAttemptsRef.current += 1;
+    if (apkPollAttemptsRef.current >= APK_POLL_MAX) {
+      stopApkPolling();
+      setApkError("APK build timed out after 10 minutes. Please try again.");
+      setApkPhase("failed");
+      return;
+    }
     try {
       const state = await checkRocketApkBuildStatus({ data: { token: creds.rocketToken, threadId, companyId: creds.rocketCompanyId ?? undefined } });
       if (state.buildId) setApkBuildId(state.buildId);
@@ -409,6 +419,7 @@ export default function PushPage() {
     if (!selectedApp || !creds.rocketToken) return;
     const threadId = selectedApp.id;
     stopApkPolling();
+    apkPollAttemptsRef.current = 0;
     setApkLogs([]); setApkError(""); setApkDownloadUrl(""); setApkBuildId(undefined);
 
     try {

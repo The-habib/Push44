@@ -19,3 +19,4 @@
 - [Push44 image weight](push44-image-weight.md) — logo.png/og-image were 1.3MB+; compress with magick PNG8/JPG and update both src/assets + public copies plus generator.ts refs together.
 - [Bolt.new API Patterns](bolt-api.md) — cookie=__session; PUT /api/deploy/{pid} ZIP→staging; POST /api/deploy/{pid}/promote→live; badge blocked via MutationObserver on zIndex 2147483647; full docs in docs/research/bolt-new-api.md
 - [Push44 Branding: Not Open Source](push44-not-open-source.md) — removed "Open source", "MIT License", GitHub star CTAs site-wide; now positioned as free tool only
+- [Push44 Audit Patterns](push44-audit-patterns.md) — round-audit learnings: allSettled+explicit-throw > Promise.all for blob batches; AbortSignal.timeout on all ghFetch; aria-labels on all eye-toggle buttons; OG/Twitter meta in root head()

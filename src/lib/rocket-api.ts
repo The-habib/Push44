@@ -386,6 +386,8 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
   // Rocket.new returns a paginated list — we must keep fetching until we get an empty page.
   const PAGE_LIMIT = 50;
 
+  const MAX_PAGES = 200; // safety guard — prevents infinite loop if API always returns full pages
+
   async function fetchAllPages(
     url: string,
     headers: Record<string, string>,
@@ -393,7 +395,7 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
   ): Promise<boolean> {
     let page = 1;
     let gotAny = false;
-    while (true) {
+    while (page <= MAX_PAGES) {
       try {
         const res = await fetch(url, {
           method: "POST",

@@ -57,7 +57,7 @@ export default function HistoryPage() {
         <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: 1, minWidth: 180 }}>
             <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
-            <input className="input" placeholder="Search pushes…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ paddingLeft: 32 }} />
+            <input aria-label="Search push history" className="input" placeholder="Search pushes…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ paddingLeft: 32 }} />
           </div>
           <div className="tabs" style={{ width: "auto" }}>
             {(["all", "success", "failed"] as const).map((s) => (
