@@ -90,12 +90,16 @@ export async function validateBoltProject({
   }
 
   const d = await res.json().catch(() => ({}));
-  const siteUrl: string = d.site_url ?? "";
-  if (!siteUrl) {
+  const rawSiteUrl: string = d.site_url ?? "";
+  if (!rawSiteUrl) {
     throw new Error(
       "Project exists but has no live URL yet. Deploy it once from the bolt.new editor first, then come back."
     );
   }
+
+  // Normalize to bare host (strip https:// or http://) so URL construction
+  // in removeBoltBadge (`https://${siteUrl}/...`) is always well-formed.
+  const siteUrl = rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return { projectId, siteUrl, updatedAt: d.updated_at ?? "" };
 }
@@ -268,5 +272,6 @@ export async function removeBoltBadge({
   const result = await promoteRes.json().catch(() => ({}));
   notify("done");
 
-  return { siteUrl: result.site_url ?? siteUrl };
+  const rawResult: string = result.site_url ?? siteUrl;
+  return { siteUrl: rawResult.replace(/^https?:\/\//, "").replace(/\/$/, "") };
 }

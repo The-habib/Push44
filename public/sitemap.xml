@@ -40,6 +40,12 @@
     <lastmod>2026-07-02</lastmod>
   </url>
   <url>
+    <loc>https://push44.vercel.app/platforms/bolt-new</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-02</lastmod>
+  </url>
+  <url>
     <loc>https://push44.vercel.app/blog/how-to-export-code-from-base44</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -260,6 +266,24 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <lastmod>2026-07-04</lastmod>
+  </url>
+  <url>
+    <loc>https://push44.vercel.app/blog/remove-made-in-bolt-badge</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-05</lastmod>
+  </url>
+  <url>
+    <loc>https://push44.vercel.app/blog/bolt-new-badge-removal-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-05</lastmod>
+  </url>
+  <url>
+    <loc>https://push44.vercel.app/blog/bolt-new-remove-branding</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-05</lastmod>
   </url>
   <url>
     <loc>https://push44.vercel.app/compare/push44-vs-zip-download</loc>

@@ -69,3 +69,6 @@ Badge removal lasts until user deploys new changes from bolt.new editor (new bui
 
 ## How to Apply
 **How to apply:** Follow the 9-step workflow in `docs/research/bolt-new-api.md` → "Complete Removal Workflow".
+
+## URL Normalization (added 2026-07-05)
+`d.site_url` from bolt.new's deploy API returns a full URL with protocol (e.g. `https://robot.bolt.host`). Always strip `https?://` and trailing `/` when storing `siteUrl`, otherwise downstream code like `https://${siteUrl}/` produces double-protocol URLs. Normalize at the source in `validateBoltProject` and in `removeBoltBadge`'s return value.

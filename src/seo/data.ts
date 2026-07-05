@@ -1691,94 +1691,6 @@ export const ARTICLES: Article[] = [
     related: ["how-to-export-zite-project", "zite-github-export-guide", "zite-csrf-token-guide"],
   },
 
-];
-
-// ── Platforms ──────────────────────────────────────────────────────────────────
-
-export const PLATFORMS: PlatformData[] = [
-  {
-    slug: "base44",
-    name: "Base44",
-    tagline: "Export your complete Base44 source code to GitHub",
-    description: "Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.",
-    color: "#f97316",
-    bgColor: "#fff7ed",
-    articles: ["how-to-export-code-from-base44", "download-base44-source-code", "base44-github-integration", "base44-version-control-guide", "base44-project-backup-guide"],
-    features: ["Read all project files via Base44 API", "Push complete source tree to GitHub", "Version history for every session", "ZIP download option", "Works with email/password and API token auth"],
-    exportSteps: ["Get Base44 API token from account settings", "Connect in Push44 with your token", "Select your Base44 project", "Enter GitHub repo details", "Click Push to GitHub"],
-    faqs: [
-      { question: "Does Push44 work with all Base44 projects?", answer: "Yes. Push44 uses the Base44 API to read any project associated with your account." },
-      { question: "Do I need a paid Base44 plan?", answer: "No. The Base44 API used by Push44 is available to all account tiers." },
-      { question: "How long does a Base44 export take?", answer: "Typically under 30 seconds for most projects." },
-      { question: "Can I export multiple Base44 projects?", answer: "Yes. Run Push44 separately for each project, pointing to different GitHub repos." },
-      { question: "Is my Base44 API token safe in Push44?", answer: "Yes. It's stored in your browser's localStorage and never sent to any Push44 server." },
-    ],
-  },
-  {
-    slug: "rocket-new",
-    name: "Rocket.new",
-    tagline: "Export Rocket.new projects and build Android APKs",
-    description: "Rocket.new generates full-stack apps and Android APKs. Push44 connects to the Rocket.new container API to export complete projects and trigger APK builds.",
-    color: "#22c55e",
-    bgColor: "#f0fdf4",
-    articles: ["how-to-export-rocket-new-project", "export-rocket-new-to-github", "rocket-new-source-code-download", "rocket-new-apk-export-guide"],
-    features: ["Full container file system export", "APK build trigger and download", "Automatic build failure reset", "Works with web and Android projects", "Company ID + API token auth"],
-    exportSteps: ["Get Rocket.new API token", "Find your company ID in project settings", "Connect in Push44 with both credentials", "Select your project", "Push to GitHub or download ZIP"],
-    faqs: [
-      { question: "Does Push44 include backend code in Rocket.new exports?", answer: "Yes. The full container filesystem is exported, including all backend, frontend, and configuration files." },
-      { question: "How do I build an Android APK with Push44?", answer: "Connect your Rocket.new project in Push44, navigate to the APK section, and click 'Build APK'. Push44 triggers the build and monitors progress." },
-      { question: "What if my Rocket.new container is sleeping?", answer: "Open your project in Rocket.new to wake the container, then return to Push44 and retry." },
-    ],
-  },
-  {
-    slug: "floot",
-    name: "Floot",
-    tagline: "Export Floot projects and publish to GitHub",
-    description: "Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub.",
-    color: "#3b82f6",
-    bgColor: "#eff6ff",
-    articles: ["how-to-export-floot-project", "export-floot-to-github", "floot-source-code-backup", "floot-magic-link-token-guide", "floot-badge-removal-guide"],
-    features: ["Session-based authentication", "Complete source file export", "Publish-to-web badge removal", "GitHub push with version history", "Magic link authentication support"],
-    exportSteps: ["Get Floot session token from browser cookies", "Connect in Push44 with session token", "Select your Floot workspace and project", "Enter GitHub repo details", "Push source code to GitHub"],
-    faqs: [
-      { question: "Why do I need to get my Floot token from browser cookies?", answer: "Floot doesn't expose a public API token UI. Push44 uses your active session to authenticate, which means reading the session cookie from your browser." },
-      { question: "Does my Floot app stay live after I export?", answer: "Yes. Exporting with Push44 doesn't affect your live Floot app." },
-    ],
-  },
-  {
-    slug: "zite",
-    name: "Zite",
-    tagline: "Export Zite projects and version-control your apps",
-    description: "Zite is an AI builder on the Fillout infrastructure. Push44 uses Zite's session and CSRF tokens to read project snapshot templates and push them to GitHub.",
-    color: "#8b5cf6",
-    bgColor: "#fdf4ff",
-    articles: ["how-to-export-zite-project", "zite-github-export-guide", "zite-csrf-token-guide"],
-    features: ["Session + CSRF token authentication", "Project snapshot template export", "GitHub version control", "Supports all Zite app types", "Vite proxy for CORS handling"],
-    exportSteps: ["Get Zite session ID and CSRF token from browser cookies", "Connect in Push44 with both tokens", "Select your Zite app", "Enter GitHub repo details", "Push snapshot template to GitHub"],
-    faqs: [
-      { question: "Why does Zite need two tokens?", answer: "Zite uses double-token CSRF protection (a security feature). Push44 needs both the session cookie and CSRF token to authenticate properly." },
-      { question: "What does the Zite export include?", answer: "Push44 exports your Zite app's snapshot template — all component definitions, layout configuration, and settings." },
-    ],
-  },
-  {
-    slug: "bolt-new",
-    name: "bolt.new",
-    tagline: "Remove the 'Made in Bolt' badge from your bolt.new app",
-    description: "bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.",
-    color: "#7c3aed",
-    bgColor: "#ede9fe",
-    articles: ["remove-made-in-bolt-badge", "bolt-new-badge-removal-guide", "bolt-new-remove-branding"],
-    features: ["One-click badge removal", "Re-deploys to your existing bolt.new Netlify URL", "No code changes needed", "Injects a MutationObserver blocker into your bundle", "Works with any bolt.new project that has been deployed"],
-    exportSteps: ["Connect in Push44 with your __session cookie and Project ID", "Select your bolt.new project", "Click Remove Badge", "Badge is permanently removed from your live deployment"],
-    faqs: [
-      { question: "How does badge removal work?", answer: "Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL." },
-      { question: "Is the badge removal permanent?", answer: "It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge." },
-      { question: "Does this affect my app's functionality?", answer: "No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged." },
-      { question: "Where do I find my Project ID?", answer: "Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/." },
-    ],
-  },
-];
-
   // ── BOLT.NEW ────────────────────────────────────────────────────────────────
 
   {
@@ -1877,6 +1789,94 @@ export const PLATFORMS: PlatformData[] = [
     ],
     related: ["remove-made-in-bolt-badge", "bolt-new-badge-removal-guide"],
   },
+
+];
+
+// ── Platforms ──────────────────────────────────────────────────────────────────
+
+export const PLATFORMS: PlatformData[] = [
+  {
+    slug: "base44",
+    name: "Base44",
+    tagline: "Export your complete Base44 source code to GitHub",
+    description: "Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files and push them to GitHub in one click.",
+    color: "#f97316",
+    bgColor: "#fff7ed",
+    articles: ["how-to-export-code-from-base44", "download-base44-source-code", "base44-github-integration", "base44-version-control-guide", "base44-project-backup-guide"],
+    features: ["Read all project files via Base44 API", "Push complete source tree to GitHub", "Version history for every session", "ZIP download option", "Works with email/password and API token auth"],
+    exportSteps: ["Get Base44 API token from account settings", "Connect in Push44 with your token", "Select your Base44 project", "Enter GitHub repo details", "Click Push to GitHub"],
+    faqs: [
+      { question: "Does Push44 work with all Base44 projects?", answer: "Yes. Push44 uses the Base44 API to read any project associated with your account." },
+      { question: "Do I need a paid Base44 plan?", answer: "No. The Base44 API used by Push44 is available to all account tiers." },
+      { question: "How long does a Base44 export take?", answer: "Typically under 30 seconds for most projects." },
+      { question: "Can I export multiple Base44 projects?", answer: "Yes. Run Push44 separately for each project, pointing to different GitHub repos." },
+      { question: "Is my Base44 API token safe in Push44?", answer: "Yes. It's stored in your browser's localStorage and never sent to any Push44 server." },
+    ],
+  },
+  {
+    slug: "rocket-new",
+    name: "Rocket.new",
+    tagline: "Export Rocket.new projects and build Android APKs",
+    description: "Rocket.new generates full-stack apps and Android APKs. Push44 connects to the Rocket.new container API to export complete projects and trigger APK builds.",
+    color: "#22c55e",
+    bgColor: "#f0fdf4",
+    articles: ["how-to-export-rocket-new-project", "export-rocket-new-to-github", "rocket-new-source-code-download", "rocket-new-apk-export-guide"],
+    features: ["Full container file system export", "APK build trigger and download", "Automatic build failure reset", "Works with web and Android projects", "Company ID + API token auth"],
+    exportSteps: ["Get Rocket.new API token", "Find your company ID in project settings", "Connect in Push44 with both credentials", "Select your project", "Push to GitHub or download ZIP"],
+    faqs: [
+      { question: "Does Push44 include backend code in Rocket.new exports?", answer: "Yes. The full container filesystem is exported, including all backend, frontend, and configuration files." },
+      { question: "How do I build an Android APK with Push44?", answer: "Connect your Rocket.new project in Push44, navigate to the APK section, and click 'Build APK'. Push44 triggers the build and monitors progress." },
+      { question: "What if my Rocket.new container is sleeping?", answer: "Open your project in Rocket.new to wake the container, then return to Push44 and retry." },
+    ],
+  },
+  {
+    slug: "floot",
+    name: "Floot",
+    tagline: "Export Floot projects and publish to GitHub",
+    description: "Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub.",
+    color: "#3b82f6",
+    bgColor: "#eff6ff",
+    articles: ["how-to-export-floot-project", "export-floot-to-github", "floot-source-code-backup", "floot-magic-link-token-guide", "floot-badge-removal-guide"],
+    features: ["Session-based authentication", "Complete source file export", "Publish-to-web badge removal", "GitHub push with version history", "Magic link authentication support"],
+    exportSteps: ["Get Floot session token from browser cookies", "Connect in Push44 with session token", "Select your Floot workspace and project", "Enter GitHub repo details", "Push source code to GitHub"],
+    faqs: [
+      { question: "Why do I need to get my Floot token from browser cookies?", answer: "Floot doesn't expose a public API token UI. Push44 uses your active session to authenticate, which means reading the session cookie from your browser." },
+      { question: "Does my Floot app stay live after I export?", answer: "Yes. Exporting with Push44 doesn't affect your live Floot app." },
+    ],
+  },
+  {
+    slug: "zite",
+    name: "Zite",
+    tagline: "Export Zite projects and version-control your apps",
+    description: "Zite is an AI builder on the Fillout infrastructure. Push44 uses Zite's session and CSRF tokens to read project snapshot templates and push them to GitHub.",
+    color: "#8b5cf6",
+    bgColor: "#fdf4ff",
+    articles: ["how-to-export-zite-project", "zite-github-export-guide", "zite-csrf-token-guide"],
+    features: ["Session + CSRF token authentication", "Project snapshot template export", "GitHub version control", "Supports all Zite app types", "Vite proxy for CORS handling"],
+    exportSteps: ["Get Zite session ID and CSRF token from browser cookies", "Connect in Push44 with both tokens", "Select your Zite app", "Enter GitHub repo details", "Push snapshot template to GitHub"],
+    faqs: [
+      { question: "Why does Zite need two tokens?", answer: "Zite uses double-token CSRF protection (a security feature). Push44 needs both the session cookie and CSRF token to authenticate properly." },
+      { question: "What does the Zite export include?", answer: "Push44 exports your Zite app's snapshot template — all component definitions, layout configuration, and settings." },
+    ],
+  },
+  {
+    slug: "bolt-new",
+    name: "bolt.new",
+    tagline: "Remove the 'Made in Bolt' badge from your bolt.new app",
+    description: "bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.",
+    color: "#7c3aed",
+    bgColor: "#ede9fe",
+    articles: ["remove-made-in-bolt-badge", "bolt-new-badge-removal-guide", "bolt-new-remove-branding"],
+    features: ["One-click badge removal", "Re-deploys to your existing bolt.new Netlify URL", "No code changes needed", "Injects a MutationObserver blocker into your bundle", "Works with any bolt.new project that has been deployed"],
+    exportSteps: ["Connect in Push44 with your __session cookie and Project ID", "Select your bolt.new project", "Click Remove Badge", "Badge is permanently removed from your live deployment"],
+    faqs: [
+      { question: "How does badge removal work?", answer: "Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL." },
+      { question: "Is the badge removal permanent?", answer: "It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge." },
+      { question: "Does this affect my app's functionality?", answer: "No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged." },
+      { question: "Where do I find my Project ID?", answer: "Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/." },
+    ],
+  },
+];
 
 // ── Comparisons ───────────────────────────────────────────────────────────────
 

@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f97316" />
-  <title>Floot GitHub Export Guide — Push44</title>
-  <meta name="description" content="Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub." />
+  <title>bolt.new Badge Removal: Step-by-Step Guide | Push44</title>
+  <meta name="description" content="Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, why MutationObserver is needed, and how Push44 automates it." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="https://push44.vercel.app/platforms/floot" />
+  <link rel="canonical" href="https://push44.vercel.app/blog/bolt-new-badge-removal-guide" />
 
   <!-- Site / Application identity -->
   <meta name="application-name" content="Push44" />
@@ -24,23 +24,23 @@
   <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Floot GitHub Export Guide — Push44" />
-  <meta property="og:description" content="Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub." />
-  <meta property="og:url" content="https://push44.vercel.app/platforms/floot" />
-  <meta property="og:type" content="website" />
+  <meta property="og:title" content="bolt.new Badge Removal: Step-by-Step Guide | Push44" />
+  <meta property="og:description" content="Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, why MutationObserver is needed, and how Push44 automates it." />
+  <meta property="og:url" content="https://push44.vercel.app/blog/bolt-new-badge-removal-guide" />
+  <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Push44" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:image" content="https://push44.vercel.app/og-image.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Floot GitHub Export Guide — Push44" />
+  <meta property="og:image:alt" content="bolt.new Badge Removal: Step-by-Step Guide | Push44" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@push44app" />
-  <meta name="twitter:title" content="Floot GitHub Export Guide — Push44" />
-  <meta name="twitter:description" content="Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub." />
+  <meta name="twitter:title" content="bolt.new Badge Removal: Step-by-Step Guide | Push44" />
+  <meta name="twitter:description" content="Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, why MutationObserver is needed, and how Push44 automates it." />
   <meta name="twitter:image" content="https://push44.vercel.app/og-image.jpg" />
 
   <!-- Fonts (async) -->
@@ -281,9 +281,10 @@
       .footer-grid{grid-template-columns:1fr}
     }
   </style>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Floot Export Guide — Push44","description":"Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub.","url":"https://push44.vercel.app/platforms/floot","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why do I need to get my Floot token from browser cookies?","acceptedAnswer":{"@type":"Answer","text":"Floot doesn't expose a public API token UI. Push44 uses your active session to authenticate, which means reading the session cookie from your browser."}},{"@type":"Question","name":"Does my Floot app stay live after I export?","acceptedAnswer":{"@type":"Answer","text":"Yes. Exporting with Push44 doesn't affect your live Floot app."}}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Floot","item":"https://push44.vercel.app/platforms/floot"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"bolt.new Badge Removal: Complete Guide","description":"Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, why MutationObserver is needed, and how Push44 automates it.","url":"https://push44.vercel.app/blog/bolt-new-badge-removal-guide","datePublished":"2026-07-01","dateModified":"2026-07-05","author":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"},"publisher":{"@type":"Organization","name":"Push44","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png"}},"keywords":"bolt.new badge removal technical, how bolt badge works, MutationObserver badge removal, bolt.new branding removal, bolt new badge blocker","articleSection":"tutorials"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"bolt.new Badge Removal: Complete Guide","description":"The bolt.new badge is resilient by design. It uses Shadow DOM to prevent CSS from reaching its internals, and zIndex 2147483647 to sit above all other content. Naive approaches like display:none or setting zIndex on the parent don't work because the badge re-inserts itself if removed incorrectly.","step":[{"@type":"HowToStep","position":1,"name":"Understand the badge structure","text":"bolt.new's badge.js creates a \u003cdiv\u003e element with style.zIndex = '2147483647' and style.position = 'fixed'. Inside this div is a Shadow DOM containing the actual badge markup. The Shadow DOM means innerHTML is always empty from the outside — you can't detect the badge by its contents."},{"@type":"HowToStep","position":2,"name":"Why CSS hiding fails","text":"Setting display:none on the badge container doesn't prevent badge.js from re-inserting it. The script checks whether the badge element exists in the DOM and re-creates it if missing. You need to remove the element in a way that satisfies the script's internal guard flag."},{"@type":"HowToStep","position":3,"name":"The MutationObserver approach","text":"Push44 prepends a MutationObserver to your JS bundle that watches for added nodes. When it detects a div with zIndex 2147483647 and position fixed, it removes it before badge.js can complete its initialization. Additional setTimeout sweeps at 500ms, 1700ms, and 3000ms catch any deferred insertions."},{"@type":"HowToStep","position":4,"name":"Re-deploy the modified bundle","text":"Push44 downloads your live JS bundle, prepends the blocker, builds a valid ZIP with correct asset paths, uploads to bolt.new's staging, and promotes to live. The entire process uses bolt.new's own deployment API."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why doesn't CSS display:none work?","acceptedAnswer":{"@type":"Answer","text":"badge.js detects when its element is removed from the DOM and re-inserts it. CSS only hides it visually; the element still exists and the script still runs."}},{"@type":"Question","name":"Is the MutationObserver approach reliable?","acceptedAnswer":{"@type":"Answer","text":"Yes. Because it's prepended before your app code, it's watching before badge.js even has a chance to run. The setTimeout sweeps add extra insurance."}},{"@type":"Question","name":"Does the badge blocker slow down my app?","acceptedAnswer":{"@type":"Answer","text":"Negligibly. The MutationObserver is non-blocking and the entire blocker script is under 500 bytes minified."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"bolt.new Badge Removal: Complete Guide","item":"https://push44.vercel.app/blog/bolt-new-badge-removal-guide"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
@@ -296,273 +297,247 @@
       Push44
     </a>
     <div class="nav-links" role="list">
-      <a href="/blog" class="nav-link" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link active" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
+      <a href="/blog" class="nav-link active" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
       <a href="https://github.com/The-habib/Push44" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </div>
     <a href="/#" class="nav-cta" onclick="location.href='/'">Launch App →</a>
   </div>
 </nav>
 
-<!-- PLATFORM HERO -->
-<div style="background:linear-gradient(135deg,#3b82f622,#eff6ff);border-bottom:1px solid #3b82f633;padding:64px 24px">
-  <div style="max-width:1200px;margin:0 auto">
+<!-- ARTICLE HERO -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:48px 24px 64px;margin-bottom:0">
+  <div style="max-width:800px;margin:0 auto">
 
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="/">Push44</a><span aria-hidden="true">›</span>
-      <a href="/blog">Blog</a><span aria-hidden="true">›</span>
-      <span aria-current="page">Floot</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
+      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a>
+      <span aria-hidden="true">›</span>
+      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a>
+      <span aria-hidden="true">›</span>
+      <a href="/platforms/bolt-new" style="color:rgba(148,163,184,0.7)">bolt.new</a><span aria-hidden="true">›</span>
+      <span style="color:#94a3b8" aria-current="page">bolt.new Badge Removal: Complete Guide</span>
     </nav>
 
-    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">F</div>
-      <div>
-        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">Floot Export Hub</h1>
-        <p style="font-size:16px;color:var(--muted)">Export Floot projects and publish to GitHub</p>
-      </div>
+    <!-- Meta -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <span class="badge badge-platform" style="--platform-color:#7c3aed;--platform-bg:rgba(255,255,255,0.1);color:#7c3aed">bolt.new</span>
+      <span class="badge badge-difficulty-intermediate">intermediate</span>
+      <span style="font-size:13px;color:#64748b">⏱ 7 min read</span>
+      <span style="font-size:13px;color:#64748b">• 👁 1,800 views</span>
     </div>
 
-    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">Floot builds and publishes web apps with AI. Push44 uses Floot's session authentication to read project source files and push them to GitHub.</p>
+    <h1 style="font-size:clamp(28px,4.5vw,42px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">bolt.new Badge Removal: Complete Guide</h1>
+    <p style="font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:24px;max-width:640px">The bolt.new badge is injected via a separate badge.js script that creates a fixed-position div with zIndex 2147483647 in a Shadow DOM. Understanding how it works explains why simple CSS hiding doesn't work — and why Push44's MutationObserver approach is the correct solution.</p>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <a href="/" class="btn-primary">Start Exporting Floot →</a>
-      <a href="/blog" class="btn-ghost">All Guides</a>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0">Push44 Team</div>
+          <div style="font-size:12px;color:#64748b">Updated July 5, 2026</div>
+        </div>
+      </div>
+      <!-- Share -->
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://twitter.com/intent/tweet?text=bolt.new%20Badge%20Removal%3A%20Complete%20Guide&url=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fbolt-new-badge-removal-guide" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">Share on X</a>
+        <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fbolt-new-badge-removal-guide&t=bolt.new%20Badge%20Removal%3A%20Complete%20Guide" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">HN</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section style="padding:48px 24px;background:#fafafa;border-bottom:1px solid var(--border)" aria-labelledby="features-heading">
-  <div class="container">
-    <h2 id="features-heading" style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:24px">What Push44 Does with Floot</h2>
-    <div class="grid-3">
+<!-- ARTICLE BODY -->
+<div class="article-layout" role="main">
+  <!-- Content -->
+  <article class="article-content" aria-label="bolt.new Badge Removal: Complete Guide">
+
+    <!-- Quick Summary -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:36px">
+      <h2 style="font-size:15px;font-weight:800;color:#15803d;margin-bottom:12px;margin-top:0;display:flex;align-items:center;gap:6px">
+        ✅ Quick Summary
+      </h2>
+      <p style="font-size:15px;color:#166534;line-height:1.6;margin:0">Push44 uses a MutationObserver that watches the document for any div with zIndex 2147483647 and position fixed — the badge's unique fingerprint. When one appears, it's removed immediately. The badge.js script's internal re-insert guard (a boolean flag set to true after first render) ensures that once the badge is removed this way, it won't re-insert during the same page session.</p>
+    </div>
+
+    <!-- Problem -->
+    <section id="the-problem" aria-labelledby="problem-heading">
+      <h2 id="problem-heading">The Problem</h2>
+      <p>The bolt.new badge is resilient by design. It uses Shadow DOM to prevent CSS from reaching its internals, and zIndex 2147483647 to sit above all other content. Naive approaches like display:none or setting zIndex on the parent don't work because the badge re-inserts itself if removed incorrectly.</p>
+    </section>
+
+    <!-- Solution -->
+    <section id="the-solution" aria-labelledby="solution-heading">
+      <h2 id="solution-heading">How Push44 Solves It</h2>
+      <p>Push44 uses a MutationObserver that watches the document for any div with zIndex 2147483647 and position fixed — the badge's unique fingerprint. When one appears, it's removed immediately. The badge.js script's internal re-insert guard (a boolean flag set to true after first render) ensures that once the badge is removed this way, it won't re-insert during the same page session.</p>
+    </section>
+
+    <!-- Steps -->
+    <section id="step-by-step" aria-labelledby="steps-heading">
+      <h2 id="steps-heading">Step-by-Step Guide</h2>
       
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Session-based authentication</span>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 1">1</div>
+          <div class="step-content">
+            <h3>Understand the badge structure</h3>
+            <p>bolt.new's badge.js creates a &lt;div&gt; element with style.zIndex = '2147483647' and style.position = 'fixed'. Inside this div is a Shadow DOM containing the actual badge markup. The Shadow DOM means innerHTML is always empty from the outside — you can't detect the badge by its contents.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>Never try to detect the badge by its innerHTML or class names. Always use the zIndex fingerprint.</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Complete source file export</span>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 2">2</div>
+          <div class="step-content">
+            <h3>Why CSS hiding fails</h3>
+            <p>Setting display:none on the badge container doesn't prevent badge.js from re-inserting it. The script checks whether the badge element exists in the DOM and re-creates it if missing. You need to remove the element in a way that satisfies the script's internal guard flag.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>The badge.js script sets an internal boolean flag when the badge first renders. Once set, the script won't re-insert the badge even if you remove the element.</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Publish-to-web badge removal</span>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 3">3</div>
+          <div class="step-content">
+            <h3>The MutationObserver approach</h3>
+            <p>Push44 prepends a MutationObserver to your JS bundle that watches for added nodes. When it detects a div with zIndex 2147483647 and position fixed, it removes it before badge.js can complete its initialization. Additional setTimeout sweeps at 500ms, 1700ms, and 3000ms catch any deferred insertions.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>The three setTimeout sweeps are insurance against race conditions where badge.js initializes after the initial MutationObserver fires.</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">GitHub push with version history</span>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 4">4</div>
+          <div class="step-content">
+            <h3>Re-deploy the modified bundle</h3>
+            <p>Push44 downloads your live JS bundle, prepends the blocker, builds a valid ZIP with correct asset paths, uploads to bolt.new's staging, and promotes to live. The entire process uses bolt.new's own deployment API.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>The ZIP must have the correct structure (assets/ directory, index.html, favicon.svg) or bolt.new will reject the upload.</div>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Magic link authentication support</span>
-        </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- HOW TO EXPORT -->
-<section style="padding:64px 24px" aria-labelledby="how-to-heading">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start" class="grid-platform">
-      <div>
-        <p class="section-badge" style="color:#3b82f6">Quick Start</p>
-        <h2 id="how-to-heading" class="section-title">How to Export Floot</h2>
-        
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 1">1</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Get Floot session token from browser cookies</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 2">2</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with session token</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 3">3</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your Floot workspace and project</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 4">4</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Enter GitHub repo details</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 5">5</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Push source code to GitHub</span>
-          </div>
-        <a href="/blog/how-to-export-floot-project" class="btn-primary" style="margin-top:8px">Full Step-by-Step Guide →</a>
-      </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f633;border-radius:16px;padding:28px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:20px">All Floot Guides</h3>
-        
-          <a href="/blog/how-to-export-floot-project" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #3b82f622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Export Your Floot Project">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Export Your Floot Project</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 6 min · 7,800 views</span>
-          </a>
-          <a href="/blog/export-floot-to-github" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #3b82f622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Export Floot to GitHub">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Export Floot to GitHub</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 6,200 views</span>
-          </a>
-          <a href="/blog/floot-source-code-backup" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #3b82f622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Backup Your Floot Source Code">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Backup Your Floot Source Code</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 4 min · 4,800 views</span>
-          </a>
-          <a href="/blog/floot-magic-link-token-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #3b82f622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Getting Your Floot Session Token">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Getting Your Floot Session Token</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 4,900 views</span>
-          </a>
-          <a href="/blog/floot-badge-removal-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #3b82f622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Removing the Floot Badge from Your App">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Removing the Floot Badge from Your App</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 4 min · 3,700 views</span>
-          </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ALL ARTICLES -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="all-guides-heading">
-  <div class="container">
-    <h2 id="all-guides-heading" class="section-title">Floot Guides</h2>
-    <div class="grid-3" style="margin-top:32px">
-      
-<a href="/blog/how-to-export-floot-project" class="article-card" data-category="export" data-platform="floot" aria-label="How to Export Your Floot Project">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">How to Export Your Floot Project</div>
-  <div class="article-card-desc">Export your Floot project source code to GitHub using Push44. Step-by-step guide for Floot developers. Free, n...</div>
-  <div class="article-card-footer">
-    <span>⏱ 6 min read</span>
-    <span>•</span>
-    <span>7,800 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/export-floot-to-github" class="article-card" data-category="github" data-platform="floot" aria-label="Export Floot to GitHub">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">Export Floot to GitHub</div>
-  <div class="article-card-desc">Connect your Floot project to GitHub using Push44. Push your source code, track changes, and own your Floot ap...</div>
-  <div class="article-card-footer">
-    <span>⏱ 5 min read</span>
-    <span>•</span>
-    <span>6,200 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/floot-source-code-backup" class="article-card" data-category="backup" data-platform="floot" aria-label="How to Backup Your Floot Source Code">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">How to Backup Your Floot Source Code</div>
-  <div class="article-card-desc">Create complete backups of your Floot projects to GitHub with Push44. Protect your work from data loss and pla...</div>
-  <div class="article-card-footer">
-    <span>⏱ 4 min read</span>
-    <span>•</span>
-    <span>4,800 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/floot-magic-link-token-guide" class="article-card" data-category="export" data-platform="floot" aria-label="Getting Your Floot Session Token">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
-    <span class="badge badge-difficulty-intermediate">intermediate</span>
-  </div>
-  <div class="article-card-title">Getting Your Floot Session Token</div>
-  <div class="article-card-desc">Step-by-step guide to retrieving your Floot session token through the magic link login flow, so you can connec...</div>
-  <div class="article-card-footer">
-    <span>⏱ 5 min read</span>
-    <span>•</span>
-    <span>4,900 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/floot-badge-removal-guide" class="article-card" data-category="tutorials" data-platform="floot" aria-label="Removing the Floot Badge from Your App">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#3b82f6;--platform-bg:#eff6ff">Floot</span>
-    <span class="badge badge-difficulty-intermediate">intermediate</span>
-  </div>
-  <div class="article-card-title">Removing the Floot Badge from Your App</div>
-  <div class="article-card-desc">Guide to removing the 'Made with Floot' badge from your published Floot app, and why exporting to GitHub with ...</div>
-  <div class="article-card-footer">
-    <span>⏱ 4 min read</span>
-    <span>•</span>
-    <span>3,700 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-
-<section style="padding:64px 24px" aria-labelledby="faq-platform-heading">
-  <div class="container" style="max-width:800px">
-    <h2 id="faq-platform-heading" class="section-title">Floot FAQ</h2>
+    <!-- Tips -->
     
-      <div class="faq-item">
-        <div class="faq-question">Why do I need to get my Floot token from browser cookies?</div>
-        <div class="faq-answer">Floot doesn't expose a public API token UI. Push44 uses your active session to authenticate, which means reading the session cookie from your browser.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Does my Floot app stay live after I export?</div>
-        <div class="faq-answer">Yes. Exporting with Push44 doesn't affect your live Floot app.</div>
-      </div>
-  </div>
-</section>
+    <section id="tips" aria-labelledby="tips-heading">
+      <h2 id="tips-heading">Pro Tips</h2>
+      <ul>
+        <li>The badge blocker is prepended before your app code, so it runs first</li><li>The MutationObserver is set up synchronously — it's watching before any app code runs</li><li>Hard-refresh after removal to bypass CDN cache</li>
+      </ul>
+    </section>
 
-<!-- RELATED PLATFORMS -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="other-platforms-heading">
-  <div class="container">
-    <h2 id="other-platforms-heading" class="section-title">Other Platforms</h2>
-    <div class="grid-4" style="margin-top:24px">
-      
-        <a href="/platforms/base44" class="cat-card" style="background:#fff7ed" aria-label="Base44 export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#f97316;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">B</div>
-          <div class="cat-name">Base44</div>
-          <div class="cat-desc">5 guides</div>
-        </a>
-        <a href="/platforms/rocket-new" class="cat-card" style="background:#f0fdf4" aria-label="Rocket.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#22c55e;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">R</div>
-          <div class="cat-name">Rocket.new</div>
-          <div class="cat-desc">4 guides</div>
-        </a>
-        <a href="/platforms/zite" class="cat-card" style="background:#fdf4ff" aria-label="Zite export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">Z</div>
-          <div class="cat-name">Zite</div>
-          <div class="cat-desc">3 guides</div>
-        </a>
-        <a href="/platforms/bolt-new" class="cat-card" style="background:#ede9fe" aria-label="bolt.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">b</div>
-          <div class="cat-name">bolt.new</div>
-          <div class="cat-desc">3 guides</div>
-        </a>
-    </div>
-  </div>
-</section>
+    <!-- Mistakes -->
+    
+    <section aria-labelledby="mistakes-heading">
+      <h2 id="mistakes-heading">Common Mistakes to Avoid</h2>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ Watch Out For</div>
+        <ul style="margin:8px 0 0 20px;padding:0">
+          <li style="margin-bottom:6px">Using CSS to hide the badge (it re-inserts)</li><li style="margin-bottom:6px">Using innerHTML to detect the badge (Shadow DOM blocks this)</li><li style="margin-bottom:6px">Forgetting to re-run after a new bolt.new editor deployment</li>
+        </ul>
+      </div>
+    </section>
 
-<!-- CTA -->
-<section style="padding:64px 24px">
-  <div class="container">
-    <div class="cta-section">
-      <h2>Export Your Floot Code Now</h2>
-      <p>Free, open source, takes under 2 minutes. No subscription required.</p>
+    <!-- CTA -->
+    <div class="cta-section" style="margin:40px 0">
+      <h2>Ready to Export?</h2>
+      <p>Push44 is free, open source, and takes under 2 minutes to set up.</p>
       <div class="cta-buttons">
-        <a href="/" class="btn-primary">Start Exporting →</a>
+        <a href="/" class="btn-primary">Start Exporting Now →</a>
+        <a href="https://github.com/The-habib/Push44" class="btn-ghost" style="color:#94a3b8;border-color:rgba(255,255,255,0.15)" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
     </div>
+
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+      
+        <div class="faq-item">
+          <div class="faq-question">Why doesn't CSS display:none work?</div>
+          <div class="faq-answer">badge.js detects when its element is removed from the DOM and re-inserts it. CSS only hides it visually; the element still exists and the script still runs.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Is the MutationObserver approach reliable?</div>
+          <div class="faq-answer">Yes. Because it's prepended before your app code, it's watching before badge.js even has a chance to run. The setTimeout sweeps add extra insurance.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Does the badge blocker slow down my app?</div>
+          <div class="faq-answer">Negligibly. The MutationObserver is non-blocking and the entire blocker script is under 500 bytes minified.</div>
+        </div>
+    </section>
+
+    <!-- Related -->
+    
+    <section id="related" aria-labelledby="related-heading" style="margin-top:48px">
+      <h2 id="related-heading">Related Guides</h2>
+      <div class="grid-2">
+        
+<a href="/blog/remove-made-in-bolt-badge" class="article-card" data-category="export" data-platform="bolt-new" aria-label="How to Remove the 'Made in Bolt' Badge">
+  <div class="article-card-meta">
+    <span class="badge badge-platform" style="--platform-color:#7c3aed;--platform-bg:#ede9fe">bolt.new</span>
+    <span class="badge badge-difficulty-beginner">beginner</span>
   </div>
-</section>
+  <div class="article-card-title">How to Remove the 'Made in Bolt' Badge</div>
+  <div class="article-card-desc">Remove the 'Made in Bolt' branding badge from your bolt.new app in one click using Push44. Free, no code chang...</div>
+  <div class="article-card-footer">
+    <span>⏱ 5 min read</span>
+    <span>•</span>
+    <span>3,200 views</span>
+    <span>•</span>
+    <span>Updated Jul 5, 2026</span>
+  </div>
+</a>
+<a href="/blog/bolt-new-remove-branding" class="article-card" data-category="export" data-platform="bolt-new" aria-label="Remove bolt.new Branding: White-Label Your App">
+  <div class="article-card-meta">
+    <span class="badge badge-platform" style="--platform-color:#7c3aed;--platform-bg:#ede9fe">bolt.new</span>
+    <span class="badge badge-difficulty-beginner">beginner</span>
+  </div>
+  <div class="article-card-title">Remove bolt.new Branding: White-Label Your App</div>
+  <div class="article-card-desc">Remove bolt.new branding from your deployed app and present a clean, professional product. Push44 handles the ...</div>
+  <div class="article-card-footer">
+    <span>⏱ 4 min read</span>
+    <span>•</span>
+    <span>1,400 views</span>
+    <span>•</span>
+    <span>Updated Jul 5, 2026</span>
+  </div>
+</a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="complementary" aria-label="Article sidebar">
+
+    <!-- TOC -->
+    <div class="sidebar-card">
+      <h4>On This Page</h4>
+      <a href="#introduction" class="toc-link">Introduction</a><a href="#the-problem" class="toc-link">The Problem</a><a href="#the-solution" class="toc-link">The Solution</a><a href="#step-by-step" class="toc-link">Step-by-Step Guide</a><a href="#tips" class="toc-link">Pro Tips</a><a href="#faq" class="toc-link">FAQ</a><a href="#related" class="toc-link">Related Guides</a>
+    </div>
+
+    <!-- Start Exporting CTA -->
+    <div class="sidebar-card" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-color:rgba(255,255,255,0.08)">
+      <h4 style="color:#94a3b8">Free Tool</h4>
+      <div style="font-weight:800;font-size:15px;color:#f8fafc;margin-bottom:8px">Push44 — Export to GitHub</div>
+      <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
+      <a href="/" class="btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:11px 0">Start Exporting →</a>
+    </div>
+
+    <!-- Popular Searches -->
+    <div class="sidebar-card">
+      <h4>People Also Search</h4>
+      
+        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
+        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
+        <a href="/blog/download-base44-source-code" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Download Base44 source code</a>
+        <a href="/blog/export-rocket-new-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Rocket.new to GitHub</a>
+        <a href="/blog/how-to-export-floot-project" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Floot project</a>
+        <a href="/blog/zite-github-export-guide" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Zite to GitHub</a>
+    </div>
+
+    <!-- Platform Hub -->
+    
+    <div class="sidebar-card">
+      <h4>bolt.new Hub</h4>
+      <a href="/blog/remove-made-in-bolt-badge" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Remove the 'Made in Bolt' Badge</a><a href="/blog/bolt-new-remove-branding" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Remove bolt.new Branding: White-Label Your App</a>
+      <a href="/platforms/bolt-new" style="display:block;margin-top:10px;font-size:13px;font-weight:600;color:var(--orange)">View all bolt.new guides →</a>
+    </div>
+
+  </aside>
+</div>
 
 
 <footer class="footer" role="contentinfo">
