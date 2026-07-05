@@ -91,15 +91,14 @@ export async function validateBoltProject({
 
   const d = await res.json().catch(() => ({}));
   const rawSiteUrl: string = d.site_url ?? "";
-  if (!rawSiteUrl) {
-    throw new Error(
-      "Project exists but has no live URL yet. Deploy it once from the bolt.new editor first, then come back."
-    );
-  }
 
   // Normalize to bare host (strip https:// or http://) so URL construction
   // in removeBoltBadge (`https://${siteUrl}/...`) is always well-formed.
-  const siteUrl = rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  // siteUrl is empty for projects that have never been deployed — that's OK;
+  // the user can still connect; badge removal will surface a clear message.
+  const siteUrl = rawSiteUrl
+    ? rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
+    : "";
 
   return { projectId, siteUrl, updatedAt: d.updated_at ?? "" };
 }

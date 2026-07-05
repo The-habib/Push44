@@ -244,7 +244,11 @@ export default function SettingsPage() {
       const info = await validateBoltProject({ data: { token: boltToken.trim(), projectId: boltProjectId.trim() } });
       updateCreds({ boltToken: boltToken.trim(), boltProjectId: boltProjectId.trim(), boltSiteUrl: info.siteUrl });
       setBoltTest("ok");
-      toast.success(`bolt.new connected — ${info.siteUrl}`);
+      toast.success(
+        info.siteUrl
+          ? `bolt.new connected — ${info.siteUrl}`
+          : "bolt.new connected — deploy your project once to enable badge removal"
+      );
     } catch (e: any) {
       toast.error(e?.message ?? "Connection failed");
       setBoltTest("fail");

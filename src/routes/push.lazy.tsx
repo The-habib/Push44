@@ -1323,8 +1323,17 @@ function BoltBadgePanel({ siteUrl, phase, step, error, resultUrl, onRemove, onRe
         </div>
       </div>
 
-      {/* Idle */}
-      {phase === "idle" && (
+      {/* Idle — no live URL yet */}
+      {phase === "idle" && !siteUrl && (
+        <div style={{ fontSize: 13, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 12px", lineHeight: 1.55 }}>
+          <strong>Project not deployed yet.</strong> Open your project in the{" "}
+          <a href="https://bolt.new" target="_blank" rel="noopener" style={{ color: "#b45309" }}>bolt.new editor</a>,
+          click <strong>Deploy</strong>, then come back — badge removal will be ready.
+        </div>
+      )}
+
+      {/* Idle — project has a live URL */}
+      {phase === "idle" && siteUrl && (
         <>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
             Push44 will download your live JS bundle, inject a badge blocker, and re-deploy — all in one click.
