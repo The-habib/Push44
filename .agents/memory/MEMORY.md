@@ -17,3 +17,4 @@
 - [Push44 SEO-safe redesign](push44-seo-safe-redesign.md) — constrain DESIGN subagent to visual layer only when redesigning SEO blog pages; re-run generate-seo after every redesign.
 - [Google site-name vs Vercel](google-site-name-vercel.md) — align application-name/manifest/JSON-LD/og across every page + re-run generate-seo when Google shows platform name instead of brand.
 - [Push44 image weight](push44-image-weight.md) — logo.png/og-image were 1.3MB+; compress with magick PNG8/JPG and update both src/assets + public copies plus generator.ts refs together.
+- [Bolt.new API Patterns](bolt-api.md) — cookie=__session; PUT /api/deploy/{pid} ZIP→staging; POST /api/deploy/{pid}/promote→live; badge blocked via MutationObserver on zIndex 2147483647; full docs in docs/research/bolt-new-api.md
