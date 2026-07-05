@@ -17,7 +17,7 @@ export interface Article {
   title: string;           // <title> tag
   h1: string;              // displayed heading
   description: string;     // meta description (150-160 chars)
-  platform: "base44" | "rocket-new" | "floot" | "zite" | "general";
+  platform: "base44" | "rocket-new" | "floot" | "zite" | "bolt-new" | "general";
   category: string;
   readTime: number;        // minutes
   difficulty: "beginner" | "intermediate" | "advanced";
@@ -36,7 +36,7 @@ export interface Article {
 }
 
 export interface PlatformData {
-  slug: "base44" | "rocket-new" | "floot" | "zite";
+  slug: "base44" | "rocket-new" | "floot" | "zite" | "bolt-new";
   name: string;
   tagline: string;
   description: string;
@@ -81,6 +81,7 @@ export const CATEGORIES: Category[] = [
   { slug: "rocket-new",      name: "Rocket.new",      description: "Export and build APKs from Rocket.new",            icon: "🚀", color: "#f0fdf4" },
   { slug: "floot",           name: "Floot",           description: "Export and publish your Floot projects",           icon: "🌊", color: "#eff6ff" },
   { slug: "zite",            name: "Zite",            description: "Export and version-control your Zite apps",        icon: "⚡", color: "#fdf4ff" },
+  { slug: "bolt-new",       name: "bolt.new",        description: "Remove the 'Made in Bolt' badge from your bolt.new app", icon: "⚡", color: "#ede9fe" },
   { slug: "github",          name: "GitHub",          description: "Push AI-generated code to any GitHub repo",        icon: "🐙", color: "#f8fafc" },
   { slug: "export",          name: "Export Guides",   description: "How to export source code from any AI builder",    icon: "📦", color: "#fff7ed" },
   { slug: "backup",          name: "Backup",          description: "Keep permanent backups of your AI-built apps",     icon: "🛡️", color: "#f0fdf4" },
@@ -1759,7 +1760,123 @@ export const PLATFORMS: PlatformData[] = [
       { question: "What does the Zite export include?", answer: "Push44 exports your Zite app's snapshot template — all component definitions, layout configuration, and settings." },
     ],
   },
+  {
+    slug: "bolt-new",
+    name: "bolt.new",
+    tagline: "Remove the 'Made in Bolt' badge from your bolt.new app",
+    description: "bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.",
+    color: "#7c3aed",
+    bgColor: "#ede9fe",
+    articles: ["remove-made-in-bolt-badge", "bolt-new-badge-removal-guide", "bolt-new-remove-branding"],
+    features: ["One-click badge removal", "Re-deploys to your existing bolt.new Netlify URL", "No code changes needed", "Injects a MutationObserver blocker into your bundle", "Works with any bolt.new project that has been deployed"],
+    exportSteps: ["Connect in Push44 with your __session cookie and Project ID", "Select your bolt.new project", "Click Remove Badge", "Badge is permanently removed from your live deployment"],
+    faqs: [
+      { question: "How does badge removal work?", answer: "Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL." },
+      { question: "Is the badge removal permanent?", answer: "It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge." },
+      { question: "Does this affect my app's functionality?", answer: "No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged." },
+      { question: "Where do I find my Project ID?", answer: "Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/." },
+    ],
+  },
 ];
+
+  // ── BOLT.NEW ────────────────────────────────────────────────────────────────
+
+  {
+    slug: "remove-made-in-bolt-badge",
+    title: "Remove 'Made in Bolt' Badge | Push44 Guide",
+    h1: "How to Remove the 'Made in Bolt' Badge",
+    description: "Remove the 'Made in Bolt' branding badge from your bolt.new app in one click using Push44. Free, no code changes required, works on any deployed bolt.new project.",
+    platform: "bolt-new",
+    category: "export",
+    readTime: 5,
+    difficulty: "beginner",
+    publishedAt: "2026-07-01",
+    updatedAt: "2026-07-05",
+    views: 3200,
+    keywords: ["remove made in bolt badge", "bolt.new badge removal", "remove bolt branding", "hide bolt.new badge", "bolt.new white label"],
+    intro: "bolt.new is a powerful AI builder that deploys your app to Netlify instantly. But every deployed app includes a 'Made in Bolt' badge in the bottom corner. Push44 removes it permanently with a single click — no code changes, no manual deployments.",
+    problem: "The 'Made in Bolt' badge appears on every bolt.new deployment. Removing it requires re-deploying your entire app with the badge script stripped out — a process that involves downloading the live bundle, modifying it, creating a valid ZIP, and uploading it back. Doing this manually is complex and error-prone.",
+    solution: "Push44 automates the entire badge removal workflow: it fetches your live HTML to find the current JS bundle filename, downloads the bundle, prepends a MutationObserver blocker that removes the badge element on load, then re-deploys the modified bundle back to your existing bolt.new Netlify URL in one atomic operation.",
+    steps: [
+      { title: "Get your bolt.new session cookie", content: "Open bolt.new in your browser and log in. Open DevTools (F12) → Application → Cookies → bolt.new. Find the cookie named __session and copy its value. This is your authentication token for Push44.", tip: "The __session value is a long base64-encoded string. Copy it exactly as shown — including any trailing characters." },
+      { title: "Find your Project ID", content: "Open your project in the bolt.new editor. The URL looks like bolt.new/~/PROJECT_ID. Copy the PROJECT_ID portion — this is the unique identifier for your project's deployment.", tip: "The Project ID is the string after ~/ in the editor URL, not the workspace title." },
+      { title: "Connect bolt.new in Push44", content: "Open Push44 and navigate to Settings. Find the bolt.new section and paste your __session cookie value and Project ID. Click Save — Push44 will validate your credentials by checking your deployment status.", tip: "If validation fails, try refreshing your session by logging out and back in to bolt.new before copying the cookie again." },
+      { title: "Select your project and remove the badge", content: "Go to the Push page in Push44 and select bolt.new as your platform. Your project will appear automatically. Click Remove Badge. Push44 will download your live bundle, inject the badge blocker, and re-deploy — typically in 15–30 seconds.", tip: "Make sure your project has been deployed at least once from the bolt.new editor before running badge removal." },
+      { title: "Verify the result", content: "Once Push44 completes, click the View live site link to confirm the badge is gone. Hard-refresh the page (Ctrl+Shift+R) to bypass any CDN cache. The badge should no longer appear.", tip: "If you make a new deployment from the bolt.new editor later, the badge will return with the new bundle. Just run Push44 again to remove it." },
+    ],
+    tips: ["Run badge removal after every new bolt.new editor deployment", "Hard-refresh the live site to bypass CDN cache after removal", "Keep your session cookie fresh — it expires when you log out of bolt.new"],
+    mistakes: ["Copying the cookie from the wrong browser tab (must be bolt.new, not the deployed site)", "Using a stale session cookie after logging out", "Not deploying the project at least once from bolt.new before running badge removal"],
+    faqs: [
+      { question: "How long does badge removal last?", answer: "Until you make a new deployment from the bolt.new editor. Each new editor deployment generates a new content-hashed bundle, replacing the one Push44 modified. Just run Push44 again after each new deployment." },
+      { question: "Does this affect my app's functionality?", answer: "No. Push44 only prepends a tiny non-blocking JS snippet (under 500 bytes) to your existing bundle. Your app code is otherwise unchanged." },
+      { question: "Where do I find the __session cookie?", answer: "DevTools (F12) → Application → Cookies → bolt.new. The cookie is named __session." },
+      { question: "What if my Project ID is wrong?", answer: "You'll get a 404 error during validation. Open your project in the bolt.new editor and copy the ID from the URL: bolt.new/~/PROJECT_ID." },
+    ],
+    related: ["bolt-new-badge-removal-guide", "bolt-new-remove-branding", "how-to-export-floot-project"],
+  },
+
+  {
+    slug: "bolt-new-badge-removal-guide",
+    title: "bolt.new Badge Removal: Step-by-Step Guide | Push44",
+    h1: "bolt.new Badge Removal: Complete Guide",
+    description: "Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, why MutationObserver is needed, and how Push44 automates it.",
+    platform: "bolt-new",
+    category: "tutorials",
+    readTime: 7,
+    difficulty: "intermediate",
+    publishedAt: "2026-07-01",
+    updatedAt: "2026-07-05",
+    views: 1800,
+    keywords: ["bolt.new badge removal technical", "how bolt badge works", "MutationObserver badge removal", "bolt.new branding removal", "bolt new badge blocker"],
+    intro: "The bolt.new badge is injected via a separate badge.js script that creates a fixed-position div with zIndex 2147483647 in a Shadow DOM. Understanding how it works explains why simple CSS hiding doesn't work — and why Push44's MutationObserver approach is the correct solution.",
+    problem: "The bolt.new badge is resilient by design. It uses Shadow DOM to prevent CSS from reaching its internals, and zIndex 2147483647 to sit above all other content. Naive approaches like display:none or setting zIndex on the parent don't work because the badge re-inserts itself if removed incorrectly.",
+    solution: "Push44 uses a MutationObserver that watches the document for any div with zIndex 2147483647 and position fixed — the badge's unique fingerprint. When one appears, it's removed immediately. The badge.js script's internal re-insert guard (a boolean flag set to true after first render) ensures that once the badge is removed this way, it won't re-insert during the same page session.",
+    steps: [
+      { title: "Understand the badge structure", content: "bolt.new's badge.js creates a <div> element with style.zIndex = '2147483647' and style.position = 'fixed'. Inside this div is a Shadow DOM containing the actual badge markup. The Shadow DOM means innerHTML is always empty from the outside — you can't detect the badge by its contents.", tip: "Never try to detect the badge by its innerHTML or class names. Always use the zIndex fingerprint." },
+      { title: "Why CSS hiding fails", content: "Setting display:none on the badge container doesn't prevent badge.js from re-inserting it. The script checks whether the badge element exists in the DOM and re-creates it if missing. You need to remove the element in a way that satisfies the script's internal guard flag.", tip: "The badge.js script sets an internal boolean flag when the badge first renders. Once set, the script won't re-insert the badge even if you remove the element." },
+      { title: "The MutationObserver approach", content: "Push44 prepends a MutationObserver to your JS bundle that watches for added nodes. When it detects a div with zIndex 2147483647 and position fixed, it removes it before badge.js can complete its initialization. Additional setTimeout sweeps at 500ms, 1700ms, and 3000ms catch any deferred insertions.", tip: "The three setTimeout sweeps are insurance against race conditions where badge.js initializes after the initial MutationObserver fires." },
+      { title: "Re-deploy the modified bundle", content: "Push44 downloads your live JS bundle, prepends the blocker, builds a valid ZIP with correct asset paths, uploads to bolt.new's staging, and promotes to live. The entire process uses bolt.new's own deployment API.", tip: "The ZIP must have the correct structure (assets/ directory, index.html, favicon.svg) or bolt.new will reject the upload." },
+    ],
+    tips: ["The badge blocker is prepended before your app code, so it runs first", "The MutationObserver is set up synchronously — it's watching before any app code runs", "Hard-refresh after removal to bypass CDN cache"],
+    mistakes: ["Using CSS to hide the badge (it re-inserts)", "Using innerHTML to detect the badge (Shadow DOM blocks this)", "Forgetting to re-run after a new bolt.new editor deployment"],
+    faqs: [
+      { question: "Why doesn't CSS display:none work?", answer: "badge.js detects when its element is removed from the DOM and re-inserts it. CSS only hides it visually; the element still exists and the script still runs." },
+      { question: "Is the MutationObserver approach reliable?", answer: "Yes. Because it's prepended before your app code, it's watching before badge.js even has a chance to run. The setTimeout sweeps add extra insurance." },
+      { question: "Does the badge blocker slow down my app?", answer: "Negligibly. The MutationObserver is non-blocking and the entire blocker script is under 500 bytes minified." },
+    ],
+    related: ["remove-made-in-bolt-badge", "bolt-new-remove-branding"],
+  },
+
+  {
+    slug: "bolt-new-remove-branding",
+    title: "Remove bolt.new Branding from Your App | Push44",
+    h1: "Remove bolt.new Branding: White-Label Your App",
+    description: "Remove bolt.new branding from your deployed app and present a clean, professional product. Push44 handles the full re-deployment automatically.",
+    platform: "bolt-new",
+    category: "export",
+    readTime: 4,
+    difficulty: "beginner",
+    publishedAt: "2026-07-02",
+    updatedAt: "2026-07-05",
+    views: 1400,
+    keywords: ["remove bolt.new branding", "bolt.new white label", "bolt new no badge", "remove AI builder badge", "professional bolt.new app"],
+    intro: "Every app deployed from bolt.new shows a 'Made in Bolt' badge by default. If you're showing the app to clients, investors, or users, you may want a clean product without AI builder branding. Push44 removes it in one click.",
+    problem: "bolt.new doesn't offer an official badge removal option in the free tier. The badge appears on every deployment and can't be disabled through the bolt.new settings UI alone.",
+    solution: "Push44 uses bolt.new's deployment API to download your current live bundle, inject a badge blocker, and re-deploy — giving you a clean deployment on your existing bolt.new URL without any plan upgrade required.",
+    steps: [
+      { title: "Connect bolt.new in Push44 Settings", content: "Open Push44 Settings → bolt.new section. Paste your __session cookie from bolt.new DevTools and your Project ID from the editor URL (bolt.new/~/PROJECT_ID). Save to validate.", tip: "Your credentials are stored only in your browser — Push44 never sees them on a server." },
+      { title: "Open the Push page", content: "Navigate to Push in Push44 and select bolt.new as your platform. Your connected project appears automatically, showing the live site URL.", tip: "If your project doesn't load, check that you've deployed it at least once from the bolt.new editor." },
+      { title: "Click Remove Badge", content: "Click the ⚡ Remove Badge button. Push44 handles everything: fetching the live HTML, downloading assets, injecting the blocker, and re-deploying. The process takes about 15–30 seconds.", tip: "Don't close the browser tab during removal." },
+    ],
+    tips: ["Re-run after every new bolt.new editor deployment", "Hard-refresh the live site to see the change immediately", "Your bolt.new URL doesn't change — only the badge is removed"],
+    mistakes: ["Expecting the badge to stay removed after re-deploying from bolt.new editor", "Using an expired session cookie"],
+    faqs: [
+      { question: "Does this work with the free bolt.new plan?", answer: "Yes. Push44 uses bolt.new's standard deployment API, which is available on all plans." },
+      { question: "Will my bolt.new URL change?", answer: "No. Push44 re-deploys to the same Netlify URL. Your existing link continues to work." },
+      { question: "Can I remove the badge from multiple projects?", answer: "Yes. Connect each project by updating the Project ID in Settings, then run badge removal for each one." },
+    ],
+    related: ["remove-made-in-bolt-badge", "bolt-new-badge-removal-guide"],
+  },
 
 // ── Comparisons ───────────────────────────────────────────────────────────────
 
@@ -1916,4 +2033,5 @@ export const PLATFORM_META: Record<string, { name: string; color: string; bgColo
   "floot":      { name: "Floot",      color: "#3b82f6", bgColor: "#eff6ff" },
   "zite":       { name: "Zite",       color: "#8b5cf6", bgColor: "#fdf4ff" },
   "general":    { name: "General",    color: "#64748b", bgColor: "#f8fafc" },
+  "bolt-new":   { name: "bolt.new",   color: "#7c3aed", bgColor: "#ede9fe" },
 };

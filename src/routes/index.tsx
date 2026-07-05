@@ -9,6 +9,7 @@ import base44LogoImg from "@/assets/base44-logo-transparent.webp";
 import rocketLogoImg from "@/assets/rocket-logo.png";
 import flootLogoImg from "@/assets/floot-logo.png";
 import ziteLogoImg from "@/assets/zite-logo.png";
+import boltLogoImg from "@/assets/bolt-logo.svg";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -114,6 +115,7 @@ const PLATFORMS = [
   { name: "Rocket.new", logo: rocketLogoImg, slug: "rocket-new", desc: "Pull your full Rocket.new codebase, including all components, hooks, and configuration files." },
   { name: "Floot", logo: flootLogoImg, slug: "floot", desc: "Export Floot projects via magic link session and push your web app source to any GitHub repo." },
   { name: "Zite", logo: ziteLogoImg, slug: "zite", desc: "Extract your Zite template files and push them to GitHub with complete directory structure intact." },
+  { name: "bolt.new", logo: boltLogoImg, slug: "bolt-new", desc: "Remove the 'Made in Bolt' badge from your bolt.new app with one click — permanently." },
 ];
 
 // ── HOW IT WORKS ─────────────────────────────────────────────────────────────
@@ -129,7 +131,7 @@ const STEPS = [
 const FAQS = [
   { q: "Is Push44 really free?", a: "Yes, 100% free forever. No trial, no credit card, no hidden tier. Push44 is open source under the MIT license." },
   { q: "Does Push44 store my code or tokens?", a: "Never. Push44 runs entirely in your browser. Your API tokens and source code never touch any server operated by us." },
-  { q: "Which AI platforms are supported?", a: "Base44, Rocket.new, Floot, and Zite are fully supported. More platforms are added regularly — check the GitHub repo." },
+  { q: "Which AI platforms are supported?", a: "Base44, Rocket.new, Floot, Zite, and bolt.new are fully supported. Each platform has different capabilities: code export to GitHub (Base44, Rocket, Floot, Zite) and badge removal (bolt.new). More platforms are added regularly." },
   { q: "Do I need a GitHub account?", a: "Yes, you need a GitHub account and a Personal Access Token (or GitHub OAuth) to push to a repository." },
   { q: "Can I push to a private repository?", a: "Absolutely. Push44 works with both public and private GitHub repositories, as long as your token has the right permissions." },
   { q: "What happens to my code after I push?", a: "It lives in your GitHub repository — exactly like any other git commit. Push44 has no ongoing access after the push completes." },

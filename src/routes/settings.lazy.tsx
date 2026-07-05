@@ -1,12 +1,13 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, AlertCircle, Loader2, ExternalLink, LogOut, RefreshCw } from "lucide-react";
-import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { getGitHubUser } from "@/lib/github-api";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { validateFlootToken } from "@/lib/floot-api";
+import { validateBoltProject } from "@/lib/bolt-api";
 import { loginToZite, validateZiteSession } from "@/lib/zite-api";
 import { toast } from "sonner";
 
@@ -100,6 +101,13 @@ export default function SettingsPage() {
   const [showFlootTok, setShowFlootTok] = useState(false);
   const [flootSaving, setFlootSaving] = useState(false);
   const [flootTest, setFlootTest]     = useState<TestState>("idle");
+
+  // ── bolt.new ───────────────────────────────────────────────────────────────
+  const [boltToken, setBoltToken]         = useState(creds.boltToken ?? "");
+  const [boltProjectId, setBoltProjectId] = useState(creds.boltProjectId ?? "");
+  const [showBoltTok, setShowBoltTok]     = useState(false);
+  const [boltSaving, setBoltSaving]       = useState(false);
+  const [boltTest, setBoltTest]           = useState<TestState>("idle");
 
   // ── Prefs ──────────────────────────────────────────────────────────────────
   const [branch, setBranch] = useState(creds.defaultBranch ?? "main");
@@ -223,6 +231,33 @@ export default function SettingsPage() {
     setFlootTest("loading");
     try { await validateFlootToken({ data: { token: flootToken.trim() || creds.flootToken! } }); setFlootTest("ok"); }
     catch { setFlootTest("fail"); }
+  };
+
+  // ── bolt.new actions ───────────────────────────────────────────────────────
+  const saveBolt = async () => {
+    if (!boltToken.trim() || !boltProjectId.trim()) {
+      toast.error("Paste your __session cookie and Project ID");
+      return;
+    }
+    setBoltSaving(true);
+    try {
+      const info = await validateBoltProject({ data: { token: boltToken.trim(), projectId: boltProjectId.trim() } });
+      updateCreds({ boltToken: boltToken.trim(), boltProjectId: boltProjectId.trim(), boltSiteUrl: info.siteUrl });
+      setBoltTest("ok");
+      toast.success(`bolt.new connected — ${info.siteUrl}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Connection failed");
+      setBoltTest("fail");
+    } finally { setBoltSaving(false); }
+  };
+
+  const testBolt = async () => {
+    const tok = boltToken.trim() || creds.boltToken;
+    const pid = boltProjectId.trim() || creds.boltProjectId;
+    if (!tok || !pid) return;
+    setBoltTest("loading");
+    try { await validateBoltProject({ data: { token: tok, projectId: pid } }); setBoltTest("ok"); }
+    catch { setBoltTest("fail"); }
   };
 
   return (
@@ -399,6 +434,37 @@ export default function SettingsPage() {
         </div>
         <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
           Log in at <a href="https://floot.com" target="_blank" rel="noopener" style={{ color: "#f97316" }}>floot.com</a> → DevTools (F12) → Application → Cookies → copy value of <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>nextauth.session-token</code>.
+        </p>
+      </SectionCard>
+
+      {/* ── bolt.new ── */}
+      <SectionCard
+        title="bolt.new"
+        subtitle="bolt.new — paste __session cookie"
+        icon={<BoltLogo size={20} />}
+        connected={!!creds.boltToken}
+        onDisconnect={() => { updateCreds({ boltToken: "", boltProjectId: "", boltSiteUrl: "" }); setBoltToken(""); setBoltProjectId(""); setBoltTest("idle"); toast.success("Disconnected"); }}
+      >
+        {creds.boltSiteUrl && <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>Connected to <strong>{creds.boltSiteUrl}</strong></div>}
+        <label className="label">Session Cookie (__session)</label>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <div style={{ position: "relative", flex: 1 }}>
+            <input className="input" type={showBoltTok ? "text" : "password"} placeholder="eyJkIjoiMTVo…" value={boltToken} onChange={(e) => { setBoltToken(e.target.value); setBoltTest("idle"); }} style={{ paddingRight: 36 }} />
+            <button onClick={() => setShowBoltTok(!showBoltTok)} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
+              {showBoltTok ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+        </div>
+        <label className="label">Project ID</label>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <input className="input" placeholder="e.g. abc123xyz (from bolt.new/~/PROJECT_ID)" value={boltProjectId} onChange={(e) => { setBoltProjectId(e.target.value.trim()); setBoltTest("idle"); }} />
+          <TestBtn state={boltTest} onClick={testBolt} />
+          <button className="btn btn-primary btn-sm" onClick={saveBolt} disabled={boltSaving || !boltToken.trim() || !boltProjectId.trim()}>
+            {boltSaving ? <Loader2 size={12} style={{ animation: "spin 0.6s linear infinite" }} /> : <Check size={12} />}Save
+          </button>
+        </div>
+        <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+          Go to <a href="https://bolt.new" target="_blank" rel="noopener" style={{ color: "#f97316" }}>bolt.new</a>, open your project → DevTools (F12) → Application → Cookies → copy value of <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>__session</code>. Your Project ID is in the editor URL: <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>bolt.new/~/PROJECT_ID</code>.
         </p>
       </SectionCard>
 

@@ -2,6 +2,7 @@ import base44Logo from "@/assets/base44-logo-transparent.webp";
 import rocketLogo from "@/assets/rocket-logo.png";
 import flootLogo from "@/assets/floot-logo.png";
 import ziteLogo from "@/assets/zite-logo.png";
+import boltLogo from "@/assets/bolt-logo.svg";
 
 export function FlootLogo({ className = "", size = 20 }: { className?: string; size?: number }) {
   return (
@@ -40,5 +41,11 @@ export function Base44Logo({ size = 20, className = "", white = false }: { size?
 export function RocketLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
   return (
     <img src={rocketLogo} alt="Rocket.new" width={size} height={size} style={{ objectFit: "contain" }} className={className} />
+  );
+}
+
+export function BoltLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <img src={boltLogo} alt="bolt.new" width={size} height={size} style={{ objectFit: "contain", borderRadius: 4 }} className={className} />
   );
 }

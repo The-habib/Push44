@@ -15,12 +15,15 @@ export interface Credentials {
   ziteSession: string;
   ziteCsrf: string;
   ziteEmail: string;
+  boltToken: string;
+  boltProjectId: string;
+  boltSiteUrl: string;
   defaultBranch: string;
   defaultRepo: string;
   defaultOwner: string;
 }
 
-export type Platform = "base44" | "rocket" | "floot" | "zite";
+export type Platform = "base44" | "rocket" | "floot" | "zite" | "bolt";
 
 export interface PushRecord {
   id: string;
@@ -101,7 +104,7 @@ export function clearHistory(): void { localStorage.removeItem(HISTORY_KEY); }
 // ── Push page preferences (platform, last repo, branch, etc.) ─────────────────
 
 export interface PushPrefs {
-  platform?: "base44" | "rocket" | "floot" | "zite";
+  platform?: "base44" | "rocket" | "floot" | "zite" | "bolt";
   lastRepo?: { full_name: string; default_branch: string; html_url: string } | null;
   branch?: string;
   isPrivate?: boolean;

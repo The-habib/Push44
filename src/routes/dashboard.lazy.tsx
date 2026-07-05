@@ -11,6 +11,7 @@ const PLATFORM_COLORS: Record<Platform, string> = {
   rocket: "#8b5cf6",
   floot:  "#6366f1",
   zite:   "#0ea5e9",
+  bolt:   "#7c3aed",
 };
 
 const PLATFORM_LABELS: Record<Platform, string> = {
@@ -18,6 +19,7 @@ const PLATFORM_LABELS: Record<Platform, string> = {
   rocket: "Rocket.new",
   floot:  "Floot",
   zite:   "Zite",
+  bolt:   "bolt.new",
 };
 
 function PlatformBadge({ platform }: { platform?: Platform }) {

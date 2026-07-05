@@ -7,7 +7,7 @@ import {
   Terminal, Loader2,
 } from "lucide-react";
 import { FileExplorer } from "@/components/FileExplorer";
-import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo } from "@/components/BrandLogos";
+import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
@@ -26,6 +26,7 @@ import {
   type FlootDeployStatus, type FlootMobileBuildStatus,
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
+import { validateBoltProject, removeBoltBadge, type BoltRemoveStep } from "@/lib/bolt-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
 import {
   addHistory, getAppSnapshot, saveAppSnapshot, computeFileDiff,
@@ -35,7 +36,7 @@ import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/push")({ component: PushPage });
 
-type PlatformId = "base44" | "rocket" | "zite" | "floot";
+type PlatformId = "base44" | "rocket" | "zite" | "floot" | "bolt";
 
 interface AppItem  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface RepoItem { full_name: string; default_branch: string; html_url: string; private: boolean }
@@ -47,6 +48,7 @@ const PLATFORMS: { id: PlatformId; label: string; icon: React.ReactNode; credKey
   { id: "rocket", label: "Rocket.new", icon: <RocketLogo size={18} />, credKey: "rocketToken", helpUrl: "https://rocket.new" },
   { id: "zite",   label: "Zite",      icon: <ZiteLogo size={18} />,   credKey: "ziteSession", helpUrl: "https://build.fillout.com" },
   { id: "floot",  label: "Floot",     icon: <FlootLogo size={18} />,   credKey: "flootToken",  helpUrl: "https://floot.com" },
+  { id: "bolt",   label: "bolt.new",  icon: <BoltLogo size={18} />,   credKey: "boltToken",   helpUrl: "https://bolt.new" },
 ];
 
 function StepNum({ n, active, done }: { n: number; active: boolean; done: boolean }) {
@@ -91,11 +93,12 @@ export default function PushPage() {
 
   // ── Platform & app ─────────────────────────────────────────────────────────
   const [platform, setPlatform] = useState<PlatformId>(() => {
-    if (savedPrefs.platform && ["base44","rocket","zite","floot"].includes(savedPrefs.platform)) return savedPrefs.platform as PlatformId;
+    if (savedPrefs.platform && ["base44","rocket","zite","floot","bolt"].includes(savedPrefs.platform)) return savedPrefs.platform as PlatformId;
     if (creds.base44Token) return "base44";
     if (creds.rocketToken) return "rocket";
     if (creds.ziteSession) return "zite";
     if (creds.flootToken)  return "floot";
+    if (creds.boltToken)   return "bolt";
     return "base44";
   });
   const [apps, setApps] = useState<AppItem[]>([]);
@@ -162,6 +165,13 @@ export default function PushPage() {
   const [badgePhase, setBadgePhase]   = useState<BadgePhase>("idle");
   const [badgeError, setBadgeError]   = useState("");
 
+  // ── bolt.new Badge Removal ────────────────────────────────────────────────
+  type BoltBadgePhase = "idle" | "removing" | "done" | "failed";
+  const [boltBadgePhase, setBoltBadgePhase] = useState<BoltBadgePhase>("idle");
+  const [boltBadgeError, setBoltBadgeError] = useState("");
+  const [boltBadgeStep, setBoltBadgeStep]   = useState<BoltRemoveStep | "">("");
+  const [boltResultUrl, setBoltResultUrl]   = useState("");
+
   // ── Floot Native Mobile Build ───────────────────────────────────────────────
   type FlootMobilePhase = "idle" | "setting" | "polling" | "done" | "failed" | "upgrade";
   const [flootMobilePhase, setFlootMobilePhase]     = useState<FlootMobilePhase>("idle");
@@ -177,6 +187,7 @@ export default function PushPage() {
     if (id === "rocket") return !!creds.rocketToken;
     if (id === "zite")   return !!creds.ziteSession;
     if (id === "floot")  return !!creds.flootToken;
+    if (id === "bolt")   return !!creds.boltToken && !!creds.boltProjectId;
     return false;
   }, [creds]);
 
@@ -197,6 +208,10 @@ export default function PushPage() {
       } else if (pid === "floot") {
         if (!creds.flootToken) throw new Error("Connect Floot in Settings first.");
         result = await listFlootApps({ data: { token: creds.flootToken } });
+      } else if (pid === "bolt") {
+        if (!creds.boltToken || !creds.boltProjectId) throw new Error("Connect bolt.new in Settings first (cookie + Project ID required).");
+        const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
+        result = [{ id: info.projectId, name: info.siteUrl, updated_at: info.updatedAt }];
       }
       setApps(result);
     } catch (e: any) {
@@ -222,6 +237,10 @@ export default function PushPage() {
         result = await fetchZiteAppFiles({ data: { session: creds.ziteSession!, csrf: creds.ziteCsrf ?? "", appId: app.id } });
       } else if (platform === "floot") {
         result = await fetchFlootAppFiles({ data: { token: creds.flootToken!, appId: app.id, appName: app.name } });
+      } else if (platform === "bolt") {
+        // bolt.new has no exportable source files — badge removal only
+        setFilesLoading(false);
+        return;
       }
       setFiles(result);
     } catch (e: any) {
@@ -576,6 +595,25 @@ export default function PushPage() {
     }
   };
 
+  // ── bolt.new badge removal handler ────────────────────────────────────────
+  const handleBoltBadgeRemoval = async () => {
+    if (!creds.boltToken || !creds.boltProjectId || !selectedApp) return;
+    setBoltBadgePhase("removing");
+    setBoltBadgeError("");
+    setBoltBadgeStep("");
+    try {
+      const result = await removeBoltBadge({
+        data: { token: creds.boltToken, projectId: creds.boltProjectId, siteUrl: selectedApp.name },
+        onStep: (step) => setBoltBadgeStep(step),
+      });
+      setBoltResultUrl(result.siteUrl);
+      setBoltBadgePhase("done");
+    } catch (e: any) {
+      setBoltBadgeError(e?.message ?? "Badge removal failed");
+      setBoltBadgePhase("failed");
+    }
+  };
+
   // ── Filtered apps ──────────────────────────────────────────────────────────
   const filteredApps = apps.filter((a) =>
     !appSearch || a.name.toLowerCase().includes(appSearch.toLowerCase())
@@ -721,6 +759,21 @@ export default function PushPage() {
                 Try again
               </button>
             </div>
+          </div>
+        )}
+
+        {/* bolt.new badge removal bar (replaces files-ready bar for bolt) */}
+        {platform === "bolt" && selectedApp && (
+          <div style={{ marginTop: 14 }}>
+            <BoltBadgePanel
+              siteUrl={selectedApp.name}
+              phase={boltBadgePhase}
+              step={boltBadgeStep}
+              error={boltBadgeError}
+              resultUrl={boltResultUrl}
+              onRemove={handleBoltBadgeRemoval}
+              onReset={() => { setBoltBadgePhase("idle"); setBoltBadgeError(""); setBoltBadgeStep(""); setBoltResultUrl(""); }}
+            />
           </div>
         )}
 
@@ -888,7 +941,7 @@ export default function PushPage() {
       )}
 
       {/* ── Step 2: GitHub Repo ───────────────────────────────────────────── */}
-      <StepCard n={2} step={step} label="Choose Repository" active={step === 2} done={step === 3 && pushStatus === "done"}>
+      {platform !== "bolt" && <StepCard n={2} step={step} label="Choose Repository" active={step === 2} done={step === 3 && pushStatus === "done"}>
         {step >= 2 && (
           <>
             {/* New vs existing toggle */}
@@ -1013,10 +1066,10 @@ export default function PushPage() {
             )}
           </>
         )}
-      </StepCard>
+      </StepCard>}
 
       {/* ── Step 3: Result ────────────────────────────────────────────────── */}
-      {step === 3 && pushStatus === "done" && pushResult && (
+      {platform !== "bolt" && step === 3 && pushStatus === "done" && pushResult && (
         <>
           <div className="card" style={{ padding: 24, textAlign: "center" }}>
             <CheckCircle size={44} color="#22c55e" style={{ margin: "0 auto 12px", display: "block" }} />
@@ -1228,6 +1281,125 @@ export default function PushPage() {
 
 function BookOpen14() {
   return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+}
+
+// ── BoltBadgePanel ────────────────────────────────────────────────────────────
+const BOLT_GRADIENT = "linear-gradient(135deg,#5b21b6,#7c3aed)";
+
+type BoltBadgePhaseUI = "idle" | "removing" | "done" | "failed";
+
+function stepLabel(step: string): string {
+  switch (step) {
+    case "fetching-html":      return "Fetching live HTML…";
+    case "downloading-assets": return "Downloading JS bundle…";
+    case "building-zip":       return "Building ZIP…";
+    case "uploading":          return "Uploading to staging…";
+    case "promoting":          return "Going live…";
+    default:                   return "Working…";
+  }
+}
+
+interface BoltBadgePanelProps {
+  siteUrl: string;
+  phase: BoltBadgePhaseUI;
+  step: string;
+  error: string;
+  resultUrl: string;
+  onRemove: () => void;
+  onReset: () => void;
+}
+
+function BoltBadgePanel({ siteUrl, phase, step, error, resultUrl, onRemove, onReset }: BoltBadgePanelProps) {
+  return (
+    <div className="card" style={{ padding: 18, border: "1px solid #ede9fe" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: BOLT_GRADIENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <BoltLogo size={20} />
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Remove "Made in Bolt" Badge</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{siteUrl}</div>
+        </div>
+      </div>
+
+      {/* Idle */}
+      {phase === "idle" && (
+        <>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
+            Push44 will download your live JS bundle, inject a badge blocker, and re-deploy — all in one click.
+            The badge stays removed until you make a new deployment from the bolt.new editor.
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: BOLT_GRADIENT, justifyContent: "center" }}
+            onClick={onRemove}
+          >
+            ⚡ Remove Badge
+          </button>
+        </>
+      )}
+
+      {/* Removing */}
+      {phase === "removing" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#faf5ff", border: "1px solid #e9d5ff" }}>
+            <Loader2 size={15} color="#7c3aed" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#6d28d9", fontWeight: 600 }}>{step ? stepLabel(step) : "Starting…"}</span>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {(["fetching-html","downloading-assets","building-zip","uploading","promoting"] as const).map((s) => {
+              const steps = ["fetching-html","downloading-assets","building-zip","uploading","promoting"] as const;
+              const isDone = step && steps.indexOf(step as any) > steps.indexOf(s);
+              const isActive = step === s;
+              return (
+                <div
+                  key={s}
+                  style={{ flex: 1, height: 4, borderRadius: 2, background: isDone ? "#7c3aed" : isActive ? "#a78bfa" : "#e9d5ff", transition: "background 0.3s" }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Done */}
+      {phase === "done" && (
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge removed!</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
+            Your live site is updated. Run again after each new bolt.new editor deployment.
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href={`https://${resultUrl || siteUrl}`} target="_blank" rel="noopener" className="btn btn-secondary">
+              <ExternalLink size={13} /> View live site
+            </a>
+            <button className="btn btn-primary" style={{ background: BOLT_GRADIENT }} onClick={onReset}>
+              ⚡ Remove again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Failed */}
+      {phase === "failed" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fee2e2", marginBottom: 12 }}>
+            <XCircle size={15} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#991b1b", flex: 1, lineHeight: 1.4 }}>{error}</span>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: BOLT_GRADIENT, justifyContent: "center" }}
+            onClick={onReset}
+          >
+            Try again
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── FlootMobileBuildPanel ─────────────────────────────────────────────────────

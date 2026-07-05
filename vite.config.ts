@@ -254,6 +254,64 @@ function flootProxyPlugin(): Plugin {
 }
 
 
+function boltProxyPlugin(): Plugin {
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith("/api/bolt")) return next();
+
+    // token is stored URL-encoded; bolt.new expects the decoded form as the cookie value
+    const rawToken = (req.headers["x-bolt-token"] as string) ?? "";
+    const token = decodeURIComponent(rawToken);
+    const targetPath = req.url.replace("/api/bolt", "") || "/";
+    const contentType = (req.headers["content-type"] as string) ?? "application/json";
+
+    const forwardHeaders: Record<string, string> = {
+      "Cookie":     `__session=${token}`,
+      "Accept":     (req.headers["accept"] as string) ?? "application/json",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "Origin":     "https://bolt.new",
+      "Referer":    "https://bolt.new/",
+    };
+
+    // Read body as raw Buffer to support binary ZIP uploads
+    let bodyBuf: Buffer | undefined;
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      bodyBuf = await new Promise<Buffer>((resolve) => {
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+        req.on("end", () => resolve(Buffer.concat(chunks)));
+      });
+      if (bodyBuf.length > 0) {
+        forwardHeaders["Content-Type"] = contentType;
+      }
+    }
+
+    try {
+      const boltRes = await fetch(`https://bolt.new${targetPath}`, {
+        method: req.method ?? "GET",
+        headers: forwardHeaders,
+        ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf } : {}),
+      });
+
+      const responseText = await boltRes.text();
+      res.writeHead(boltRes.status, {
+        "Content-Type":                 boltRes.headers.get("content-type") ?? "application/json",
+        "Access-Control-Allow-Origin":  "*",
+        "Cache-Control":                "no-store",
+      });
+      res.end(responseText);
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Bolt proxy error: " + (err?.message ?? "unknown") }));
+    }
+  };
+
+  return {
+    name: "bolt-proxy",
+    configureServer(server) { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
 export default defineConfig({
   plugins: [
     TanStackRouterVite({ routesDirectory: "./src/routes", generatedRouteTree: "./src/routeTree.gen.ts" }),
@@ -262,6 +320,7 @@ export default defineConfig({
     seoPlugin(),
     ziteProxyPlugin(),
     flootProxyPlugin(),
+    boltProxyPlugin(),
     githubOAuthPlugin(),
   ],
   resolve: {
