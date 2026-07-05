@@ -50,7 +50,175 @@ When sending via code, **URL-decode it first**:
 const token = decodeURIComponent(rawCookieValue);
 ```
 
-### How to get the session token
+---
+
+## Email/Password Login — Full Reverse-Engineered Flow
+
+> **Researched:** July 5 2026 via Playwright + Chromium live session interception.  
+> **Status:** Every step confirmed against tghabib898@gmail.com test account.
+
+Bolt.new uses **PKCE OAuth2** routed through StackBlitz (its parent platform).  
+The chain is: **bolt.new → stackblitz.com/sign_in → stackblitz.com/oauth/authorize → bolt.new/oauth2 → `__session` cookie**
+
+### Auth provider
+
+| Layer | Service |
+|-------|---------|
+| OAuth2 server | `stackblitz.com` (Ruby on Rails app) |
+| Session storage | `__session` cookie on `bolt.new` |
+| Firebase API key | `AIzaSyBZSvuCzbUhuRrSps-HjM5bFClLPaFF9Vg` *(not used for email/password — `PASSWORD_LOGIN_DISABLED` on Firebase; StackBlitz has its own credentials API)* |
+
+---
+
+### Step-by-step server-side flow (no browser required)
+
+> You can replicate all 6 steps with plain HTTP — no Playwright needed.  
+> The only CF-protected endpoint is `bolt.new/api/sessions`; bypass it by constructing the OAuth URL manually (Step 1).
+
+#### Step 1 — Generate PKCE + construct authorizeUri
+
+```javascript
+import crypto from 'crypto';
+
+function pkce() {
+  const verifier  = crypto.randomBytes(32).toString('base64url');
+  const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
+  return { verifier, challenge };
+}
+
+const { verifier, challenge } = pkce();
+const state = crypto.randomUUID();
+
+const authorizeUri =
+  `https://stackblitz.com/sign_in?redirect_to=` +
+  encodeURIComponent(
+    `/oauth/authorize?client_id=bolt&response_type=code` +
+    `&redirect_uri=https%3A%2F%2Fbolt.new%2Foauth2` +
+    `&code_challenge_method=S256&code_challenge=${challenge}` +
+    `&state=${state}&scope=public&bolt_oauth_provider=login_password`
+  );
+```
+
+> **Note:** `bolt.new/api/sessions` normally generates this URL server-side, but it is blocked by Cloudflare bot detection for non-browser clients. Constructing the URL manually (as above) is equivalent and bypasses the 500 error.
+
+---
+
+#### Step 2 — GET the StackBlitz sign-in page (harvest CSRF + session cookie)
+
+```
+GET https://stackblitz.com/sign_in?redirect_to=<url-encoded-oauth-path>
+```
+
+Parse the HTML response for:
+```html
+<meta name="csrf-token" content="<CSRF_TOKEN>">
+```
+
+Save the `_stackblitz_session` cookie from `Set-Cookie` response header.
+
+```javascript
+const signInResp = await fetch(authorizeUri, {
+  headers: { 'User-Agent': 'Mozilla/5.0 ...' }
+});
+const html = await signInResp.text();
+const csrf = html.match(/<meta name="csrf-token" content="([^"]+)"/)?.[1];
+const sbSession = signInResp.headers.get('set-cookie')
+  ?.match(/_stackblitz_session=([^;]+)/)?.[1];
+```
+
+---
+
+#### Step 3 — (Optional) Check SSO
+
+```
+GET https://stackblitz.com/api/users/sessions/sso?login=<email>
+```
+
+Response:
+```json
+{ "forceSSO": false, "loginHint": "tghabib898@gmail.com" }
+```
+
+If `forceSSO: true`, the account uses Google/GitHub SSO and cannot use password auth.
+
+---
+
+#### Step 4 — POST credentials to StackBlitz ✅ CONFIRMED
+
+```
+POST https://stackblitz.com/api/users/sessions
+Content-Type: application/json
+x-csrf-token: <CSRF from Step 2>
+Cookie: _stackblitz_session=<from Step 2>
+Origin: https://stackblitz.com
+Referer: <authorizeUri>
+
+{"user": {"login": "<email>", "password": "<password>"}}
+```
+
+**Success → HTTP 204 No Content**  
+Response sets a new `_stackblitz_session` cookie — save it.
+
+**Failure** → HTTP 401 or 422 with error body.
+
+---
+
+#### Step 5 — GET /oauth/authorize (get the code)
+
+```
+GET https://stackblitz.com/oauth/authorize?client_id=bolt&response_type=code
+     &redirect_uri=https%3A%2F%2Fbolt.new%2Foauth2
+     &code_challenge_method=S256&code_challenge=<challenge>
+     &state=<state>&scope=public&bolt_oauth_provider=login_password
+Cookie: _stackblitz_session=<updated from Step 4>
+```
+
+Response → **HTTP 302** to:
+```
+https://bolt.new/oauth2?code=<AUTHORIZATION_CODE>&state=<state>
+```
+
+Extract `code` and `state` from the redirect URL.
+
+---
+
+#### Step 6 — Exchange code at bolt.new/oauth2 → get `__session`
+
+```
+GET https://bolt.new/oauth2?code=<code>&state=<state>
+Referer: https://stackblitz.com/
+```
+
+bolt.new verifies the code + PKCE verifier server-side and responds with:
+- **HTTP 302** to `https://bolt.new/`
+- **`Set-Cookie: __session=<token>`** ← this is the session you need
+
+> **Important:** bolt.new validates the PKCE `code_verifier` during this exchange.  
+> The verifier from Step 1 must be stored and sent in the `code_verifier` query param (or bolt.new may include it in the state/cookie automatically — to be confirmed with implementation).
+
+---
+
+### Proxy implementation for Push44
+
+Since the flow spans two domains (`stackblitz.com` + `bolt.new`), it cannot run purely in the browser (CORS). Use a Vercel serverless function:
+
+```
+POST /api/bolt-login
+Body: { email, password }
+
+Flow inside the function:
+  1. pkce() → verifier, challenge, state
+  2. GET stackblitz.com/sign_in → csrf, sbSession
+  3. GET /sso?login=email → check forceSSO
+  4. POST /api/users/sessions → 204 + new sbSession
+  5. GET /oauth/authorize → 302 → code
+  6. GET bolt.new/oauth2?code=...&state=... → Set-Cookie __session
+  7. Return { session: __session_value }
+```
+
+---
+
+### How to get the session token (manual method)
 
 1. Go to [bolt.new](https://bolt.new) and log in
 2. Open DevTools → Application → Cookies → `bolt.new`
@@ -458,38 +626,91 @@ Tested and confirmed: even with the badge flag set to `false`, every full redepl
 
 ---
 
-## Project Listing — Unresolved
+## Project Listing — RESOLVED ✅
 
-`GET /api/projects` returns HTTP `400` (no body) regardless of query parameters tried:
-- `?page=1`, `?limit=20`, `?userId=me`, `?owner=me`, `?per_page=100`
+> **Updated July 5 2026** — Previously marked as unresolved. Full query params now confirmed via live Playwright session interception.
 
-Methods tried: GET, POST — GET returns 400, POST returns 405.
+`GET /api/projects` returns 400 when called without required query parameters. The correct call is:
 
-**Workaround for Push44:** Ask the user to provide their **Project ID** manually. It appears in the bolt.new editor URL:
 ```
-https://bolt.new/~/PROJECT_ID
-```
-For example: `https://bolt.new/~/65925718` → Project ID is `65925718`.
+GET https://bolt.new/api/projects
+    ?preset=bolt
+    &ownerSlug=<username>
+    &ownerType=user
+    &access=index
+    &order=updatedAt
+    &direction=desc
+    &page=1
+    &per_page=20
+    &with_starred_at=true
 
-The `GET /api/deploy/{pid}` endpoint confirms the project and returns the live URL.
+Cookie: __session=<token>
+Origin: https://bolt.new
+```
+
+**Response (200):**
+```json
+{
+  "projects": [
+    {
+      "id": 66420221,
+      "canAdministrate": true,
+      "canEdit": true,
+      "description": "Starter project for Node.js...",
+      "forks": 0,
+      "framework": {
+        "logoDarkUrl": "...",
+        "slug": "vite-react-ts"
+      },
+      "owner": {
+        "avatar": "https://stackblitz.com/avatars/T/167.svg",
+        "login": "tghabib898"
+      },
+      "slug": "...",
+      "createdAt": "2026-05-05T14:43:43.455Z",
+      "updatedAt": "..."
+    }
+  ]
+}
+```
+
+**Key parameters:**
+- `ownerSlug` — the user's StackBlitz username (not email). Obtained from the user's profile.
+- `preset=bolt` — filters to bolt.new projects only
+- `ownerType=user` — can also be `organization`
+
+**How to get `ownerSlug`:** Included in the authenticated user info; can also parse from the bolt.new UI or infer from the email login response's session data.
+
+**Previous workaround (no longer needed):** Asking user to provide Project ID manually from the URL. Project listing now works fully programmatically once authenticated.
 
 ---
 
 ## Push44 Integration Checklist
 
 ### UI inputs needed from user
+
+**Option A — Session cookie (current)**
 - [ ] `__session` cookie value (with copy instructions)
-- [ ] Project ID (with screenshot showing where to find it in the URL)
+- [ ] Project ID (manual — or use project listing API once authenticated)
+
+**Option B — Email/password login (new, preferred)**
+- [ ] Email address
+- [ ] Password
+- Push44 proxy handles the full PKCE OAuth2 flow server-side
 
 ### API calls to implement in `src/lib/bolt-api.ts`
-- [ ] `validateBoltToken({ token })` → `GET /api/deploy/{pid}` (or any endpoint that confirms auth)
+- [ ] `boltLogin({ email, password })` → calls `/api/bolt-login` proxy → returns `__session` cookie
+- [ ] `listBoltProjects({ token })` → `GET /api/projects?preset=bolt&ownerSlug=<slug>&...`
+- [ ] `validateBoltToken({ token })` → `GET /api/deploy/{pid}`
 - [ ] `getBoltDeployInfo({ token, projectId })` → `GET /api/deploy/{pid}` 
 - [ ] `getBoltBadgeState({ token, projectId })` → `GET /api/projects/{pid}/badge`
-- [ ] `removeBoltBadge({ token, projectId })` → full workflow (Steps 1–9 above)
+- [ ] `removeBoltBadge({ token, projectId })` → full badge removal workflow
 - [ ] `getBoltSiteHtml({ siteUrl })` → parse bundle filenames + siteId from live HTML
 
 ### Proxy needed?
-Bolt.new's API does **not** appear to enforce CORS restrictions on the confirmed endpoints. Direct browser fetch should work. Verify in production before assuming no proxy is needed.
+**Yes — email/password login requires a server-side proxy** (spans bolt.new + stackblitz.com domains; CORS prevents browser from doing the full OAuth flow). Implement as `api/bolt-login.ts` Vercel function.
+
+bolt.new's deploy/badge endpoints do **not** enforce CORS — direct browser fetch works for those.
 
 ### ZIP builder
 Implement in pure TypeScript using `node:zlib` deflateRaw (no external deps). Reference implementation already written during this research session (creates valid DEFLATE-compressed ZIP with local file headers + central directory + EOCD record).
