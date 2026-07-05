@@ -2,6 +2,46 @@ import JSZip from "jszip";
 
 const PROXY = "/api/bolt";
 
+// ── Email / password login ────────────────────────────────────────────────────
+
+/**
+ * Log in to bolt.new with email + password.
+ * Calls the /api/bolt-login serverless proxy which runs the full
+ * PKCE OAuth2 flow (bolt.new → stackblitz.com → bolt.new/oauth2).
+ * Returns the __session cookie value and the email used to log in.
+ */
+export async function boltLogin({
+  data,
+}: {
+  data: { email: string; password: string };
+}): Promise<{ token: string; email: string }> {
+  let res: Response;
+  try {
+    res = await fetch("/api/bolt-login", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ email: data.email, password: data.password }),
+    });
+  } catch {
+    throw new Error(
+      "Could not reach the login service. Check your internet connection."
+    );
+  }
+
+  const body = await res.json().catch(() => ({})) as any;
+  if (!res.ok || body.error) {
+    throw new Error(body.error ?? `Login failed (${res.status})`);
+  }
+
+  const token: string = body.token ?? "";
+  if (!token) {
+    throw new Error(
+      "Login succeeded but no session was returned. Please try again."
+    );
+  }
+  return { token, email: String(body.email ?? data.email) };
+}
+
 // Injected into the user's JS bundle — removes the "Made in Bolt" badge.
 // badge.js creates a <div> with zIndex 2147483647 in a Shadow DOM.
 // We fingerprint by zIndex (not innerHTML, which doesn't penetrate Shadow DOM).

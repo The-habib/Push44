@@ -7,7 +7,7 @@ import { useApp } from "@/contexts/AppContext";
 import { getGitHubUser } from "@/lib/github-api";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { validateFlootToken } from "@/lib/floot-api";
-import { validateBoltProject } from "@/lib/bolt-api";
+import { boltLogin, validateBoltProject } from "@/lib/bolt-api";
 import { loginToZite, validateZiteSession } from "@/lib/zite-api";
 import { toast } from "sonner";
 
@@ -103,6 +103,11 @@ export default function SettingsPage() {
   const [flootTest, setFlootTest]     = useState<TestState>("idle");
 
   // ── bolt.new ───────────────────────────────────────────────────────────────
+  const [boltTab, setBoltTab]             = useState<"login" | "cookie">("login");
+  const [boltEmail, setBoltEmail]         = useState("");
+  const [boltPass, setBoltPass]           = useState("");
+  const [showBoltPass, setShowBoltPass]   = useState(false);
+  const [boltLoginLoading, setBoltLoginLoading] = useState(false);
   const [boltToken, setBoltToken]         = useState(creds.boltToken ?? "");
   const [boltProjectId, setBoltProjectId] = useState(creds.boltProjectId ?? "");
   const [showBoltTok, setShowBoltTok]     = useState(false);
@@ -234,6 +239,26 @@ export default function SettingsPage() {
   };
 
   // ── bolt.new actions ───────────────────────────────────────────────────────
+  const connectBolt = async () => {
+    if (!boltEmail.trim() || !boltPass) {
+      toast.error("Enter your bolt.new email and password");
+      return;
+    }
+    setBoltLoginLoading(true);
+    try {
+      const r = await boltLogin({ data: { email: boltEmail.trim(), password: boltPass } });
+      updateCreds({ boltToken: r.token, boltEmail: r.email, boltProjectId: "", boltSiteUrl: "" });
+      setBoltToken(r.token);
+      setBoltTest("ok");
+      toast.success("bolt.new connected — now enter your Project ID below");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Login failed");
+      setBoltTest("fail");
+      // If the error mentions SSO, switch to cookie tab
+      if (e?.message?.toLowerCase().includes("session cookie")) setBoltTab("cookie");
+    } finally { setBoltLoginLoading(false); }
+  };
+
   const saveBolt = async () => {
     if (!boltToken.trim() || !boltProjectId.trim()) {
       toast.error("Paste your __session cookie and Project ID");
@@ -248,6 +273,28 @@ export default function SettingsPage() {
         info.siteUrl
           ? `bolt.new connected — ${info.siteUrl}`
           : "bolt.new connected — deploy your project once to enable badge removal"
+      );
+    } catch (e: any) {
+      toast.error(e?.message ?? "Connection failed");
+      setBoltTest("fail");
+    } finally { setBoltSaving(false); }
+  };
+
+  const saveProject = async () => {
+    const tok = creds.boltToken || boltToken.trim();
+    if (!tok || !boltProjectId.trim()) {
+      toast.error("Enter your Project ID");
+      return;
+    }
+    setBoltSaving(true);
+    try {
+      const info = await validateBoltProject({ data: { token: tok, projectId: boltProjectId.trim() } });
+      updateCreds({ boltProjectId: boltProjectId.trim(), boltSiteUrl: info.siteUrl });
+      setBoltTest("ok");
+      toast.success(
+        info.siteUrl
+          ? `Project linked — ${info.siteUrl}`
+          : "Project linked — deploy it once in bolt.new to enable badge removal"
       );
     } catch (e: any) {
       toast.error(e?.message ?? "Connection failed");
@@ -444,32 +491,161 @@ export default function SettingsPage() {
       {/* ── bolt.new ── */}
       <SectionCard
         title="bolt.new"
-        subtitle="bolt.new — paste __session cookie"
+        subtitle="bolt.new — email / password login"
         icon={<BoltLogo size={20} />}
         connected={!!creds.boltToken}
-        onDisconnect={() => { updateCreds({ boltToken: "", boltProjectId: "", boltSiteUrl: "" }); setBoltToken(""); setBoltProjectId(""); setBoltTest("idle"); toast.success("Disconnected"); }}
+        onDisconnect={() => {
+          updateCreds({ boltToken: "", boltEmail: "", boltProjectId: "", boltSiteUrl: "" });
+          setBoltToken(""); setBoltProjectId(""); setBoltEmail(""); setBoltPass("");
+          setBoltTest("idle"); toast.success("Disconnected");
+        }}
       >
-        {creds.boltSiteUrl && <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>Connected to <strong>{creds.boltSiteUrl}</strong></div>}
-        <label className="label">Session Cookie (__session)</label>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <input className="input" type={showBoltTok ? "text" : "password"} placeholder="eyJkIjoiMTVo…" value={boltToken} onChange={(e) => { setBoltToken(e.target.value); setBoltTest("idle"); }} style={{ paddingRight: 36 }} />
-            <button onClick={() => setShowBoltTok(!showBoltTok)} aria-label={showBoltTok ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
-              {showBoltTok ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
+        {/* ── Connected state ── */}
+        {creds.boltToken ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {/* Account info */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#f5f3ff", borderRadius: 8, border: "1px solid #ddd6fe" }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <BoltLogo size={14} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13 }}>bolt.new</div>
+                {creds.boltEmail && <div style={{ fontSize: 12, color: "#6d28d9" }}>{creds.boltEmail}</div>}
+                {creds.boltSiteUrl && <div style={{ fontSize: 12, color: "#64748b" }}>Project: {creds.boltSiteUrl}</div>}
+              </div>
+            </div>
+
+            {/* Project ID input (always shown when connected — needed for badge removal) */}
+            <div>
+              <label className="label">Project ID</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  className="input"
+                  placeholder="e.g. abc123xyz (from bolt.new/~/PROJECT_ID)"
+                  value={boltProjectId}
+                  onChange={(e) => { setBoltProjectId(e.target.value.trim()); setBoltTest("idle"); }}
+                  onKeyDown={(e) => e.key === "Enter" && saveProject()}
+                />
+                <TestBtn state={boltTest} onClick={testBolt} />
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={saveProject}
+                  disabled={boltSaving || !boltProjectId.trim()}
+                >
+                  {boltSaving
+                    ? <Loader2 size={12} style={{ animation: "spin 0.6s linear infinite" }} />
+                    : <Check size={12} />}
+                  Save
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "#94a3b8", margin: "6px 0 0" }}>
+                Your Project ID is in the editor URL: <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>bolt.new/~/PROJECT_ID</code>
+              </p>
+            </div>
           </div>
-        </div>
-        <label className="label">Project ID</label>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <input className="input" placeholder="e.g. abc123xyz (from bolt.new/~/PROJECT_ID)" value={boltProjectId} onChange={(e) => { setBoltProjectId(e.target.value.trim()); setBoltTest("idle"); }} />
-          <TestBtn state={boltTest} onClick={testBolt} />
-          <button className="btn btn-primary btn-sm" onClick={saveBolt} disabled={boltSaving || !boltToken.trim() || !boltProjectId.trim()}>
-            {boltSaving ? <Loader2 size={12} style={{ animation: "spin 0.6s linear infinite" }} /> : <Check size={12} />}Save
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
-          Go to <a href="https://bolt.new" target="_blank" rel="noopener" style={{ color: "#f97316" }}>bolt.new</a>, open your project → DevTools (F12) → Application → Cookies → copy value of <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>__session</code>. Your Project ID is in the editor URL: <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>bolt.new/~/PROJECT_ID</code>.
-        </p>
+        ) : (
+          /* ── Not connected — tabbed login ── */
+          <>
+            <div className="tabs" style={{ marginBottom: 12 }}>
+              <button className={`tab${boltTab === "login"  ? " active" : ""}`} onClick={() => setBoltTab("login")}>Email / Password</button>
+              <button className={`tab${boltTab === "cookie" ? " active" : ""}`} onClick={() => setBoltTab("cookie")}>Session Cookie</button>
+            </div>
+
+            {boltTab === "login" ? (
+              /* Email / password tab */
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="bolt.new email"
+                  value={boltEmail}
+                  onChange={(e) => setBoltEmail(e.target.value)}
+                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    className="input"
+                    type={showBoltPass ? "text" : "password"}
+                    placeholder="Password"
+                    value={boltPass}
+                    onChange={(e) => setBoltPass(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && connectBolt()}
+                    style={{ paddingRight: 36 }}
+                  />
+                  <button
+                    onClick={() => setShowBoltPass(!showBoltPass)}
+                    aria-label={showBoltPass ? "Hide password" : "Show password"}
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}
+                  >
+                    {showBoltPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>
+                  Signed up with Google or GitHub?{" "}
+                  <button onClick={() => setBoltTab("cookie")} style={{ border: "none", background: "none", color: "#f97316", cursor: "pointer", padding: 0, fontSize: 12, fontWeight: 600 }}>
+                    Use the Session Cookie tab
+                  </button>{" "}instead.
+                </p>
+                <button className="btn btn-primary" disabled={boltLoginLoading} onClick={connectBolt}>
+                  {boltLoginLoading
+                    ? <><span className="spinner spinner-sm" />Connecting…</>
+                    : "Connect bolt.new →"}
+                </button>
+              </div>
+            ) : (
+              /* Session cookie tab */
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div>
+                  <label className="label">Session Cookie (__session)</label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      className="input"
+                      type={showBoltTok ? "text" : "password"}
+                      placeholder="eyJkIjoiMTVo…"
+                      value={boltToken}
+                      onChange={(e) => { setBoltToken(e.target.value); setBoltTest("idle"); }}
+                      style={{ paddingRight: 36 }}
+                    />
+                    <button
+                      onClick={() => setShowBoltTok(!showBoltTok)}
+                      aria-label={showBoltTok ? "Hide token" : "Show token"}
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}
+                    >
+                      {showBoltTok ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Project ID</label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      className="input"
+                      placeholder="e.g. abc123xyz (from bolt.new/~/PROJECT_ID)"
+                      value={boltProjectId}
+                      onChange={(e) => { setBoltProjectId(e.target.value.trim()); setBoltTest("idle"); }}
+                      onKeyDown={(e) => e.key === "Enter" && saveBolt()}
+                    />
+                    <TestBtn state={boltTest} onClick={testBolt} />
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={saveBolt}
+                      disabled={boltSaving || !boltToken.trim() || !boltProjectId.trim()}
+                    >
+                      {boltSaving
+                        ? <Loader2 size={12} style={{ animation: "spin 0.6s linear infinite" }} />
+                        : <Check size={12} />}
+                      Save
+                    </button>
+                  </div>
+                </div>
+                <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+                  Go to <a href="https://bolt.new" target="_blank" rel="noopener" style={{ color: "#f97316" }}>bolt.new</a> → DevTools (F12) → Application → Cookies → copy value of{" "}
+                  <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>__session</code>.
+                  Project ID is in the editor URL: <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>bolt.new/~/PROJECT_ID</code>.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </SectionCard>
 
       {/* ── Preferences ── */}

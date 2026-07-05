@@ -13,8 +13,8 @@ description: Confirmed auth, deploy, badge endpoints, email/password login flow,
 - Headers required: `Cookie`, `Origin: https://bolt.new`, `Referer: https://bolt.new/`
 - Expired session: `{"code":"login-required","message":"Login Required","isRetryable":false}` (401)
 
-## Auth — Email/Password Login (PKCE OAuth2 via StackBlitz) ✅ CONFIRMED
-Full 6-step server-side flow — no browser required. See `docs/research/bolt-new-api.md` → "Email/Password Login".
+## Auth — Email/Password Login (PKCE OAuth2 via StackBlitz) ✅ IMPLEMENTED
+Full 6-step server-side flow in `api/bolt-login.ts`. Client function `boltLogin()` in `src/lib/bolt-api.ts`.
 
 **The chain:** bolt.new → stackblitz.com/sign_in → stackblitz.com/oauth/authorize → bolt.new/oauth2 → `__session` cookie
 
@@ -26,11 +26,22 @@ Key steps:
 4. `GET https://stackblitz.com/api/users/sessions/sso?login=<email>` → `{forceSSO: false}` check
 5. `POST https://stackblitz.com/api/users/sessions` body `{"user":{"login":"<email>","password":"<pass>"}}` + `x-csrf-token` header → **HTTP 204 = success**, new `_stackblitz_session` cookie
 6. `GET https://stackblitz.com/oauth/authorize?...` with updated `_stackblitz_session` → 302 to `bolt.new/oauth2?code=<code>&state=<state>`
-7. `GET https://bolt.new/oauth2?code=<code>&state=<state>` → 302 + `Set-Cookie: __session=<token>`
+7. `GET https://bolt.new/oauth2?code=<code>&state=<state>&code_verifier=<verifier>` → 302 + `Set-Cookie: __session=<token>`
 
-**Why `POST /api/sessions` returns 500:** Cloudflare bot protection on bolt.new blocks curl/non-browser POST. Bypass by constructing the authorizeUri manually — it is just a standard PKCE OAuth2 URL.
+**Security notes (from code review):**
+- `code_verifier` MUST be forwarded in the bolt.new/oauth2 call — PKCE requires it
+- `state` must be present and exactly match (both absent-state and mismatch are failures)
+- Redirect following in exchangeCodeForSession() is restricted to `bolt.new` host only (SSRF guard)
 
-**Implementation:** needs a server-side proxy (spans 2 domains; CORS blocks browser). Use Vercel function at `/api/bolt-login`.
+**Implementation:** Vercel function at `/api/bolt-login` (route in vercel.json). Proxy spans 2 domains — CORS blocks pure browser execution.
+
+**SSO accounts (Google/GitHub):** `forceSSO: true` from the SSO check → return error directing user to Session Cookie tab.
+
+## Settings UI
+- Tab 1 "Email / Password": email + password → `connectBolt()` → saves token + email → shows project ID input
+- Tab 2 "Session Cookie": paste `__session` + Project ID → `saveBolt()` 
+- Connected state: shows account info + project ID input + Test button
+- `boltEmail` field added to `Credentials` in `src/lib/storage.ts`
 
 ## Key Endpoints (all on `https://bolt.new`)
 - `GET /api/deploy/{pid}` → `{kind, site_url, is_custom_domain, updated_at}` — confirms project + live URL
@@ -42,7 +53,7 @@ Key steps:
 ## Project Listing ✅ RESOLVED (was previously marked unresolved)
 `GET /api/projects?preset=bolt&ownerSlug=<username>&ownerType=user&access=index&order=updatedAt&direction=desc&page=1&per_page=20&with_starred_at=true`
 - Returns full project list with IDs, names, frameworks, slugs
-- `ownerSlug` = StackBlitz username (not email)
+- `ownerSlug` = StackBlitz username (not email) — still needs user info endpoint to auto-populate
 - `preset=bolt` filters to bolt.new projects only
 
 ## StackBlitz API Endpoints (on `https://stackblitz.com`)

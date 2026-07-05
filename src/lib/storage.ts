@@ -16,6 +16,7 @@ export interface Credentials {
   ziteCsrf: string;
   ziteEmail: string;
   boltToken: string;
+  boltEmail: string;
   boltProjectId: string;
   boltSiteUrl: string;
   defaultBranch: string;
