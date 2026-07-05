@@ -129,9 +129,6 @@ async function parseError(res: Response, fallback: string): Promise<string> {
 // then use the returned token for all subsequent back.rocket.new calls.
 
 async function loginToBack(authToken: string): Promise<string | null> {
-  const log = (label: string, val: any) =>
-    console.warn(`[push44:login] ${label}`, JSON.stringify(val).slice(0, 400));
-
   // Possible back.rocket.new login endpoints (Sails.js conventions)
   const loginEndpoints = [
     `${BACK_BASE}/api/v1/auth/user-login`,
@@ -156,17 +153,15 @@ async function loginToBack(authToken: string): Promise<string | null> {
         const raw = await res.json().catch(() => null);
         if (!raw) continue;
         const d = await rocketDecrypt(raw);
-        log(`${res.status} login attempt ${url}`, d);
         if (res.ok && d) {
           const p = d.data ?? d;
           const tok = p.token ?? p.access_token ?? p.sessionToken ?? p.backToken ?? p.jwt;
-          if (tok) { log("back session token obtained", "ok"); return String(tok); }
+          if (tok) return String(tok);
         }
       } catch { /* try next */ }
     }
   }
 
-  log("loginToBack", "no session established, proceeding with auth token directly");
   return null;
 }
 
@@ -199,7 +194,6 @@ export async function rocketVerifyOTP({ data }: { data: { email: string; otp: st
   }
   const raw = await res.json();
   const d = await rocketDecrypt(raw);
-  console.warn("[push44:otp] full response", JSON.stringify(d).slice(0, 3000));
   const payload = d.data ?? d;
   // Capture ALL possible tokens from auth response
   const token: string =
@@ -233,7 +227,6 @@ export async function validateRocketToken({ data }: { data: { token: string } })
       if (!res.ok) continue;
       const raw = await res.json();
       const d = await rocketDecrypt(raw);
-      console.warn("[push44:validate] profile", JSON.stringify(d).slice(0, 3000));
       const payload = d.data ?? d;
       const user = payload.user ?? payload;
       const email = String(user.email ?? payload.email ?? "");
@@ -299,9 +292,6 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
   const authToken = data.token;
   let companyId = data.companyId ?? "";
 
-  const log = (label: string, val?: any) =>
-    console.warn(`[push44] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 800) : "");
-
   // ── Step 1: Resolve companyId — needed as a header for all back.rocket.new calls.
   // (loginToBack is intentionally skipped — it makes 10+ failing requests and adds 20-30s delay.)
 
@@ -309,13 +299,11 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
     // 1a. Try JWT claims (no network cost)
     const claims = decodeJwtPayload(authToken);
     if (claims) {
-      log("JWT claims", claims);
       companyId = String(
         claims.companyId ?? claims.company_id ??
         claims.workspaceId ?? claims.workspace_id ??
         claims.cid ?? claims.wid ?? ""
       );
-      if (companyId) log("companyId from JWT", companyId);
     }
   }
 
@@ -330,7 +318,6 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
       if (res.ok) {
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
-        log("workspace/list", d);
         const u = d.data ?? d;
         // Response may be { list: [...] } or { data: { list: [...] } }
         const list: any[] = Array.isArray(u.list) ? u.list
@@ -338,7 +325,6 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
         if (list.length > 0) {
           // companyId is the actual workspace ID, NOT _id
           companyId = String(list[0].companyId ?? list[0].company_id ?? "");
-          if (companyId) log("companyId from workspace/list", companyId);
         }
       }
     } catch { /* ignore */ }
@@ -362,12 +348,10 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
           user.companyId ?? user.company_id ??
           u.workspaceId ?? user.workspaceId ?? ""
         );
-        if (cid && cid !== "undefined") { companyId = cid; log("companyId from profile", cid); break; }
+        if (cid && cid !== "undefined") { companyId = cid; break; }
       } catch { /* try next */ }
     }
   }
-
-  log("companyId final", companyId || "(none)");
 
   if (!companyId) {
     throw new Error(
@@ -419,7 +403,6 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
         if (!res.ok) break;
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
-        log(`chat-thread/search page=${page} (${authVariant})`, { count: deepFindApps(d).length });
         const arr = deepFindApps(d);
         if (arr.length === 0) break;
         addApps(arr);
@@ -451,13 +434,11 @@ export async function listRocketApps({ data }: { data: { token: string; companyI
       if (res.ok) {
         const raw = await res.json();
         const d = await rocketDecrypt(raw);
-        log("gw/chat-thread/search", d);
         addApps(deepFindApps(d));
       }
     } catch { /* ignore */ }
   }
 
-  log("FINAL app count", allApps.length);
   return allApps;
 }
 
@@ -644,11 +625,6 @@ export async function fetchRocketAppFiles({
   const { token, appId } = data;
   let applicationId = data.applicationId ?? "";
 
-  const log = (label: string, val?: any) =>
-    console.warn(`[push44:files] ${label}`, val !== undefined ? JSON.stringify(val).slice(0, 800) : "");
-
-  log("fetching files", { appId, applicationId });
-
   // ── Step 1: Resolve applicationId via chat-thread/get if not already known.
   if (!applicationId) {
     const hdrsVariants = [
@@ -665,11 +641,10 @@ export async function fetchRocketAppFiles({
           const raw = await res.json().catch(() => null);
           if (!raw) continue;
           const d = await rocketDecrypt(raw);
-          log("chat-thread/get", d);
           const thread = d.data ?? d;
           const td = thread.threadDetails ?? {};
           applicationId = String(td.applicationId ?? td._id ?? thread.applicationId ?? "");
-          if (applicationId) { log("applicationId from thread", applicationId); break; }
+          if (applicationId) break;
           const files = extractFilesFromPayload(d);
           if (files && files.length > 0) return files;
         } catch { /* try next */ }
@@ -678,7 +653,6 @@ export async function fetchRocketAppFiles({
     }
   }
 
-  log("applicationId", applicationId || "(none)");
   if (!applicationId) {
     throw new Error(
       "Could not resolve application ID for this Rocket.new project. " +
@@ -693,7 +667,6 @@ export async function fetchRocketAppFiles({
   // Returns backendUrl of the RUNNING code-editor container (not the Flutter app).
   // When running, /api/file-content on that URL needs { path } (no auth, no subscription).
   const { backendUrl, running: containerRunning } = await pingProductionContainer(applicationId);
-  log("production ping", { backendUrl, containerRunning });
 
   // ── Step 3: Get the full file list from the S3-backed project-structure endpoint.
   // Confirmed: returns the directory tree even when container is sleeping.
@@ -712,7 +685,6 @@ export async function fetchRocketAppFiles({
         headers: hdrs,
         body: JSON.stringify({ applicationId }),
       });
-      log(`project-structure (${hdrs.Authorization.split(" ")[0]})`, res.status);
       if (!res.ok) continue;
       const raw = await res.json().catch(() => null);
       if (!raw) continue;
@@ -720,11 +692,9 @@ export async function fetchRocketAppFiles({
       const extracted = flattenDirTree(d);
       if (extracted.length > 0) {
         filePaths = extracted.filter((p) => p && !p.endsWith("/"));
-        log("file paths count", filePaths.length);
-        log("file paths sample", filePaths.slice(0, 10));
         break;
       }
-    } catch (e: any) { log("project-structure error", e?.message); }
+    } catch { /* try next */ }
   }
 
   // ── Step 4: Fetch file content from the running production container.
@@ -732,7 +702,6 @@ export async function fetchRocketAppFiles({
   // Returns { path: "/lib/main.dart", content: "..." } — NO auth required.
   // Files not present on the production container return 500 — we skip those.
   if (containerRunning && backendUrl && filePaths.length > 0) {
-    log("fetching files from running container", backendUrl);
     const BATCH = 20;
     const results: RocketFile[] = [];
 
@@ -762,17 +731,14 @@ export async function fetchRocketAppFiles({
     }
 
     if (results.length > 0) {
-      log("container file-content fetched", results.length);
       return results;
     }
-    log("container returned 0 files — falling through to S3");
   }
 
   // ── Step 5: S3 file-content fallback.
   // The S3 cache may be stale (returns 500), but worth trying when the container
   // is not running or returned nothing.
   if (filePaths.length > 0) {
-    log("trying S3 file-content fallback");
     const BATCH = 20;
     const results: RocketFile[] = [];
 
@@ -831,7 +797,6 @@ export async function fetchRocketAppFiles({
           if (r.status === "fulfilled" && r.value !== null) results.push(r.value);
         }
       }
-      log("S3 file-content fetched", results.length);
       return results;
     }
   }
@@ -920,8 +885,6 @@ async function parseApkResponse(res: Response): Promise<ApkBuildState> {
   const d = await rocketDecrypt(raw);
   const payload = d.data ?? d;
   const status: ApkStatus = payload.status ?? APK_STATUS.IDLE;
-  console.warn("[push44:apk] response payload keys:", Object.keys(payload || {}));
-  console.warn("[push44:apk] status:", status, "isMaxApkBuildFailedAttempt:", payload.isMaxApkBuildFailedAttempt, "errorMessage:", payload.errorMessage ?? payload.error ?? payload.message ?? payload.reason ?? payload.errorMsg);
   return {
     status,
     updatedAt: payload.updatedAt ?? payload.updated_at ?? undefined,
@@ -976,19 +939,11 @@ export async function generateRocketKeystore({
         headers: hdrs,
         body,
       });
-      const rawText = await res.text().catch(() => "");
-      console.warn("[push44:keystore] generate-keystore", {
-        status: res.status,
-        body: body.slice(0, 80),
-        response: rawText.slice(0, 200),
-      });
       // 200 or 201 = success, keystore generated
       if (res.ok) return;
       // 400 = keystore already exists — that's fine
       if (res.status === 400 || res.status === 409) return;
-    } catch (e: any) {
-      console.warn("[push44:keystore] generate-keystore error", e?.message);
-    }
+    } catch { /* try next */ }
   }
   // If it fails, proceed anyway — the build might work with an existing keystore
 }

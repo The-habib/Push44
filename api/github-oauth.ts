@@ -8,7 +8,26 @@ function encodeState(nonce: string, returnTo: string) {
 function decodeState(state: string): { nonce: string; returnTo: string } {
   const idx = state.indexOf("|");
   if (idx === -1) return { nonce: state, returnTo: "/settings" };
-  return { nonce: state.slice(0, idx), returnTo: state.slice(idx + 1) || "/settings" };
+  return { nonce: state.slice(0, idx), returnTo: sanitizeReturnTo(state.slice(idx + 1)) };
+}
+
+/** Allow only same-origin relative paths — blocks open-redirect attacks including backslash bypass. */
+function sanitizeReturnTo(value: string | null | undefined): string {
+  const path = (value ?? "").trim();
+  if (!path) return "/settings";
+  // Parse against a dummy origin so the browser/Node URL parser normalises slashes,
+  // backslashes, and encoded chars before we check the host.
+  try {
+    const url = new URL(path, "https://push44.invalid");
+    // Accept only if the parser kept the same dummy origin (i.e. the input was a relative path)
+    if (url.hostname !== "push44.invalid") return "/settings";
+    const normalized = url.pathname + url.search + url.hash;
+    // Reject protocol-relative paths like //evil.com that bypass hostname check after normalization
+    if (normalized.startsWith("//")) return "/settings";
+    return normalized;
+  } catch {
+    return "/settings";
+  }
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -29,7 +48,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
   if (action === "start") {
     const nonce = Math.random().toString(36).slice(2);
-    const returnTo = url.searchParams.get("return_to") ?? "/settings";
+    const returnTo = sanitizeReturnTo(url.searchParams.get("return_to"));
     const state = encodeState(nonce, returnTo);
     const params = new URLSearchParams({
       client_id: clientId,

@@ -122,10 +122,21 @@ function githubOAuthPlugin(): Plugin {
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : `http://localhost:5000`;
 
+    const sanitizeReturnTo = (value: string | null | undefined): string => {
+      const path = (value ?? "").trim();
+      if (!path) return "/settings";
+      try {
+        const url = new URL(path, "https://push44.invalid");
+        if (url.hostname !== "push44.invalid") return "/settings";
+        const normalized = url.pathname + url.search + url.hash;
+        if (normalized.startsWith("//")) return "/settings";
+        return normalized;
+      } catch { return "/settings"; }
+    };
     const encodeState = (nonce: string, returnTo: string) => `${nonce}|${returnTo}`;
     const decodeState = (s: string) => {
       const idx = s.indexOf("|");
-      return idx === -1 ? { nonce: s, returnTo: "/settings" } : { nonce: s.slice(0, idx), returnTo: s.slice(idx + 1) || "/settings" };
+      return idx === -1 ? { nonce: s, returnTo: "/settings" } : { nonce: s.slice(0, idx), returnTo: sanitizeReturnTo(s.slice(idx + 1)) };
     };
     const fallback = (returnTo: string, msg: string) => {
       res.writeHead(302, { Location: `${returnTo}?github_error=${encodeURIComponent(msg)}` });
@@ -139,7 +150,7 @@ function githubOAuthPlugin(): Plugin {
 
     if (action === "start") {
       const nonce = Math.random().toString(36).slice(2);
-      const returnTo = url.searchParams.get("return_to") ?? "/settings";
+      const returnTo = sanitizeReturnTo(url.searchParams.get("return_to"));
       const state = encodeState(nonce, returnTo);
       const params = new URLSearchParams({
         client_id: clientId,

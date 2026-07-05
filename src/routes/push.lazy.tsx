@@ -402,9 +402,7 @@ export default function PushPage() {
       } else if (state.status === APK_STATUS.IN_QUEUE) {
         setApkPhase("queued");
       }
-    } catch (e: any) {
-      console.warn("[push44:apk] poll error", e?.message);
-    }
+    } catch { /* poll errors are transient; retry on next interval */ }
   };
 
   const handleApkBuild = async () => {
@@ -464,9 +462,7 @@ export default function PushPage() {
         setFlootError((status as any).message ?? "Build failed on Floot's servers");
         setFlootPhase("failed");
       }
-    } catch (e: any) {
-      console.warn("[push44:floot] poll error", e?.message);
-    }
+    } catch { /* poll errors are transient; retry on next interval */ }
   };
 
   const handleFlootPublish = async (subdomain: string, isUpdate = false) => {
@@ -582,6 +578,7 @@ export default function PushPage() {
       } else if (status.type === "deploying") {
         setFlootCurrentSub(status.subdomain);
         setFlootPhase("polling");
+        stopFlootPolling(); // clear any stale interval before starting a new one
         flootPollingRef.current = setInterval(() => flootPollOnce(selectedApp.id), 10000);
       } else if (status.type === "error") {
         if ((status as any).subdomain) setFlootCurrentSub((status as any).subdomain);

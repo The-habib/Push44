@@ -61,6 +61,17 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
+/** Strip anything outside safe CSS color characters to prevent CSS injection.
+ *  Allows / so modern syntax like rgb(0 0 0 / 50%) and hsl(210 40% 98% / 0.8) works. */
+function sanitizeCssValue(value: string): string {
+  return value.replace(/[^#a-zA-Z0-9(),.\s%+\-/]/g, "");
+}
+
+/** Strip anything outside safe CSS identifier characters (a-z, 0-9, -, _). */
+function sanitizeCssIdent(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color);
 
@@ -68,17 +79,19 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  const safeId = sanitizeCssIdent(id);
+
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+${prefix} [data-chart=${safeId}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    return color ? `  --color-${sanitizeCssIdent(key)}: ${sanitizeCssValue(color)};` : null;
   })
   .join("\n")}
 }
