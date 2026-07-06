@@ -20,3 +20,4 @@
 - [Bolt.new API Patterns](bolt-api.md) — email/password = PKCE OAuth2 via stackblitz.com; POST /api/users/sessions (204=success); project listing resolved; full docs in docs/research/bolt-new-api.md
 - [Push44 Branding: Not Open Source](push44-not-open-source.md) — removed "Open source", "MIT License", GitHub star CTAs site-wide; now positioned as free tool only
 - [Push44 Audit Patterns](push44-audit-patterns.md) — round-audit learnings: allSettled+explicit-throw > Promise.all for blob batches; AbortSignal.timeout on all ghFetch; aria-labels on all eye-toggle buttons; OG/Twitter meta in root head()
+- [Zite Badge Removal API](zite-badge-removal-api.md) — confirmed 4-step flow: fetch app→get conversationId→saveAction(CSS)→publish; hideBranding setting has no effect

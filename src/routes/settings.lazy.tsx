@@ -120,15 +120,24 @@ export default function SettingsPage() {
   // ── GitHub OAuth callback capture ──────────────────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("github_token");
+    const authed = params.get("github_authed");
     const error = params.get("github_error");
-    if (token || error) {
+    if (authed || error) {
       window.history.replaceState({}, "", "/settings");
     }
     if (error) {
       toast.error(decodeURIComponent(error));
     }
-    if (token) {
+    if (authed) {
+      // Token was delivered via a short-lived cookie (never in the URL).
+      const match = document.cookie.match(/(?:^|;\s*)gh_token=([^;]+)/);
+      const token = match ? decodeURIComponent(match[1]) : null;
+      // Immediately delete the cookie so it can't be replayed.
+      document.cookie = "gh_token=; Max-Age=0; Path=/; SameSite=Strict";
+      if (!token) {
+        toast.error("OAuth cookie missing — please try connecting again.");
+        return;
+      }
       setGhToken(token);
       setGhSaving(true);
       getGitHubUser({ data: { token } })

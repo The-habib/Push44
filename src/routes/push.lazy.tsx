@@ -25,7 +25,7 @@ import {
   getFlootMobileBuildStatus, getFlootMobileDownloadUrl,
   type FlootDeployStatus, type FlootMobileBuildStatus,
 } from "@/lib/floot-api";
-import { listZiteApps, fetchZiteAppFiles } from "@/lib/zite-api";
+import { listZiteApps, fetchZiteAppFiles, removeZiteBadge } from "@/lib/zite-api";
 import { validateBoltProject, removeBoltBadge, type BoltRemoveStep } from "@/lib/bolt-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
 import {
@@ -165,6 +165,12 @@ export default function PushPage() {
   const [badgePhase, setBadgePhase]   = useState<BadgePhase>("idle");
   const [badgeError, setBadgeError]   = useState("");
 
+  // ── Zite Badge Removal ────────────────────────────────────────────────────
+  type ZiteBadgePhase = "idle" | "removing" | "done" | "failed";
+  const [ziteBadgePhase, setZiteBadgePhase] = useState<ZiteBadgePhase>("idle");
+  const [ziteBadgeError, setZiteBadgeError] = useState("");
+  const [showZiteBadgePanel, setShowZiteBadgePanel] = useState(false);
+
   // ── bolt.new Badge Removal ────────────────────────────────────────────────
   type BoltBadgePhase = "idle" | "removing" | "done" | "failed";
   const [boltBadgePhase, setBoltBadgePhase] = useState<BoltBadgePhase>("idle");
@@ -191,9 +197,16 @@ export default function PushPage() {
     return false;
   }, [creds]);
 
+  const resetZiteBadgeState = useCallback(() => {
+    setShowZiteBadgePanel(false);
+    setZiteBadgePhase("idle");
+    setZiteBadgeError("");
+  }, []);
+
   const loadApps = useCallback(async (pid: PlatformId) => {
     setAppsLoading(true); setAppsError(""); setApps([]); setSelectedApp(null); setFiles([]);
     setContainerSleeping(false);
+    resetZiteBadgeState();
     try {
       let result: AppItem[] = [];
       if (pid === "base44") {
@@ -227,6 +240,7 @@ export default function PushPage() {
     setSelectedApp(app);
     setFilesLoading(true); setFilesError(""); setFiles([]);
     setContainerSleeping(false);
+    resetZiteBadgeState();
     try {
       let result: FileEntry[] = [];
       if (platform === "base44") {
@@ -603,6 +617,22 @@ export default function PushPage() {
     }
   };
 
+  // ── Zite badge removal handler ────────────────────────────────────────────
+  const handleZiteBadgeRemoval = async () => {
+    if (!selectedApp || !creds.ziteSession) return;
+    setZiteBadgePhase("removing");
+    setZiteBadgeError("");
+    try {
+      await removeZiteBadge({
+        data: { session: creds.ziteSession, csrf: creds.ziteCsrf ?? "", appId: selectedApp.id },
+      });
+      setZiteBadgePhase("done");
+    } catch (e: any) {
+      setZiteBadgeError(e?.message ?? "Badge removal failed");
+      setZiteBadgePhase("failed");
+    }
+  };
+
   // ── bolt.new badge removal handler ────────────────────────────────────────
   const handleBoltBadgeRemoval = async () => {
     if (!creds.boltToken || !creds.boltProjectId || !selectedApp) return;
@@ -816,6 +846,15 @@ export default function PushPage() {
                 <Globe size={13} /> Publish to Floot
               </button>
             )}
+            {platform === "zite" && (
+              <button
+                className="btn btn-sm"
+                style={{ background: "linear-gradient(135deg,#0f766e,#14b8a6)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
+                onClick={() => { setShowZiteBadgePanel(true); setZiteBadgePhase("idle"); setZiteBadgeError(""); }}
+              >
+                <XCircle size={13} /> Remove Badge
+              </button>
+            )}
             <button className="btn btn-primary" onClick={goToStep2}>
               Choose Repo →
             </button>
@@ -946,6 +985,87 @@ export default function PushPage() {
           badgeError={badgeError}
           onRemoveBadge={handleRemoveBadge}
         />
+      )}
+
+      {/* ── Standalone Zite Badge Removal Panel (step 1, before push) ─────── */}
+      {showZiteBadgePanel && platform === "zite" && selectedApp && step === 1 && (
+        <div className="card" style={{ marginBottom: 12, padding: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#0f766e,#14b8a6)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <XCircle size={16} color="#fff" />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>Remove "Made with Zite" Badge</div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>{selectedApp.name}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => { setShowZiteBadgePanel(false); setZiteBadgePhase("idle"); setZiteBadgeError(""); }}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1 }}
+            >×</button>
+          </div>
+
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
+            Injects <code style={{ fontSize: 12, background: "#f1f5f9", padding: "1px 5px", borderRadius: 4 }}>a.branding-pill {"{ display:none }"}</code> into{" "}
+            <code style={{ fontSize: 12, background: "#f1f5f9", padding: "1px 5px", borderRadius: 4 }}>src/index.css</code> and republishes — the badge disappears from the live site.
+          </div>
+
+          {ziteBadgePhase === "idle" && (
+            <button
+              className="btn btn-primary"
+              style={{ width: "100%", justifyContent: "center", background: "linear-gradient(135deg,#0f766e,#14b8a6)", border: "none" }}
+              onClick={handleZiteBadgeRemoval}
+            >
+              <XCircle size={14} /> Remove Badge Now
+            </button>
+          )}
+
+          {ziteBadgePhase === "removing" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0fdfa", border: "1px solid #99f6e4" }}>
+              <Loader2 size={14} color="#0f766e" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 13, color: "#0f766e", fontWeight: 600 }}>Injecting CSS rule and publishing…</div>
+                <div style={{ fontSize: 11, color: "#14b8a6", marginTop: 2 }}>Saves to your app and redeploys the Cloudflare Worker.</div>
+              </div>
+            </div>
+          )}
+
+          {ziteBadgePhase === "done" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <CheckCircle size={14} color="#16a34a" />
+                <span style={{ fontSize: 13, color: "#15803d", fontWeight: 600 }}>Badge hidden — live site updated!</span>
+              </div>
+              <button
+                className="btn btn-secondary"
+                style={{ width: "100%", justifyContent: "center" }}
+                onClick={() => setZiteBadgePhase("idle")}
+              >
+                <RefreshCw size={12} /> Run Again
+              </button>
+            </div>
+          )}
+
+          {ziteBadgePhase === "failed" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <XCircle size={13} color="#dc2626" />
+                  <span style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>Badge removal failed</span>
+                </div>
+                {ziteBadgeError && <p style={{ fontSize: 12, color: "#b91c1c", margin: "4px 0 0 21px" }}>{ziteBadgeError}</p>}
+              </div>
+              <button
+                className="btn btn-secondary"
+                style={{ width: "100%", justifyContent: "center" }}
+                onClick={handleZiteBadgeRemoval}
+              >
+                <RefreshCw size={12} /> Retry
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── Step 2: GitHub Repo ───────────────────────────────────────────── */}

@@ -83,7 +83,12 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return;
     }
 
-    res.writeHead(302, { Location: `${returnTo}?github_token=${data.access_token}` });
+    // Pass the token via a short-lived cookie so it never appears in the URL
+    // (browser history, server access logs, and Referer headers are all safe).
+    res.writeHead(302, {
+      Location: `${returnTo}?github_authed=1`,
+      "Set-Cookie": `gh_token=${encodeURIComponent(data.access_token)}; SameSite=Strict; Secure; Max-Age=30; Path=/`,
+    });
     return res.end();
   } catch (err: any) {
     fallback(returnTo, "Network error: " + (err?.message ?? "unknown"));

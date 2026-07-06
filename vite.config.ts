@@ -184,7 +184,12 @@ function githubOAuthPlugin(): Plugin {
         return;
       }
 
-      res.writeHead(302, { Location: `${returnTo}?github_token=${data.access_token}` });
+      // Pass token via cookie — never in the URL (browser history safe).
+      res.writeHead(302, {
+        Location: `${returnTo}?github_authed=1`,
+        // Omit Secure flag in dev (HTTP localhost)
+        "Set-Cookie": `gh_token=${encodeURIComponent(data.access_token)}; SameSite=Strict; Max-Age=30; Path=/`,
+      });
       return res.end();
     } catch (err: any) {
       fallback(returnTo, "Network error: " + (err?.message ?? "unknown"));

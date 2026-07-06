@@ -17,6 +17,8 @@ async function proxyFetch(
 
 export interface ZiteApp {
   id: string;
+  /** Numeric flow ID (as string) — required by saveAction and publish endpoints. */
+  applicationId: string;
   name: string;
   publicIdentifier: string;
   updated_at: string;
@@ -113,11 +115,134 @@ export async function listZiteApps({
   const flows: any[] = d?.flows ?? [];
   return flows.map((f) => ({
     id: String(f.publicIdentifier ?? f.id),
+    // applicationId carries the numeric flowId needed for saveAction / publish
+    applicationId: String(f.id),
     name: String(f.name ?? "Untitled"),
     publicIdentifier: String(f.publicIdentifier ?? f.id),
     updated_at: String(f.updatedAt ?? f.createdAt ?? ""),
     icon: f.screenshotUrl ?? undefined,
   }));
+}
+
+/**
+ * Returns true if the badge-hiding CSS rule is already present in src/index.css.
+ */
+export async function getZiteBadgeStatus({
+  data,
+}: {
+  data: { session: string; csrf: string; appId: string };
+}): Promise<boolean> {
+  const res = await proxyFetch(
+    `/admin/zite/apps/${encodeURIComponent(data.appId)}`,
+    data.session,
+    data.csrf,
+  );
+  if (!res.ok) return false;
+  const d = await res.json().catch(() => null);
+  const files: Record<string, any> = d?.ziteSnapshot?.template?.files ?? {};
+  const css: string =
+    typeof files["src/index.css"]?.content === "string"
+      ? files["src/index.css"].content
+      : "";
+  return css.includes("branding-pill");
+}
+
+/**
+ * Injects `a.branding-pill { display:none!important }` into src/index.css via
+ * the Zite chat saveAction endpoint, then publishes so the change goes live.
+ *
+ * Confirmed working flow (reverse-engineered 2026-07-05):
+ *   1. GET /admin/zite/apps/{pubId}              → current CSS + flowId
+ *   2. GET /admin/zite/apps/{pubId}/actions      → conversationId
+ *   3. POST /admin/zite/chat/saveAction          → persists file change
+ *   4. POST /admin/zite/apps/versioning/publish  → rebuilds Cloudflare Worker
+ */
+export async function removeZiteBadge({
+  data,
+}: {
+  data: { session: string; csrf: string; appId: string };
+}): Promise<void> {
+  // 1. Fetch app data — get current CSS content and numeric flowId
+  const appRes = await proxyFetch(
+    `/admin/zite/apps/${encodeURIComponent(data.appId)}`,
+    data.session,
+    data.csrf,
+  );
+  if (appRes.status === 401 || appRes.status === 403) {
+    throw Object.assign(
+      new Error("Your Zite session has expired. Please reconnect in Settings."),
+      { status: 401 },
+    );
+  }
+  if (!appRes.ok) throw new Error("Failed to fetch app data from Zite. Please try again.");
+
+  const appData = await appRes.json().catch(() => null);
+  const flowId: number = appData?.flow?.id;
+  if (!flowId) throw new Error("Could not read the app's flow ID. Please try again.");
+
+  const files: Record<string, any> = appData?.ziteSnapshot?.template?.files ?? {};
+  const currentCss: string =
+    typeof files["src/index.css"]?.content === "string"
+      ? files["src/index.css"].content
+      : "";
+  if (!currentCss) {
+    throw new Error(
+      "Could not find src/index.css in this app. Make sure the app has been built at least once in the Zite editor.",
+    );
+  }
+  if (currentCss.includes("branding-pill")) return; // Already hidden — nothing to do
+
+  // 2. Get conversationId from the actions list
+  const actionsRes = await proxyFetch(
+    `/admin/zite/apps/${encodeURIComponent(data.appId)}/actions`,
+    data.session,
+    data.csrf,
+  );
+  if (!actionsRes.ok) throw new Error("Failed to fetch app actions from Zite. Please try again.");
+  const actionsData = await actionsRes.json().catch(() => null);
+  const conversationId: string = actionsData?.actions?.[0]?.conversationId ?? "";
+  if (!conversationId) {
+    throw new Error(
+      "Could not find a conversation for this app. Open the app in the Zite editor at least once, then try again.",
+    );
+  }
+
+  // 3. Append the badge-hiding rule and persist via saveAction
+  const BADGE_CSS = "\n\n/* Hide Zite branding badge */\na.branding-pill { display: none !important; }\n";
+  const newCss = currentCss + BADGE_CSS;
+
+  const saveRes = await proxyFetch("/admin/zite/chat/saveAction", data.session, data.csrf, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "user_change",
+      mode: "build",
+      content: "Hide Zite branding badge",
+      changes: {
+        files: [{ type: "update", filePath: "src/index.css", content: newCss }],
+      },
+      flowId,
+      conversationId,
+    }),
+  });
+  if (!saveRes.ok) {
+    const errText = await saveRes.text().catch(() => "");
+    throw new Error(
+      `Failed to save CSS change (${saveRes.status})${errText ? ": " + errText.slice(0, 120) : ""}`,
+    );
+  }
+
+  // 4. Publish to deploy the updated CSS to the live Cloudflare Worker
+  const pubRes = await proxyFetch("/admin/zite/apps/versioning/publish", data.session, data.csrf, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ flowId }),
+  });
+  if (!pubRes.ok) {
+    throw new Error(
+      "CSS rule was saved but publishing failed. Try republishing from build.fillout.com.",
+    );
+  }
 }
 
 export async function fetchZiteAppFiles({
