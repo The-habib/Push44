@@ -161,3 +161,5 @@
   color: var(--text-muted);
 }
 .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+/* push44-badge-hide */ #lovable-badge { display: none !important; }
