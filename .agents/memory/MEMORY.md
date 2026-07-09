@@ -22,3 +22,4 @@
 - [Push44 Audit Patterns](push44-audit-patterns.md) — round-audit learnings: allSettled+explicit-throw > Promise.all for blob batches; AbortSignal.timeout on all ghFetch; aria-labels on all eye-toggle buttons; OG/Twitter meta in root head()
 - [Zite Badge Removal API](zite-badge-removal-api.md) — confirmed 4-step flow: fetch app→get conversationId→saveAction(CSS)→publish; hideBranding setting has no effect
 - [Lovable Badge Removal](lovable-badge-removal.md) — Firebase auth; badge is #lovable-badge server-injected z-index:1000000; no toggle API; CSS via POST /messages chat→AI writes to src/styles.css→redeploy
+- [Lovable Integration Bugs](lovable-integration-bugs.md) — Promise.allSettled workspace scoping; polling needs pre-send snapshot; vercel.json needs lovable route; dashboard Platform maps must include all platforms

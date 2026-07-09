@@ -164,11 +164,12 @@ export async function listLovableProjects({
   if (workspaces.length === 0) return [];
 
   // 2. Fetch projects from all workspaces in parallel
+  // Carry the workspace id alongside the results so it stays in scope when we iterate.
   const results = await Promise.allSettled(
     workspaces.map((ws) =>
       lovableFetch(`/v1/workspaces/${ws.id}/projects?limit=100`, data.token)
         .then((r) => (r.ok ? r.json() : { projects: [] }))
-        .then((d) => (d.projects ?? []) as any[]),
+        .then((d) => ({ wsId: ws.id, projects: (d.projects ?? []) as any[] })),
     ),
   );
 
@@ -176,7 +177,8 @@ export async function listLovableProjects({
   const seen = new Set<string>();
   for (const r of results) {
     if (r.status !== "fulfilled") continue;
-    for (const p of r.value) {
+    const { wsId, projects: wsProjects } = r.value;
+    for (const p of wsProjects) {
       if (!p.id || seen.has(p.id)) continue;
       seen.add(p.id);
       projects.push({
@@ -185,7 +187,7 @@ export async function listLovableProjects({
         is_published:      Boolean(p.is_published),
         url:               String(p.url ?? ""),
         tech_stack:        String(p.tech_stack ?? ""),
-        workspace_id:      String(p.workspace_id ?? ws.id),
+        workspace_id:      String(p.workspace_id ?? wsId),
         latest_commit_sha: String(p.latest_commit_sha ?? ""),
         edit_count:        Number(p.edit_count ?? 0),
         updated_at:        String(p.last_edited_at ?? p.updated_at ?? p.created_at ?? ""),
@@ -498,41 +500,57 @@ export async function removeLovableBadge({
   const { message_id: userMsgId } = await msgRes.json();
   if (!userMsgId) throw new Error("Lovable returned no message ID. Try again.");
 
-  // 3. Poll for the AI response message
+  // 3. Poll for the AI response message that was spawned by OUR user message.
+  //    Strategy: snapshot existing assistant message IDs before we sent the prompt,
+  //    then wait for a NEW assistant message to appear (one not in the snapshot).
+  //    This avoids accidentally latching onto an older assistant message.
+  const priorListRes = await lovableFetch(`/v1/projects/${projectId}/messages`, token);
+  const priorAssistantIds = new Set<string>();
+  if (priorListRes.ok) {
+    const { messages: priorMsgs } = await priorListRes.json();
+    for (const m of priorMsgs ?? []) {
+      if (m.role === "assistant" && m.message_id) priorAssistantIds.add(m.message_id);
+    }
+  }
+
   const MAX_WAIT_MS = 3 * 60 * 1000; // 3 minutes
   const POLL_MS     = 3000;
   const started     = Date.now();
 
   let aiMsgId: string | null = null;
-  let dotCount = 0;
+  let completed = false;
 
   while (Date.now() - started < MAX_WAIT_MS) {
     await new Promise((r) => setTimeout(r, POLL_MS));
-    dotCount++;
     notify({ step: "waiting-ai", elapsed: Date.now() - started });
 
     if (!aiMsgId) {
-      // Look for the assistant message that follows our user message
+      // Look for a NEW assistant message not in the pre-send snapshot
       const listRes = await lovableFetch(`/v1/projects/${projectId}/messages`, token);
       if (listRes.ok) {
         const { messages } = await listRes.json();
-        const assistantMsgs = (messages ?? []).filter((m: any) => m.role === "assistant");
-        if (assistantMsgs.length > 0) aiMsgId = assistantMsgs[0].message_id;
+        const newAssistant = (messages ?? []).find(
+          (m: any) => m.role === "assistant" && m.message_id && !priorAssistantIds.has(m.message_id),
+        );
+        if (newAssistant) aiMsgId = newAssistant.message_id;
       }
       continue;
     }
 
-    // Poll specific AI message
+    // Poll the specific AI message for completion
     const pollRes = await lovableFetch(`/v1/projects/${projectId}/messages/${aiMsgId}`, token);
     if (pollRes.ok) {
       const { status } = await pollRes.json();
-      if (status === "completed") break;
+      if (status === "completed") { completed = true; break; }
       if (status === "failed") throw new Error("Lovable AI failed to modify the CSS. Try again.");
     }
   }
 
-  if (Date.now() - started >= MAX_WAIT_MS && !aiMsgId) {
-    throw new Error("Timed out waiting for Lovable AI to finish. The badge may still have been removed — check your live site.");
+  if (!completed) {
+    throw new Error(
+      "Timed out waiting for Lovable AI to finish. " +
+      "The badge may still have been removed — check your live site in a minute.",
+    );
   }
 
   // 4. Verify CSS was written

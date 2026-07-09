@@ -7,19 +7,21 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createLazyFileRoute("/dashboard")({ component: DashboardPage });
 
 const PLATFORM_COLORS: Record<Platform, string> = {
-  base44: "#f97316",
-  rocket: "#8b5cf6",
-  floot:  "#6366f1",
-  zite:   "#0ea5e9",
-  bolt:   "#7c3aed",
+  base44:  "#f97316",
+  rocket:  "#8b5cf6",
+  floot:   "#6366f1",
+  zite:    "#0ea5e9",
+  bolt:    "#7c3aed",
+  lovable: "#e11d48",
 };
 
 const PLATFORM_LABELS: Record<Platform, string> = {
-  base44: "Base44",
-  rocket: "Rocket.new",
-  floot:  "Floot",
-  zite:   "Zite",
-  bolt:   "bolt.new",
+  base44:  "Base44",
+  rocket:  "Rocket.new",
+  floot:   "Floot",
+  zite:    "Zite",
+  bolt:    "bolt.new",
+  lovable: "Lovable",
 };
 
 function PlatformBadge({ platform }: { platform?: Platform }) {

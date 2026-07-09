@@ -186,7 +186,6 @@ export default function PushPage() {
   const [lovableBadgePhase, setLovableBadgePhase] = useState<LovableBadgePhase>("idle");
   const [lovableBadgeError, setLovableBadgeError] = useState("");
   const [lovableBadgeMsg, setLovableBadgeMsg]     = useState("");
-  const [showLovableBadgePanel, setShowLovableBadgePanel] = useState(false);
 
   // ── Floot Native Mobile Build ───────────────────────────────────────────────
   type FlootMobilePhase = "idle" | "setting" | "polling" | "done" | "failed" | "upgrade";
@@ -215,7 +214,6 @@ export default function PushPage() {
   }, []);
 
   const resetLovableBadgeState = useCallback(() => {
-    setShowLovableBadgePanel(false);
     setLovableBadgePhase("idle");
     setLovableBadgeError("");
     setLovableBadgeMsg("");
@@ -932,7 +930,7 @@ export default function PushPage() {
               <button
                 className="btn btn-sm"
                 style={{ background: "linear-gradient(135deg,#e11d48,#f43f5e)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
-                onClick={() => { setShowLovableBadgePanel(true); setLovableBadgePhase("idle"); setLovableBadgeError(""); setLovableBadgeMsg(""); }}
+                onClick={() => { setLovableBadgePhase("idle"); setLovableBadgeError(""); setLovableBadgeMsg(""); }}
               >
                 <XCircle size={13} /> Remove Badge
               </button>
