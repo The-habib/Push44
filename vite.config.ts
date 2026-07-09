@@ -270,6 +270,67 @@ function flootProxyPlugin(): Plugin {
 }
 
 
+function lovableProxyPlugin(): Plugin {
+  const LOVABLE_API = "https://api.lovable.dev";
+
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith("/api/lovable")) return next();
+
+    const rawUrl  = new URL(req.url, "http://localhost");
+    const subpath = "/" + decodeURIComponent(rawUrl.searchParams.get("p") ?? "");
+    rawUrl.searchParams.delete("p");
+    const qs = rawUrl.search;
+    const targetPath = subpath + qs;
+
+    const token = (req.headers["x-lovable-token"] as string) ?? "";
+
+    const forwardHeaders: Record<string, string> = {
+      Accept:       (req.headers["accept"] as string) ?? "application/json",
+      "User-Agent": "Mozilla/5.0 (compatible; Push44/1.0)",
+      Origin:       "https://lovable.dev",
+      Referer:      "https://lovable.dev/",
+    };
+    if (token) forwardHeaders["Authorization"] = `Bearer ${token}`;
+    if (req.headers["content-type"]) {
+      forwardHeaders["Content-Type"] = req.headers["content-type"] as string;
+    }
+
+    let bodyBuf: Buffer | undefined;
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      bodyBuf = await new Promise<Buffer>((resolve) => {
+        const chunks: Buffer[] = [];
+        req.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+        req.on("end", () => resolve(Buffer.concat(chunks)));
+      });
+    }
+
+    try {
+      const apiRes = await fetch(`${LOVABLE_API}${targetPath}`, {
+        method:  req.method ?? "GET",
+        headers: forwardHeaders,
+        ...(bodyBuf && bodyBuf.length > 0 ? { body: bodyBuf as unknown as BodyInit } : {}),
+      });
+      const contentType = apiRes.headers.get("content-type") ?? "application/json";
+      const responseText = await apiRes.text();
+      res.writeHead(apiRes.status, {
+        "Content-Type":                contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control":               "no-store",
+      });
+      res.end(responseText);
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Lovable proxy error: " + (err?.message ?? "unknown") }));
+    }
+  };
+
+  return {
+    name: "lovable-proxy",
+    configureServer(server)        { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
 function boltProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     if (!req.url?.startsWith("/api/bolt")) return next();
@@ -336,6 +397,7 @@ export default defineConfig({
     seoPlugin(),
     ziteProxyPlugin(),
     flootProxyPlugin(),
+    lovableProxyPlugin(),
     boltProxyPlugin(),
     githubOAuthPlugin(),
   ],

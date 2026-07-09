@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, AlertCircle, Loader2, ExternalLink, LogOut, RefreshCw } from "lucide-react";
-import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { getGitHubUser } from "@/lib/github-api";
@@ -9,6 +9,7 @@ import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { validateFlootToken } from "@/lib/floot-api";
 import { boltLogin, validateBoltProject } from "@/lib/bolt-api";
 import { loginToZite, validateZiteSession } from "@/lib/zite-api";
+import { lovableLogin, validateLovableToken } from "@/lib/lovable-api";
 import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/settings")({ component: SettingsPage });
@@ -113,6 +114,13 @@ export default function SettingsPage() {
   const [showBoltTok, setShowBoltTok]     = useState(false);
   const [boltSaving, setBoltSaving]       = useState(false);
   const [boltTest, setBoltTest]           = useState<TestState>("idle");
+
+  // ── Lovable ────────────────────────────────────────────────────────────────
+  const [lovEmail, setLovEmail]           = useState("");
+  const [lovPass, setLovPass]             = useState("");
+  const [showLovPass, setShowLovPass]     = useState(false);
+  const [lovSaving, setLovSaving]         = useState(false);
+  const [lovTest, setLovTest]             = useState<TestState>("idle");
 
   // ── Prefs ──────────────────────────────────────────────────────────────────
   const [branch, setBranch] = useState(creds.defaultBranch ?? "main");
@@ -318,6 +326,29 @@ export default function SettingsPage() {
     setBoltTest("loading");
     try { await validateBoltProject({ data: { token: tok, projectId: pid } }); setBoltTest("ok"); }
     catch { setBoltTest("fail"); }
+  };
+
+  // ── Lovable actions ────────────────────────────────────────────────────────
+  const connectLovable = async () => {
+    if (!lovEmail.trim() || !lovPass) { toast.error("Enter your Lovable email and password"); return; }
+    setLovSaving(true);
+    try {
+      const r = await lovableLogin({ data: { email: lovEmail.trim(), password: lovPass } });
+      updateCreds({ lovableToken: r.token, lovableRefreshToken: r.refreshToken, lovableEmail: r.email });
+      setLovTest("ok");
+      toast.success("Lovable connected");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Login failed");
+      setLovTest("fail");
+    } finally { setLovSaving(false); }
+  };
+
+  const testLovable = async () => {
+    const tok = creds.lovableToken;
+    if (!tok) return;
+    setLovTest("loading");
+    try { await validateLovableToken({ data: { token: tok } }); setLovTest("ok"); }
+    catch { setLovTest("fail"); }
   };
 
   return (
@@ -654,6 +685,64 @@ export default function SettingsPage() {
               </div>
             )}
           </>
+        )}
+      </SectionCard>
+
+      {/* ── Lovable ── */}
+      <SectionCard
+        title="Lovable"
+        subtitle="lovable.dev — email / password login"
+        icon={<LovableLogo size={20} />}
+        connected={!!creds.lovableToken}
+        onDisconnect={() => {
+          updateCreds({ lovableToken: "", lovableRefreshToken: "", lovableEmail: "" });
+          setLovEmail(""); setLovPass(""); setLovTest("idle");
+          toast.success("Disconnected");
+        }}
+      >
+        {creds.lovableEmail && (
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>
+            Signed in as <strong>{creds.lovableEmail}</strong>
+          </div>
+        )}
+
+        {creds.lovableToken ? (
+          <TestBtn state={lovTest} onClick={testLovable} />
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <input
+              className="input"
+              type="email"
+              placeholder="Lovable email"
+              value={lovEmail}
+              onChange={(e) => setLovEmail(e.target.value)}
+            />
+            <div style={{ position: "relative" }}>
+              <input
+                className="input"
+                type={showLovPass ? "text" : "password"}
+                placeholder="Password"
+                value={lovPass}
+                onChange={(e) => setLovPass(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && connectLovable()}
+                style={{ paddingRight: 36 }}
+              />
+              <button
+                onClick={() => setShowLovPass(!showLovPass)}
+                aria-label={showLovPass ? "Hide password" : "Show password"}
+                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}
+              >
+                {showLovPass ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>
+              Sign in with your <a href="https://lovable.dev" target="_blank" rel="noopener" style={{ color: "#f97316" }}>lovable.dev</a> account email and password.
+            </p>
+            <button className="btn btn-primary" disabled={lovSaving} onClick={connectLovable}
+              style={{ background: "linear-gradient(135deg,#e11d48,#f43f5e)", borderColor: "transparent" }}>
+              {lovSaving ? <><span className="spinner spinner-sm" />Connecting…</> : "Connect Lovable →"}
+            </button>
+          </div>
         )}
       </SectionCard>
 

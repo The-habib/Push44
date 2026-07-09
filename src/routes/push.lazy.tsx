@@ -7,7 +7,7 @@ import {
   Terminal, Loader2,
 } from "lucide-react";
 import { FileExplorer } from "@/components/FileExplorer";
-import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo } from "@/components/BrandLogos";
+import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
@@ -27,6 +27,7 @@ import {
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles, removeZiteBadge } from "@/lib/zite-api";
 import { validateBoltProject, removeBoltBadge, type BoltRemoveStep } from "@/lib/bolt-api";
+import { listLovableProjects, fetchLovableAppFiles, removeLovableBadge, type LovableBadgeStatus } from "@/lib/lovable-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
 import {
   addHistory, getAppSnapshot, saveAppSnapshot, computeFileDiff,
@@ -36,7 +37,7 @@ import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/push")({ component: PushPage });
 
-type PlatformId = "base44" | "rocket" | "zite" | "floot" | "bolt";
+type PlatformId = "base44" | "rocket" | "zite" | "floot" | "bolt" | "lovable";
 
 interface AppItem  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface RepoItem { full_name: string; default_branch: string; html_url: string; private: boolean }
@@ -48,7 +49,8 @@ const PLATFORMS: { id: PlatformId; label: string; icon: React.ReactNode; credKey
   { id: "rocket", label: "Rocket.new", icon: <RocketLogo size={18} />, credKey: "rocketToken", helpUrl: "https://rocket.new" },
   { id: "zite",   label: "Zite",      icon: <ZiteLogo size={18} />,   credKey: "ziteSession", helpUrl: "https://build.fillout.com" },
   { id: "floot",  label: "Floot",     icon: <FlootLogo size={18} />,   credKey: "flootToken",  helpUrl: "https://floot.com" },
-  { id: "bolt",   label: "bolt.new",  icon: <BoltLogo size={18} />,   credKey: "boltToken",   helpUrl: "https://bolt.new" },
+  { id: "bolt",    label: "bolt.new",  icon: <BoltLogo size={18} />,    credKey: "boltToken",    helpUrl: "https://bolt.new" },
+  { id: "lovable", label: "Lovable",  icon: <LovableLogo size={18} />, credKey: "lovableToken", helpUrl: "https://lovable.dev" },
 ];
 
 function StepNum({ n, active, done }: { n: number; active: boolean; done: boolean }) {
@@ -93,12 +95,13 @@ export default function PushPage() {
 
   // ── Platform & app ─────────────────────────────────────────────────────────
   const [platform, setPlatform] = useState<PlatformId>(() => {
-    if (savedPrefs.platform && ["base44","rocket","zite","floot","bolt"].includes(savedPrefs.platform)) return savedPrefs.platform as PlatformId;
-    if (creds.base44Token) return "base44";
-    if (creds.rocketToken) return "rocket";
-    if (creds.ziteSession) return "zite";
-    if (creds.flootToken)  return "floot";
-    if (creds.boltToken)   return "bolt";
+    if (savedPrefs.platform && ["base44","rocket","zite","floot","bolt","lovable"].includes(savedPrefs.platform)) return savedPrefs.platform as PlatformId;
+    if (creds.base44Token)   return "base44";
+    if (creds.rocketToken)   return "rocket";
+    if (creds.ziteSession)   return "zite";
+    if (creds.flootToken)    return "floot";
+    if (creds.boltToken)     return "bolt";
+    if (creds.lovableToken)  return "lovable";
     return "base44";
   });
   const [apps, setApps] = useState<AppItem[]>([]);
@@ -178,6 +181,13 @@ export default function PushPage() {
   const [boltBadgeStep, setBoltBadgeStep]   = useState<BoltRemoveStep | "">("");
   const [boltResultUrl, setBoltResultUrl]   = useState("");
 
+  // ── Lovable Badge Removal ─────────────────────────────────────────────────
+  type LovableBadgePhase = "idle" | "removing" | "done" | "failed";
+  const [lovableBadgePhase, setLovableBadgePhase] = useState<LovableBadgePhase>("idle");
+  const [lovableBadgeError, setLovableBadgeError] = useState("");
+  const [lovableBadgeMsg, setLovableBadgeMsg]     = useState("");
+  const [showLovableBadgePanel, setShowLovableBadgePanel] = useState(false);
+
   // ── Floot Native Mobile Build ───────────────────────────────────────────────
   type FlootMobilePhase = "idle" | "setting" | "polling" | "done" | "failed" | "upgrade";
   const [flootMobilePhase, setFlootMobilePhase]     = useState<FlootMobilePhase>("idle");
@@ -193,7 +203,8 @@ export default function PushPage() {
     if (id === "rocket") return !!creds.rocketToken;
     if (id === "zite")   return !!creds.ziteSession;
     if (id === "floot")  return !!creds.flootToken;
-    if (id === "bolt")   return !!creds.boltToken && !!creds.boltProjectId;
+    if (id === "bolt")    return !!creds.boltToken && !!creds.boltProjectId;
+    if (id === "lovable") return !!creds.lovableToken;
     return false;
   }, [creds]);
 
@@ -203,10 +214,18 @@ export default function PushPage() {
     setZiteBadgeError("");
   }, []);
 
+  const resetLovableBadgeState = useCallback(() => {
+    setShowLovableBadgePanel(false);
+    setLovableBadgePhase("idle");
+    setLovableBadgeError("");
+    setLovableBadgeMsg("");
+  }, []);
+
   const loadApps = useCallback(async (pid: PlatformId) => {
     setAppsLoading(true); setAppsError(""); setApps([]); setSelectedApp(null); setFiles([]);
     setContainerSleeping(false);
     resetZiteBadgeState();
+    resetLovableBadgeState();
     try {
       let result: AppItem[] = [];
       if (pid === "base44") {
@@ -225,6 +244,15 @@ export default function PushPage() {
         if (!creds.boltToken || !creds.boltProjectId) throw new Error("Connect bolt.new in Settings first (cookie + Project ID required).");
         const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
         result = [{ id: info.projectId, name: info.siteUrl, updated_at: info.updatedAt }];
+      } else if (pid === "lovable") {
+        if (!creds.lovableToken) throw new Error("Connect Lovable in Settings first.");
+        const projs = await listLovableProjects({ data: { token: creds.lovableToken } });
+        result = projs.map((p) => ({
+          id:         p.id,
+          name:       p.display_name,
+          updated_at: p.updated_at,
+          icon:       p.url, // store project URL for badge panel
+        }));
       }
       setApps(result);
     } catch (e: any) {
@@ -241,6 +269,7 @@ export default function PushPage() {
     setFilesLoading(true); setFilesError(""); setFiles([]);
     setContainerSleeping(false);
     resetZiteBadgeState();
+    resetLovableBadgeState();
     try {
       let result: FileEntry[] = [];
       if (platform === "base44") {
@@ -255,6 +284,8 @@ export default function PushPage() {
         // bolt.new has no exportable source files — badge removal only
         setFilesLoading(false);
         return;
+      } else if (platform === "lovable") {
+        result = await fetchLovableAppFiles({ data: { token: creds.lovableToken!, projectId: app.id } });
       }
       setFiles(result);
     } catch (e: any) {
@@ -378,6 +409,7 @@ export default function PushPage() {
     setShowApkPanel(false);
     stopFlootPolling(); setFlootPhase("idle"); setFlootError(""); setFlootLiveUrl("");
     setFlootCurrentSub(null); setShowFlootPanel(false); setFlootSubdomain("");
+    resetLovableBadgeState();
     loadApps(platform);
   };
 
@@ -633,6 +665,32 @@ export default function PushPage() {
     }
   };
 
+  // ── Lovable badge removal handler ──────────────────────────────────────────
+  const handleLovableBadgeRemoval = async () => {
+    if (!creds.lovableToken || !selectedApp) return;
+    setLovableBadgePhase("removing");
+    setLovableBadgeError("");
+    setLovableBadgeMsg("Reading project CSS…");
+    try {
+      await removeLovableBadge({
+        data: { token: creds.lovableToken, projectId: selectedApp.id },
+        onStatus: (s: LovableBadgeStatus) => {
+          if (s.step === "reading-css")       setLovableBadgeMsg("Reading CSS file…");
+          if (s.step === "already-hidden")    { setLovableBadgePhase("done"); setLovableBadgeMsg("Badge was already hidden!"); return; }
+          if (s.step === "sending-message")   setLovableBadgeMsg("Sending instruction to Lovable AI…");
+          if (s.step === "waiting-ai")        setLovableBadgeMsg(`Lovable AI is editing your CSS… (${Math.round((s as any).elapsed / 1000)}s)`);
+          if (s.step === "verifying")         setLovableBadgeMsg("Verifying CSS was written…");
+          if (s.step === "redeploying")       setLovableBadgeMsg("Triggering redeploy…");
+          if (s.step === "done")              setLovableBadgeMsg("Done!");
+        },
+      });
+      setLovableBadgePhase("done");
+    } catch (e: any) {
+      setLovableBadgeError(e?.message ?? "Badge removal failed");
+      setLovableBadgePhase("failed");
+    }
+  };
+
   // ── bolt.new badge removal handler ────────────────────────────────────────
   const handleBoltBadgeRemoval = async () => {
     if (!creds.boltToken || !creds.boltProjectId || !selectedApp) return;
@@ -800,6 +858,21 @@ export default function PushPage() {
           </div>
         )}
 
+        {/* Lovable badge removal panel */}
+        {platform === "lovable" && selectedApp && (
+          <div style={{ marginTop: 14 }}>
+            <LovableBadgePanel
+              appName={selectedApp.name}
+              appUrl={selectedApp.icon ?? ""}
+              phase={lovableBadgePhase}
+              msg={lovableBadgeMsg}
+              error={lovableBadgeError}
+              onRemove={handleLovableBadgeRemoval}
+              onReset={() => { setLovableBadgePhase("idle"); setLovableBadgeError(""); setLovableBadgeMsg(""); }}
+            />
+          </div>
+        )}
+
         {/* bolt.new badge removal bar (replaces files-ready bar for bolt) */}
         {platform === "bolt" && selectedApp && (
           <div style={{ marginTop: 14 }}>
@@ -851,6 +924,15 @@ export default function PushPage() {
                 className="btn btn-sm"
                 style={{ background: "linear-gradient(135deg,#0f766e,#14b8a6)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
                 onClick={() => { setShowZiteBadgePanel(true); setZiteBadgePhase("idle"); setZiteBadgeError(""); }}
+              >
+                <XCircle size={13} /> Remove Badge
+              </button>
+            )}
+            {platform === "lovable" && (
+              <button
+                className="btn btn-sm"
+                style={{ background: "linear-gradient(135deg,#e11d48,#f43f5e)", color: "#fff", border: "none", display: "flex", alignItems: "center", gap: 5 }}
+                onClick={() => { setShowLovableBadgePanel(true); setLovableBadgePhase("idle"); setLovableBadgeError(""); setLovableBadgeMsg(""); }}
               >
                 <XCircle size={13} /> Remove Badge
               </button>
@@ -1946,6 +2028,113 @@ function FlootPublishPanel({
             onClick={() => onPublish(subdomain, !!currentSub)}
           >
             <RefreshCw size={14} /> Retry Publish
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── LovableBadgePanel ─────────────────────────────────────────────────────────
+const LOVABLE_GRADIENT = "linear-gradient(135deg,#e11d48,#f43f5e)";
+
+type LovableBadgePhaseUI = "idle" | "removing" | "done" | "failed";
+
+interface LovableBadgePanelProps {
+  appName:  string;
+  appUrl:   string;
+  phase:    LovableBadgePhaseUI;
+  msg:      string;
+  error:    string;
+  onRemove: () => void;
+  onReset:  () => void;
+}
+
+function LovableBadgePanel({ appName, appUrl, phase, msg, error, onRemove, onReset }: LovableBadgePanelProps) {
+  return (
+    <div className="card" style={{ padding: 18, border: "1px solid #fecdd3" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: LOVABLE_GRADIENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <LovableLogo size={20} />
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Remove "Made with Lovable" Badge</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{appName}{appUrl ? ` · ${appUrl.replace("https://", "")}` : ""}</div>
+        </div>
+      </div>
+
+      {/* Idle */}
+      {phase === "idle" && (
+        <>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.55 }}>
+            Push44 will instruct the Lovable AI to append a CSS rule to your project's stylesheet.
+            The rule hides <code style={{ fontFamily: "monospace", fontSize: 12, background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>#lovable-badge</code> permanently.
+          </div>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14, padding: "9px 12px", borderRadius: 8, background: "#fff1f2", border: "1px solid #fecdd3", lineHeight: 1.55 }}>
+            <strong>✓ Works on Vercel too.</strong> If your Lovable project is connected to GitHub, the AI will commit the change — Vercel picks it up automatically.
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: LOVABLE_GRADIENT, justifyContent: "center" }}
+            onClick={onRemove}
+          >
+            ♥ Remove Badge
+          </button>
+        </>
+      )}
+
+      {/* Removing */}
+      {phase === "removing" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fff1f2", border: "1px solid #fecdd3" }}>
+            <Loader2 size={15} color="#e11d48" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#be123c", fontWeight: 600 }}>{msg || "Working…"}</span>
+          </div>
+          <div style={{ height: 4, borderRadius: 2, background: "#fecdd3", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: "60%", background: LOVABLE_GRADIENT, borderRadius: 2, animation: "apkProgress 2s ease-in-out infinite alternate" }} />
+          </div>
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+            The Lovable AI edits your CSS file and commits the change. This typically takes 30–90 seconds.
+          </p>
+        </div>
+      )}
+
+      {/* Done */}
+      {phase === "done" && (
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge removed!</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.5 }}>
+            The CSS rule was committed to your Lovable project.
+            {appUrl && " Your lovable.app site will republish shortly. If using Vercel, it will auto-deploy from GitHub."}
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {appUrl && (
+              <a href={appUrl} target="_blank" rel="noopener" className="btn btn-secondary">
+                <ExternalLink size={13} /> View live site
+              </a>
+            )}
+            <button className="btn btn-primary" style={{ background: LOVABLE_GRADIENT }} onClick={onReset}>
+              ♥ Remove again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Failed */}
+      {phase === "failed" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fee2e2", marginBottom: 12 }}>
+            <XCircle size={15} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#991b1b", flex: 1, lineHeight: 1.4 }}>{error || "Badge removal failed. Please try again."}</span>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: LOVABLE_GRADIENT, justifyContent: "center" }}
+            onClick={onRemove}
+          >
+            <RefreshCw size={13} /> Try again
           </button>
         </div>
       )}

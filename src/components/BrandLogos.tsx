@@ -49,3 +49,17 @@ export function BoltLogo({ size = 20, className = "" }: { size?: number; classNa
     <img src={boltLogo} alt="bolt.new" width={size} height={size} style={{ objectFit: "contain", borderRadius: 4 }} className={className} />
   );
 }
+
+export function LovableLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
+      <rect width="32" height="32" rx="8" fill="#F43F5E" />
+      <path
+        d="M16 24s-9-5.5-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 11-9 11z"
+        fill="white"
+        stroke="white"
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+}

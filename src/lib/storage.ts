@@ -19,12 +19,15 @@ export interface Credentials {
   boltEmail: string;
   boltProjectId: string;
   boltSiteUrl: string;
+  lovableToken: string;
+  lovableRefreshToken: string;
+  lovableEmail: string;
   defaultBranch: string;
   defaultRepo: string;
   defaultOwner: string;
 }
 
-export type Platform = "base44" | "rocket" | "floot" | "zite" | "bolt";
+export type Platform = "base44" | "rocket" | "floot" | "zite" | "bolt" | "lovable";
 
 export interface PushRecord {
   id: string;
@@ -105,7 +108,7 @@ export function clearHistory(): void { localStorage.removeItem(HISTORY_KEY); }
 // ── Push page preferences (platform, last repo, branch, etc.) ─────────────────
 
 export interface PushPrefs {
-  platform?: "base44" | "rocket" | "floot" | "zite" | "bolt";
+  platform?: "base44" | "rocket" | "floot" | "zite" | "bolt" | "lovable";
   lastRepo?: { full_name: string; default_branch: string; html_url: string } | null;
   branch?: string;
   isPrivate?: boolean;
