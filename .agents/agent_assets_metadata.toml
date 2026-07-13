@@ -23,3 +23,9 @@ id = "iofh3pn4a9S4fKl8YTxjt"
 uri = "file://docs/floot-native-mobile-builds.md"
 type = "text"
 title = "Floot Native Mobile Builds — Full API Reference"
+
+[[outputs]]
+id = "oF6I077wefQugDdzeLlWD"
+uri = "file://push44-docs-site-prompt.md"
+type = "text"
+title = "Push44 Docs Site — Full Master Prompt"
