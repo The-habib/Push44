@@ -142,13 +142,13 @@ const FAQS = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderBottom: "1px solid #e4e4e7" }}>
+    <div style={{ borderBottom: "1px solid #c5c0b1" }}>
       <button
         onClick={() => setOpen(!open)}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 16 }}
       >
-        <span style={{ fontSize: 15, fontWeight: 600, color: "#09090b", letterSpacing: "-0.01em" }}>{q}</span>
-        {open ? <ChevronUp size={16} color="#71717a" /> : <ChevronDown size={16} color="#71717a" />}
+        <span style={{ fontSize: 15, fontWeight: 600, color: "#201515", letterSpacing: "-0.01em" }}>{q}</span>
+        {open ? <ChevronUp size={16} color="#939084" /> : <ChevronDown size={16} color="#939084" />}
       </button>
       {open && (
         <motion.div
@@ -157,7 +157,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
           exit={{ opacity: 0, height: 0 }}
           style={{ paddingBottom: 18 }}
         >
-          <p style={{ fontSize: 14, color: "#71717a", lineHeight: 1.7, margin: 0 }}>{a}</p>
+          <p style={{ fontSize: 14, color: "#605d52", lineHeight: 1.7, margin: 0 }}>{a}</p>
         </motion.div>
       )}
     </div>
@@ -168,26 +168,26 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: "100dvh", background: "#fff", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#09090b" }}>
+    <div style={{ minHeight: "100dvh", background: "#fffefb", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#201515" }}>
       <Navbar />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 20px 80px", textAlign: "center", borderBottom: "1px solid #f4f4f5" }}>
+      <section style={{ padding: "96px 20px 80px", textAlign: "center", borderBottom: "1px solid #ede8e2", background: "#fffefb" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             {/* Badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 6px", border: "1px solid #e4e4e7", borderRadius: 999, fontSize: 12, fontWeight: 500, color: "#52525b", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 6px", border: "1px solid #e6e1da", borderRadius: 999, fontSize: 12, fontWeight: 500, color: "#939084", marginBottom: 28 }}>
               <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.02em" }}>FREE</span>
               Free forever · No signup required · No data collected
             </div>
 
             {/* H1 */}
-            <h1 style={{ fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 auto 20px", maxWidth: 780 }}>
+            <h1 style={{ fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 auto 20px", maxWidth: 780 }}>
               Export AI-Generated Code.<br />Own It Forever.
             </h1>
 
             {/* Subtext */}
-            <p style={{ fontSize: 18, color: "#71717a", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 500 }}>
+            <p style={{ fontSize: 18, color: "#605d52", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 500 }}>
               Push44 bypasses export restrictions on Base44, Rocket.new, Floot, Zite, and bolt.new.
               Push your full source code to GitHub in one click — free, forever.
             </p>
@@ -196,7 +196,7 @@ export default function LandingPage() {
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 72 }}>
               <Link
                 to="/onboarding"
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 9, textDecoration: "none", letterSpacing: "-0.01em", transition: "background 0.15s" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 12, textDecoration: "none", letterSpacing: "-0.01em", transition: "background 0.15s, box-shadow 0.15s, transform 0.12s", boxShadow: "0 1px 3px rgba(0,0,0,0.10), 0 4px 14px rgba(249,115,22,0.28)" }}
                 onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#ea6c0a"}
                 onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f97316"}
               >
@@ -204,7 +204,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 to="/blog/"
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#fff", color: "#09090b", fontWeight: 600, fontSize: 15, borderRadius: 9, textDecoration: "none", border: "1px solid #e4e4e7", letterSpacing: "-0.01em", transition: "border-color 0.15s" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#fff", color: "#201515", fontWeight: 600, fontSize: 15, borderRadius: 12, textDecoration: "none", border: "1px solid #e6e1da", letterSpacing: "-0.01em", transition: "border-color 0.15s, box-shadow 0.15s", boxShadow: "0 1px 3px rgba(32,21,21,0.06)" }}
                 onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"}
                 onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"}
               >
@@ -219,43 +219,43 @@ export default function LandingPage() {
       </section>
 
       {/* ── PLATFORM LOGOS ────────────────────────────────────────────────── */}
-      <section style={{ padding: "40px 20px", borderBottom: "1px solid #f4f4f5" }}>
+      <section style={{ padding: "40px 20px", borderBottom: "1px solid #ede8e2", background: "#f5f0eb" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: 8 }}>Works with</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#939084", textTransform: "uppercase", letterSpacing: "0.10em", marginRight: 8 }}>Works with</span>
           {PLATFORMS.map(p => (
-            <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 14px", border: "1px solid #e4e4e7", borderRadius: 8, background: "#fafafa" }}>
+            <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 14px", border: "1px solid #e6e1da", borderRadius: 8, background: "#fff" }}>
               <img src={p.logo} alt={p.name} style={{ width: 18, height: 18, objectFit: "contain" }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#3f3f46" }}>{p.name}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#2f2a26" }}>{p.name}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── STATS ─────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "64px 20px", borderBottom: "1px solid #f4f4f5" }} id="features">
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1, border: "1px solid #e4e4e7", borderRadius: 12, overflow: "hidden" }}>
+      <section style={{ padding: "64px 20px", borderBottom: "1px solid #ede8e2", background: "#fffefb" }} id="features">
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 1, border: "1px solid #e6e1da", borderRadius: 12, overflow: "hidden" }}>
           {[
             { n: "12.4K", label: "GitHub Stars", sub: "and growing" },
-            { n: "4", label: "AI Platforms", sub: "fully supported" },
+            { n: "5", label: "AI Platforms", sub: "fully supported" },
             { n: "100%", label: "Free Forever", sub: "no hidden costs" },
             { n: "0", label: "Backend", sub: "runs in your browser" },
           ].map((s, i) => (
-            <div key={s.label} style={{ padding: "32px 28px", textAlign: "center", background: "#fff", borderLeft: i > 0 ? "1px solid #e4e4e7" : "none" }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", lineHeight: 1 }}>{s.n}</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#09090b", marginTop: 6 }}>{s.label}</div>
-              <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 3 }}>{s.sub}</div>
+            <div key={s.label} style={{ padding: "32px 28px", textAlign: "center", background: "#fff", borderLeft: i > 0 ? "1px solid #e6e1da" : "none" }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1 }}>{s.n}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#2f2a26", marginTop: 6 }}>{s.label}</div>
+              <div style={{ fontSize: 12, color: "#939084", marginTop: 3 }}>{s.sub}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── PROBLEM ───────────────────────────────────────────────────────── */}
-      <section style={{ padding: "80px 20px", background: "#09090b", borderBottom: "1px solid #18181b" }}>
+      <section style={{ padding: "80px 20px", background: "#18120e", borderBottom: "1px solid #2a1f1a" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 12 }}>The Problem</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#f4f4f5", letterSpacing: "-0.04em", margin: "0 0 16px" }}>AI platforms keep your code locked in.</h2>
-            <p style={{ fontSize: 16, color: "#71717a", maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>You build the product. They hold the code. That changes now.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#fffefb", letterSpacing: "-0.04em", margin: "0 0 16px" }}>AI platforms keep your code locked in.</h2>
+            <p style={{ fontSize: 16, color: "#8a7f78", maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>You build the product. They hold the code. That changes now.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 1 }}>
             {[
@@ -263,10 +263,10 @@ export default function LandingPage() {
               { title: "Subscription lock-in", desc: "Cancel your plan and you lose access to your own code. You're renting your app, not owning it." },
               { title: "No version control", desc: "Every change overwrites the last. There's no history, no rollback, no safety net if something breaks." },
             ].map((p, i) => (
-              <div key={p.title} style={{ padding: "28px", background: "#18181b", border: "1px solid #27272a", borderRadius: i === 0 ? "10px 0 0 10px" : i === 2 ? "0 10px 10px 0" : 0 }}>
-                <div style={{ width: 28, height: 2, background: "#f97316", marginBottom: 20 }} />
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f4f4f5", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{p.title}</h3>
-                <p style={{ fontSize: 14, color: "#71717a", lineHeight: 1.65, margin: 0 }}>{p.desc}</p>
+              <div key={p.title} style={{ padding: "28px", background: "#241a15", border: "1px solid #2a1f1a", borderRadius: i === 0 ? "10px 0 0 10px" : i === 2 ? "0 10px 10px 0" : 0 }}>
+                <div style={{ width: 28, height: 2, background: "#f97316", marginBottom: 20, borderRadius: 99 }} />
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#ede8e2", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{p.title}</h3>
+                <p style={{ fontSize: 14, color: "#8a7f78", lineHeight: 1.65, margin: 0 }}>{p.desc}</p>
               </div>
             ))}
           </div>
@@ -274,14 +274,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ──────────────────────────────────────────────────────── */}
-      <section style={{ padding: "80px 20px", borderBottom: "1px solid #f4f4f5" }}>
+      <section style={{ padding: "80px 20px", borderBottom: "1px solid #ede8e2", background: "#fffefb" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 12 }}>Features</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", margin: "0 0 16px" }}>Everything you need to own your code.</h2>
-            <p style={{ fontSize: 16, color: "#71717a", maxWidth: 440, margin: "0 auto", lineHeight: 1.65 }}>Built for developers who refuse to let a subscription hold their work hostage.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", margin: "0 0 16px" }}>Everything you need to own your code.</h2>
+            <p style={{ fontSize: 16, color: "#605d52", maxWidth: 440, margin: "0 auto", lineHeight: 1.65 }}>Built for developers who refuse to let a subscription hold their work hostage.</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 1, border: "1px solid #e4e4e7", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 1, border: "1px solid #e6e1da", borderRadius: 12, overflow: "hidden" }}>
             {FEATURES.map(({ Icon, title, desc }, i) => (
               <motion.div
                 key={title}
@@ -289,13 +289,13 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
-                style={{ padding: "28px", background: "#fff", borderLeft: i % 3 > 0 ? "1px solid #e4e4e7" : "none", borderTop: i >= 3 ? "1px solid #e4e4e7" : "none" }}
+                style={{ padding: "28px", background: "#fff", borderLeft: i % 3 > 0 ? "1px solid #e6e1da" : "none", borderTop: i >= 3 ? "1px solid #e6e1da" : "none" }}
               >
-                <div style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid #e4e4e7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 9, border: "1px solid #e6e1da", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, background: "#f5f0eb" }}>
                   <Icon size={17} color="#f97316" />
                 </div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#09090b", margin: "0 0 8px", letterSpacing: "-0.02em" }}>{title}</h3>
-                <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#201515", margin: "0 0 8px", letterSpacing: "-0.02em" }}>{title}</h3>
+                <p style={{ fontSize: 13, color: "#605d52", lineHeight: 1.65, margin: 0 }}>{desc}</p>
               </motion.div>
             ))}
           </div>
@@ -303,21 +303,21 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
-      <section style={{ padding: "80px 20px", background: "#fafafa", borderBottom: "1px solid #f4f4f5" }} id="how-it-works">
+      <section style={{ padding: "80px 20px", background: "#f5f0eb", borderBottom: "1px solid #ede8e2" }} id="how-it-works">
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 12 }}>How it works</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", margin: 0 }}>Three steps to code ownership.</h2>
+            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", margin: 0 }}>Three steps to code ownership.</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 32 }}>
             {STEPS.map(({ n, title, desc }) => (
               <div key={n} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: "#f97316", fontFamily: "monospace", letterSpacing: "0.05em" }}>{n}</span>
-                  <div style={{ flex: 1, height: 1, background: "#e4e4e7" }} />
+                  <div style={{ flex: 1, height: 1, background: "#c5c0b1" }} />
                 </div>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#09090b", margin: 0, letterSpacing: "-0.02em" }}>{title}</h3>
-                <p style={{ fontSize: 14, color: "#71717a", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#201515", margin: 0, letterSpacing: "-0.02em" }}>{title}</h3>
+                <p style={{ fontSize: 14, color: "#605d52", lineHeight: 1.65, margin: 0 }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -325,12 +325,12 @@ export default function LandingPage() {
       </section>
 
       {/* ── PLATFORMS ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: "80px 20px", borderBottom: "1px solid #f4f4f5" }} id="platforms">
+      <section style={{ padding: "80px 20px", borderBottom: "1px solid #ede8e2", background: "#fffefb" }} id="platforms">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 12 }}>Platform Support</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", margin: "0 0 16px" }}>Works with every major AI builder.</h2>
-            <p style={{ fontSize: 16, color: "#71717a", maxWidth: 440, margin: "0 auto", lineHeight: 1.65 }}>More platforms are added continuously — check the GitHub repo for the latest.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", margin: "0 0 16px" }}>Works with every major AI builder.</h2>
+            <p style={{ fontSize: 16, color: "#605d52", maxWidth: 440, margin: "0 auto", lineHeight: 1.65 }}>More platforms are added continuously — check the GitHub repo for the latest.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
             {PLATFORMS.map(p => (
@@ -340,13 +340,15 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4 }}
-                style={{ border: "1px solid #e4e4e7", borderRadius: 12, padding: "24px", background: "#fff", display: "flex", flexDirection: "column", gap: 14 }}
+                style={{ border: "1px solid #e6e1da", borderRadius: 12, padding: "24px", background: "#fff", display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 1px 4px rgba(32,21,21,0.04)", transition: "box-shadow 0.2s, transform 0.2s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(32,21,21,0.10)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(32,21,21,0.04)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <img src={p.logo} alt={p.name} style={{ width: 32, height: 32, objectFit: "contain" }} />
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#09090b", letterSpacing: "-0.02em" }}>{p.name}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: "#201515", letterSpacing: "-0.02em" }}>{p.name}</span>
                 </div>
-                <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.65, margin: 0 }}>{p.desc}</p>
+                <p style={{ fontSize: 13, color: "#605d52", lineHeight: 1.65, margin: 0 }}>{p.desc}</p>
                 <Link
                   to="/platforms/$platform"
                   params={{ platform: p.slug }}
@@ -361,33 +363,33 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "80px 20px", borderBottom: "1px solid #f4f4f5" }} id="faq">
+      <section style={{ padding: "80px 20px", borderBottom: "1px solid #ede8e2", background: "#f5f0eb" }} id="faq">
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 12 }}>FAQ</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", margin: 0 }}>Common questions.</h2>
+            <h2 style={{ fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", margin: 0 }}>Common questions.</h2>
           </div>
-          <div style={{ borderTop: "1px solid #e4e4e7" }}>
+          <div style={{ borderTop: "1px solid #c5c0b1" }}>
             {FAQS.map(f => <FAQItem key={f.q} q={f.q} a={f.a} />)}
           </div>
         </div>
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 20px", background: "#09090b", textAlign: "center" }}>
+      <section style={{ padding: "96px 20px", background: "#18120e", textAlign: "center" }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 900, color: "#f4f4f5", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 16px" }}>
+          <h2 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 900, color: "#fffefb", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 16px" }}>
             Start owning your code today.
           </h2>
-          <p style={{ fontSize: 16, color: "#71717a", margin: "0 0 40px", lineHeight: 1.65 }}>
+          <p style={{ fontSize: 16, color: "#8a7f78", margin: "0 0 40px", lineHeight: 1.65 }}>
             Free forever. No account required to start.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link
               to="/onboarding"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 9, textDecoration: "none" }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#ea6c0a"}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "#f97316"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 12, textDecoration: "none", boxShadow: "0 1px 3px rgba(0,0,0,0.15), 0 6px 20px rgba(249,115,22,0.32)", transition: "background 0.15s, box-shadow 0.15s, transform 0.12s" }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = "#ea6c0a"; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.18), 0 8px 28px rgba(249,115,22,0.38)"; }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = "#f97316"; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.15), 0 6px 20px rgba(249,115,22,0.32)"; }}
             >
               Launch App Free <ArrowRight size={16} />
             </Link>
