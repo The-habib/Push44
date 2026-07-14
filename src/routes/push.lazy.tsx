@@ -7,6 +7,7 @@ import {
   Terminal, Loader2,
 } from "lucide-react";
 import { FileExplorer } from "@/components/FileExplorer";
+import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker";
 import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
@@ -736,30 +737,15 @@ export default function PushPage() {
 
       {/* ── Step 1: Platform + App ────────────────────────────────────────── */}
       <StepCard n={1} step={step} label="Select App" active={step === 1} done={step > 1}>
-        {/* Platform tabs */}
-        <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-          {PLATFORMS.map(({ id, label, icon }) => {
-            const connected = platformConnected(id);
-            const active = platform === id;
-            return (
-              <button
-                key={id}
-                onClick={() => { setPlatform(id); savePushPrefs({ platform: id as Platform }); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 7, padding: "7px 12px",
-                  borderRadius: 7, border: `1px solid ${active ? "#f97316" : "#e2e8f0"}`,
-                  background: active ? "#fff7ed" : "#f8fafc", cursor: "pointer",
-                  fontWeight: 600, fontSize: 13,
-                  color: active ? "#c2410c" : "#64748b",
-                  transition: "all 0.15s",
-                }}
-              >
-                {icon}{label}
-                {!connected && <span style={{ fontSize: 10, background: "#fef2f2", color: "#b91c1c", padding: "1px 5px", borderRadius: 4, fontWeight: 700 }}>Setup</span>}
-              </button>
-            );
-          })}
-        </div>
+        {/* Platform grid picker */}
+        <PlatformPicker
+          platforms={PLATFORMS.map(({ id, label, icon }): PlatformOption => ({
+            id, label, icon,
+            connected: platformConnected(id),
+          }))}
+          selected={platform}
+          onSelect={(id) => { setPlatform(id as PlatformId); savePushPrefs({ platform: id as Platform }); }}
+        />
 
         {/* Not connected notice */}
         {!platformConnected(platform) && !showRocketModal && (
