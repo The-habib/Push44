@@ -1,6 +1,5 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { CheckCircle, Eye, EyeOff, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
 import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
 import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker";
@@ -191,13 +190,13 @@ export default function OnboardingPage() {
   const stepLabels = ["Connect GitHub", "Connect Platform", "All set!"];
 
   return (
-    <div style={{ minHeight: "100vh", background: "radial-gradient(circle at 15% 10%, rgba(249,115,22,.10), transparent 28%), #f5f0eb", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "#f5f0eb", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ width: "100%", maxWidth: 520 }}>
 
         {/* Logo */}
-          <div style={{ textAlign: "center", marginBottom: 38 }}>
-           <img src={appLogo} alt="Push44" style={{ width: 48, height: 48, borderRadius: 12, margin: "0 auto 10px", boxShadow: "0 8px 24px rgba(249,115,22,.2)" }} />
-           <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 25, color: "#201515", letterSpacing: "-0.05em" }}>Push44</div>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img src={appLogo} alt="Push44" style={{ width: 48, height: 48, borderRadius: 12, margin: "0 auto 10px" }} />
+          <div style={{ fontWeight: 800, fontSize: 22, color: "#201515", letterSpacing: "-0.03em" }}>Push44</div>
           <div style={{ color: "#939084", fontSize: 13 }}>Push your apps to GitHub in one click</div>
         </div>
 
@@ -232,13 +231,13 @@ export default function OnboardingPage() {
 
         {/* ── Step 1: GitHub ── */}
         {step === 1 && (
-           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card" style={{ padding: 26 }}>
+          <div className="card" style={{ padding: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <GitHubLogo size={22} />
               <div>
                 <div style={{ fontWeight: 800, fontSize: 15, color: "#201515" }}>Connect GitHub</div>
                 <div style={{ fontSize: 12, color: "#939084" }}>Required to push files to your repos</div>
-                </div>
+              </div>
             </div>
 
             {ghUser ? (
@@ -247,8 +246,8 @@ export default function OnboardingPage() {
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 13, color: "#201515" }}>@{ghUser.login}</div>
                   <div style={{ fontSize: 12, color: "#16a34a" }}>Connected ✓</div>
-                  </div>
-               </div>
+                </div>
+              </div>
             ) : (
               <>
                 <button
@@ -265,17 +264,17 @@ export default function OnboardingPage() {
                 {ghError && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dc2626", fontSize: 13, marginBottom: 10 }}><AlertCircle size={14} />{ghError}</div>}
               </>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* ── Step 2: Platform ── */}
         {step === 2 && (
-           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card" style={{ padding: 26 }}>
+          <div className="card" style={{ padding: 24 }}>
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontWeight: 800, fontSize: 15, color: "#201515", marginBottom: 4 }}>Connect a Platform</div>
               <div style={{ fontSize: 13, color: "#939084" }}>
                 Pick any platform you build with. You can connect more later in Settings.
-                </div>
+              </div>
             </div>
 
             {/* Grid picker */}
@@ -299,8 +298,8 @@ export default function OnboardingPage() {
                   <div className="tabs" style={{ marginBottom: 12 }}>
                     <button className={`tab${b44Tab === "login" ? " active" : ""}`} onClick={() => setB44Tab("login")}>Email / Password</button>
                     <button className={`tab${b44Tab === "token" ? " active" : ""}`} onClick={() => setB44Tab("token")}>API Token</button>
-                   </div>
-                   {b44Tab === "login" ? (
+                  </div>
+                  {b44Tab === "login" ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <input className="input" type="email" placeholder="Email" value={b44Email} onChange={e => setB44Email(e.target.value)} />
                       <div style={{ position: "relative" }}>
@@ -431,7 +430,7 @@ export default function OnboardingPage() {
                 Continue →
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* ── Step 3: Done ── */}
