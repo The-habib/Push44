@@ -35,9 +35,9 @@ export const Route = createFileRoute("/")({
 
 function ProductMockup() {
   return (
-    <div style={{ background: "#09090b", borderRadius: 14, overflow: "hidden", border: "1px solid #27272a", boxShadow: "0 48px 100px -24px rgba(0,0,0,0.5)", maxWidth: 480, width: "100%", margin: "0 auto" }}>
+    <motion.div initial={{ opacity: 0, y: 30, rotate: 1.5 }} whileInView={{ opacity: 1, y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ duration: .8, ease: [.2,.8,.2,1] }} style={{ background: "#09090b", borderRadius: 16, overflow: "hidden", border: "1px solid #3b302b", boxShadow: "0 48px 100px -24px rgba(32,21,21,.45), 0 0 0 10px rgba(249,115,22,.035)", maxWidth: 480, width: "100%", margin: "0 auto" }}>
       {/* Window chrome */}
-      <div style={{ background: "#18181b", borderBottom: "1px solid #27272a", padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ background: "#18181b", borderBottom: "1px solid #27272a", padding: "11px 16px", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ display: "flex", gap: 5 }}>
           {["#ef4444", "#f97316", "#22c55e"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: 0.7 }} />)}
         </div>
@@ -89,11 +89,11 @@ function ProductMockup() {
         </div>
 
         {/* Push button */}
-        <div style={{ background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: 8, padding: "11px 0", textAlign: "center", cursor: "default", letterSpacing: "-0.01em" }}>
+        <motion.div animate={{ boxShadow: ["0 0 0 rgba(249,115,22,0)", "0 0 22px rgba(249,115,22,.28)", "0 0 0 rgba(249,115,22,0)"] }} transition={{ duration: 2.8, repeat: Infinity }} style={{ background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: 8, padding: "11px 0", textAlign: "center", cursor: "default", letterSpacing: "-0.01em" }}>
           Push to GitHub
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -168,32 +168,32 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: "100dvh", background: "#fffefb", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#201515" }}>
+    <div className="noise" style={{ minHeight: "100dvh", background: "#fffefb", color: "#201515" }}>
       <Navbar />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 20px 80px", textAlign: "center", borderBottom: "1px solid #ede8e2", background: "#fffefb" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <section style={{ padding: "clamp(72px,10vw,132px) 20px 104px", borderBottom: "1px solid #ede8e2", background: "radial-gradient(circle at 78% 38%, rgba(249,115,22,.10), transparent 28%), #fffefb", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(360px,480px)", gap: "clamp(48px,8vw,110px)", alignItems: "center" }}>
+          <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65 }}>
             {/* Badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 6px", border: "1px solid #e6e1da", borderRadius: 999, fontSize: 12, fontWeight: 500, color: "#939084", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px 5px 6px", border: "1px solid #e6e1da", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#939084", marginBottom: 28, background: "rgba(255,254,251,.7)" }}>
               <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.02em" }}>FREE</span>
               Free forever · No signup required · No data collected
             </div>
 
             {/* H1 */}
-            <h1 style={{ fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 auto 20px", maxWidth: 780 }}>
-              Export AI-Generated Code.<br />Own It Forever.
+            <h1 className="display" style={{ fontSize: "clamp(52px, 7.4vw, 96px)", fontWeight: 700, color: "#201515", lineHeight: .93, margin: "0 0 26px", maxWidth: 720 }}>
+              Your code.<br /><span style={{ color: "#f97316" }}>Your leverage.</span>
             </h1>
 
             {/* Subtext */}
-            <p style={{ fontSize: 18, color: "#605d52", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 500 }}>
+            <p style={{ fontSize: 18, color: "#605d52", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 510 }}>
               Push44 bypasses export restrictions on Base44, Rocket.new, Floot, Zite, and bolt.new.
               Push your full source code to GitHub in one click — free, forever.
             </p>
 
             {/* CTAs */}
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 72 }}>
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-start", flexWrap: "wrap", marginBottom: 28 }}>
               <Link
                 to="/onboarding"
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 15, borderRadius: 12, textDecoration: "none", letterSpacing: "-0.01em", transition: "background 0.15s, box-shadow 0.15s, transform 0.12s", boxShadow: "0 1px 3px rgba(0,0,0,0.10), 0 4px 14px rgba(249,115,22,0.28)" }}
@@ -212,9 +212,8 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Product mockup */}
-            <ProductMockup />
           </motion.div>
+          <div style={{ display: "flex", justifyContent: "center" }}><ProductMockup /></div>
         </div>
       </section>
 
