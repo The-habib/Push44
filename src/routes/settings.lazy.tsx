@@ -73,9 +73,6 @@ export default function SettingsPage() {
   const { creds, updateCreds, signOut } = useApp();
 
   // ── GitHub ─────────────────────────────────────────────────────────────────
-  const [ghToken, setGhToken]     = useState(creds.githubToken ?? "");
-  const [showGhTok, setShowGhTok] = useState(false);
-  const [ghTest, setGhTest]       = useState<TestState>("idle");
   const [ghSaving, setGhSaving]   = useState(false);
 
   // ── Base44 ─────────────────────────────────────────────────────────────────
@@ -146,43 +143,18 @@ export default function SettingsPage() {
         toast.error("OAuth cookie missing — please try connecting again.");
         return;
       }
-      setGhToken(token);
       setGhSaving(true);
       getGitHubUser({ data: { token } })
         .then((user) => {
           updateCreds({ githubToken: token, githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
-          setGhTest("ok");
           toast.success(`Connected as @${user.login}`);
         })
         .catch(() => {
           toast.error("Token received but GitHub validation failed — try again.");
-          setGhTest("fail");
         })
         .finally(() => setGhSaving(false));
     }
   }, []);
-
-  // ── GitHub actions ─────────────────────────────────────────────────────────
-  const saveGitHub = async () => {
-    if (!ghToken.trim()) return;
-    setGhSaving(true);
-    try {
-      const user = await getGitHubUser({ data: { token: ghToken.trim() } });
-      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
-      setGhTest("ok");
-      toast.success(`Connected as @${user.login}`);
-    } catch (e: any) {
-      setGhTest("fail");
-      toast.error(e?.message ?? "Invalid token");
-    } finally { setGhSaving(false); }
-  };
-
-  const testGitHub = async () => {
-    if (!ghToken.trim()) return;
-    setGhTest("loading");
-    try { await getGitHubUser({ data: { token: ghToken.trim() } }); setGhTest("ok"); }
-    catch { setGhTest("fail"); }
-  };
 
   // ── Base44 actions ─────────────────────────────────────────────────────────
   const connectBase44 = async () => {
@@ -388,28 +360,6 @@ export default function SettingsPage() {
             : <><GitHubLogo size={14} /> Connect with GitHub</>}
         </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-          <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>or paste a token manually</span>
-          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-        </div>
-
-        <label className="label">Personal Access Token</label>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <input className="input" type={showGhTok ? "text" : "password"} placeholder="ghp_xxxxxxxxxxxx" value={ghToken} onChange={(e) => { setGhToken(e.target.value); setGhTest("idle"); }} style={{ paddingRight: 36 }} onKeyDown={(e) => e.key === "Enter" && saveGitHub()} />
-            <button onClick={() => setShowGhTok(!showGhTok)} aria-label={showGhTok ? "Hide token" : "Show token"} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1, padding: 0 }}>
-              {showGhTok ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-          </div>
-          <TestBtn state={ghTest} onClick={testGitHub} />
-          <button className="btn btn-primary btn-sm" onClick={saveGitHub} disabled={ghSaving || !ghToken.trim()}>
-            {ghSaving ? <Loader2 size={12} style={{ animation: "spin 0.6s linear infinite" }} /> : <Check size={12} />}Save
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
-          Create at <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" rel="noopener" style={{ color: "#f97316" }}>github.com/settings/tokens <ExternalLink size={10} style={{ display: "inline" }} /></a> with <strong>repo</strong> scope.
-        </p>
       </SectionCard>
 
       {/* ── Base44 ── */}

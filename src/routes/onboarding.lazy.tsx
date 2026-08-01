@@ -33,8 +33,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // ── GitHub ──────────────────────────────────────────────────────────────────
-  const [ghToken, setGhToken]         = useState(creds.githubToken ?? "");
-  const [showGhToken, setShowGhToken] = useState(false);
   const [ghLoading, setGhLoading]     = useState(false);
   const [ghError, setGhError]         = useState("");
   const [ghUser, setGhUser]           = useState<{ login: string; avatar_url: string } | null>(null);
@@ -96,11 +94,16 @@ export default function OnboardingPage() {
   // ── GitHub OAuth callback ───────────────────────────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("github_token");
+    const authed = params.get("github_authed");
     const error = params.get("github_error");
-    if (token || error) window.history.replaceState({}, "", "/onboarding");
+    if (authed || error) window.history.replaceState({}, "", "/onboarding");
     if (error) { setGhError(decodeURIComponent(error)); return; }
-    if (token) {
+    if (authed) {
+      // Token delivered via short-lived cookie, never in the URL
+      const match = document.cookie.match(/(?:^|;\s*)gh_token=([^;]+)/);
+      const token = match ? decodeURIComponent(match[1]) : null;
+      document.cookie = "gh_token=; Max-Age=0; Path=/; SameSite=Strict";
+      if (!token) { setGhError("OAuth cookie missing — please try connecting again."); return; }
       setGhLoading(true);
       getGitHubUser({ data: { token } })
         .then(user => {
@@ -114,19 +117,6 @@ export default function OnboardingPage() {
   }, []);
 
   // ── Connect functions ───────────────────────────────────────────────────────
-  const connectGitHub = async () => {
-    if (!ghToken.trim()) { setGhError("Paste your GitHub token"); return; }
-    setGhLoading(true); setGhError("");
-    try {
-      const user = await getGitHubUser({ data: { token: ghToken.trim() } });
-      updateCreds({ githubToken: ghToken.trim(), githubUsername: user.login, githubName: user.name, githubEmail: user.email, githubId: user.id });
-      setGhUser(user);
-      setTimeout(() => setStep(2), 700);
-    } catch (e: any) {
-      setGhError(e?.message ?? "Invalid token");
-    } finally { setGhLoading(false); }
-  };
-
   const connectBase44 = async () => {
     setB44Loading(true); setB44Error("");
     try {
@@ -271,31 +261,7 @@ export default function OnboardingPage() {
                     : <><GitHubLogo size={14} /> Continue with GitHub</>}
                 </button>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                  <div style={{ flex: 1, height: 1, background: "#e6e1da" }} />
-                  <span style={{ fontSize: 11, color: "#939084", whiteSpace: "nowrap" }}>or paste a token manually</span>
-                  <div style={{ flex: 1, height: 1, background: "#e6e1da" }} />
-                </div>
-
-                <div style={{ position: "relative", marginBottom: 10 }}>
-                  <input
-                    className="input"
-                    type={showGhToken ? "text" : "password"}
-                    placeholder="ghp_xxxxxxxxxxxx"
-                    value={ghToken}
-                    onChange={e => setGhToken(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && connectGitHub()}
-                    style={{ paddingRight: 40 }}
-                  />
-                  <button onClick={() => setShowGhToken(!showGhToken)} aria-label={showGhToken ? "Hide token" : "Show token"}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#939084", padding: 0 }}>
-                    {showGhToken ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
                 {ghError && <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dc2626", fontSize: 13, marginBottom: 10 }}><AlertCircle size={14} />{ghError}</div>}
-                <button className="btn btn-secondary" style={{ width: "100%" }} disabled={ghLoading || !ghToken.trim()} onClick={connectGitHub}>
-                  Connect GitHub →
-                </button>
               </>
             )}
           </div>

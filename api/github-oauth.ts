@@ -1,6 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-const APP_BASE = "https://push44.vercel.app";
+function getAppBase(req: IncomingMessage): string {
+  // Prefer explicit env override (useful for production deploys)
+  if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL.replace(/\/$/, "");
+  // Reconstruct from the incoming request so dev/staging/prod all work automatically
+  const proto =
+    (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0]?.trim() ?? "http";
+  const host = req.headers.host ?? "localhost:5000";
+  return `${proto}://${host}`;
+}
 
 function encodeState(nonce: string, returnTo: string) {
   return `${nonce}|${returnTo}`;
@@ -35,6 +43,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const action = url.searchParams.get("action");
   const clientId = process.env.GITHUB_CLIENT_ID ?? "";
   const clientSecret = process.env.GITHUB_CLIENT_SECRET ?? "";
+  const appBase = getAppBase(req);
 
   const fallback = (returnTo: string, errMsg: string) => {
     res.writeHead(302, { Location: `${returnTo}?github_error=${encodeURIComponent(errMsg)}` });
@@ -54,7 +63,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       client_id: clientId,
       scope: "repo user",
       state,
-      redirect_uri: `${APP_BASE}/api/github-oauth`,
+      redirect_uri: `${appBase}/api/github-oauth`,
     });
     res.writeHead(302, { Location: `https://github.com/login/oauth/authorize?${params}` });
     return res.end();
