@@ -25,6 +25,9 @@ import { deployCommand } from "./commands/deploy.js";
 import { inspectCommand } from "./commands/inspect.js";
 import { configCommand } from "./commands/config.js";
 import { completionCommand } from "./commands/completion.js";
+import { statsCommand } from "./commands/stats.js";
+import { compareCommand } from "./commands/compare.js";
+import { migrateCommand } from "./commands/migrate.js";
 import { interactiveShellCommand } from "./commands/shell.js";
 
 export function createProgram(): Command {
@@ -231,7 +234,50 @@ export function createProgram(): Command {
       }
     });
 
-  // 12. GitHub
+  // 12. Stats
+  program
+    .command("stats")
+    .alias("dashboard")
+    .description("Display weekly push activity chart, streak metrics, and sync history")
+    .action(async () => {
+      try {
+        await statsCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // 13. Compare
+  program
+    .command("compare <app1> <app2>")
+    .description("Compare two AI projects side-by-side (shared files, size, divergence)")
+    .option("--platform1 <p1>", "Platform of first app")
+    .option("--platform2 <p2>", "Platform of second app")
+    .action(async (app1, app2, opts) => {
+      try {
+        await compareCommand(app1, app2, opts);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // 14. Migrate
+  program
+    .command("migrate <appId> <targetPlatform>")
+    .description("Assess and adapt project structure for migrating between platforms")
+    .option("-s, --source <source>", "Source platform (default: base44)")
+    .action(async (appId, targetPlatform, opts) => {
+      try {
+        await migrateCommand(appId, targetPlatform, { sourcePlatform: opts.source });
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // 15. GitHub
   program
     .command("github [action]")
     .description("Manage GitHub credentials, repositories, and connection (status, login, repos, create)")
@@ -248,7 +294,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 13. Doctor
+  // 16. Doctor
   program
     .command("doctor")
     .description("Run a complete health, runtime, platform, and permission audit")
@@ -262,7 +308,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 14. Backup
+  // 17. Backup
   program
     .command("backup")
     .description("Export every connected project into timestamped ZIP archives")
@@ -278,7 +324,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 15. Watch
+  // 18. Watch
   program
     .command("watch")
     .description("Monitor local project files for changes with auto-sync capability")
@@ -296,7 +342,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 16. Release
+  // 19. Release
   program
     .command("release [versionTag]")
     .description("Automated release pipeline: sync -> commit -> push -> GitHub tag/release -> watch CI")
@@ -313,7 +359,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 17. Config
+  // 20. Config
   program
     .command("config [action] [key] [value]")
     .description("Inspect and update global Push44 CLI configuration")
@@ -326,7 +372,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 18. Completion
+  // 21. Completion
   program
     .command("completion [shell]")
     .description("Generate shell auto-completion script (bash, zsh, fish)")
@@ -334,7 +380,7 @@ export function createProgram(): Command {
       completionCommand(shell);
     });
 
-  // 19. APK
+  // 22. APK
   program
     .command("apk [action] [threadId]")
     .description("Rocket.new mobile APK build management (build, status, download)")
@@ -349,7 +395,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 20. Badge
+  // 23. Badge
   program
     .command("badge <action> [platform] [appId]")
     .description("Remove platform watermark/branding badges (Floot, Zite, Bolt, Lovable)")
@@ -362,7 +408,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 21. Deploy
+  // 24. Deploy
   program
     .command("deploy [platform]")
     .description("Trigger web deployments to live hosting URLs")

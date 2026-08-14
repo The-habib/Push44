@@ -1,13 +1,15 @@
 import pc from "picocolors";
+import { applyGradient } from "./gradient.js";
 import type { StoredCredentials, ProjectConfig } from "../types.js";
 
 export function renderClaudeBanner(creds?: StoredCredentials, project?: ProjectConfig | null): string {
-  const width = 64;
+  const width = 68;
   const top = pc.dim("╭" + "─".repeat(width - 2) + "╮");
   const bottom = pc.dim("╰" + "─".repeat(width - 2) + "╯");
   const border = pc.dim("│");
 
-  const titleLine = `  ${pc.bold(pc.yellow("✦ Push44"))} ${pc.dim("v1.0.0")} ${" ".repeat(width - 32)} ${pc.dim("Anthropic / CLI")}`;
+  const brandText = applyGradient("✦ Push44 · AI Vibe-Coding Terminal");
+  const versionText = pc.dim("v1.0.0");
 
   // Connected chips
   const chips: string[] = [];
@@ -26,15 +28,13 @@ export function renderClaudeBanner(creds?: StoredCredentials, project?: ProjectC
     projectStr = `${pc.bold(project.appName)} ${pc.dim(`(${project.platform})`)} ${pc.dim("→")} ${pc.cyan(project.repo || "local")} ${pc.magenta(`[${project.branch || "main"}]`)}`;
   }
 
-  const lines = [
+  return [
     top,
-    `${border} ${titleLine.padEnd(width - 3)} ${border}`,
-    `${border} ${pc.dim("  Universal Command-Line Interface for AI Vibe-Coding").padEnd(width + 4)} ${border}`,
+    `${border}  ${brandText} ${versionText}`.padEnd(width + 18) + ` ${border}`,
+    `${border}  ${pc.dim("Universal Command-Line Interface for AI Vibe-Coding Platforms")}`.padEnd(width + 10) + ` ${border}`,
     `${border} ${" ".repeat(width - 4)} ${border}`,
-    `${border}   ${pc.bold("Status:")}  ${chipStr}`.padEnd(width + 12) + ` ${border}`,
-    `${border}   ${pc.bold("Context:")} ${projectStr}`.padEnd(width + 12) + ` ${border}`,
+    `${border}  ${pc.bold("Connected:")} ${chipStr}`.padEnd(width + 16) + ` ${border}`,
+    `${border}  ${pc.bold("Context:")}   ${projectStr}`.padEnd(width + 16) + ` ${border}`,
     bottom,
-  ];
-
-  return lines.join("\n");
+  ].join("\n");
 }

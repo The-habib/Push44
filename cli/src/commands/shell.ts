@@ -8,6 +8,9 @@ import { diffCommand } from "./diff.js";
 import { syncCommand } from "./sync.js";
 import { pullCommand } from "./pull.js";
 import { inspectCommand } from "./inspect.js";
+import { statsCommand } from "./stats.js";
+import { compareCommand } from "./compare.js";
+import { migrateCommand } from "./migrate.js";
 import { doctorCommand } from "./doctor.js";
 import { backupCommand } from "./backup.js";
 import { authStatusCommand } from "./auth.js";
@@ -21,7 +24,7 @@ export async function interactiveShellCommand(): Promise<void> {
 
   console.clear();
   console.log(renderClaudeBanner(creds, project));
-  console.log(pc.dim("  Type a command (e.g. `apps`, `diff`, `sync`, `doctor`, `inspect`) or `/help`. Press Ctrl+C to exit.\n"));
+  console.log(pc.dim("  Type a command (e.g. `apps`, `diff`, `sync`, `stats`, `inspect`, `doctor`) or `/help`.\n"));
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -58,6 +61,9 @@ export async function interactiveShellCommand(): Promise<void> {
           console.log(`  ${pc.cyan("sync")}             ${pc.dim("Auto-commit & push changes to GitHub")}`);
           console.log(`  ${pc.cyan("pull")}             ${pc.dim("Pull latest remote changes from platform")}`);
           console.log(`  ${pc.cyan("inspect")}          ${pc.dim("Analyze tech stack, dependencies & file tree")}`);
+          console.log(`  ${pc.cyan("stats")}            ${pc.dim("View activity chart & push streak metrics")}`);
+          console.log(`  ${pc.cyan("compare <a1> <a2>")} ${pc.dim("Compare two AI projects side-by-side")}`);
+          console.log(`  ${pc.cyan("migrate <id> <to>")} ${pc.dim("Assess cross-platform migration")}`);
           console.log(`  ${pc.cyan("doctor")}           ${pc.dim("Run complete system & health audit")}`);
           console.log(`  ${pc.cyan("auth")}             ${pc.dim("Inspect connected platform accounts")}`);
           console.log(`  ${pc.cyan("backup")}           ${pc.dim("Export all projects to timestamped ZIPs")}`);
@@ -86,6 +92,27 @@ export async function interactiveShellCommand(): Promise<void> {
 
         case "pull":
           await pullCommand();
+          break;
+
+        case "stats":
+        case "dashboard":
+          await statsCommand();
+          break;
+
+        case "compare":
+          if (args.length < 2) {
+            console.log(pc.yellow("Usage: compare <appId1> <appId2>"));
+          } else {
+            await compareCommand(args[0], args[1]);
+          }
+          break;
+
+        case "migrate":
+          if (args.length < 2) {
+            console.log(pc.yellow("Usage: migrate <appId> <targetPlatform>"));
+          } else {
+            await migrateCommand(args[0], args[1]);
+          }
           break;
 
         case "clone":
