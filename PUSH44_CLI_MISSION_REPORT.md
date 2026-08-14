@@ -8,7 +8,7 @@
 
 ## ✦ Executive Summary
 
-Push44 CLI has been engineered as a standalone, modular, and cross-platform terminal application for AI-assisted development platforms. Built upon the proven reverse-engineered architectures and protocols from the Push44 web application, the CLI brings version control, repository synchronization, mobile builds, deployment, and backup capabilities directly to terminal workflows.
+Push44 CLI has been engineered as a standalone, modular, and cross-platform terminal application for AI-assisted development platforms. Built upon the proven reverse-engineered architectures and protocols from the Push44 web application, the CLI brings version control, repository synchronization, mobile builds, deployment, tech stack inspection, and activity analytics directly to terminal workflows.
 
 ---
 
@@ -50,32 +50,41 @@ Push44 CLI has been engineered as a standalone, modular, and cross-platform term
 
 ---
 
-## ✦ Core Command Reference
+## ✦ Complete Command Reference
 
-### 1. Authentication & Inspection
+### 1. Interactive Experience & Aesthetics
+- `push44` (or `push44 shell`) — Launch the Claude Code style interactive terminal REPL with live status ribbons and quick slash commands (`/apps`, `/diff`, `/sync`, `/inspect`, `/stats`, `/doctor`).
+- `push44 stats` (alias: `push44 dashboard`) — Weekly synchronization frequency bar chart, push streak tracker, and recent commit history.
+- `push44 inspect` — Deep architectural analysis detecting Frameworks (React 19, Next.js, Remix, TanStack Start, Flutter), Tailwind CSS, UI primitives, and visual file trees with icons.
+- `push44 compare <app1> <app2>` — Side-by-side comparison of two AI projects (shared files, unique files, byte size divergence).
+- `push44 migrate <appId> <targetPlatform>` — Cross-platform migration analyzer and compatibility assessment.
+
+### 2. Authentication & Inspection
 - `push44 login [platform]` — Authenticate with Base44, Rocket.new, Floot, Zite, Bolt, Lovable, or GitHub.
 - `push44 logout [platform]` — Log out of specific platform or clear all stored credentials.
 - `push44 auth` / `push44 whoami` — Real-time authentication status matrix with masked secrets.
 
-### 2. Project Discovery & Export
+### 3. Project Discovery & Export
 - `push44 apps [platform]` — List remote AI projects with interactive clone prompt (`-i`) and JSON output (`--json`).
 - `push44 clone <app-id>` — Export project files, reconstruct directory tree, create `.push44.json`, and initialize Git.
 - `push44 pull` — Pull latest updates from the connected platform into current directory.
 - `push44 export [app-id]` — Export project source code or create a standalone ZIP archive (`--zip`).
 
-### 3. Git & GitHub Synchronization
+### 4. Git & GitHub Synchronization
 - `push44 diff` — Color-coded visual file diff (`+` new, `~` modified, `-` deleted) against baseline snapshot or live remote (`--live`).
-- `push44 sync` — Automated change detection, intelligent commit message generation, and atomic GitHub push.
+- `push44 sync` — Automated change detection, AI-assisted semantic commit message generation, and atomic GitHub push.
 - `push44 push` — Direct atomic multi-file commit via GitHub Git Data / Trees API.
 - `push44 github [status|repos|create]` — GitHub credential verification, repository creation, and repository listing.
 
-### 4. Health & Maintenance
-- `push44 doctor` — Full health audit (Node.js, Bun, Git, permissions, platform connectivity, repository state) with actionable fix suggestions.
+### 5. Health & Maintenance
+- `push44 doctor` — Full health audit (Node.js, Bun, Git, permissions, platform connectivity, repository state) with actionable `--fix` suggestions.
 - `push44 backup [--all]` — Export all connected AI projects into timestamped ZIP archives.
 - `push44 watch` — Real-time file change watcher with optional `--auto-sync` on file modification.
 - `push44 release [versionTag]` — End-to-end automated release pipeline: sync -> commit -> push -> GitHub Release tag -> live CI workflow watch.
+- `push44 config [list|get|set]` — Manage global CLI configuration.
+- `push44 completion [bash|zsh|fish]` — Generate shell tab auto-completion scripts.
 
-### 5. Platform Specific Tooling
+### 6. Platform Specific Tooling
 - `push44 apk [build|status|download]` — Rocket.new mobile Flutter/Android build manager.
 - `push44 badge remove <platform>` — Remove watermark/branding pills (Floot, Zite, Bolt, Lovable).
 - `push44 deploy [platform]` — Trigger live web hosting deployments (e.g. Floot apps to `https://<subdomain>.floot.app`).
@@ -84,8 +93,8 @@ Push44 CLI has been engineered as a standalone, modular, and cross-platform term
 
 ## ✦ Verification & Quality Audit
 
-1. **Unit & Integration Tests:** 20/20 passing tests in `cli/tests/` verifying crypto, auth storage, snapshots, diff calculation, platform adapters, git operations, and CLI execution.
-2. **Standalone Binary Bundle:** Self-contained bundle built to `cli/dist/push44.js` (820 KB, zero external runtime dependencies, compatible with Node 18+ and Bun).
+1. **Unit & Integration Tests:** 27/27 passing tests across 11 test suites in `cli/tests/` verifying crypto, auth storage, snapshots, diff calculation, platform adapters, git operations, AI commit messages, visual trees, charts, and CLI execution.
+2. **Standalone Binary Bundle:** Self-contained bundle built to `cli/dist/push44.js` (850 KB, zero external runtime dependencies, compatible with Node 18+ and Bun).
 3. **Universal Installers:** Provided `install.sh` (POSIX for Linux/macOS/Replit/Codespaces/Termux) and `install.ps1` (Windows PowerShell).
 4. **Zero Web Regressions:** Verified that Push44 web application continues to build cleanly with `bun run build`.
 
@@ -95,11 +104,12 @@ Push44 CLI has been engineered as a standalone, modular, and cross-platform term
 
 ```bash
 # Clone and explore
- clone https://github.com/The-habib/Push44.git
+git clone https://github.com/The-habib/Push44.git
 cd Push44
-git
+
 # Run CLI directly
-bun run cli --help
+bun run cli
+bun run cli stats
+bun run cli inspect
 bun run cli doctor
-bun run cli auth
 ```
