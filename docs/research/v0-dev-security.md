@@ -187,6 +187,15 @@ KPSDK (client-side, challenges via `/149e9513-.../c.js`) injects `x-is-human` + 
 - **Typed errors:** `unauthorized_error` vs `not_found_error` — useful to distinguish "no such resource" from "no permission," but also an enumeration aid if IDs are guessable.
 - **CORS:** `access-control-allow-origin: *` on `api.v0.dev` — browser-direct testing of the public API is fully supported (good for PoC screenshots).
 - **Anti-bot scope is narrow:** only `POST /chat/api/chat` and `POST /chat/api/vm/actions/*` are challenge-wrapped client-side.
+- **Confirmed live (2026-08, unauth probes):** `GET /v1/user` and `GET /v1/chats` → `401 unauthorized_error`. Unknown path + `/health` → `404 not_found_error`. **`GET /v1/chats/{chatId}/preview` → `404` while `GET /v1/chats/{chatId}`, `/versions/{vid}`, `/messages` → `401` for the same fake ID** — the preview route's auth check sits after resource resolution in the request stack, confirming the §C2/C3 preview anomaly is real on the live service, not a spec artifact. Harness: `/tmp/opencode/v0-bounty/` (read-only, own-accounts-only).
+
+**Unauth battery (2026-08, read-only, ~12 requests) — clean, no bugs:**
+- **CORS:** `access-control-allow-origin: *` on all origins (`evil.com`, `null`, `v0.dev`). Low severity — API auth is a header (`Authorization`), not cookies, so a reflected-origin CORS bug can't turn into credential theft. Still worth one line in a report: `*` prevents credentialed cross-site reads from being *meaningful*, but a misconfigured future cookie-based route would inherit it.
+- **Methods:** `OPTIONS` → 204; `TRACE`/`PUT`/`DELETE` on `/chats` → 405 with `x-vercel-error: NOT_ALLOWED` + `x-vercel-id` (edge node id, `bom1::` — informational only, not a leak).
+- **Auth parsing:** any garbage `Authorization` value → uniform `401 unauthorized_error`. No timing/differential on key format.
+- **Rate limits:** `GET /v1/rate-limits` → 401 unauth (not public).
+- **Open redirects:** `/api/auth/login?next=...` → 307 to `vercel.com/api/vercel-auth` with `redirectUrl` **hardcoded** to `v0.dev/api/auth/callback` — `next` is *not* reflected, no redirect found. `refresh-session?returnTo=` is session-gated (401). **Note:** `next` may be consumed later in the OAuth callback flow (post-login hop) — not testable without a session.
+- **`GET /v1/openapi.json`** → 200, intentionally public (source doc).
 
 ---
 
@@ -200,4 +209,4 @@ KPSDK (client-side, challenges via `/149e9513-.../c.js`) injects `x-is-human` + 
 
 ---
 
-> **Status:** static analysis only. Next step if you want to go further: build a two-account harness and run the C1/C2/C3 verification matrix against the public API (read-only), then write up findings. This is fully compatible with the existing `docs/research/` workflow.
+> **Status:** static analysis + low-volume unauthenticated recon (blocked 401s confirmed; `/preview` 404-differential confirmed live). **Next step if you want to go further:** two throwaway accounts + the read-only harness at `/tmp/opencode/v0-bounty/` to run the C1/C2/C3 matrix against the public API, then write up findings. This is fully compatible with the existing `docs/research/` workflow.

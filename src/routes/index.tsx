@@ -183,7 +183,7 @@ export default function LandingPage() {
 
             {/* H1 */}
             <h1 style={{ fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 auto 20px", maxWidth: 780 }}>
-              Export AI-Generated Code.<br />Own It Forever.
+              Export AI-Generated Code. Own It Forever.<br />This Code Downloader for Every Vibe Coding Platform
             </h1>
 
             {/* Subtext */}

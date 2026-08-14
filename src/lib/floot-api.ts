@@ -538,8 +538,8 @@ async function readFlootItems(
 }
 
 /** Determine file extension for a Floot item type */
-function itemExtension(itemType: "pages" | "helpers" | "components" | "endpoints" | "statics", name: string): string {
-  if (itemType === "statics") {
+function itemExtension(itemType: "pages" | "helpers" | "components" | "endpoints" | "static", name: string): string {
+  if (itemType === "static") {
     // statics already carry their extension in the name (e.g. "readme.md")
     return "";
   }
@@ -548,13 +548,13 @@ function itemExtension(itemType: "pages" | "helpers" | "components" | "endpoints
 }
 
 /** Convert a Floot item type + name into a filesystem path prefix */
-function itemPath(itemType: "pages" | "helpers" | "components" | "endpoints" | "statics", name: string): string {
+function itemPath(itemType: "pages" | "helpers" | "components" | "endpoints" | "static", name: string): string {
   const dirMap: Record<string, string> = {
     pages: "pages",
     helpers: "helpers",
     components: "components",
     endpoints: "endpoints",
-    statics: "static",
+    static: "static",
   };
   const dir = dirMap[itemType] ?? itemType;
   return `${dir}/${name}`;
@@ -582,13 +582,13 @@ export async function fetchFlootAppFiles({
   const { components = [], helpers = [], endpoints = [], pages = [], statics = [] } = info.items ?? {};
 
   // Build the flat list of (itemType, name) pairs to fetch
-  type ItemRef = { type: "pages" | "helpers" | "components" | "endpoints" | "statics"; name: string };
+  type ItemRef = { type: "pages" | "helpers" | "components" | "endpoints" | "static"; name: string };
   const allItems: ItemRef[] = [
     ...pages.map((n) => ({ type: "pages" as const, name: n })),
     ...helpers.map((n) => ({ type: "helpers" as const, name: n })),
     ...components.map((n) => ({ type: "components" as const, name: n })),
     ...endpoints.map((n) => ({ type: "endpoints" as const, name: n })),
-    ...statics.map((n) => ({ type: "statics" as const, name: n })),
+    ...statics.map((n) => ({ type: "static" as const, name: n })),
   ];
 
   if (allItems.length === 0) {
@@ -601,7 +601,7 @@ export async function fetchFlootAppFiles({
 
   for (let i = 0; i < allItems.length; i += BATCH) {
     const batch = allItems.slice(i, i + BATCH);
-    // Floot itemNames format: "pages/_index", "helpers/themeMode", etc.
+    // Floot itemNames format: "pages/_index", "helpers/themeMode", "static/readme.md"
     const itemNames = batch.map((ref) => `${ref.type}/${ref.name}`);
     const batchResult = await readFlootItems(token, appId, itemNames);
     Object.assign(contentMap, batchResult);
@@ -628,12 +628,12 @@ export async function fetchFlootAppFiles({
 
     // Code file
     if (item.code !== undefined) {
-      const codePath = ref.type === "statics" ? basePath : `${basePath}${ext}`;
+      const codePath = ref.type === "static" ? basePath : `${basePath}${ext}`;
       files.push({ path: codePath, content: item.code });
     }
 
     // CSS module (pages and components can have accompanying .module.css)
-    if (item.css !== undefined && ref.type !== "statics") {
+    if (item.css !== undefined && ref.type !== "static") {
       files.push({ path: `${basePath}.module.css`, content: item.css });
     }
   }

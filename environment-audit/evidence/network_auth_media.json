@@ -1,0 +1,88 @@
+{
+  "auth": {
+    "gh": {
+      "code": 1,
+      "out": "",
+      "err": "You are not logged into any GitHub hosts. To log in, run: gh auth login\n"
+    },
+    "gcloud": {
+      "code": 0,
+      "out": "",
+      "err": "\nNo credentialed accounts.\n\nTo login, run:\n  $ gcloud auth login `ACCOUNT`\n\n"
+    },
+    "replit_identity": {
+      "code": 0,
+      "out": "v2.public.Q2lSbFpEVXpPRFU0TXkweVlqTTBMVFE0WW1RdE9XUmhZaTFqTUdWaE1XUXdaams1TmpJU0NYUm5abVl5T0RrM01Cb0dVSFZ6YURRMElpUmxaRFV6T0RVNE15MHlZak0wTFRRNFltUXRPV1JoWWkxak1HVmhNV1F3WmprNU5qSTRzZHEzRjNJWENncDJjalY1YjJNMGRHRnJFQUVxQnpVd01UY3pNamRhQmdvRWNHbHJaUT09IAC-09lQSdKxsE0jpdEWq8QWhd1yOBUDOmbjXKjQqX3-12gMq4",
+      "err": ""
+    },
+    "git_config": {
+      "code": 0,
+      "out": "core.excludesfile=/etc/.gitignore\ncore.attributesfile=/etc/.gitattributes\ncore.fsync=all\nfilter.lfs.clean=git-lfs clean -- %f\nfilter.lfs.smudge=git-lfs smudge -- %f\nfilter.lfs.process=git-lfs filter-process\nfilter.lfs.required=true\ninclude.path=/run/replit/git-proxy.gitconfig\ninit.defaultbranch=main",
+      "err": ""
+    },
+    "npm": {
+      "code": 1,
+      "out": "",
+      "err": "npm error code ENEEDAUTH\nnpm error need auth This command requires you to be logged in.\nnpm error need auth You need to authorize this machine using `npm adduser`\nnpm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-08-12T21_10_44_251Z-debug-0.log\n"
+    },
+    "docker": {
+      "code": 0,
+      "out": "Client:\n Version:    27.5.1\n Context:    default\n Debug Mode: false\n Plugins:\n  buildx: Docker Buildx (Docker Inc.)\n    Version:  v0.23.0\n    Path:     /nix/store/mlaqxqfsgnmzpljgg0wzz53062yn8gn1-docker-plugins/libexec/docker/cli-plugins/docker-buildx\n  compose: Docker Compose (Docker Inc.)\n    Vers",
+      "err": ""
+    }
+  },
+  "network": {
+    "https://api.github.com": {
+      "status": 200,
+      "reachable": true
+    },
+    "https://www.googleapis.com": {
+      "status": "HTTP Error 404: Not Found",
+      "reachable": false
+    },
+    "https://registry.npmjs.org": {
+      "status": 200,
+      "reachable": true
+    },
+    "https://pypi.org": {
+      "status": 200,
+      "reachable": true
+    },
+    "http://package-firewall.replit.local/health": {
+      "status": 200,
+      "reachable": true
+    },
+    "http://package-firewall.replit.local/npm/": {
+      "status": 200,
+      "reachable": true
+    }
+  },
+  "dns": {
+    "status": "ok",
+    "resolved_ip": "20.207.73.85"
+  },
+  "media": {
+    "imagemagick": {
+      "code": 0,
+      "out": "-rw-r--r-- 1 runner runner 415 Aug 12 21:10 /tmp/test_canvas.jpg\n-rw-r--r-- 1 runner runner 321 Aug 12 21:10 /tmp/test_canvas.png\n",
+      "err": "WARNING: The convert command is deprecated in IMv7, use \"magick\" instead of \"convert\" or \"magick convert\"\n\n"
+    },
+    "ffmpeg": {
+      "code": 0,
+      "out": "-rw-r--r-- 1 runner runner 4734 Aug 12 21:10 /tmp/test_vid.mp4\n",
+      "err": "ffmpeg version 6.1.2 Copyright (c) 2000-2024 the FFmpeg developers\n  built with gcc 14.3.0 (GCC)\n  configuration: --disable-static --prefix=/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-ffmpeg-full-6.1.2 --target_os=linux --arch=x86_64 --pkg-config=pkg-config --enable-gpl --enable-version3 --disable-n"
+    }
+  },
+  "db": {
+    "sqlite": {
+      "code": 2,
+      "out": "",
+      "err": "/nix/store/ih68ar79msmj0496pgld4r3vqfr7bbin-bash-5.2p37/bin/sh: -c: line 1: syntax error near unexpected token `('\n/nix/store/ih68ar79msmj0496pgld4r3vqfr7bbin-bash-5.2p37/bin/sh: -c: line 1: `python3 -c \"import sqlite3; conn=sqlite3.connect(\"/tmp/test.db\"); conn.execute(\"CREATE TABLE t (x INT)\"); co"
+    },
+    "postgres": {
+      "code": 0,
+      "out": "postgres (PostgreSQL) 16.10\n",
+      "err": ""
+    }
+  }
+}

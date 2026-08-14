@@ -1,0 +1,353 @@
+{
+  "binaries": {
+    "node": {
+      "installed": true,
+      "path": "/nix/store/1lagpgadaybvs1n2312gysg2phjk89y8-nodejs-20.20.0-wrapped/bin/node",
+      "version_out": "v20.20.0",
+      "exec_code": 0
+    },
+    "bun": {
+      "installed": true,
+      "path": "/nix/store/1xk3mgscq548ypyrgm2n5kwdii92w9ql-bun-1.3.6/bin/bun",
+      "version_out": "1.3.6",
+      "exec_code": 0
+    },
+    "python3": {
+      "installed": true,
+      "path": "/nix/store/v51r3xzr2408x0cpyl1rmp8fa3x71x7y-python3-3.13.4/bin/python3",
+      "version_out": "Python 3.13.4",
+      "exec_code": 0
+    },
+    "ruby": {
+      "installed": false
+    },
+    "go": {
+      "installed": false
+    },
+    "rustc": {
+      "installed": false
+    },
+    "cargo": {
+      "installed": false
+    },
+    "javac": {
+      "installed": false
+    },
+    "java": {
+      "installed": false
+    },
+    "gcc": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/gcc",
+      "version_out": "gcc (GCC) 14.3.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PA",
+      "exec_code": 0
+    },
+    "g++": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/g++",
+      "version_out": "g++ (GCC) 14.3.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PA",
+      "exec_code": 0
+    },
+    "clang": {
+      "installed": false
+    },
+    "php": {
+      "installed": false
+    },
+    "perl": {
+      "installed": true,
+      "path": "/usr/bin/perl",
+      "version_out": "This is perl 5, version 38, subversion 2 (v5.38.2) built for x86_64-linux-gnu-thread-multi\n(with 54 registered patches, see perl -V for more detail)\n\nCopyright 1987-2023, Larry Wall\n\nPerl may be copi",
+      "exec_code": 0
+    },
+    "make": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/make",
+      "version_out": "GNU Make 4.4.1\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2023 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\nThis is free software",
+      "exec_code": 0
+    },
+    "cmake": {
+      "installed": false
+    },
+    "ninja": {
+      "installed": false
+    },
+    "pkg-config": {
+      "installed": false
+    },
+    "git": {
+      "installed": true,
+      "path": "/repl/ctls/bin/git",
+      "version_out": "git version 2.53.0",
+      "exec_code": 0
+    },
+    "gh": {
+      "installed": true,
+      "path": "/repl/ctls/bin/gh",
+      "version_out": "gh version 2.88.1 (nixpkgs)\nhttps://github.com/cli/cli/releases/tag/v2.88.1",
+      "exec_code": 0
+    },
+    "gcloud": {
+      "installed": true,
+      "path": "/repl/ctls/bin/gcloud",
+      "version_out": "Google Cloud SDK 552.0.0\nbq 2.1.27\nbundled-python3-unix 3.13.10\ncore 2026.01.09\ngcloud-crc32c 1.0.0\ngsutil 5.35",
+      "exec_code": 0
+    },
+    "bq": {
+      "installed": false
+    },
+    "gsutil": {
+      "installed": false
+    },
+    "docker": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/docker",
+      "version_out": "Docker version 27.5.1, build v27.5.1",
+      "exec_code": 0
+    },
+    "kubectl": {
+      "installed": false
+    },
+    "terraform": {
+      "installed": false
+    },
+    "vercel": {
+      "installed": false
+    },
+    "netlify": {
+      "installed": false
+    },
+    "flyctl": {
+      "installed": false
+    },
+    "railway": {
+      "installed": false
+    },
+    "sqlite3": {
+      "installed": false
+    },
+    "postgres": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/postgres",
+      "version_out": "postgres (PostgreSQL) 16.10",
+      "exec_code": 0
+    },
+    "redis-cli": {
+      "installed": false
+    },
+    "mysql": {
+      "installed": false
+    },
+    "ffmpeg": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/ffmpeg",
+      "version_out": "ffmpeg version 6.1.2 Copyright (c) 2000-2024 the FFmpeg developers\n  built with gcc 14.3.0 (GCC)\n  configuration: --disable-static --prefix=/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-ffmpeg-full-6.1.",
+      "exec_code": 234
+    },
+    "ffprobe": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/ffprobe",
+      "version_out": "ffprobe version 6.1.2 Copyright (c) 2007-2024 the FFmpeg developers\n  built with gcc 14.3.0 (GCC)\n  configuration: --disable-static --prefix=/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-ffmpeg-full-6.1",
+      "exec_code": 1
+    },
+    "webm_encoder": {
+      "installed": true,
+      "path": "/home/runner/.gemini/antigravity-cli/bin/webm_encoder",
+      "version_out": "/nix/store/ih68ar79msmj0496pgld4r3vqfr7bbin-bash-5.2p37/bin/sh: line 1: /home/runner/.gemini/antigravity-cli/bin/webm_encoder: cannot execute: required file not found\n/nix/store/ih68ar79msmj0496pgld4r",
+      "exec_code": 127
+    },
+    "magick": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/magick",
+      "version_out": "Version: ImageMagick 7.1.2-7 Q16-HDRI x86_64 e3e6b54ad:20251014 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/script/license.php\nFeatures: Cipher",
+      "exec_code": 0
+    },
+    "convert": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/convert",
+      "version_out": "Version: ImageMagick 7.1.2-7 Q16-HDRI x86_64 e3e6b54ad:20251014 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/script/license.php\nFeatures: Cipher",
+      "exec_code": 0
+    },
+    "identify": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/identify",
+      "version_out": "Version: ImageMagick 7.1.2-7 Q16-HDRI x86_64 e3e6b54ad:20251014 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/script/license.php\nFeatures: Cipher",
+      "exec_code": 0
+    },
+    "compare": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/compare",
+      "version_out": "Version: ImageMagick 7.1.2-7 Q16-HDRI x86_64 e3e6b54ad:20251014 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/script/license.php\nFeatures: Cipher",
+      "exec_code": 0
+    },
+    "composite": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/composite",
+      "version_out": "Version: ImageMagick 7.1.2-7 Q16-HDRI x86_64 e3e6b54ad:20251014 https://imagemagick.org\nCopyright: (C) 1999 ImageMagick Studio LLC\nLicense: https://imagemagick.org/script/license.php\nFeatures: Cipher",
+      "exec_code": 0
+    },
+    "semgrep": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/semgrep",
+      "version_out": "1.152.0\n\nA new version of Semgrep is available. See https://semgrep.dev/docs/upgrading",
+      "exec_code": 0
+    },
+    "objdump": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/objdump",
+      "version_out": "GNU objdump (GNU Binutils) 2.44\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis program is free software; you may redistribute it under the terms of\nthe GNU General Public License version 3 or",
+      "exec_code": 0
+    },
+    "readelf": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/readelf",
+      "version_out": "GNU readelf (GNU Binutils) 2.44\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis program is free software; you may redistribute it under the terms of\nthe GNU General Public License version 3 or",
+      "exec_code": 0
+    },
+    "nm": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/nm",
+      "version_out": "GNU nm (GNU Binutils) 2.44\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis program is free software; you may redistribute it under the terms of\nthe GNU General Public License version 3 or (at y",
+      "exec_code": 0
+    },
+    "strings": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/strings",
+      "version_out": "GNU strings (GNU Binutils) 2.44\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis program is free software; you may redistribute it under the terms of\nthe GNU General Public License version 3 or",
+      "exec_code": 0
+    },
+    "gdb": {
+      "installed": false
+    },
+    "lldb": {
+      "installed": false
+    },
+    "strace": {
+      "installed": false
+    },
+    "ltrace": {
+      "installed": false
+    },
+    "file": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/file",
+      "version_out": "file-5.45\nmagic file from /nix/store/9rsc6g3vlfnp7lvq3pl1xpir5acd1ax0-file-5.45/share/misc/magic",
+      "exec_code": 0
+    },
+    "xxd": {
+      "installed": false
+    },
+    "nix": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/nix",
+      "version_out": "nix (Determinate Nix 3.11.2) 2.31.1",
+      "exec_code": 0
+    },
+    "nix-shell": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/nix-shell",
+      "version_out": "nix-shell (Determinate Nix 3.11.2) 2.31.1",
+      "exec_code": 0
+    },
+    "nix-env": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/nix-env",
+      "version_out": "nix-env (Determinate Nix 3.11.2) 2.31.1",
+      "exec_code": 0
+    },
+    "nix-store": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/nix-store",
+      "version_out": "nix-store (Determinate Nix 3.11.2) 2.31.1",
+      "exec_code": 0
+    },
+    "upm": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/upm",
+      "version_out": "upm 0.0.0-0ffdf7d",
+      "exec_code": 0
+    },
+    "brew": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/brew",
+      "version_out": "\u001b[0;93mTools like apt, brew, and yum which modify system\ndependencies are not directly callable inside Replit. We offer the\n\u001b[1;93m\ueea7System\u00a0Dependencies\u001b[0;93m pane for easy dependency management.\n\nFor",
+      "exec_code": 1
+    },
+    "code": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/code",
+      "version_out": "touch (GNU coreutils) 9.7\nPackaged by https://nixos.org\nCopyright (C) 2025 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free s",
+      "exec_code": 0
+    },
+    "openvscode-server": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/openvscode-server",
+      "version_out": "1.101.2\n7a8414bc6f6247d53b3aa0d04e069f0db0bdb66e\nx64",
+      "exec_code": 0
+    },
+    "replit": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/replit",
+      "version_out": "NAME:\n   replit - Interact with Replit services\n\nUSAGE:\n   replit [global options] [command [command options]] [arguments...]\n\nCOMMANDS:\n   identity    Interact with Replit identity\n   identityv2  Int",
+      "exec_code": 1
+    },
+    "agentapi": {
+      "installed": true,
+      "path": "/home/runner/.gemini/antigravity-cli/bin/agentapi",
+      "version_out": "{\n  \"response\": {},\n  \"error\": \"unknown command: --version\"\n}\n{\n  \"response\": {},\n  \"error\": \"unknown command: -v\"\n}\n{\n  \"response\": {},\n  \"error\": \"unknown command: version\"\n}",
+      "exec_code": 1
+    },
+    "autocontainer": {
+      "installed": true,
+      "path": "/nix/store/q0s2l1r1y9y5nvjy1cs8s5vjlnfjcqzy-pid1/bin/autocontainer",
+      "version_out": "flag provided but not defined: -version\nUsage of /nix/store/ab3bi0gbb9bcsjl97napnw61gik6mzhh-pid1-0.0.1/bin/autocontainer:\n  -build-dir string\n    \t(test only) the directory to deploy from\n  -build-id",
+      "exec_code": 1
+    },
+    "artifact-router": {
+      "installed": true,
+      "path": "/nix/store/q0s2l1r1y9y5nvjy1cs8s5vjlnfjcqzy-pid1/bin/artifact-router",
+      "version_out": "time=\"2026-08-12T21:10:33Z\" level=fatal msg=\"no routable artifacts found \u2014 check artifact.toml files\"\ntime=\"2026-08-12T21:10:33Z\" level=fatal msg=\"no routable artifacts found \u2014 check artifact.toml fil",
+      "exec_code": 1
+    },
+    "docker-credential-replit-deploy": {
+      "installed": true,
+      "path": "/nix/store/3mb5pci3v9713drr3jglikrvx3xifl2c-replit-runtime-path/bin/docker-credential-replit-deploy",
+      "version_out": "(github.com/docker/docker-credential-helpers) v0.0.0+unknown",
+      "exec_code": 0
+    }
+  },
+  "sockets": {
+    "/run/replit/seccomp.sock": {
+      "mode": "0o140755",
+      "uid": 1000,
+      "gid": 1000,
+      "readable": true,
+      "writable": true,
+      "connection_test": "connected"
+    },
+    "/run/replit/socks/pid2ping.0.sock": {
+      "mode": "0o140755",
+      "uid": 1000,
+      "gid": 1000,
+      "readable": true,
+      "writable": true,
+      "connection_test": "connected"
+    },
+    "/run/replit/socks/pid2ws.sock": {
+      "mode": "0o140755",
+      "uid": 1000,
+      "gid": 1000,
+      "readable": true,
+      "writable": true,
+      "connection_test": "connected"
+    },
+    "/run/replit/socks/portauthority.sock": {
+      "mode": "0o140755",
+      "uid": 1000,
+      "gid": 1000,
+      "readable": true,
+      "writable": true,
+      "connection_test": "connected"
+    }
+  }
+}

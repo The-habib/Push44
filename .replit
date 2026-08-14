@@ -5,6 +5,7 @@ stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
+packages = ["haskellPackages.wai-app-static", "python313Full", "opencode"]
 
 [workflows]
 runButton = "Project"
@@ -29,6 +30,9 @@ outputType = "webview"
 task = "shell.exec"
 args = "bun run dev"
 waitForPort = 5000
+
+[[ports]]
+localPort = 3000
 
 [[ports]]
 localPort = 5000
