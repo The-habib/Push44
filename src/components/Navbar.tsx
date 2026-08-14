@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, Terminal } from "lucide-react";
 import appLogo from "@/assets/logo.png";
 
 export function Navbar() {
@@ -45,6 +45,7 @@ export function Navbar() {
             {isLanding && (
               <>
                 <NavLink href="#features">Features</NavLink>
+                <NavLink href="#cli">CLI Terminal</NavLink>
                 <NavLink href="#platforms">Platforms</NavLink>
                 <NavLink href="#how-it-works">How it works</NavLink>
                 <NavLink href="#faq">FAQ</NavLink>
@@ -56,6 +57,22 @@ export function Navbar() {
 
           {/* Right actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <a
+              href="#cli"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                height: 36, padding: "0 12px",
+                background: "#f5f0eb", color: "#201515",
+                fontWeight: 600, fontSize: 13, borderRadius: 10,
+                textDecoration: "none", border: "1px solid #e6e1da",
+                letterSpacing: "-0.01em",
+              }}
+              className="hidden-mobile"
+            >
+              <Terminal size={13} color="#f97316" />
+              <span>CLI</span>
+            </a>
+
             <Link
               to="/onboarding"
               style={{
@@ -112,6 +129,7 @@ export function Navbar() {
             {isLanding && (
               <>
                 <MobileNavLink href="#features"    onClick={() => setMenuOpen(false)}>Features</MobileNavLink>
+                <MobileNavLink href="#cli"         onClick={() => setMenuOpen(false)}>CLI Terminal</MobileNavLink>
                 <MobileNavLink href="#platforms"   onClick={() => setMenuOpen(false)}>Platforms</MobileNavLink>
                 <MobileNavLink href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</MobileNavLink>
                 <MobileNavLink href="#faq"         onClick={() => setMenuOpen(false)}>FAQ</MobileNavLink>

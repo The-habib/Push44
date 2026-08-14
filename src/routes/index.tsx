@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Zap, ShieldCheck, GitBranch, EyeOff,
-  Download, History, ChevronDown, ChevronUp,
+  Download, History, ChevronDown, ChevronUp, Terminal,
 } from "lucide-react";
 import base44LogoImg from "@/assets/base44-logo-transparent.webp";
 import rocketLogoImg from "@/assets/rocket-logo.png";
@@ -12,16 +12,17 @@ import ziteLogoImg from "@/assets/zite-logo.png";
 import boltLogoImg from "@/assets/bolt-logo.svg";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CliShowcase } from "@/components/CliShowcase";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Push44 — Export AI-Generated Code from Any Platform. Free. Forever." },
-      { name: "description", content: "Push44 lets you export your full source code from Base44, Rocket.new, Floot, Zite, and bolt.new directly to GitHub in one click. No backend. No subscription. Completely free." },
-      { name: "keywords", content: "AI app export, Base44 GitHub export, Rocket.new export, Floot export, Zite export, AI code ownership, export AI generated code" },
+      { title: "Push44 — Export AI Code to GitHub in Browser & Terminal CLI. Free Forever." },
+      { name: "description", content: "Push44 lets you export your full source code from Base44, Rocket.new, Floot, Zite, and bolt.new to GitHub in one click — available as a web app and terminal CLI (p44). Zero backend, 100% free." },
+      { name: "keywords", content: "AI app export, Base44 CLI, Rocket.new APK build, Floot export, Zite export, AI code ownership, export AI generated code, Push44 CLI, vibe coding terminal" },
       { name: "robots", content: "index, follow" },
-      { property: "og:title", content: "Push44 — Export AI-Generated Code Free. Forever." },
-      { property: "og:description", content: "Bypass export restrictions. Keep 100% ownership. Push to GitHub instantly." },
+      { property: "og:title", content: "Push44 — Export AI-Generated Code Free (Web & CLI)" },
+      { property: "og:description", content: "Bypass export restrictions. Keep 100% ownership. Push to GitHub instantly via browser or terminal." },
       { property: "og:url", content: "https://push44.vercel.app" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -105,15 +106,15 @@ const FEATURES = [
   { Icon: Zap, title: "Instant Push", desc: "From export to GitHub commit in under 10 seconds. Batch push all files in a single atomic operation." },
   { Icon: GitBranch, title: "Smart Diff Preview", desc: "See exactly what changed before you push — added, modified, and deleted files with full transparency." },
   { Icon: History, title: "Version History", desc: "Every push creates a proper git commit. Roll back to any version, compare changes, and track your progress." },
-  { Icon: EyeOff, title: "No Data Collection", desc: "Zero servers, zero logs, zero tracking. Push44 runs entirely in your browser — your code and tokens never leave your device." },
+  { Icon: EyeOff, title: "No Data Collection", desc: "Zero servers, zero logs, zero tracking. Push44 runs entirely on your machine — your code and tokens never leave your device." },
 ];
 
 // ── PLATFORMS data ──────────────────────────────────────────────────────────
 
 const PLATFORMS = [
   { name: "Base44", logo: base44LogoImg, slug: "base44", desc: "Export any Base44 project to GitHub with automatic file discovery and token authentication." },
-  { name: "Rocket.new", logo: rocketLogoImg, slug: "rocket-new", desc: "Pull your full Rocket.new codebase, including all components, hooks, and configuration files." },
-  { name: "Floot", logo: flootLogoImg, slug: "floot", desc: "Export Floot projects via magic link session and push your web app source to any GitHub repo." },
+  { name: "Rocket.new", logo: rocketLogoImg, slug: "rocket-new", desc: "Pull your full Rocket.new codebase, build Android APKs in cloud, and push to GitHub." },
+  { name: "Floot", logo: flootLogoImg, slug: "floot", desc: "Export Floot projects via magic link session and deploy live web updates with one command." },
   { name: "Zite", logo: ziteLogoImg, slug: "zite", desc: "Extract your Zite template files and push them to GitHub with complete directory structure intact." },
   { name: "bolt.new", logo: boltLogoImg, slug: "bolt-new", desc: "Remove the 'Made in Bolt' badge from your bolt.new app with one click — permanently." },
 ];
@@ -121,7 +122,7 @@ const PLATFORMS = [
 // ── HOW IT WORKS ─────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { n: "01", title: "Connect Your Platform", desc: "Enter your platform credentials or API token. Push44 runs entirely in your browser — no server ever sees your token." },
+  { n: "01", title: "Connect Your Platform", desc: "Enter your platform credentials or API token. Push44 runs entirely client-side — no server ever sees your token." },
   { n: "02", title: "Review Your Changes", desc: "See a full diff of every file that changed since your last push. Added, modified, and deleted — nothing hidden." },
   { n: "03", title: "Push to GitHub", desc: "One click creates a real git commit on your repo. Your code is yours, tracked, versioned, and owned by you." },
 ];
@@ -130,8 +131,9 @@ const STEPS = [
 
 const FAQS = [
   { q: "Is Push44 really free?", a: "Yes, 100% free forever. No trial, no credit card, no hidden tier. No paid plans, ever." },
-  { q: "Does Push44 store my code or tokens?", a: "Never. Push44 runs entirely in your browser. Your API tokens and source code never touch any server operated by us." },
-  { q: "Which AI platforms are supported?", a: "Base44, Rocket.new, Floot, Zite, and bolt.new are fully supported. Each platform has different capabilities: code export to GitHub (Base44, Rocket, Floot, Zite) and badge removal (bolt.new). More platforms are added regularly." },
+  { q: "Can I use Push44 in my terminal?", a: "Yes! Push44 CLI (p44) gives you the exact same features directly in Cursor, VS Code, Termux, and terminal with `push44 sync`, `push44 inspect`, and `push44 apk`." },
+  { q: "Does Push44 store my code or tokens?", a: "Never. Push44 runs entirely in your browser or local terminal. Your API tokens and source code never touch any server operated by us." },
+  { q: "Which AI platforms are supported?", a: "Base44, Rocket.new, Floot, Zite, and bolt.new are fully supported. Each platform has different capabilities: code export to GitHub (Base44, Rocket, Floot, Zite), APK cloud compilation (Rocket), and badge removal (bolt.new)." },
   { q: "Do I need a GitHub account?", a: "Yes, you need a GitHub account and a Personal Access Token (or GitHub OAuth) to push to a repository." },
   { q: "Can I push to a private repository?", a: "Absolutely. Push44 works with both public and private GitHub repositories, as long as your token has the right permissions." },
   { q: "What happens to my code after I push?", a: "It lives in your GitHub repository — exactly like any other git commit. Push44 has no ongoing access after the push completes." },
@@ -177,19 +179,19 @@ export default function LandingPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             {/* Badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px 4px 6px", border: "1px solid #e6e1da", borderRadius: 999, fontSize: 12, fontWeight: 500, color: "#939084", marginBottom: 28 }}>
-              <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.02em" }}>FREE</span>
-              Free forever · No signup required · No data collected
+              <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.02em" }}>WEB &amp; CLI</span>
+              Free forever · No signup required · Available in Browser &amp; Terminal
             </div>
 
             {/* H1 */}
             <h1 style={{ fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 auto 20px", maxWidth: 780 }}>
-              Export AI-Generated Code. Own It Forever.<br />This Code Downloader for Every Vibe Coding Platform
+              Export AI-Generated Code. Own It Forever.<br />The Universal Hub for Every Vibe Coding Platform
             </h1>
 
             {/* Subtext */}
-            <p style={{ fontSize: 18, color: "#605d52", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 500 }}>
+            <p style={{ fontSize: 18, color: "#605d52", lineHeight: 1.65, margin: "0 auto 40px", maxWidth: 520 }}>
               Push44 bypasses export restrictions on Base44, Rocket.new, Floot, Zite, and bolt.new.
-              Push your full source code to GitHub in one click — free, forever.
+              Push your full source code to GitHub in one click — on the web or in your terminal.
             </p>
 
             {/* CTAs */}
@@ -202,14 +204,15 @@ export default function LandingPage() {
               >
                 Start Exporting Free <ArrowRight size={16} />
               </Link>
-              <Link
-                to="/blog/"
+              <a
+                href="#cli"
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#fff", color: "#201515", fontWeight: 600, fontSize: 15, borderRadius: 12, textDecoration: "none", border: "1px solid #e6e1da", letterSpacing: "-0.01em", transition: "border-color 0.15s, box-shadow 0.15s", boxShadow: "0 1px 3px rgba(32,21,21,0.06)" }}
-                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"}
-                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "#d4d4d8"}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "#e4e4e7"}
               >
-                View Guides &amp; Tutorials
-              </Link>
+                <Terminal size={16} color="#f97316" />
+                Try Terminal CLI
+              </a>
             </div>
 
             {/* Product mockup */}
@@ -238,7 +241,7 @@ export default function LandingPage() {
             { n: "12.4K", label: "GitHub Stars", sub: "and growing" },
             { n: "5", label: "AI Platforms", sub: "fully supported" },
             { n: "100%", label: "Free Forever", sub: "no hidden costs" },
-            { n: "0", label: "Backend", sub: "runs in your browser" },
+            { n: "0", label: "Backend", sub: "runs in browser & CLI" },
           ].map((s, i) => (
             <div key={s.label} style={{ padding: "32px 28px", textAlign: "center", background: "#fff", borderLeft: i > 0 ? "1px solid #e6e1da" : "none" }}>
               <div style={{ fontSize: 36, fontWeight: 900, color: "#201515", letterSpacing: "-0.04em", lineHeight: 1 }}>{s.n}</div>
@@ -301,6 +304,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── CLI SHOWCASE ──────────────────────────────────────────────────── */}
+      <CliShowcase />
 
       {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
       <section style={{ padding: "80px 20px", background: "#f5f0eb", borderBottom: "1px solid #ede8e2" }} id="how-it-works">
@@ -382,7 +388,7 @@ export default function LandingPage() {
             Start owning your code today.
           </h2>
           <p style={{ fontSize: 16, color: "#8a7f78", margin: "0 0 40px", lineHeight: 1.65 }}>
-            Free forever. No account required to start.
+            Free forever. No account required to start. Available in browser and terminal.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link
@@ -393,6 +399,13 @@ export default function LandingPage() {
             >
               Launch App Free <ArrowRight size={16} />
             </Link>
+            <a
+              href="#cli"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", background: "#2a1f18", color: "#ede8e2", fontWeight: 600, fontSize: 15, borderRadius: 12, textDecoration: "none", border: "1px solid #3d2f26", transition: "all 0.15s" }}
+            >
+              <Terminal size={16} color="#f97316" />
+              Get Push44 CLI
+            </a>
           </div>
         </div>
       </section>
