@@ -2,9 +2,9 @@ import { promises as fs } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import pc from "picocolors";
-import { getCredentials, saveCredentials } from "../auth/store.js";
+import { getCredentials, ensureConfigDir } from "../auth/store.js";
 import { getAllAdapters } from "../platforms/index.js";
-import { isGitInstalled, getGitVersion } from "../git/operations.js";
+import { isGitInstalled, getGitVersion, initGitRepo } from "../git/operations.js";
 import { auditGitRepository } from "../git/intelligence.js";
 import { getGitHubUser } from "../github/client.js";
 import { createTable } from "../ui/table.js";
@@ -17,6 +17,7 @@ export async function doctorCommand(options: { fix?: boolean } = {}): Promise<vo
 
   const checks: DoctorCheck[] = [];
   const creds = await getCredentials();
+  const fixesApplied: string[] = [];
 
   // 1. Runtime checks
   checks.push({
@@ -36,7 +37,51 @@ export async function doctorCommand(options: { fix?: boolean } = {}): Promise<vo
     });
   } catch {}
 
-  // 2. Git checks
+  // 2. Storage & Permissions
+  const configDir = path.join(os.homedir(), ".push44");
+  try {
+    await ensureConfigDir();
+    const testFile = path.join(configDir, ".write-test");
+    await fs.writeFile(testFile, "test", "utf-8");
+    await fs.unlink(testFile);
+    checks.push({
+      category: "permissions",
+      name: "Config Storage Permissions",
+      status: "pass",
+      message: `Writable directory at ${configDir}`,
+    });
+  } catch (err: any) {
+    if (options.fix) {
+      try {
+        await fs.mkdir(configDir, { recursive: true, mode: 0o700 });
+        fixesApplied.push(`Created and set permissions for ${configDir}`);
+        checks.push({
+          category: "permissions",
+          name: "Config Storage Permissions",
+          status: "pass",
+          message: `Repaired permissions at ${configDir}`,
+        });
+      } catch {
+        checks.push({
+          category: "permissions",
+          name: "Config Storage Permissions",
+          status: "fail",
+          message: `Cannot write to ${configDir}: ${err.message}`,
+          fixDescription: `Check permissions for ~/.push44`,
+        });
+      }
+    } else {
+      checks.push({
+        category: "permissions",
+        name: "Config Storage Permissions",
+        status: "fail",
+        message: `Cannot write to ${configDir}: ${err.message}`,
+        fixDescription: `Check permissions for ~/.push44 (Run \`push44 doctor --fix\`)`,
+      });
+    }
+  }
+
+  // 3. Git checks
   const gitInstalled = await isGitInstalled();
   if (gitInstalled) {
     const version = await getGitVersion();
@@ -65,6 +110,17 @@ export async function doctorCommand(options: { fix?: boolean } = {}): Promise<vo
           fixDescription: repoAudit.suggestions.join(" "),
         });
       }
+    } else if (options.fix) {
+      try {
+        await initGitRepo(process.cwd(), "main");
+        fixesApplied.push("Initialized new Git repository on branch main.");
+        checks.push({
+          category: "git",
+          name: "Current Repository",
+          status: "pass",
+          message: "Initialized Git repository in current workspace.",
+        });
+      } catch {}
     }
   } else {
     checks.push({
@@ -73,29 +129,6 @@ export async function doctorCommand(options: { fix?: boolean } = {}): Promise<vo
       status: "fail",
       message: "Git is not installed or not available in PATH.",
       fixDescription: "Install Git via `sudo apt install git` or package manager.",
-    });
-  }
-
-  // 3. Storage & Permissions
-  const configDir = path.join(os.homedir(), ".push44");
-  try {
-    await fs.mkdir(configDir, { recursive: true });
-    const testFile = path.join(configDir, ".write-test");
-    await fs.writeFile(testFile, "test", "utf-8");
-    await fs.unlink(testFile);
-    checks.push({
-      category: "permissions",
-      name: "Config Storage Permissions",
-      status: "pass",
-      message: `Writable directory at ${configDir}`,
-    });
-  } catch (err: any) {
-    checks.push({
-      category: "permissions",
-      name: "Config Storage Permissions",
-      status: "fail",
-      message: `Cannot write to ${configDir}: ${err.message}`,
-      fixDescription: `Check permissions for ~/.push44`,
     });
   }
 
@@ -180,6 +213,14 @@ export async function doctorCommand(options: { fix?: boolean } = {}): Promise<vo
 
   console.log(table.toString());
   console.log();
+
+  if (fixesApplied.length > 0) {
+    logger.success("Automated fixes applied:");
+    for (const f of fixesApplied) {
+      console.log(`  ${symbols.tick} ${f}`);
+    }
+    console.log();
+  }
 
   const failCount = checks.filter((c) => c.status === "fail").length;
   const warnCount = checks.filter((c) => c.status === "warn").length;

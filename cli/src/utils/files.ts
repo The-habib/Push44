@@ -3,12 +3,46 @@ import * as path from "node:path";
 import JSZip from "jszip";
 import type { ProjectFile } from "../types.js";
 
+const BINARY_EXTENSIONS = new Set([
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".svgz", ".bmp", ".tiff",
+  ".woff", ".woff2", ".ttf", ".eot", ".otf",
+  ".zip", ".tar", ".gz", ".7z", ".rar", ".apk", ".ipa", ".jar",
+  ".pdf", ".mp3", ".mp4", ".wav", ".ogg", ".webm", ".avi", ".mov",
+  ".wasm", ".bin", ".exe", ".dll", ".so", ".dylib"
+]);
+
+/**
+ * Determine if a file path represents a binary file based on extension.
+ */
+export function isBinaryPath(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return BINARY_EXTENSIONS.has(ext);
+}
+
 /**
  * Sanitize and normalize relative file paths to prevent directory traversal.
+ * Handles null bytes, URI encoding, Windows drive letters, and traversal dots.
  */
 export function sanitizeRelativePath(filePath: string): string {
-  const normalized = path.normalize(filePath).replace(/^(\.\.(\/|\\|$))+/, "");
-  return normalized.replace(/^[/\\]+/, "").replace(/\\/g, "/");
+  if (!filePath || typeof filePath !== "string") return "";
+
+  // 1. Remove null bytes
+  let cleaned = filePath.replace(/\0/g, "");
+
+  // 2. Decode percent-encoding if present (e.g. %2e%2e%2f)
+  try {
+    cleaned = decodeURIComponent(cleaned);
+  } catch {}
+
+  // 3. Remove Windows drive letters (e.g. C:)
+  cleaned = cleaned.replace(/^[a-zA-Z]:/, "");
+
+  // 4. Normalize separators
+  cleaned = cleaned.replace(/\\/g, "/");
+
+  // 5. Remove leading slashes and dot-dot segments
+  const segments = cleaned.split("/").filter((s) => s.length > 0 && s !== "." && s !== "..");
+  return segments.join("/");
 }
 
 /**
@@ -33,8 +67,10 @@ export async function writeProjectFiles(
 
     await fs.mkdir(dir, { recursive: true });
 
-    if (file.binary) {
-      const buffer = Buffer.from(file.content, "base64");
+    if (file.binary || isBinaryPath(safePath)) {
+      const buffer = Buffer.isBuffer(file.content)
+        ? file.content
+        : Buffer.from(file.content, "base64");
       await fs.writeFile(fullPath, buffer);
       totalBytes += buffer.length;
     } else {
@@ -62,7 +98,12 @@ export async function readDirectoryFiles(
   for (const entry of entries) {
     const relName = currentSubDir ? path.join(currentSubDir, entry.name) : entry.name;
 
-    if (entry.name === ".git" || entry.name === "node_modules" || entry.name === ".push44-cache") {
+    if (
+      entry.name === ".git" ||
+      entry.name === "node_modules" ||
+      entry.name === ".push44-cache" ||
+      entry.name === ".DS_Store"
+    ) {
       continue;
     }
 
@@ -71,22 +112,39 @@ export async function readDirectoryFiles(
       files.push(...subFiles);
     } else if (entry.isFile()) {
       const filePath = path.join(baseDir, relName);
+      const normalizedRel = relName.replace(/\\/g, "/");
+
       try {
-        const content = await fs.readFile(filePath, "utf-8");
-        files.push({
-          path: relName.replace(/\\/g, "/"),
-          content,
-          sizeBytes: Buffer.byteLength(content, "utf-8"),
-        });
+        if (isBinaryPath(normalizedRel)) {
+          const buf = await fs.readFile(filePath);
+          files.push({
+            path: normalizedRel,
+            content: buf.toString("base64"),
+            binary: true,
+            sizeBytes: buf.length,
+          });
+        } else {
+          const buf = await fs.readFile(filePath);
+          // Check for null bytes to detect non-extension binary files
+          if (buf.includes(0)) {
+            files.push({
+              path: normalizedRel,
+              content: buf.toString("base64"),
+              binary: true,
+              sizeBytes: buf.length,
+            });
+          } else {
+            const content = buf.toString("utf-8");
+            files.push({
+              path: normalizedRel,
+              content,
+              binary: false,
+              sizeBytes: buf.length,
+            });
+          }
+        }
       } catch {
-        // Binary or unreadable file
-        const buf = await fs.readFile(filePath);
-        files.push({
-          path: relName.replace(/\\/g, "/"),
-          content: buf.toString("base64"),
-          binary: true,
-          sizeBytes: buf.length,
-        });
+        // Skip unreadable files gracefully
       }
     }
   }
@@ -104,7 +162,7 @@ export async function createZipArchive(files: ProjectFile[]): Promise<Buffer> {
     const safePath = sanitizeRelativePath(file.path);
     if (!safePath) continue;
 
-    if (file.binary) {
+    if (file.binary || isBinaryPath(safePath)) {
       zip.file(safePath, Buffer.from(file.content, "base64"));
     } else {
       zip.file(safePath, file.content);

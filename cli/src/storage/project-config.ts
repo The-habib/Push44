@@ -4,6 +4,16 @@ import type { ProjectConfig } from "../types.js";
 
 const CONFIG_FILENAME = ".push44.json";
 
+export async function readProjectConfig(projectDir = process.cwd()): Promise<ProjectConfig | null> {
+  const configPath = path.join(projectDir, CONFIG_FILENAME);
+  try {
+    const content = await fs.readFile(configPath, "utf-8");
+    return JSON.parse(content) as ProjectConfig;
+  } catch {
+    return null;
+  }
+}
+
 export async function findProjectConfig(startDir = process.cwd()): Promise<{ config: ProjectConfig; filePath: string; projectRoot: string } | null> {
   let currentDir = path.resolve(startDir);
 

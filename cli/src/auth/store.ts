@@ -9,11 +9,12 @@ const CREDS_FILE = path.join(CONFIG_DIR, "credentials.json");
 const CREDS_ENC_FILE = path.join(CONFIG_DIR, "credentials.enc");
 
 function getMasterKey(): string {
-  return `${os.hostname()}-${os.userInfo().username}-${os.platform()}-push44-secret`;
+  const user = os.userInfo()?.username || "default";
+  return `${os.hostname()}-${user}-${os.platform()}-push44-secret`;
 }
 
 export async function ensureConfigDir(): Promise<void> {
-  await fs.mkdir(CONFIG_DIR, { recursive: true });
+  await fs.mkdir(CONFIG_DIR, { recursive: true, mode: 0o700 });
 }
 
 export function maskSecret(secret?: string, keep = 4): string {
@@ -24,6 +25,7 @@ export function maskSecret(secret?: string, keep = 4): string {
 
 /**
  * Get credentials combining stored credentials and environment variables.
+ * Recovers gracefully from corrupted or invalid encrypted files.
  */
 export async function getCredentials(): Promise<StoredCredentials> {
   let stored: StoredCredentials = {};
@@ -31,8 +33,14 @@ export async function getCredentials(): Promise<StoredCredentials> {
   try {
     if (await fileExists(CREDS_ENC_FILE)) {
       const enc = await fs.readFile(CREDS_ENC_FILE, "utf-8");
-      const decrypted = decryptPayload(enc, getMasterKey());
-      stored = JSON.parse(decrypted);
+      try {
+        const decrypted = decryptPayload(enc, getMasterKey());
+        stored = JSON.parse(decrypted);
+      } catch {
+        // Fallback: Backup corrupted/unreadable file and start fresh
+        await fs.rename(CREDS_ENC_FILE, `${CREDS_ENC_FILE}.bak`).catch(() => {});
+        stored = {};
+      }
     } else if (await fileExists(CREDS_FILE)) {
       const raw = await fs.readFile(CREDS_FILE, "utf-8");
       stored = JSON.parse(raw);

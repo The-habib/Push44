@@ -1,4 +1,5 @@
 import { requestWithRetry } from "../utils/network.js";
+import { isBinaryPath } from "../utils/files.js";
 import { Push44Error } from "../utils/errors.js";
 import type { ProjectFile } from "../types.js";
 
@@ -209,7 +210,8 @@ export async function pushFilesToGitHub(options: PushOptions): Promise<{ commitS
     const batch = files.slice(i, i + BATCH);
     const results = await Promise.all(
       batch.map(async (f) => {
-        const encoding = f.binary ? "base64" : "utf-8";
+        const isBin = f.binary || isBinaryPath(f.path);
+        const encoding = isBin ? "base64" : "utf-8";
         const blob = await ghFetch(token, `${repoPath}/git/blobs`, {
           method: "POST",
           body: JSON.stringify({ content: f.content, encoding }),
