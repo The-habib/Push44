@@ -1,17 +1,15 @@
 import * as path from "node:path";
 import pc from "picocolors";
 import { getCredentials } from "../auth/store.js";
-import { getPlatformAdapter, getAllAdapters } from "../platforms/index.js";
+import { getAllAdapters, getPlatformAdapter } from "../platforms/index.js";
 import { writeProjectFiles, formatBytes } from "../utils/files.js";
 import { saveProjectConfig } from "../storage/project-config.js";
 import { computeFilesSnapshot } from "../storage/snapshot.js";
-import { initGitRepo, isGitInstalled, stageAllFiles, commitChanges } from "../git/operations.js";
+import { initGitRepo, stageAllFiles, commitChanges, isGitInstalled } from "../git/operations.js";
 import { withSpinner } from "../ui/spinner.js";
 import { logger } from "../ui/logger.js";
-import { createProgressBar } from "../ui/progress.js";
-import { askSelect } from "../ui/prompts.js";
 import { Push44Error } from "../utils/errors.js";
-import type { ExportedProject, SupportedPlatform } from "../types.js";
+import type { ExportedProject } from "../types.js";
 
 export async function cloneCommand(
   appIdentifier: string,
@@ -25,48 +23,41 @@ export async function cloneCommand(
 ): Promise<void> {
   const creds = await getCredentials();
 
-  let targetPlatform = options.platform;
   let resolvedProject: ExportedProject | null = null;
 
-  if (targetPlatform) {
-    const adapter = getPlatformAdapter(targetPlatform);
-    const progress = createProgressBar("Exporting");
-    let startedProgress = false;
-
+  if (options.platform) {
+    const adapter = getPlatformAdapter(options.platform);
     resolvedProject = await withSpinner(
-      `Fetching project from ${adapter.displayName}...`,
-      async (spinner) => {
-        return adapter.exportProject(appIdentifier, creds, {
-          onStatus: (msg) => {
-            spinner.text = pc.cyan(msg);
-          },
-          onProgress: (current, total, p) => {
-            if (!startedProgress) {
-              spinner.stop();
-              progress.start(total, 0);
-              startedProgress = true;
-            }
-            progress.update(current);
-          },
-        });
-      }
+      `Exporting ${pc.bold(appIdentifier)} from ${adapter.displayName}...`,
+      async () => adapter.exportProject(appIdentifier, creds)
     );
-    if (startedProgress) progress.stop();
   } else {
-    // Probe all platforms to find matching app
+    // Try matching across all connected platforms
     const adapters = getAllAdapters();
     for (const adapter of adapters) {
       try {
         const app = await adapter.getApp(appIdentifier, creds);
         if (app) {
-          targetPlatform = adapter.platform;
           resolvedProject = await withSpinner(
-            `Found on ${adapter.displayName}. Exporting files...`,
+            `Exporting ${pc.bold(app.name)} from ${adapter.displayName}...`,
             async () => adapter.exportProject(app.id, creds)
           );
           break;
         }
       } catch {}
+    }
+
+    // Direct platform attempt fallback
+    if (!resolvedProject) {
+      for (const adapter of adapters) {
+        try {
+          resolvedProject = await withSpinner(
+            `Probing ${adapter.displayName}...`,
+            async () => adapter.exportProject(appIdentifier, creds)
+          );
+          if (resolvedProject && resolvedProject.files.length > 0) break;
+        } catch {}
+      }
     }
   }
 
@@ -117,11 +108,12 @@ export async function cloneCommand(
 
   console.log(
     pc.green(
-      `\n✓ Cloned ${pc.bold(resolvedProject.appName)} (${written} files, ${formatBytes(totalBytes)})`
+      `\n✓ Successfully cloned ${pc.bold(resolvedProject.appName)} (${written} files, ${formatBytes(totalBytes)})`
     )
   );
-  console.log(pc.dim(`  Directory: ${targetDir}\n`));
-  console.log(pc.cyan(`Next steps:`));
-  console.log(pc.dim(`  cd ${safeDirName}`));
-  console.log(pc.dim(`  push44 sync       # sync changes back to GitHub\n`));
+  console.log(pc.dim(`  Location: ${targetDir}\n`));
+  console.log(pc.bold(pc.yellow(`✦ What to do next:`)));
+  console.log(`  1. ${pc.cyan(`cd ${safeDirName}`)}`);
+  console.log(`  2. Open in Cursor / VS Code / your editor and edit your code!`);
+  console.log(`  3. Run ${pc.bold(pc.cyan("push44 sync"))} anytime to auto-save your changes to GitHub!\n`);
 }

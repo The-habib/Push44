@@ -29,6 +29,7 @@ import { statsCommand } from "./commands/stats.js";
 import { compareCommand } from "./commands/compare.js";
 import { migrateCommand } from "./commands/migrate.js";
 import { interactiveShellCommand } from "./commands/shell.js";
+import { vibeMenuCommand, showVibeCoderGuide } from "./commands/vibe.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -40,13 +41,40 @@ export function createProgram(): Command {
     .addHelpText("beforeAll", APP_BANNER)
     .option("-d, --debug", "Enable verbose debug logs and stack traces")
     .action(async () => {
-      // Default action when no subcommand is provided: launch Claude Code style interactive shell
       try {
-        await interactiveShellCommand();
+        if (process.stdin.isTTY) {
+          await vibeMenuCommand();
+        } else {
+          await interactiveShellCommand();
+        }
       } catch (err: any) {
         console.error(formatErrorOutput(err, program.opts().debug));
         process.exit(1);
       }
+    });
+
+  // Vibe Coder Guided Hub
+  program
+    .command("vibe")
+    .alias("menu")
+    .alias("quick")
+    .description("Open the Vibe Coder Interactive Guided Menu")
+    .action(async () => {
+      try {
+        await vibeMenuCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Guide
+  program
+    .command("guide")
+    .alias("cheatsheet")
+    .description("Show the friendly Vibe Coder Cheatsheet & Guide")
+    .action(() => {
+      showVibeCoderGuide();
     });
 
   // Interactive REPL Shell
