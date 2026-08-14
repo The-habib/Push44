@@ -22,6 +22,10 @@ import { releaseCommand } from "./commands/release.js";
 import { apkCommand } from "./commands/apk.js";
 import { badgeCommand } from "./commands/badge.js";
 import { deployCommand } from "./commands/deploy.js";
+import { inspectCommand } from "./commands/inspect.js";
+import { configCommand } from "./commands/config.js";
+import { completionCommand } from "./commands/completion.js";
+import { interactiveShellCommand } from "./commands/shell.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -31,7 +35,30 @@ export function createProgram(): Command {
     .description("Push44 CLI — Universal Command-Line Interface for AI Vibe-Coding Platforms")
     .version("1.0.0")
     .addHelpText("beforeAll", APP_BANNER)
-    .option("-d, --debug", "Enable verbose debug logs and stack traces");
+    .option("-d, --debug", "Enable verbose debug logs and stack traces")
+    .action(async () => {
+      // Default action when no subcommand is provided: launch Claude Code style interactive shell
+      try {
+        await interactiveShellCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Interactive REPL Shell
+  program
+    .command("shell")
+    .alias("interactive")
+    .description("Launch Claude Code style interactive terminal REPL")
+    .action(async () => {
+      try {
+        await interactiveShellCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
 
   // 1. Login
   program
@@ -159,7 +186,7 @@ export function createProgram(): Command {
   // 9. Sync
   program
     .command("sync")
-    .description("Automatically detect changes, commit, and push to GitHub")
+    .description("Automatically detect changes, commit, and push to GitHub (with AI commit generation)")
     .option("-m, --message <message>", "Commit message")
     .option("-y, --yes", "Skip interactive confirmations")
     .option("-r, --repo <repo>", "Override target repository")
@@ -190,7 +217,21 @@ export function createProgram(): Command {
       }
     });
 
-  // 11. GitHub
+  // 11. Inspect
+  program
+    .command("inspect")
+    .description("Deep inspection of project framework, tech stack, lines of code, and visual tree")
+    .option("--no-tree", "Omit directory tree diagram")
+    .action(async (opts) => {
+      try {
+        await inspectCommand(opts);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // 12. GitHub
   program
     .command("github [action]")
     .description("Manage GitHub credentials, repositories, and connection (status, login, repos, create)")
@@ -207,7 +248,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 12. Doctor
+  // 13. Doctor
   program
     .command("doctor")
     .description("Run a complete health, runtime, platform, and permission audit")
@@ -221,7 +262,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 13. Backup
+  // 14. Backup
   program
     .command("backup")
     .description("Export every connected project into timestamped ZIP archives")
@@ -237,7 +278,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 14. Watch
+  // 15. Watch
   program
     .command("watch")
     .description("Monitor local project files for changes with auto-sync capability")
@@ -255,7 +296,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 15. Release
+  // 16. Release
   program
     .command("release [versionTag]")
     .description("Automated release pipeline: sync -> commit -> push -> GitHub tag/release -> watch CI")
@@ -272,7 +313,28 @@ export function createProgram(): Command {
       }
     });
 
-  // 16. APK
+  // 17. Config
+  program
+    .command("config [action] [key] [value]")
+    .description("Inspect and update global Push44 CLI configuration")
+    .action(async (action, key, value) => {
+      try {
+        await configCommand(action, key, value);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // 18. Completion
+  program
+    .command("completion [shell]")
+    .description("Generate shell auto-completion script (bash, zsh, fish)")
+    .action((shell) => {
+      completionCommand(shell);
+    });
+
+  // 19. APK
   program
     .command("apk [action] [threadId]")
     .description("Rocket.new mobile APK build management (build, status, download)")
@@ -287,7 +349,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 17. Badge
+  // 20. Badge
   program
     .command("badge <action> [platform] [appId]")
     .description("Remove platform watermark/branding badges (Floot, Zite, Bolt, Lovable)")
@@ -300,7 +362,7 @@ export function createProgram(): Command {
       }
     });
 
-  // 18. Deploy
+  // 21. Deploy
   program
     .command("deploy [platform]")
     .description("Trigger web deployments to live hosting URLs")

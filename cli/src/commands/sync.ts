@@ -3,6 +3,7 @@ import { findProjectConfig } from "../storage/project-config.js";
 import { readDirectoryFiles } from "../utils/files.js";
 import { computeDiff } from "../storage/snapshot.js";
 import { renderDiffSummary } from "../ui/diff-viewer.js";
+import { generateSemanticCommitMessage } from "../utils/ai-commit.js";
 import { pushCommand } from "./push.js";
 import { logger } from "../ui/logger.js";
 import { askConfirm, askText } from "../ui/prompts.js";
@@ -39,13 +40,12 @@ export async function syncCommand(
 
   let commitMessage = options.message;
   if (!commitMessage) {
-    const summary = `${changed.length} file${changed.length === 1 ? "" : "s"} updated`;
-    const defaultMsg = `sync(${config.platform}): ${summary} in ${config.appName}`;
+    const aiSuggestedMsg = generateSemanticCommitMessage(diffs, config.platform, config.appName);
 
     if (options.yes) {
-      commitMessage = defaultMsg;
+      commitMessage = aiSuggestedMsg;
     } else {
-      commitMessage = await askText("Enter commit message:", defaultMsg);
+      commitMessage = await askText("Commit message (AI generated):", aiSuggestedMsg);
     }
   }
 
