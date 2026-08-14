@@ -95,9 +95,9 @@ Push44 CLI has been engineered as a standalone, modular, and cross-platform term
 
 ```bash
 # Clone and explore
-git clone https://github.com/The-habib/Push44.git
+ clone https://github.com/The-habib/Push44.git
 cd Push44
-
+git
 # Run CLI directly
 bun run cli --help
 bun run cli doctor
