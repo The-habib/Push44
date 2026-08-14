@@ -48,6 +48,24 @@ export async function listWorkflowRuns(
   }
 }
 
+export async function getWorkflowLogs(
+  token: string,
+  owner: string,
+  repo: string,
+  runId: number
+): Promise<string | null> {
+  try {
+    const res = await requestWithRetry(
+      `${GH_API}/repos/${owner}/${repo}/actions/runs/${runId}/logs`,
+      { headers: ghHeaders(token) }
+    );
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}
+
 export async function triggerWorkflowDispatch(
   token: string,
   owner: string,

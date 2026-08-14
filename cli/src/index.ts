@@ -30,6 +30,19 @@ import { compareCommand } from "./commands/compare.js";
 import { migrateCommand } from "./commands/migrate.js";
 import { interactiveShellCommand } from "./commands/shell.js";
 import { vibeMenuCommand, showVibeCoderGuide } from "./commands/vibe.js";
+import { initCommand } from "./commands/init.js";
+import { branchCommand } from "./commands/branch.js";
+import { lintCommand } from "./commands/lint.js";
+import { ignoreCommand } from "./commands/ignore.js";
+import { logsCommand } from "./commands/logs.js";
+import { envProfileCommand } from "./commands/env.js";
+import { envSyncCommand } from "./commands/env-sync.js";
+import { aliasCommand } from "./commands/alias.js";
+import { shareCommand } from "./commands/share.js";
+import { rollbackCommand } from "./commands/rollback.js";
+import { telemetryCommand } from "./commands/telemetry.js";
+import { upgradeCommand } from "./commands/upgrade.js";
+import { themeCommand } from "./commands/theme.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -89,6 +102,175 @@ export function createProgram(): Command {
         console.error(formatErrorOutput(err, program.opts().debug));
         process.exit(1);
       }
+    });
+
+  // Init Wizard
+  program
+    .command("init")
+    .description("Quickstart project initializer linking current folder to AI platforms and GitHub")
+    .action(async () => {
+      try {
+        await initCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Branch & PR Manager
+  program
+    .command("branch [action] [name]")
+    .description("Manage git branches and create GitHub Pull Requests (list, create, checkout, pr)")
+    .option("--pr", "Create a pull request")
+    .option("-t, --title <title>", "Pull Request title")
+    .option("-b, --base <base>", "Base branch for PR", "main")
+    .action(async (action, name, opts) => {
+      try {
+        await branchCommand(action, name, opts);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Lint & Audit
+  program
+    .command("lint")
+    .alias("audit")
+    .description("Audit project security, hardcoded secrets, dependencies, and health score")
+    .action(async () => {
+      try {
+        await lintCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Ignore Generator
+  program
+    .command("ignore")
+    .description("Generate smart .push44ignore and .gitignore files")
+    .action(async () => {
+      try {
+        await ignoreCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Logs Streamer
+  program
+    .command("logs")
+    .description("Stream live build and workflow logs")
+    .option("-f, --follow", "Follow logs continuously")
+    .action(async (opts) => {
+      try {
+        await logsCommand(opts);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Env Profile Manager
+  program
+    .command("env [action] [profileName]")
+    .description("Manage multi-account credential profiles (list, save, use)")
+    .action(async (action, profileName) => {
+      try {
+        await envProfileCommand(action, profileName);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Env Sync & Example
+  program
+    .command("env-sync")
+    .description("Audit environment variables and generate safe .env.example template")
+    .option("-e, --example", "Generate .env.example file")
+    .action(async (opts) => {
+      try {
+        await envSyncCommand({ generateExample: opts.example });
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Alias Manager
+  program
+    .command("alias [action] [key] [targetCmd]")
+    .description("Create and manage custom CLI command shortcuts (list, set, remove)")
+    .action(async (action, key, targetCmd) => {
+      try {
+        await aliasCommand(action, key, targetCmd);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Share Gist
+  program
+    .command("share")
+    .description("Publish a shareable snapshot or file to a secret GitHub Gist")
+    .option("-f, --file <path>", "Specific file to share")
+    .option("-p, --public", "Make Gist public")
+    .action(async (opts) => {
+      try {
+        await shareCommand(opts);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Rollback / Undo
+  program
+    .command("rollback [commitSha]")
+    .alias("undo")
+    .description("Revert current project state to a historical push commit")
+    .action(async (sha) => {
+      try {
+        await rollbackCommand(sha);
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Telemetry Status
+  program
+    .command("telemetry [action]")
+    .description("Inspect privacy and zero-telemetry enforcement status")
+    .action((action) => {
+      telemetryCommand(action);
+    });
+
+  // Upgrade
+  program
+    .command("upgrade")
+    .alias("update")
+    .description("Check for Push44 CLI updates and self-upgrade")
+    .action(async () => {
+      try {
+        await upgradeCommand();
+      } catch (err: any) {
+        console.error(formatErrorOutput(err, program.opts().debug));
+        process.exit(1);
+      }
+    });
+
+  // Theme Selector
+  program
+    .command("theme [name]")
+    .description("Switch terminal theme (anthropic, monokai, dracula, nord, cyberpunk, minimal)")
+    .action((name) => {
+      themeCommand(name);
     });
 
   // 1. Login

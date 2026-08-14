@@ -1,4 +1,5 @@
 import pc from "picocolors";
+import { redactSecrets } from "./redact.js";
 
 export interface Push44ErrorDetails {
   code?: string;
@@ -31,9 +32,9 @@ export class Push44Error extends Error {
 
 export function formatErrorOutput(err: any, debug = false): string {
   const isCustom = err instanceof Push44Error;
-  const message = err?.message || String(err);
+  const message = redactSecrets(err?.message || String(err));
   const code = isCustom ? err.code : err?.code;
-  const reason = isCustom ? err.reason : undefined;
+  const reason = isCustom ? (err.reason ? redactSecrets(err.reason) : undefined) : undefined;
   const suggestion = isCustom ? err.suggestion : undefined;
 
   const lines: string[] = [];
@@ -52,7 +53,7 @@ export function formatErrorOutput(err: any, debug = false): string {
   }
 
   if (debug && err?.stack) {
-    lines.push(pc.dim(`\n--- Stack Trace ---\n${err.stack}\n-------------------`));
+    lines.push(pc.dim(`\n--- Stack Trace ---\n${redactSecrets(err.stack)}\n-------------------`));
   }
 
   return lines.join("\n");
