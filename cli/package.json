@@ -1,0 +1,52 @@
+{
+  "name": "push44",
+  "version": "1.0.0",
+  "description": "Universal command-line interface for AI vibe-coding platforms (Base44, Rocket.new, Floot, Zite, Bolt, Lovable, GitHub)",
+  "type": "module",
+  "main": "./dist/push44.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "push44": "./bin/push44.js",
+    "p44": "./bin/push44.js"
+  },
+  "scripts": {
+    "start": "bun bin/push44.ts",
+    "dev": "bun bin/push44.ts",
+    "build": "bun build bin/push44.ts --target=node --format=esm --outfile=dist/push44.js",
+    "test": "bun test"
+  },
+  "keywords": [
+    "push44",
+    "ai",
+    "vibe-coding",
+    "base44",
+    "rocket-new",
+    "floot",
+    "zite",
+    "bolt-new",
+    "lovable",
+    "github",
+    "git",
+    "cli"
+  ],
+  "author": "Push44 Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/cli-progress": "^3.11.6",
+    "@types/jszip": "^3.4.1",
+    "@types/node": "^26.2.0",
+    "@types/prompts": "^2.4.9"
+  },
+  "dependencies": {
+    "boxen": "^8.0.1",
+    "cli-progress": "^3.12.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^15.0.0",
+    "jszip": "^3.10.1",
+    "ora": "^9.4.1",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
+    "zod": "^4.4.3"
+  }
+}

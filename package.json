@@ -8,7 +8,10 @@
     "prebuild": "bun run generate-seo",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cli": "bun cli/bin/push44.ts",
+    "cli:build": "cd cli && bun run build",
+    "cli:test": "cd cli && bun test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
