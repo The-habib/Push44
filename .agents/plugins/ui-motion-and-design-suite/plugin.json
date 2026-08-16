@@ -1,0 +1,8 @@
+{
+  "name": "ui-motion-and-design-suite",
+  "displayName": "UI Motion & Premium Design Suite",
+  "description": "Internet-recommended suite of top UI animation and frontend design skills: GSAP ScrollTrigger, Framer Motion / Motion v12, Spring Physics, Micro-Interactions, Three.js WebGL shaders, and Web Design Reviewer.",
+  "version": "1.0.0",
+  "author": "Push44 Engineering & Design Community",
+  "enabled": true
+}

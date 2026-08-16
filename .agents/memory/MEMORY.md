@@ -25,3 +25,5 @@
 - [Lovable Integration Bugs](lovable-integration-bugs.md) — Promise.allSettled workspace scoping; polling needs pre-send snapshot; vercel.json needs lovable route; dashboard Platform maps must include all platforms
 - [Telegram Bot Forwarding Hook](telegram-hook.md) — Stop lifecycle hook configured in .agents/hooks.json forwards clean responses to @truemadadbot (chat ID 1550319630)
 - [Framer API Patterns](framer-api.md) — framer-api SDK (v0.1.29) WebSocket server API; getCodeFiles, getCollections, publish; full docs in docs/research/framer-api.md
+- [Awesome Design Skills Plugin](awesome-design-skills.md) — 60+ UI/UX design systems and style skills packaged as .agents/plugins/awesome-design-skills
+- [UI Motion & Design Suite Plugin](ui-motion-and-design-suite.md) — Top internet-recommended UI motion & animation skills (GSAP, Framer Motion, Spring Physics, Micro-Interactions, Three.js) packaged as .agents/plugins/ui-motion-and-design-suite

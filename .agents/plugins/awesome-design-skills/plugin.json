@@ -1,0 +1,9 @@
+{
+  "name": "awesome-design-skills",
+  "displayName": "Awesome Design Skills",
+  "description": "Curated collection of 60+ UI/UX design systems and style skills (Minimal, Glassmorphism, Neobrutalism, Bento, Skeuomorphism, Shadcn, etc.) for crafting world-class web applications.",
+  "version": "1.0.0",
+  "author": "bergside",
+  "repository": "https://github.com/bergside/awesome-design-skills",
+  "enabled": true
+}

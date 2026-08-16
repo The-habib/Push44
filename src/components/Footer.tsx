@@ -1,151 +1,188 @@
 import { Link } from "@tanstack/react-router";
-import { Shield, Github, Twitter } from "lucide-react";
+import { Shield, Github, Terminal, Sparkles, Heart } from "lucide-react";
 import appLogo from "@/assets/logo.png";
 
 export function Footer() {
   return (
-    <footer style={{ background: "#18120e", color: "#8a7f78" }}>
+    <footer style={{ background: "#120e0b", color: "#a8a29e", borderTop: "1px solid #241c17" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "72px 24px 0" }}>
-
-        {/* Top grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-          gap: "40px 48px",
-          paddingBottom: 56,
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-        }}>
-
-          {/* Brand column */}
-          <div style={{ gridColumn: "span 2" }}>
-            <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 9, textDecoration: "none", marginBottom: 16 }}>
-              <img src={appLogo} alt="Push44" style={{ width: 30, height: 30, borderRadius: 7 }} />
-              <span style={{ fontWeight: 800, fontSize: 16, color: "#fffefb", letterSpacing: "-0.03em" }}>Push44</span>
+        {/* Top Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "40px 48px",
+            paddingBottom: 56,
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* Brand Column */}
+          <div style={{ gridColumn: "span 2", minWidth: 240 }}>
+            <Link
+              to="/"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 9,
+                textDecoration: "none",
+                marginBottom: 16,
+              }}
+            >
+              <img src={appLogo} alt="Push44" style={{ width: 30, height: 30, borderRadius: 8 }} />
+              <span style={{ fontWeight: 900, fontSize: 18, color: "#fafaf9", letterSpacing: "-0.04em" }}>
+                Push44
+              </span>
             </Link>
-            <p style={{ fontSize: 13, lineHeight: 1.7, color: "#605d52", maxWidth: 220, margin: "0 0 24px" }}>
-              Export AI-generated code from any platform to GitHub. Free, zero backend, no data collected.
+            <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "#78716c", maxWidth: 280, margin: "0 0 24px" }}>
+              The universal developer hub to export AI-generated code from Base44, Framer, Lovable, Rocket, Floot, and Zite directly to GitHub. 100% free, zero backend.
             </p>
 
-            {/* Trust badge */}
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 7,
-              fontSize: 12, fontWeight: 600, color: "#605d52",
-              padding: "6px 13px", border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 99, marginBottom: 20,
-            }}>
-              <Shield size={13} color="#f97316" /> Free Forever · No Signup
-            </div>
-
-            {/* Social links */}
-            <div style={{ display: "flex", gap: 8 }}>
-              {[
-                { icon: <Github size={15} />, href: "https://github.com/push44", label: "GitHub" },
-                { icon: <Twitter size={15} />, href: "https://twitter.com/push44app", label: "Twitter" },
-              ].map(s => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank" rel="noopener noreferrer"
-                  aria-label={s.label}
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    width: 34, height: 34, borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#605d52",
-                    textDecoration: "none",
-                    transition: "color 0.15s, border-color 0.15s, background 0.15s",
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLAnchorElement;
-                    el.style.color = "#fffefb";
-                    el.style.borderColor = "rgba(255,255,255,0.18)";
-                    el.style.background = "rgba(255,255,255,0.06)";
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLAnchorElement;
-                    el.style.color = "#605d52";
-                    el.style.borderColor = "rgba(255,255,255,0.08)";
-                    el.style.background = "transparent";
-                  }}
-                >
-                  {s.icon}
-                </a>
-              ))}
+            {/* Privacy Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#ff5500",
+                padding: "6px 14px",
+                border: "1px solid rgba(255,85,0,0.25)",
+                background: "rgba(255,85,0,0.08)",
+                borderRadius: 99,
+                marginBottom: 20,
+              }}
+            >
+              <Shield size={13} /> Zero Backend · 100% Client-Side Privacy
             </div>
           </div>
 
-          <FooterCol title="Product" links={[
-            { label: "Features",       href: "/#features" },
-            { label: "Platforms",      href: "/#platforms" },
-            { label: "How it works",   href: "/#how-it-works" },
-            { label: "FAQ",            href: "/#faq" },
-          ]} />
+          <FooterCol
+            title="Product"
+            links={[
+              { label: "Features", href: "/#features" },
+              { label: "Terminal CLI (p44)", href: "/#cli" },
+              { label: "Platforms", href: "/#platforms" },
+              { label: "FAQ", href: "/#faq" },
+            ]}
+          />
 
-          <FooterCol title="Platforms" links={[
-            { label: "Base44",      to: "/platforms/$platform", params: { platform: "base44" } },
-            { label: "Rocket.new",  to: "/platforms/$platform", params: { platform: "rocket-new" } },
-            { label: "Floot",       to: "/platforms/$platform", params: { platform: "floot" } },
-            { label: "Zite",        to: "/platforms/$platform", params: { platform: "zite" } },
-            { label: "bolt.new",    to: "/platforms/$platform", params: { platform: "bolt-new" } },
-          ]} />
+          <FooterCol
+            title="Platforms"
+            links={[
+              { label: "Base44", to: "/platforms/$platform", params: { platform: "base44" } },
+              { label: "Framer", to: "/platforms/$platform", params: { platform: "framer" } },
+              { label: "Lovable", to: "/platforms/$platform", params: { platform: "lovable" } },
+              { label: "Rocket.new", to: "/platforms/$platform", params: { platform: "rocket-new" } },
+              { label: "Floot", to: "/platforms/$platform", params: { platform: "floot" } },
+              { label: "Zite", to: "/platforms/$platform", params: { platform: "zite" } },
+              { label: "bolt.new", to: "/platforms/$platform", params: { platform: "bolt-new" } },
+            ]}
+          />
 
-          <FooterCol title="Resources" links={[
-            { label: "Blog",         to: "/blog/" },
-            { label: "Guides",       to: "/blog/" },
-            { label: "Comparisons",  to: "/compare/base44-vs-rocket-new" },
-          ]} />
+          <FooterCol
+            title="Resources"
+            links={[
+              { label: "Blog & Tutorials", to: "/blog/" },
+              { label: "Tool Comparisons", to: "/compare/base44-vs-rocket-new" },
+              { label: "Export Best Practices", to: "/blog/ai-project-backup-best-practices/" },
+              { label: "Code Ownership Guide", to: "/blog/ai-code-ownership-guide/" },
+            ]}
+          />
 
-          <FooterCol title="Company" links={[
-            { label: "Privacy Policy",   to: "/privacy" },
-            { label: "Terms of Service", to: "/terms" },
-          ]} />
+          <FooterCol
+            title="Legal & Trust"
+            links={[
+              { label: "Privacy Policy", to: "/privacy" },
+              { label: "Terms of Service", to: "/terms" },
+            ]}
+          />
         </div>
 
-        {/* Bottom bar */}
-        <div style={{
-          display: "flex", flexWrap: "wrap", alignItems: "center",
-          justifyContent: "space-between", gap: 12,
-          padding: "22px 0", fontSize: 12, color: "#3d3530",
-        }}>
-          <span>© 2026 Push44. All rights reserved.</span>
-          <span style={{ color: "#3d3530" }}>Made for developers who own their code</span>
+        {/* Bottom Bar */}
+        <div
+          style={{
+            padding: "28px 0 36px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 16,
+            fontSize: 13,
+            color: "#78716c",
+          }}
+        >
+          <div>© {new Date().getFullYear()} Push44. Built for developer code ownership.</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span>Free forever · No credit card required</span>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-type FooterLink = { label: string; href?: string; to?: string; params?: Record<string, string> };
-
-function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
-  const linkStyle: React.CSSProperties = {
-    display: "block", fontSize: 13, color: "#605d52",
-    textDecoration: "none", padding: "3px 0",
-    transition: "color 0.12s",
-  };
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: Array<{
+    label: string;
+    href?: string;
+    to?: string;
+    params?: Record<string, string>;
+  }>;
+}) {
   return (
     <div>
-      <h4 style={{
-        fontSize: 10, fontWeight: 700, color: "#4a4540",
-        textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 18,
-      }}>{title}</h4>
-      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 11 }}>
-        {links.map(l => (
-          <li key={l.label}>
-            {l.to
-              ? <Link to={l.to as any} params={l.params as any} style={linkStyle}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#c5c0b1"}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "#605d52"}
-                >{l.label}</Link>
-              : <a href={l.href} target={l.href?.startsWith("http") ? "_blank" : undefined}
-                  rel="noopener noreferrer" style={linkStyle}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#c5c0b1"}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "#605d52"}
-                >{l.label}</a>
-            }
-          </li>
-        ))}
-      </ul>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 800,
+          color: "#fafaf9",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          marginBottom: 16,
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {links.map((link) => {
+          const style: React.CSSProperties = {
+            fontSize: 13.5,
+            color: "#a8a29e",
+            textDecoration: "none",
+            transition: "color 0.15s ease",
+          };
+          if (link.to) {
+            return (
+              <Link
+                key={link.label}
+                to={link.to as any}
+                params={link.params as any}
+                style={style}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#ff5500")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#a8a29e")}
+              >
+                {link.label}
+              </Link>
+            );
+          }
+          return (
+            <a
+              key={link.label}
+              href={link.href}
+              style={style}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#ff5500")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#a8a29e")}
+            >
+              {link.label}
+            </a>
+          );
+        })}
+      </div>
     </div>
   );
 }
