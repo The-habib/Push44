@@ -63,3 +63,11 @@ export function LovableLogo({ size = 20, className = "" }: { size?: number; clas
     </svg>
   );
 }
+
+export function FramerLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M4 0h16v8h-8zM4 8h8l8 8H4zM4 16h8v8z" />
+    </svg>
+  );
+}

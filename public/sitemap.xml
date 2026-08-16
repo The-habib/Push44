@@ -46,6 +46,12 @@
     <lastmod>2026-07-02</lastmod>
   </url>
   <url>
+    <loc>https://push44.vercel.app/platforms/framer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-07-02</lastmod>
+  </url>
+  <url>
     <loc>https://push44.vercel.app/blog/how-to-export-code-from-base44</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

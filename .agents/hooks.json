@@ -1,0 +1,12 @@
+{
+  "telegram-notifier": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./.agents/scripts/send_to_telegram.py",
+        "timeout": 15
+      }
+    ]
+  }
+}

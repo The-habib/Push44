@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { FileExplorer } from "@/components/FileExplorer";
 import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker";
-import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
+import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo, FramerLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
@@ -29,6 +29,7 @@ import {
 import { listZiteApps, fetchZiteAppFiles, removeZiteBadge } from "@/lib/zite-api";
 import { validateBoltProject, removeBoltBadge, type BoltRemoveStep } from "@/lib/bolt-api";
 import { listLovableProjects, fetchLovableAppFiles, removeLovableBadge, type LovableBadgeStatus } from "@/lib/lovable-api";
+import { listFramerProjects, fetchFramerAppFiles, remixFramerTemplate, removeFramerBadge } from "@/lib/framer-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
 import {
   addHistory, getAppSnapshot, saveAppSnapshot, computeFileDiff,
@@ -38,7 +39,7 @@ import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/push")({ component: PushPage });
 
-type PlatformId = "base44" | "rocket" | "zite" | "floot" | "bolt" | "lovable";
+type PlatformId = "base44" | "rocket" | "zite" | "floot" | "bolt" | "lovable" | "framer";
 
 interface AppItem  { id: string; applicationId?: string; name: string; updated_at: string; icon?: string }
 interface RepoItem { full_name: string; default_branch: string; html_url: string; private: boolean }
@@ -46,12 +47,13 @@ interface FileEntry { path: string; content: string }
 type PushStatus = "idle" | "pushing" | "done" | "error";
 
 const PLATFORMS: { id: PlatformId; label: string; icon: React.ReactNode; credKey: string; helpUrl: string }[] = [
-  { id: "base44", label: "Base44",    icon: <Base44Logo size={18} />, credKey: "base44Token", helpUrl: "https://app.base44.com" },
-  { id: "rocket", label: "Rocket.new", icon: <RocketLogo size={18} />, credKey: "rocketToken", helpUrl: "https://rocket.new" },
-  { id: "zite",   label: "Zite",      icon: <ZiteLogo size={18} />,   credKey: "ziteSession", helpUrl: "https://build.fillout.com" },
-  { id: "floot",  label: "Floot",     icon: <FlootLogo size={18} />,   credKey: "flootToken",  helpUrl: "https://floot.com" },
-  { id: "bolt",    label: "bolt.new",  icon: <BoltLogo size={18} />,    credKey: "boltToken",    helpUrl: "https://bolt.new" },
-  { id: "lovable", label: "Lovable",  icon: <LovableLogo size={18} />, credKey: "lovableToken", helpUrl: "https://lovable.dev" },
+  { id: "base44",  label: "Base44",    icon: <Base44Logo size={18} />, credKey: "base44Token",  helpUrl: "https://app.base44.com" },
+  { id: "rocket",  label: "Rocket.new", icon: <RocketLogo size={18} />, credKey: "rocketToken",  helpUrl: "https://rocket.new" },
+  { id: "zite",    label: "Zite",      icon: <ZiteLogo size={18} />,   credKey: "ziteSession",  helpUrl: "https://build.fillout.com" },
+  { id: "floot",   label: "Floot",     icon: <FlootLogo size={18} />,  credKey: "flootToken",   helpUrl: "https://floot.com" },
+  { id: "bolt",    label: "bolt.new",  icon: <BoltLogo size={18} />,   credKey: "boltToken",   helpUrl: "https://bolt.new" },
+  { id: "lovable", label: "Lovable",   icon: <LovableLogo size={18} />, credKey: "lovableToken", helpUrl: "https://lovable.dev" },
+  { id: "framer",  label: "Framer",    icon: <FramerLogo size={18} />,  credKey: "framerSession", helpUrl: "https://framer.com" },
 ];
 
 function StepNum({ n, active, done }: { n: number; active: boolean; done: boolean }) {
@@ -205,6 +207,7 @@ export default function PushPage() {
     if (id === "floot")  return !!creds.flootToken;
     if (id === "bolt")    return !!creds.boltToken && !!creds.boltProjectId;
     if (id === "lovable") return !!creds.lovableToken;
+    if (id === "framer")  return !!(creds.framerSession || creds.framerApiKey);
     return false;
   }, [creds]);
 
@@ -252,6 +255,15 @@ export default function PushPage() {
           updated_at: p.updated_at,
           icon:       p.url, // store project URL for badge panel
         }));
+      } else if (pid === "framer") {
+        if (!creds.framerSession && !creds.framerApiKey) throw new Error("Connect Framer in Settings first (session cookie or API key).");
+        const projs = await listFramerProjects({ sessionCookie: creds.framerSession });
+        result = projs.map((p) => ({
+          id:         p.id,
+          name:       p.name,
+          updated_at: p.updated_at || new Date().toISOString(),
+          icon:       p.url || `https://framer.com/projects/${p.id}`,
+        }));
       }
       setApps(result);
     } catch (e: any) {
@@ -285,6 +297,13 @@ export default function PushPage() {
         return;
       } else if (platform === "lovable") {
         result = await fetchLovableAppFiles({ data: { token: creds.lovableToken!, projectId: app.id } });
+      } else if (platform === "framer") {
+        result = await fetchFramerAppFiles({
+          projectId: app.id,
+          projectUrl: app.icon || `https://framer.com/projects/${app.id}`,
+          sessionCookie: creds.framerSession,
+          apiKey: creds.framerApiKey,
+        });
       }
       setFiles(result);
     } catch (e: any) {

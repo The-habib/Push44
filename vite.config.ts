@@ -389,6 +389,100 @@ function boltProxyPlugin(): Plugin {
   };
 }
 
+function framerProxyPlugin(): Plugin {
+  const FRAMER_API_BASE = "https://api.framer.com";
+  const FRAMER_WEB_BASE = "https://framer.com";
+
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith("/api/framer")) return next();
+
+    const rawUrl = new URL(req.url, "http://localhost");
+    const targetPath = rawUrl.pathname.replace("/api/framer", "") + rawUrl.search;
+
+    const headers = req.headers as Record<string, string>;
+    const sessionToken = (headers["x-framer-session"] ?? "").trim();
+    const authHeader = (headers["authorization"] ?? "").trim();
+
+    const isWebRoute = targetPath.startsWith("/projects/new") || targetPath.startsWith("/remix");
+    const targetBase = isWebRoute ? FRAMER_WEB_BASE : FRAMER_API_BASE;
+
+    const forwardHeaders: Record<string, string> = {
+      Accept: headers["accept"] || "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      Referer: "https://framer.com/",
+      Origin: "https://framer.com",
+    };
+
+    if (sessionToken) {
+      forwardHeaders["Cookie"] = `session=${sessionToken}`;
+      if (!authHeader) {
+        forwardHeaders["Authorization"] = `Token ${sessionToken}`;
+      }
+    }
+
+    if (authHeader) {
+      forwardHeaders["Authorization"] = authHeader;
+    }
+
+    let body: string | undefined;
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      body = await new Promise<string>((resolve) => {
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk) => chunks.push(chunk));
+        req.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+      });
+      forwardHeaders["Content-Type"] = headers["content-type"] || "application/json";
+    }
+
+    try {
+      const targetUrl = `${targetBase}${targetPath}`;
+      const framerRes = await fetch(targetUrl, {
+        method: req.method ?? "GET",
+        headers: forwardHeaders,
+        redirect: "follow",
+        ...(body !== undefined ? { body } : {}),
+      });
+
+      if (isWebRoute) {
+        const finalUrl = framerRes.url;
+        const matchId = finalUrl.match(/projects\/([A-Za-z0-9_\-]+)/);
+        const projectId = matchId ? matchId[1] : "";
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-store",
+        });
+        return res.end(
+          JSON.stringify({
+            projectId,
+            url: finalUrl,
+            title: `Remixed Project (${projectId})`,
+          })
+        );
+      }
+
+      const contentType = framerRes.headers.get("content-type") ?? "application/json";
+      const buffer = Buffer.from(await framerRes.arrayBuffer());
+
+      res.writeHead(framerRes.status, {
+        "Content-Type": contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
+      });
+      res.end(buffer);
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Framer proxy error: " + (err?.message ?? "unknown") }));
+    }
+  };
+
+  return {
+    name: "framer-proxy",
+    configureServer(server) { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
 export default defineConfig({
   plugins: [
     TanStackRouterVite({ routesDirectory: "./src/routes", generatedRouteTree: "./src/routeTree.gen.ts" }),
@@ -399,6 +493,7 @@ export default defineConfig({
     flootProxyPlugin(),
     lovableProxyPlugin(),
     boltProxyPlugin(),
+    framerProxyPlugin(),
     githubOAuthPlugin(),
   ],
   resolve: {

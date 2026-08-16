@@ -1,0 +1,26 @@
+[
+  {
+    "id": "item_post_001",
+    "slug": "exporting-framer-to-react-19",
+    "title": "How to Export Framer Designs to Production React 19",
+    "excerpt": "A complete technical walkthrough of extracting Framer Code Components, property controls, and styles into Vite.",
+    "author": "Habib",
+    "publishedAt": "2026-08-16T06:00:00.000Z",
+    "readingTimeMinutes": 5,
+    "tags": ["Framer", "React 19", "Vite", "Web Development"],
+    "featuredImage": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80",
+    "contentHtml": "<p>Framer enables designers to build real interactive React applications right on the canvas. When combined with Push44, developers can instantly export and sync these components directly to their Git repositories with zero manual rewrite.</p>"
+  },
+  {
+    "id": "item_post_002",
+    "slug": "understanding-framer-motion-layout-animations",
+    "title": "Mastering Shared Layout Animations in Framer Motion",
+    "excerpt": "Learn how layoutId and spring physics power fluid transitions across complex UI dashboards.",
+    "author": "Design Engineer",
+    "publishedAt": "2026-08-12T12:00:00.000Z",
+    "readingTimeMinutes": 8,
+    "tags": ["Animation", "Framer Motion", "UI Design"],
+    "featuredImage": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80",
+    "contentHtml": "<p>Shared layout animations allow elements to smoothly morph and transition between different component trees without abrupt pops or flashes.</p>"
+  }
+]

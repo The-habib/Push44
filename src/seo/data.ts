@@ -36,7 +36,7 @@ export interface Article {
 }
 
 export interface PlatformData {
-  slug: "base44" | "rocket-new" | "floot" | "zite" | "bolt-new";
+  slug: "base44" | "rocket-new" | "floot" | "zite" | "bolt-new" | "framer";
   name: string;
   tagline: string;
   description: string;
@@ -1874,6 +1874,22 @@ export const PLATFORMS: PlatformData[] = [
       { question: "Is the badge removal permanent?", answer: "It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge." },
       { question: "Does this affect my app's functionality?", answer: "No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged." },
       { question: "Where do I find my Project ID?", answer: "Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/." },
+    ],
+  },
+  {
+    slug: "framer",
+    name: "Framer",
+    tagline: "Export React 19 code components & CMS collections from Framer",
+    description: "Framer is a powerful visual web builder. Push44 connects to Framer's live APIs to extract React 19 components, code overrides, CMS datasets, and push them directly to GitHub.",
+    color: "#0055ff",
+    bgColor: "#eff6ff",
+    articles: [],
+    features: ["Direct React 19 & TypeScript .tsx code export", "Framer Motion animation overrides preservation", "CMS collections & JSON dataset extraction", "Zero-backend browser WebSocket & REST integration", "Session cookie & Project API key support"],
+    exportSteps: ["Connect with Framer session cookie or Project API key in Settings", "Select your Framer project or paste project/template URL", "Review generated Vite + React codebase and diffs", "Push complete source tree to your GitHub repository"],
+    faqs: [
+      { question: "Can I export code components created in Framer?", answer: "Yes. Push44 extracts all code components, property controls, and code overrides directly into clean .tsx React files." },
+      { question: "How do I get my Framer session cookie?", answer: "Inspect network traffic on framer.com and copy the 'session' cookie value." },
+      { question: "Does Push44 support Framer CMS data?", answer: "Yes. Push44 fetches all collections and records, exporting them as structured JSON files." },
     ],
   },
 ];

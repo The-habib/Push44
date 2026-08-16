@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Check, AlertCircle, Loader2, ExternalLink, LogOut, RefreshCw } from "lucide-react";
-import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo, LovableLogo } from "@/components/BrandLogos";
+import { GitHubLogo, Base44Logo, RocketLogo, FlootLogo, ZiteLogo, BoltLogo, LovableLogo, FramerLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
 import { getGitHubUser } from "@/lib/github-api";
@@ -10,6 +10,7 @@ import { validateFlootToken } from "@/lib/floot-api";
 import { boltLogin, validateBoltProject } from "@/lib/bolt-api";
 import { loginToZite, validateZiteSession } from "@/lib/zite-api";
 import { lovableLogin, validateLovableToken } from "@/lib/lovable-api";
+import { validateFramerAuth } from "@/lib/framer-api";
 import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/settings")({ component: SettingsPage });
@@ -118,6 +119,15 @@ export default function SettingsPage() {
   const [showLovPass, setShowLovPass]     = useState(false);
   const [lovSaving, setLovSaving]         = useState(false);
   const [lovTest, setLovTest]             = useState<TestState>("idle");
+
+  // ── Framer ──────────────────────────────────────────────────────────────────
+  const [framerTab, setFramerTab]         = useState<"cookie" | "apikey">("cookie");
+  const [framerSession, setFramerSession] = useState(creds.framerSession ?? "");
+  const [framerApiKey, setFramerApiKey]   = useState(creds.framerApiKey ?? "");
+  const [showFramerSession, setShowFramerSession] = useState(false);
+  const [showFramerApiKey, setShowFramerApiKey]   = useState(false);
+  const [framerSaving, setFramerSaving]   = useState(false);
+  const [framerTest, setFramerTest]       = useState<TestState>("idle");
 
   // ── Prefs ──────────────────────────────────────────────────────────────────
   const [branch, setBranch] = useState(creds.defaultBranch ?? "main");
@@ -321,6 +331,52 @@ export default function SettingsPage() {
     setLovTest("loading");
     try { await validateLovableToken({ data: { token: tok } }); setLovTest("ok"); }
     catch { setLovTest("fail"); }
+  };
+
+  // ── Framer actions ─────────────────────────────────────────────────────────
+  const connectFramer = async () => {
+    setFramerSaving(true);
+    try {
+      if (framerTab === "cookie") {
+        const val = framerSession.trim();
+        if (!val) { toast.error("Please enter your Framer session cookie"); return; }
+        const res = await validateFramerAuth({ sessionCookie: val });
+        updateCreds({
+          framerSession: val,
+          framerEmail: res.user?.email || "",
+          displayName: creds.displayName || res.user?.name || "",
+        });
+        toast.success(`Connected to Framer${res.user?.name ? ` as ${res.user.name}` : ""}`);
+      } else {
+        const val = framerApiKey.trim();
+        if (!val) { toast.error("Please enter your Framer Project API Key"); return; }
+        await validateFramerAuth({ apiKey: val });
+        updateCreds({ framerApiKey: val });
+        toast.success("Framer API Key saved");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to connect to Framer");
+    } finally {
+      setFramerSaving(false);
+    }
+  };
+
+  const testFramer = async () => {
+    const sess = framerSession.trim() || creds.framerSession;
+    const key = framerApiKey.trim() || creds.framerApiKey;
+    if (!sess && !key) {
+      toast.error("Enter a session cookie or API key first");
+      return;
+    }
+    setFramerTest("loading");
+    try {
+      const res = await validateFramerAuth({ sessionCookie: sess, apiKey: key });
+      setFramerTest("ok");
+      toast.success(res.user?.name ? `Verified Framer account: ${res.user.name}` : "Framer credentials verified!");
+    } catch (e: any) {
+      setFramerTest("fail");
+      toast.error(e.message || "Framer verification failed");
+    }
   };
 
   return (
@@ -692,6 +748,151 @@ export default function SettingsPage() {
               style={{ background: "linear-gradient(135deg,#e11d48,#f43f5e)", borderColor: "transparent" }}>
               {lovSaving ? <><span className="spinner spinner-sm" />Connecting…</> : "Connect Lovable →"}
             </button>
+          </div>
+        )}
+      </SectionCard>
+
+      {/* ── Framer ── */}
+      <SectionCard
+        title="Framer"
+        subtitle="Export React 19 code components & CMS collections from Framer"
+        icon={<FramerLogo size={20} />}
+        connected={!!(creds.framerSession || creds.framerApiKey)}
+        onDisconnect={() => {
+          updateCreds({ framerSession: "", framerApiKey: "", framerEmail: "", framerProjectUrl: "" });
+          setFramerSession("");
+          setFramerApiKey("");
+          setFramerTest("idle");
+          toast.success("Disconnected Framer");
+        }}
+      >
+        {creds.framerEmail && (
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>
+            Connected account: <strong>{creds.framerEmail}</strong>
+          </div>
+        )}
+
+        {creds.framerSession || creds.framerApiKey ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <TestBtn state={framerTest} onClick={testFramer} />
+            <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>✓ Framer connected and ready to export</span>
+          </div>
+        ) : (
+          <div>
+            <div className="tabs" style={{ marginBottom: 12 }}>
+              <button
+                className={`tab${framerTab === "cookie" ? " active" : ""}`}
+                onClick={() => setFramerTab("cookie")}
+              >
+                Session Cookie
+              </button>
+              <button
+                className={`tab${framerTab === "apikey" ? " active" : ""}`}
+                onClick={() => setFramerTab("apikey")}
+              >
+                Project API Key
+              </button>
+            </div>
+
+            {framerTab === "cookie" ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label className="label">Framer Session Cookie (session)</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    className="input"
+                    type={showFramerSession ? "text" : "password"}
+                    placeholder="c5bf6b8f-53b3-4383-..."
+                    value={framerSession}
+                    onChange={(e) => {
+                      setFramerSession(e.target.value);
+                      setFramerTest("idle");
+                    }}
+                    style={{ paddingRight: 36 }}
+                  />
+                  <button
+                    onClick={() => setShowFramerSession(!showFramerSession)}
+                    aria-label={showFramerSession ? "Hide cookie" : "Show cookie"}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                      color: "#94a3b8",
+                      lineHeight: 1,
+                      padding: 0,
+                    }}
+                  >
+                    {showFramerSession ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8" }}>
+                  Inspect network on <a href="https://framer.com" target="_blank" rel="noopener" style={{ color: "#ff5500" }}>framer.com</a> and copy the <code style={{ background: "#f1f5f9", padding: "1px 4px", borderRadius: 3 }}>session</code> cookie.
+                </p>
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={framerSaving || !framerSession.trim()}
+                    onClick={connectFramer}
+                    style={{ background: "#0d0b09", borderColor: "#26221f" }}
+                  >
+                    {framerSaving ? <><span className="spinner spinner-sm" />Connecting…</> : "Connect Framer →"}
+                  </button>
+                  <TestBtn state={framerTest} onClick={testFramer} />
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label className="label">Project API Key</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    className="input"
+                    type={showFramerApiKey ? "text" : "password"}
+                    placeholder="ap_..."
+                    value={framerApiKey}
+                    onChange={(e) => {
+                      setFramerApiKey(e.target.value);
+                      setFramerTest("idle");
+                    }}
+                    style={{ paddingRight: 36 }}
+                  />
+                  <button
+                    onClick={() => setShowFramerApiKey(!showFramerApiKey)}
+                    aria-label={showFramerApiKey ? "Hide key" : "Show key"}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                      color: "#94a3b8",
+                      lineHeight: 1,
+                      padding: 0,
+                    }}
+                  >
+                    {showFramerApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8" }}>
+                  Found in your Framer project under <strong>Site Settings → General → API Keys</strong>.
+                </p>
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  <button
+                    className="btn btn-primary"
+                    disabled={framerSaving || !framerApiKey.trim()}
+                    onClick={connectFramer}
+                    style={{ background: "#0d0b09", borderColor: "#26221f" }}
+                  >
+                    {framerSaving ? <><span className="spinner spinner-sm" />Saving…</> : "Save API Key →"}
+                  </button>
+                  <TestBtn state={framerTest} onClick={testFramer} />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </SectionCard>

@@ -13,6 +13,7 @@ const PLATFORM_COLORS: Record<Platform, string> = {
   zite:    "#0ea5e9",
   bolt:    "#7c3aed",
   lovable: "#e11d48",
+  framer:  "#0055ff",
 };
 
 const PLATFORM_LABELS: Record<Platform, string> = {
@@ -22,6 +23,7 @@ const PLATFORM_LABELS: Record<Platform, string> = {
   zite:    "Zite",
   bolt:    "bolt.new",
   lovable: "Lovable",
+  framer:  "Framer",
 };
 
 function PlatformBadge({ platform }: { platform?: Platform }) {

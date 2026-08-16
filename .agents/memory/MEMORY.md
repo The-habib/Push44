@@ -23,3 +23,5 @@
 - [Zite Badge Removal API](zite-badge-removal-api.md) — confirmed 4-step flow: fetch app→get conversationId→saveAction(CSS)→publish; hideBranding setting has no effect
 - [Lovable Badge Removal](lovable-badge-removal.md) — Firebase auth; badge is #lovable-badge server-injected z-index:1000000; no toggle API; CSS via POST /messages chat→AI writes to src/styles.css→redeploy
 - [Lovable Integration Bugs](lovable-integration-bugs.md) — Promise.allSettled workspace scoping; polling needs pre-send snapshot; vercel.json needs lovable route; dashboard Platform maps must include all platforms
+- [Telegram Bot Forwarding Hook](telegram-hook.md) — Stop lifecycle hook configured in .agents/hooks.json forwards clean responses to @truemadadbot (chat ID 1550319630)
+- [Framer API Patterns](framer-api.md) — framer-api SDK (v0.1.29) WebSocket server API; getCodeFiles, getCollections, publish; full docs in docs/research/framer-api.md
