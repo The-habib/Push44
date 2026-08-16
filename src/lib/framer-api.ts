@@ -78,16 +78,19 @@ export async function validateFramerAuth({
   apiKey?: string;
 }): Promise<{ valid: boolean; user?: FramerUser; token?: string }> {
   if (sessionCookie) {
-    const accessToken = await getFramerAccessToken(sessionCookie);
+    const cookie = sessionCookie.trim();
     const userRes = await fetch(`${FRAMER_PROXY}/web/users/me`, {
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        "X-Framer-Session": cookie,
         "Accept": "application/json",
       },
     });
 
     if (!userRes.ok) {
-      throw new Error("Failed to fetch Framer user profile with current session.");
+      if (userRes.status === 401) {
+        throw new Error("Your Framer session cookie is invalid or expired. Please copy a fresh session cookie from framer.com DevTools.");
+      }
+      throw new Error(`Failed to authenticate with Framer (${userRes.status}).`);
     }
 
     const userData = (await userRes.json()) as any;
@@ -99,7 +102,7 @@ export async function validateFramerAuth({
         email: userData.email || "",
         avatar: userData.avatar,
       },
-      token: accessToken,
+      token: cookie,
     };
   }
 
@@ -120,43 +123,98 @@ export async function listFramerProjects({
   sessionCookie?: string;
   accessToken?: string;
 }): Promise<FramerProject[]> {
-  const token = accessToken || (sessionCookie ? await getFramerAccessToken(sessionCookie) : "");
-  if (!token) {
+  const cookie = (sessionCookie || accessToken || "").trim();
+  if (!cookie) {
     return [];
   }
 
-  const res = await fetch(`${FRAMER_PROXY}/web/v2/dashboard/metadata`, {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Accept": "application/json",
-    },
-  });
+  const projectsMap = new Map<string, FramerProject>();
 
-  if (!res.ok) {
-    throw new Error(`Failed to list Framer projects (${res.status}).`);
-  }
+  try {
+    // 1. Fetch metadata to get workspace teams
+    const metaRes = await fetch(`${FRAMER_PROXY}/web/v2/dashboard/metadata`, {
+      headers: {
+        "X-Framer-Session": cookie,
+        "Accept": "application/json",
+      },
+    });
 
-  const data = (await res.json()) as any;
-  const projects: FramerProject[] = [];
+    if (metaRes.ok) {
+      const metaData = (await metaRes.json()) as any;
+      const teams = metaData.teams || [];
 
-  const teams = data.teams || [];
-  for (const team of teams) {
-    const teamProjects = team.projects || [];
-    for (const p of teamProjects) {
-      projects.push({
-        id: p.id,
-        name: p.name || p.title || "Untitled Framer Site",
-        url: p.url || `https://framer.com/projects/${p.id}`,
-        publishedUrl: p.publishedUrl,
-        thumbnailUrl: p.thumbnailUrl,
-        lastModified: p.lastModified || p.updatedAt,
-        updated_at: p.lastModified || p.updatedAt || new Date().toISOString(),
-      });
+      // Fetch projects for each workspace team
+      for (const team of teams) {
+        if (!team.id) continue;
+        try {
+          const teamProjRes = await fetch(
+            `${FRAMER_PROXY}/web/v2/dashboard/teams/${team.id}?collectionId=recent&limit=50`,
+            {
+              headers: {
+                "X-Framer-Session": cookie,
+                "Accept": "application/json",
+              },
+            }
+          );
+          if (teamProjRes.ok) {
+            const teamData = (await teamProjRes.json()) as any;
+            for (const p of teamData.projects || []) {
+              if (p.id && !projectsMap.has(p.id)) {
+                projectsMap.set(p.id, {
+                  id: p.id,
+                  name: p.title || p.name || "Untitled Framer Project",
+                  url: p.url || `https://framer.com/projects/${p.id}`,
+                  publishedUrl: p.publishedUrl || (p.license?.type === "freeSite" ? `https://${p.id}.framer.app` : undefined),
+                  thumbnailUrl: p.thumbnailUrl,
+                  lastModified: p.lastOpenedAt || p.updatedAt || p.createdAt,
+                  updated_at: p.updatedAt || p.lastOpenedAt || p.createdAt || new Date().toISOString(),
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to fetch team projects:", e);
+        }
+      }
     }
+
+    // 2. Fetch drafts
+    try {
+      const draftsRes = await fetch(
+        `${FRAMER_PROXY}/web/v2/dashboard/?collectionId=drafts&limit=50`,
+        {
+          headers: {
+            "X-Framer-Session": cookie,
+            "Accept": "application/json",
+          },
+        }
+      );
+      if (draftsRes.ok) {
+        const draftsData = (await draftsRes.json()) as any;
+        for (const p of draftsData.projects || []) {
+          if (p.id && !projectsMap.has(p.id)) {
+            projectsMap.set(p.id, {
+              id: p.id,
+              name: p.title || p.name || "Draft Project",
+              url: p.url || `https://framer.com/projects/${p.id}`,
+              publishedUrl: p.publishedUrl,
+              thumbnailUrl: p.thumbnailUrl,
+              lastModified: p.lastOpenedAt || p.updatedAt || p.createdAt,
+              updated_at: p.updatedAt || p.lastOpenedAt || p.createdAt || new Date().toISOString(),
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch drafts:", e);
+    }
+  } catch (err) {
+    console.error("listFramerProjects error:", err);
   }
 
-  return projects;
+  return Array.from(projectsMap.values());
 }
+
 
 /**
  * Remixes / duplicates a public Framer template or project into the user's workspace.
