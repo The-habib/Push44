@@ -135,7 +135,7 @@ export default function ArticlePage() {
             <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <Clock size={13} /> {article.readTime} min read
             </span>
-            <span>Updated {new Date(article.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+            <span>Updated {article.updatedAt}</span>
             <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
               target="_blank" rel="noopener noreferrer"

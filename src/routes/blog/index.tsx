@@ -90,16 +90,19 @@ export default function BlogHome() {
       <Navbar />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "72px 20px 64px", borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+      <section style={{ position: "relative", padding: "80px 20px 72px", borderBottom: "1px solid #e4e4e7", background: "radial-gradient(ellipse at 50% 0%, #fff7ed 0%, #fafafa 70%)", overflow: "hidden" }}>
+        {/* Subtle Ambient Radial Glow */}
+        <div style={{ position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 600, height: 240, background: "radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(255, 255, 255, 0) 70%)", pointerEvents: "none" }} />
+
+        <div style={{ position: "relative", maxWidth: 760, margin: "0 auto", textAlign: "center", zIndex: 1 }}>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 16 }}>
-              Knowledge Base
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.12em", display: "inline-block", padding: "4px 12px", background: "rgba(249, 115, 22, 0.1)", borderRadius: 99, border: "1px solid rgba(249, 115, 22, 0.25)", marginBottom: 20 }}>
+              Knowledge Base & Guides
             </span>
-            <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 14px" }}>
+            <h1 style={{ fontSize: "clamp(30px,5.2vw,54px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.045em", lineHeight: 1.08, margin: "0 0 16px" }}>
               Export Code from Every AI Builder
             </h1>
-            <p style={{ fontSize: 16, color: "#71717a", lineHeight: 1.7, margin: "0 0 36px", maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
+            <p style={{ fontSize: 16, color: "#71717a", lineHeight: 1.7, margin: "0 0 36px", maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
               Step-by-step guides, tutorials, and comparisons to export, backup, and own your AI-generated source code.
             </p>
           </motion.div>
@@ -112,18 +115,18 @@ export default function BlogHome() {
             style={{ position: "relative", maxWidth: 520, margin: "0 auto 24px" }}
           >
             <div
-              style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid #e4e4e7", borderRadius: 10, padding: "0 14px", background: "#fff", transition: "border-color 0.15s, box-shadow 0.15s" }}
-              onFocusCapture={e => { e.currentTarget.style.borderColor = "#f97316"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.08)"; }}
-              onBlurCapture={e => { e.currentTarget.style.borderColor = "#e4e4e7"; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid #e4e4e7", borderRadius: 12, padding: "0 16px", background: "#fff", boxShadow: "0 4px 14px rgba(0,0,0,0.03)", transition: "all 0.18s ease" }}
+              onFocusCapture={e => { e.currentTarget.style.borderColor = "#f97316"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(249,115,22,0.12)"; }}
+              onBlurCapture={e => { e.currentTarget.style.borderColor = "#e4e4e7"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.03)"; }}
             >
-              <Search size={15} color="#a1a1aa" style={{ flexShrink: 0 }} />
+              <Search size={16} color="#a1a1aa" style={{ flexShrink: 0 }} />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={e => handleSearch(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && searchResults[0]) navigate({ to: "/blog/$slug", params: { slug: searchResults[0].slug } }); }}
                 placeholder={placeholder || "Search guides..."}
-                style={{ background: "transparent", border: "none", outline: "none", color: "#09090b", fontSize: 14, flex: 1, padding: "13px 0", fontFamily: "inherit" }}
+                style={{ background: "transparent", border: "none", outline: "none", color: "#09090b", fontSize: 14, flex: 1, padding: "14px 0", fontFamily: "inherit" }}
                 aria-label="Search guides"
                 autoComplete="off"
               />
@@ -142,16 +145,16 @@ export default function BlogHome() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 6 }}
                   transition={{ duration: 0.15 }}
-                  style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 10, boxShadow: "0 8px 24px -4px rgba(0,0,0,0.12)", zIndex: 10, overflow: "hidden" }}
+                  style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 12, boxShadow: "0 12px 32px -4px rgba(0,0,0,0.14)", zIndex: 20, overflow: "hidden" }}
                 >
                   {searchResults.map((a, i) => (
-                    <Link key={a.slug} to="/blog/$slug" params={{ slug: a.slug }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", textDecoration: "none", borderTop: i > 0 ? "1px solid #f4f4f5" : "none" }}
+                    <Link key={a.slug} to="/blog/$slug" params={{ slug: a.slug }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", textDecoration: "none", borderTop: i > 0 ? "1px solid #f4f4f5" : "none" }}
                       onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#fafafa"}
                       onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "transparent"}
                     >
-                      <ChevronRight size={13} color="#a1a1aa" style={{ flexShrink: 0 }} />
+                      <ChevronRight size={14} color="#f97316" style={{ flexShrink: 0 }} />
                       <div style={{ textAlign: "left" }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#09090b", lineHeight: 1.3 }}>{a.h1}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#09090b", lineHeight: 1.35 }}>{a.h1}</div>
                         <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
                           <Clock size={10} /> {a.readTime} min read
                         </div>
@@ -181,10 +184,10 @@ export default function BlogHome() {
       </section>
 
       {/* ── CATEGORIES ────────────────────────────────────────────────────── */}
-      <section style={{ padding: "48px 20px", borderBottom: "1px solid #e4e4e7" }}>
+      <section style={{ padding: "36px 20px", borderBottom: "1px solid #e4e4e7", background: "#ffffff" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 20, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: "#09090b", letterSpacing: "-0.02em", margin: 0 }}>Browse by Topic</h2>
+          <div style={{ marginBottom: 16, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#09090b", letterSpacing: "-0.01em", margin: 0 }}>Browse by Topic</h2>
             {category && (
               <Link to="/blog" search={{}} style={{ fontSize: 12, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
                 Clear filter
@@ -196,11 +199,11 @@ export default function BlogHome() {
               const isActive = category === c.slug;
               return (
                 <Link key={c.slug} to="/blog" search={{ category: c.slug }}
-                  style={{ display: "inline-flex", alignItems: "center", padding: "6px 14px", background: isActive ? "#fff7ed" : "#fafafa", border: `1px solid ${isActive ? "#fed7aa" : "#e4e4e7"}`, borderRadius: 99, textDecoration: "none", transition: "all 0.12s" }}
-                  onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"; (e.currentTarget as HTMLAnchorElement).style.background = "#fff"; } }}
+                  style={{ display: "inline-flex", alignItems: "center", padding: "6px 14px", background: isActive ? "#fff7ed" : "#fafafa", border: `1px solid ${isActive ? "#f97316" : "#e4e4e7"}`, borderRadius: 99, textDecoration: "none", transition: "all 0.15s ease", boxShadow: isActive ? "0 2px 8px rgba(249, 115, 22, 0.15)" : "none" }}
+                  onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#f97316"; (e.currentTarget as HTMLAnchorElement).style.background = "#fff"; } }}
                   onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLAnchorElement).style.background = "#fafafa"; } }}
                 >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: isActive ? "#f97316" : "#3f3f46" }}>{c.name}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? "#f97316" : "#3f3f46" }}>{c.name}</span>
                 </Link>
               );
             })}

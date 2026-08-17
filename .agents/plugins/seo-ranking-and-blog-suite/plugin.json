@@ -1,0 +1,8 @@
+{
+  "name": "seo-ranking-and-blog-suite",
+  "displayName": "SEO, Google Ranking & Blog Publishing Suite",
+  "description": "Comprehensive suite for organic SERP rank tracking, Google autocomplete keyword research, blog article scaffolding with Schema.org JSON-LD, content readability auditing, and XML sitemaps.",
+  "version": "1.0.0",
+  "author": "Push44 Engineering & Content Team",
+  "enabled": true
+}

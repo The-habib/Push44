@@ -1,0 +1,8 @@
+{
+  "name": "vibe-browser-suite",
+  "displayName": "Vibe Browser & Visual Intelligence Suite",
+  "description": "Comprehensive browser automation, multi-device viewport testing, design token extraction, accessibility auditing, and MCP integrations (Chrome DevTools + Puppeteer) for vibe coders.",
+  "version": "1.0.0",
+  "author": "Push44 Vibe Coding Suite",
+  "enabled": true
+}

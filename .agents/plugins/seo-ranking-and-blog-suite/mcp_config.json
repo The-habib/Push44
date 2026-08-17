@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "lighthouse": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "lighthouse-mcp"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--channel=stable",
+        "--chrome-arg=--no-sandbox",
+        "--chrome-arg=--disable-gpu",
+        "--chrome-arg=--disable-dev-shm-usage"
+      ]
+    }
+  }
+}

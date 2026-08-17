@@ -26,6 +26,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CliShowcase } from "@/components/CliShowcase";
 import { AndroidAppModal } from "@/components/AndroidAppModal";
+import { ModernPlatformMarquee } from "@/components/ModernPlatformMarquee";
+import { SpotlightCard } from "@/components/SpotlightCard";
 import {
   Base44Logo,
   RocketLogo,
@@ -900,77 +902,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 2. SUPPORTED PLATFORMS MARQUEE ─────────────────────────────────── */}
-      <section
-        style={{
-          padding: "36px 20px",
-          borderBottom: "1px solid #e7e2db",
-          background: "#ffffff",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#78716c",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              marginRight: 10,
-            }}
-          >
-            Works Seamlessly With
-          </span>
-          {PLATFORMS_GRID.map((p) => {
-            const Logo = p.logoComponent;
-            return (
-              <Link
-                key={p.name}
-                to="/platforms/$platform"
-                params={{ platform: p.slug }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "7px 15px",
-                  border: "1px solid #e7e2db",
-                  borderRadius: 10,
-                  background: "#faf8f5",
-                  textDecoration: "none",
-                  color: "#1c1714",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  transition: "all 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  el.style.borderColor = "#d6d3d1";
-                  el.style.transform = "translateY(-1px)";
-                  el.style.background = "#ffffff";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  el.style.borderColor = "#e7e2db";
-                  el.style.transform = "translateY(0)";
-                  el.style.background = "#faf8f5";
-                }}
-              >
-                <Logo size={18} />
-                <span>{p.name}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      <ModernPlatformMarquee />
 
       {/* ── 3. STATS STRIP ─────────────────────────────────────────────────── */}
       <section
@@ -1205,88 +1137,75 @@ export default function LandingPage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.08 }}
                   whileHover={{ y: -4 }}
-                  style={{
-                    border: "1px solid #e7e2db",
-                    borderRadius: 16,
-                    padding: "32px",
-                    background: "#faf8f5",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: 24,
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-                    transition: "border-color 0.2s, box-shadow 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "#d6d3d1";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 30px rgba(0,0,0,0.06)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "#e7e2db";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(0,0,0,0.03)";
-                  }}
+                  className="h-full"
                 >
-                  <div>
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: "#ffffff",
-                        border: "1px solid #e7e2db",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: 20,
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-                      }}
-                    >
-                      <Icon size={22} color={item.accent} />
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        color: item.accent,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        marginBottom: 6,
-                      }}
-                    >
-                      {item.subtitle}
-                    </div>
-                    <h3
-                      style={{
-                        fontSize: 20,
-                        fontWeight: 800,
-                        color: "#1c1714",
-                        margin: "0 0 10px",
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {item.title}
-                    </h3>
-                    <p style={{ fontSize: 14, color: "#57534e", lineHeight: 1.65, margin: 0 }}>
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{
-                      borderTop: "1px solid #e7e2db",
-                      paddingTop: 16,
-                      display: "flex",
-                      alignItems: "baseline",
-                      gap: 8,
-                    }}
+                  <SpotlightCard
+                    spotlightColor="rgba(255, 85, 0, 0.09)"
+                    className="h-full border border-stone-200 hover:border-orange-500/40 rounded-2xl p-8 bg-[#faf8f5] shadow-xs hover:shadow-lg transition-all"
                   >
-                    <span style={{ fontSize: 24, fontWeight: 900, color: "#1c1714", letterSpacing: "-0.03em" }}>
-                      {item.stat}
-                    </span>
-                    <span style={{ fontSize: 12, color: "#78716c", fontWeight: 600 }}>
-                      {item.statLabel}
-                    </span>
-                  </div>
+                    <div>
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
+                          background: "#ffffff",
+                          border: "1px solid #e7e2db",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginBottom: 20,
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+                        }}
+                      >
+                        <Icon size={22} color={item.accent} />
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          color: item.accent,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        {item.subtitle}
+                      </div>
+                      <h3
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 800,
+                          color: "#1c1714",
+                          margin: "0 0 10px",
+                          letterSpacing: "-0.02em",
+                        }}
+                      >
+                        {item.title}
+                      </h3>
+                      <p style={{ fontSize: 14, color: "#57534e", lineHeight: 1.65, margin: 0 }}>
+                        {item.desc}
+                      </p>
+                    </div>
+
+                    <div
+                      style={{
+                        borderTop: "1px solid #e7e2db",
+                        paddingTop: 16,
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
+                        marginTop: 24,
+                      }}
+                    >
+                      <span style={{ fontSize: 24, fontWeight: 900, color: "#1c1714", letterSpacing: "-0.03em" }}>
+                        {item.stat}
+                      </span>
+                      <span style={{ fontSize: 12, color: "#78716c", fontWeight: 600 }}>
+                        {item.statLabel}
+                      </span>
+                    </div>
+                  </SpotlightCard>
                 </motion.div>
               );
             })}
