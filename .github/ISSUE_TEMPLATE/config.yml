@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/The-habib/Push44/discussions
+    about: Ask questions, share ideas, and connect with other developers.
+  - name: 📱 Push44 Web App
+    url: https://push44.vercel.app
+    about: Use the official live web application.

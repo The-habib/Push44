@@ -1,416 +1,67 @@
 # Contributing to Push44
 
-Thanks for your interest in contributing! Push44 is a fully client-side open-source app — no backend, no database, no accounts. Every feature lives in plain TypeScript + React and talks directly to external APIs.
+Thank you for your interest in contributing to Push44! We welcome contributions from developers around the world to expand AI builder support, improve performance, and enhance developer code ownership.
 
 ---
 
-## Table of Contents
+## 🛠️ Development Setup
 
-1. [Development Setup](#1-development-setup)
-2. [Architecture Overview](#2-architecture-overview)
-3. [Code Style & Conventions](#3-code-style--conventions)
-4. [Adding a New Platform Integration](#4-adding-a-new-platform-integration)
-5. [Key Gotchas & Traps](#5-key-gotchas--traps)
-6. [Pull Request Process](#6-pull-request-process)
-7. [Good First Issues](#7-good-first-issues)
-
----
-
-## 1. Development Setup
+Push44 is built with **TanStack Start / Router**, **React 19**, **Vite 8**, **Tailwind CSS 4**, and **Bun**.
 
 ### Prerequisites
+- [Bun](https://bun.sh) (v1.1+ recommended)
+- Node.js (v20+)
+- Git
 
-| Tool | Version | Install |
-|---|---|---|
-| [Bun](https://bun.sh/) | ≥ 1.1 | `curl -fsSL https://bun.sh/install \| bash` |
-| Node.js | ≥ 20 (fallback only) | — |
-| Git | any | — |
-
-### First-time setup
-
+### 1. Fork & Clone
 ```bash
-git clone https://github.com/The-habib/Push44.git
+git clone https://github.com/<your-username>/Push44.git
 cd Push44
+```
+
+### 2. Install Dependencies
+```bash
 bun install
-bun run dev        # starts on http://localhost:5000
 ```
 
-### Environment
-
-There are **no environment variables**. Push44 is fully client-side — all credentials are entered by the user in the Settings UI and stored only in their browser's `localStorage`.
-
-### Scripts
-
-| Command | What it does |
-|---|---|
-| `bun run dev` | Dev server on port 5000 with HMR |
-| `bun run build` | Production build into `dist/` |
-| `bun run preview` | Serve the production build locally |
-
----
-
-## 2. Architecture Overview
-
-### Directory layout
-
+### 3. Start Local Development Server
+```bash
+bun dev
 ```
-src/
-├── routes/          TanStack Start file-based routes (each file = one page)
-├── lib/             All API logic — one file per external platform
-├── components/      Shared React components
-├── contexts/        Global React state (credentials, persisted to localStorage)
-└── assets/          Images imported as ES modules (not served from public/)
-```
+Visit `http://localhost:5173` to see the live app.
 
-### Data flow
-
-```
-User action
-  → React component (routes/)
-      → async function call (lib/*.ts)
-          → fetch() directly to external API
-              → response back to component
-                  → state update → re-render
-```
-
-There is no intermediary server. All `fetch()` calls go directly to the external platform APIs from the user's browser.
-
-### Routing
-
-Push44 uses **TanStack Start** (file-based SSR router). Each file in `src/routes/` automatically becomes a route. The `__root.tsx` file is the root layout — it contains the `AppShell` (header + nav) and global `<head>` meta tags.
-
-The `OnboardingGuard` in `__root.tsx` redirects unauthenticated users to `/onboarding` before they can reach any protected page.
-
-### State management
-
-All credential state lives in `src/contexts/AppContext.tsx`. It exposes:
-
-```ts
-const { creds, setCreds, isLoaded } = useApp();
-```
-
-`creds` is a single object persisted to `localStorage` under `b44push_credentials`. It contains:
-
-```ts
-{
-  githubToken, githubUsername,
-  base44Token, base44Email,
-  rocketToken, rocketEmail, rocketCompanyId,
-  flootToken,  flootEmail,
-  ziteToken,   ziteEmail,
-  defaultBranch, displayName,
-}
-```
-
-Push history is stored separately under `b44push_history` (array of `PushRecord`, max 100 entries). File snapshots for diff tracking are stored under `push44_snapshots_{appId}`.
-
-### API layer (`src/lib/`)
-
-Each platform has its own file. All functions that make network requests are plain `async` functions exported from the file. They are called directly from route components — there is no store, no React Query, no middleware layer.
-
-```
-src/lib/
-├── base44-api.ts    Base44 REST API (login, list apps, sandbox, files)
-├── rocket-api.ts    Rocket.new (OTP auth, list apps, file fetch, APK build)
-├── floot-api.ts     Floot (magic link auth, list apps, fetch files)
-├── zite-api.ts      Zite (login, list apps, fetch files)
-├── github-api.ts    GitHub REST API (user, repos, branches, Trees API push)
-└── storage.ts       localStorage read/write helpers
+### 4. Android APK Development (Optional)
+If contributing to the native Android WebView integration:
+- Requirements: Android SDK 34, JDK 17
+```bash
+cd android
+./gradlew assembleDebug
 ```
 
 ---
 
-## 3. Code Style & Conventions
+## 📐 Architecture Rules for Contributors
 
-### General
-
-- **TypeScript everywhere** — no `any` unless you're intentionally handling an unknown external payload
-- **Tailwind CSS 4** — no config file, utility classes inline in JSX
-- **sonner** for toast notifications — `toast.success()`, `toast.error()`
-- **lucide-react** for icons
-
-### Component patterns
-
-```tsx
-// ✅ Local state with useEffect for anything that touches Date, Math.random, or localStorage
-const [greeting, setGreeting] = useState("");
-useEffect(() => {
-  setGreeting(new Date().getHours() < 12 ? "Good morning" : "Good afternoon");
-}, []);
-
-// ❌ Never at render time — breaks SSR hydration
-const greeting = new Date().getHours() < 12 ? "Good morning" : "Good afternoon";
-```
-
-```tsx
-// ✅ Import images as ES modules
-import logo from "@/assets/logo.png";
-<img src={logo} />
-
-// ❌ Never as /public path in JSX — 404s in dev
-<img src="/logo.png" />
-```
-
-```tsx
-// ✅ Wrap opacity on GitHubLogo in a div
-<div style={{ opacity: 0.08 }}>
-  <GitHubLogo size={110} className="text-white" />
-</div>
-
-// ❌ GitHubLogo has no style prop — inline opacity is silently ignored
-<GitHubLogo size={110} style={{ opacity: 0.08 }} />
-```
-
-### Brand colors
-
-```ts
-// Base44
-const B44_COLOR  = "#f97316";
-const B44_GRAD   = "linear-gradient(135deg,#fb923c,#f97316)";
-
-// Rocket.new
-const ROCKET_COLOR  = "#8b5cf6";
-const ROCKET_GRAD   = "linear-gradient(135deg,#9810fa,#7008e7)";
-
-// Floot
-const FLOOT_COLOR = "#6366f1";
-const FLOOT_GRAD  = "linear-gradient(135deg,#6366f1,#4f46e5)";
-
-// Zite
-const ZITE_COLOR = "#0ea5e9";
-const ZITE_GRAD  = "linear-gradient(135deg,#0ea5e9,#0284c7)";
-```
-
-### File placement rule
-
-> **Never put files in a `server/` subdirectory.**
-
-`@lovable.dev/vite-tanstack-config` blocks any import whose path matches `**/server/**`. All API functions must live directly in `src/lib/`, not in `src/lib/server/`.
+1. **Zero Backend Constraint**: Never introduce backend servers, Express/Fastify processes, or remote databases. Push44 is 100% client-side.
+2. **Directory Placement**: Never place code in a directory matching `**/server/**` (blocked by `@lovable.dev/vite-tanstack-config`). All API helpers live in `src/lib/*.ts`.
+3. **SSR Hydration Safety**: Client-specific state (reading `localStorage`, `window.innerWidth`, `navigator.userAgent`) must be inside `useEffect`, not evaluated directly at component render time.
+4. **Package Manager**: Always use `bun` (never `npm` or `yarn`).
 
 ---
 
-## 4. Adding a New Platform Integration
+## 🚀 Submitting a Pull Request
 
-This is the most common type of contribution. Here's the full pattern:
-
-### Step 1 — Create `src/lib/{platform}-api.ts`
-
-```ts
-// src/lib/myplatform-api.ts
-
-const API_BASE = "https://api.myplatform.com";
-
-// ── Auth ────────────────────────────────────────────────────────────────────
-
-export async function loginToMyPlatform(
-  email: string,
-  password: string
-): Promise<{ token: string; username: string }> {
-  const res = await fetch(`${API_BASE}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error(`Login failed (${res.status})`);
-  const json = await res.json();
-  return { token: json.token, username: json.user.name };
-}
-
-// ── Apps ────────────────────────────────────────────────────────────────────
-
-export async function listMyPlatformApps(
-  token: string
-): Promise<Array<{ id: string; name: string }>> {
-  const res = await fetch(`${API_BASE}/apps`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`Failed to list apps (${res.status})`);
-  const json = await res.json();
-  return json.apps.map((a: any) => ({ id: a.id, name: a.name }));
-}
-
-// ── Files ────────────────────────────────────────────────────────────────────
-
-export async function fetchMyPlatformFiles(
-  token: string,
-  appId: string
-): Promise<Array<{ path: string; content: string }>> {
-  const res = await fetch(`${API_BASE}/apps/${appId}/files`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`Failed to fetch files (${res.status})`);
-  const json = await res.json();
-  // Return an array of { path, content } — this is what the push flow expects
-  return Object.entries(json.files as Record<string, string>).map(
-    ([path, content]) => ({ path, content })
-  );
-}
-```
-
-### Step 2 — Add credentials to `AppContext`
-
-Open `src/contexts/AppContext.tsx` and add your credential fields:
-
-```ts
-export interface Credentials {
-  // ...existing fields...
-  myPlatformToken?: string;
-  myPlatformEmail?: string;
-}
-```
-
-### Step 3 — Add a login UI to Settings
-
-Open `src/routes/settings.lazy.tsx`. Add a new credential card following the same pattern as the Base44 or Rocket.new card. The card should:
-- Show a "Connected" badge when `creds.myPlatformToken` is set
-- Have a form to enter credentials
-- Call your login API function on submit
-- Call `setCreds({ ...creds, myPlatformToken: token })` on success
-
-### Step 4 — Wire into the push flow
-
-Open `src/routes/push.lazy.tsx`:
-
-1. Add your platform to the `Platform` type in `src/lib/storage.ts`:
-   ```ts
-   export type Platform = "base44" | "rocket" | "floot" | "zite" | "myplatform";
+1. **Create a branch**:
+   ```bash
+   git checkout -b feat/support-new-platform
    ```
-
-2. Add a tab to the `PlatformToggle` section following the existing pattern.
-
-3. Add a branch to `loadApps()`:
-   ```ts
-   } else if (platform === "myplatform") {
-     setApps(await listMyPlatformApps(creds.myPlatformToken!));
-   }
+2. **Commit with Conventional Commits**:
+   - `feat: add export support for ExampleAI`
+   - `fix: resolve auth token refresh issue`
+   - `docs: update SEO guides`
+3. **Verify Build**:
+   ```bash
+   bun run generate-seo
+   bun run build
    ```
-
-4. Add a branch to `handleSelectApp()`:
-   ```ts
-   } else if (platform === "myplatform") {
-     loadedFiles = await fetchMyPlatformFiles(creds.myPlatformToken!, app.id);
-   }
-   ```
-
-5. Add a brand logo to `src/components/BrandLogos.tsx` — save the logo PNG/SVG to `src/assets/` and import it as an ES module.
-
-### Step 5 — Add to `storage.ts`
-
-Open `src/lib/storage.ts` and add your token to the `Credentials` interface and the `b44push_credentials` localStorage key shape. No migration is needed — missing fields default to `undefined`.
-
----
-
-## 5. Key Gotchas & Traps
-
-### SSR hydration
-
-TanStack Start renders on the server first. Anything that differs between server and client — `new Date()`, `Math.random()`, `localStorage` — must only run inside `useEffect`, never at the top level of a component or in initial state.
-
-```tsx
-// ✅ Safe
-const [time, setTime] = useState("");
-useEffect(() => { setTime(new Date().toLocaleTimeString()); }, []);
-
-// ❌ Breaks hydration
-const time = new Date().toLocaleTimeString();
-```
-
-### Vite server/ path block
-
-`@lovable.dev/vite-tanstack-config` statically blocks imports from any path matching `**/server/**`. This is enforced at build time. Keep all API functions in `src/lib/*.ts`.
-
-### Static assets in dev
-
-The Vite dev server does **not** serve `public/` in development. Import all images as ES modules from `src/assets/`:
-
-```ts
-import myLogo from "@/assets/my-logo.png"; // ✅ works in dev + prod
-// <img src="/my-logo.png" />              // ❌ 404 in dev
-```
-
-### Base44Logo white prop
-
-Always pass `white` when the logo sits on an orange or dark background:
-
-```tsx
-<Base44Logo size={20} white />   // on orange/dark bg
-<Base44Logo size={20} />         // on white/light bg
-```
-
-Without `white`, the orange PNG is invisible against an orange background.
-
-### Rocket.new response encryption
-
-Many Rocket.new API responses are AES-256-CBC encrypted (shape: `{ requestAnchor, processedContent }`). Always pipe them through `rocketDecrypt()` (defined at the top of `rocket-api.ts`) before reading any fields.
-
-### Rocket.new companyId header
-
-Every call to `back.rocket.new` requires a `companyId` HTTP header. Without it the endpoint returns `context: "general"` — an empty app list with no error.
-
-### Rocket.new auth header format varies by server
-
-| Server | Header |
-|---|---|
-| `appuser.dhiwise.com` | `Authorization: JWT {token}` |
-| `back.rocket.new` | `Authorization: Bearer {token}` |
-| `application.rocket.new` | `Authorization: Bearer {token}` |
-| `appcodeformat.dhiwise.com` | `Authorization: JWT {token}` |
-| `{backendUrl}/api/file-content` | **No auth header** |
-
-### Floot magic link auth
-
-Floot uses NextAuth magic links — not OAuth, not password. The session token is a Bearer JWT valid for the browser session. There is no public API; all endpoints were reverse-engineered from the Floot Next.js bundle.
-
-### Zite proxy pattern
-
-Zite (build.fillout.com) proxies its backend through `server.zite.com` with `Origin: build.fillout.com` required on every request. Requests without this origin header are rejected.
-
----
-
-## 6. Pull Request Process
-
-1. **Fork** the repo and create a branch: `git checkout -b feature/your-feature`
-2. Make your changes. Run `bun run dev` and test the affected flows manually.
-3. Keep commits focused — one logical change per commit using [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat: add Zite platform integration`
-   - `fix: handle empty repo on first push`
-   - `docs: update API reference for Floot`
-4. Push and open a PR against `main`. Fill in the PR template with:
-   - **What** — what does this PR add or fix?
-   - **Why** — what problem does it solve?
-   - **How tested** — what did you test manually?
-5. PRs are reviewed and merged by the maintainer. There are no automated tests — manual testing of the affected flow is expected.
-
-### Commit message format
-
-```
-<type>(<scope>): <short description>
-
-feat(rocket):   add APK build progress polling
-fix(github):    handle empty repo on first push
-fix(base44):    detect Google-linked account on login error
-feat(zite):     add Zite platform integration
-feat(floot):    add Floot magic link auth
-docs:           update API reference in README
-refactor(push): extract StagingBrowser into its own component
-```
-
----
-
-## 7. Good First Issues
-
-If you're new to the codebase, these are self-contained and well-scoped:
-
-- **APK build history** — Store past APK build timestamps/status in `localStorage` and display them in the History page
-- **iOS/IPA export** — Rocket.new may support IPA builds; research the bundle endpoint and add support alongside the APK panel
-- **Dark mode** — Add a `prefers-color-scheme` toggle; the Tailwind 4 setup should make this straightforward
-- **OG image** — Create a proper 1200×630 social preview image and update the `<meta og:image>` tag in `__root.tsx`
-- **Token expiry banner** — Detect 401 responses and show a persistent re-auth banner without a full page error
-- **GitHub OAuth** — Replace manual PAT entry with a proper OAuth flow (requires a small redirect-handling server or a serverless function)
-- **Multiple branches** — Add branch selection per push (currently always pushes to the default branch)
-
----
-
-<div align="center">
-  <p>Questions? Open an <a href="https://github.com/The-habib/Push44/issues">issue</a> or start a <a href="https://github.com/The-habib/Push44/discussions">discussion</a>.</p>
-</div>
+4. **Push & Open a Pull Request** targeting the `main` branch.
