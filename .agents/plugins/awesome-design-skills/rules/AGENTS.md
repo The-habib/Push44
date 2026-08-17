@@ -18,3 +18,14 @@ When creating or modifying user interfaces, components, and pages:
      bun run design:tokens <style>      # Color tokens (apple-sleek, cyber-matrix, warm-editorial, neobrutalism)
      bun run design:audit <filePath>    # Audit component against modern design & a11y standards
      ```
+7. **Design Polishing & Refinement Engine**:
+   - Polish and refine components and stylesheets with:
+     ```bash
+     bun run polish <filePath>          # 360° Visual Craft & Polish Audit (100-pt Score)
+     bun run polish:colors <filePath>   # WCAG 2.2 AA Contrast & Color Token audit
+     bun run polish:type <filePath>     # Typography tracking & line-height calibration
+     bun run polish:motion <filePath>   # GPU transform & physics spring validation
+     bun run polish:space <filePath>    # 4px/8px rhythmic spacing grid check
+     bun run lint:css                   # Stylelint CSS standards & syntax check
+     bun run lint:css:fix               # Auto-fix CSS formatting & property issues
+     ```
