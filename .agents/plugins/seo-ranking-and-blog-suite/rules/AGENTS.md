@@ -38,10 +38,12 @@ When creating, updating, or reviewing SEO pages, blog articles, metadata, or sea
      bun run lint:md <markdownFile>
      ```
 
-5. **On-Page SEO Auditing**:
-   - Run automated on-page audits:
+5. **On-Page & Site-Wide SEO Auditing**:
+   - Run automated audits and checks:
      ```bash
-     bun run seo:audit <url>
-     bun run seo:og <url>
-     bun run seo:sitemap <url>
+     bun run seo:audit <url>      # Single page SEO audit
+     bun run seo:scan <url>       # Site-wide multi-route Lighthouse & SEO scan (Unlighthouse)
+     bun run seo:og <url>         # OpenGraph & social preview validation
+     bun run seo:sitemap <url>    # XML sitemap validation & parsing
+     bun run seo:links <url>      # Broken link crawler
      ```
