@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
+    android:layoutWidth="match_parent"
+    android:layoutHeight="match_parent"
+    android:background="@color/background_dark">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layoutWidth="match_parent"
+        android:layoutHeight="match_parent">
+
+        <WebView
+            android:id="@+id/webView"
+            android:layoutWidth="match_parent"
+            android:layoutHeight="match_parent"
+            android:background="@color/background_dark" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Top Loading Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layoutWidth="match_parent"
+        android:layoutHeight="3dp"
+        android:layout_alignParentTop="true"
+        android:indeterminate="false"
+        android:max="100"
+        android:progressDrawable="@drawable/progress_bar_drawable"
+        android:visibility="gone" />
+
+    <!-- Offline / Connection Error View -->
+    <LinearLayout
+        android:id="@+id/errorView"
+        android:layoutWidth="match_parent"
+        android:layoutHeight="match_parent"
+        android:layout_centerInParent="true"
+        android:background="@color/background_dark"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/errorIcon"
+            android:layoutWidth="72dp"
+            android:layoutHeight="72dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/error_offline_title"
+            android:src="@mipmap/ic_launcher" />
+
+        <TextView
+            android:layoutWidth="wrap_content"
+            android:layoutHeight="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/error_offline_title"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layoutWidth="wrap_content"
+            android:layoutHeight="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:text="@string/error_offline_desc"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetry"
+            android:layoutWidth="wrap_content"
+            android:layoutHeight="wrap_content"
+            android:backgroundTint="@color/primary"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:text="@string/btn_retry"
+            android:textColor="@color/white"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

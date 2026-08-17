@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Push44</string>
+    <string name="error_offline_title">You\'re Offline</string>
+    <string name="error_offline_desc">Push44 needs an active internet connection to communicate with GitHub and platform APIs.</string>
+    <string name="btn_retry">Retry Connection</string>
+    <string name="download_started">Downloading backup...</string>
+    <string name="download_completed">Backup downloaded to Downloads</string>
+    <string name="press_again_to_exit">Press back again to exit</string>
+</resources>
