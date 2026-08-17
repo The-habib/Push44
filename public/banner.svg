@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#140f0c"/>
+      <stop offset="50%" stop-color="#0c0908"/>
+      <stop offset="100%" stop-color="#16110e"/>
+    </linearGradient>
+
+    <!-- Radial Amber Ambient Glow -->
+    <radialGradient id="topGlow" cx="50%" cy="15%" r="60%">
+      <stop offset="0%" stop-color="#ff5500" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#ff5500" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="cardGlow" cx="50%" cy="0%" r="70%">
+      <stop offset="0%" stop-color="#ff5500" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ff5500" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Text Orange Gradient -->
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff7733"/>
+      <stop offset="50%" stop-color="#ff5500"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+
+    <!-- Border Gradients -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4d382c"/>
+      <stop offset="100%" stop-color="#241b16"/>
+    </linearGradient>
+
+    <linearGradient id="activeBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff5500" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.02" stroke-width="1"/>
+    </pattern>
+
+    <!-- Filter for Shadow -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <style>
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif; }
+    .font-mono { font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace; }
+  </style>
+
+  <!-- Canvas Background -->
+  <rect width="1280" height="640" fill="url(#bgGrad)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <rect width="1280" height="640" fill="url(#topGlow)"/>
+
+  <!-- Outer Border -->
+  <rect x="1" y="1" width="1278" height="638" rx="16" fill="none" stroke="#2e231c" stroke-width="2"/>
+
+  <!-- Top Category Pill -->
+  <g transform="translate(640, 68)">
+    <rect x="-190" y="-16" width="380" height="32" rx="16" fill="#1f1814" stroke="#423227" stroke-width="1"/>
+    <circle cx="-165" cy="0" r="4" fill="#22c55e"/>
+    <text class="font-mono" x="-150" y="4" fill="#ff7733" font-size="11" font-weight="700" letter-spacing="1.5">100% CLIENT-SIDE · ZERO BACKEND · FREE</text>
+  </g>
+
+  <!-- Hero Logo & Title -->
+  <g transform="translate(640, 160)">
+    <!-- Main Logo Icon + Brand Title -->
+    <g transform="translate(0, 0)">
+      <!-- Central Brand Heading -->
+      <text class="font-sans" x="0" y="0" text-anchor="middle" font-size="64" font-weight="900" letter-spacing="-2" fill="#ffffff" filter="url(#dropShadow)">
+        Push<tspan fill="url(#orangeGrad)">44</tspan>
+      </text>
+    </g>
+
+    <!-- Subtitle -->
+    <text class="font-sans" x="0" y="44" text-anchor="middle" font-size="20" font-weight="500" fill="#d6d3d1" letter-spacing="-0.3">
+      The Universal Source Control Bridge for AI App Builders
+    </text>
+    <text class="font-sans" x="0" y="72" text-anchor="middle" font-size="14" font-weight="400" fill="#a8a29e">
+      Export &amp; version-control code from Base44 · Rocket.new · Floot · Zite · Lovable · Bolt.new directly to GitHub
+    </text>
+  </g>
+
+  <!-- 3 Bento Feature Cards -->
+  <g transform="translate(100, 290)">
+    <!-- Card 1: Input Platforms -->
+    <g transform="translate(0, 0)">
+      <rect width="330" height="230" rx="16" fill="#181310" stroke="url(#borderGrad)" stroke-width="1.5" filter="url(#dropShadow)"/>
+      <rect width="330" height="230" rx="16" fill="url(#cardGlow)"/>
+      
+      <!-- Card Header -->
+      <text class="font-mono" x="24" y="38" fill="#ff7733" font-size="11" font-weight="700" letter-spacing="1">01 / SUPPORTED BUILDERS</text>
+      <text class="font-sans" x="24" y="68" fill="#ffffff" font-size="19" font-weight="800">Any AI Platform</text>
+      <text class="font-sans" x="24" y="92" fill="#a8a29e" font-size="13">Extract source trees in 1 tap</text>
+
+      <!-- Platform Tags Grid -->
+      <g transform="translate(24, 116)">
+        <!-- Base44 -->
+        <rect x="0" y="0" width="85" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="42" y="18" text-anchor="middle" fill="#ff8844" font-size="11.5" font-weight="700">Base44</text>
+
+        <!-- Rocket.new -->
+        <rect x="95" y="0" width="95" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="142" y="18" text-anchor="middle" fill="#38bdf8" font-size="11.5" font-weight="700">Rocket.new</text>
+
+        <!-- Floot -->
+        <rect x="200" y="0" width="80" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="240" y="18" text-anchor="middle" fill="#818cf8" font-size="11.5" font-weight="700">Floot</text>
+
+        <!-- Zite -->
+        <rect x="0" y="38" width="75" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="37" y="56" text-anchor="middle" fill="#c084fc" font-size="11.5" font-weight="700">Zite</text>
+
+        <!-- Lovable -->
+        <rect x="85" y="38" width="90" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="130" y="56" text-anchor="middle" fill="#f43f5e" font-size="11.5" font-weight="700">Lovable</text>
+
+        <!-- Bolt.new -->
+        <rect x="185" y="38" width="95" height="28" rx="6" fill="#241b16" stroke="#3d2c22"/>
+        <text class="font-sans" x="232" y="56" text-anchor="middle" fill="#fbbf24" font-size="11.5" font-weight="700">Bolt.new</text>
+      </g>
+    </g>
+
+    <!-- Card 2: Engine & Privacy (Center Highlighted Card) -->
+    <g transform="translate(375, 0)">
+      <rect width="330" height="230" rx="16" fill="#1c1612" stroke="url(#activeBorder)" stroke-width="1.5" filter="url(#dropShadow)"/>
+      <rect width="330" height="230" rx="16" fill="url(#cardGlow)"/>
+
+      <text class="font-mono" x="24" y="38" fill="#22c55e" font-size="11" font-weight="700" letter-spacing="1">02 / EXPORT ENGINE</text>
+      <text class="font-sans" x="24" y="68" fill="#ffffff" font-size="19" font-weight="800">Direct Git Sync</text>
+      <text class="font-sans" x="24" y="92" fill="#a8a29e" font-size="13">Atomic commits &amp; full ZIP backups</text>
+
+      <g transform="translate(24, 118)">
+        <!-- Feature 1 -->
+        <circle cx="6" cy="6" r="3" fill="#ff5500"/>
+        <text class="font-sans" x="18" y="10" fill="#e7e5e4" font-size="12.5" font-weight="600">GitHub Trees API 1-Tap Commits</text>
+
+        <!-- Feature 2 -->
+        <circle cx="6" cy="34" r="3" fill="#ff5500"/>
+        <text class="font-sans" x="18" y="38" fill="#e7e5e4" font-size="12.5" font-weight="600">Instant Local ZIP Archive Exports</text>
+
+        <!-- Feature 3 -->
+        <circle cx="6" cy="62" r="3" fill="#22c55e"/>
+        <text class="font-sans" x="18" y="66" fill="#e7e5e4" font-size="12.5" font-weight="600">100% Encrypted Local Keystore</text>
+      </g>
+    </g>
+
+    <!-- Card 3: 3 Form Factors -->
+    <g transform="translate(750, 0)">
+      <rect width="330" height="230" rx="16" fill="#181310" stroke="url(#borderGrad)" stroke-width="1.5" filter="url(#dropShadow)"/>
+      <rect width="330" height="230" rx="16" fill="url(#cardGlow)"/>
+
+      <text class="font-mono" x="24" y="38" fill="#38bdf8" font-size="11" font-weight="700" letter-spacing="1">03 / MULTI-PLATFORM</text>
+      <text class="font-sans" x="24" y="68" fill="#ffffff" font-size="19" font-weight="800">Web · APK · CLI</text>
+      <text class="font-sans" x="24" y="92" fill="#a8a29e" font-size="13">Export from any environment</text>
+
+      <g transform="translate(24, 116)">
+        <!-- Web Badge -->
+        <rect x="0" y="0" width="280" height="26" rx="6" fill="#201814" stroke="#382a20"/>
+        <text class="font-mono" x="12" y="17" fill="#ff7733" font-size="11" font-weight="700">WEB</text>
+        <text class="font-sans" x="65" y="17" fill="#d6d3d1" font-size="11.5">push44.vercel.app</text>
+
+        <!-- APK Badge -->
+        <rect x="0" y="34" width="280" height="26" rx="6" fill="#201814" stroke="#382a20"/>
+        <text class="font-mono" x="12" y="51" fill="#22c55e" font-size="11" font-weight="700">APK</text>
+        <text class="font-sans" x="65" y="51" fill="#d6d3d1" font-size="11.5">Android Native (4.51 MB Signed)</text>
+
+        <!-- CLI Badge -->
+        <rect x="0" y="68" width="280" height="26" rx="6" fill="#201814" stroke="#382a20"/>
+        <text class="font-mono" x="12" y="85" fill="#38bdf8" font-size="11" font-weight="700">CLI</text>
+        <text class="font-sans" x="65" y="85" fill="#d6d3d1" font-size="11.5">npx push44 / p44 export</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom Footer Line -->
+  <g transform="translate(640, 580)">
+    <text class="font-mono" x="0" y="0" text-anchor="middle" fill="#78716c" font-size="11" letter-spacing="1">
+      OPEN SOURCE · MIT LICENSE · GITHUB @THE-HABIB/PUSH44
+    </text>
+  </g>
+</svg>

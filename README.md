@@ -1,29 +1,26 @@
 <div align="center">
 
-<br/>
+<p align="center">
+  <img src="public/banner.svg" alt="Push44 — Universal Source Control Bridge for AI App Builders" width="100%" />
+</p>
 
-<picture>
-  <img src="public/logo.png" alt="Push44 Logo" width="96" />
-</picture>
-
-<br/>
-<br/>
-
-# Push44 & Push44 CLI
+# Push44 &amp; Push44 CLI
 
 ### Version-control your AI-built apps to GitHub — in one tap or one terminal command.
 
 **The universal bridge between AI app builders and real source control.**  
-Available as a **Zero-Install Web App** and a **Cross-Platform Developer CLI (`p44`)**.  
+Available as a **Zero-Install Web App**, **Native Android APK**, and a **Developer CLI (`p44`)**.  
 Supports Base44 · Rocket.new · Floot · Zite · Bolt.new · Lovable.dev
 
 <br/>
 
 [![Live Web App](https://img.shields.io/badge/🌐%20Live%20Web%20App-push44.vercel.app-FF6B35?style=for-the-badge&logoColor=white)](https://push44.vercel.app)
 &nbsp;
+[![Android APK](https://img.shields.io/badge/📱%20Android%20APK-v1.0.0%20(4.5MB)-22c55e?style=for-the-badge&logo=android&logoColor=white)](https://push44.vercel.app/Push44-release.apk)
+&nbsp;
 [![CLI Version](https://img.shields.io/badge/CLI-v1.0.0-f97316?style=for-the-badge&logo=gnubash&logoColor=white)](https://github.com/The-habib/Push44/tree/main/cli)
 &nbsp;
-[![MIT License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](./LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-38bdf8?style=for-the-badge)](./LICENSE)
 &nbsp;
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-8b5cf6?style=for-the-badge)](https://github.com/The-habib/Push44/pulls)
 
