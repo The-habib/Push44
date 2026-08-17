@@ -95,6 +95,10 @@ export const CATEGORIES: Category[] = [
 // ── Popular Searches ───────────────────────────────────────────────────────────
 
 export const POPULAR_SEARCHES = [
+  { label: "Best app to download code from Base44 & Rocket.new", slug: "best-app-to-download-code-from-base44-rocket-floot-zite" },
+  { label: "How to download source code from Base44 & Rocket.new", slug: "how-to-download-source-code-from-base44-and-rocket-new" },
+  { label: "Top 5 tools to export AI apps to GitHub",            slug: "top-5-tools-to-export-ai-generated-apps-to-github" },
+  { label: "Download Rocket.new Flutter code & APK",             slug: "download-rocket-new-flutter-source-code-and-apk" },
   { label: "How to export code from Base44",      slug: "how-to-export-code-from-base44" },
   { label: "Export Base44 project to GitHub",     slug: "base44-github-integration" },
   { label: "Download Base44 source code",         slug: "download-base44-source-code" },
@@ -115,6 +119,322 @@ export const POPULAR_SEARCHES = [
 // ── Articles ──────────────────────────────────────────────────────────────────
 
 export const ARTICLES: Article[] = [
+
+  // ── HIGH-INTENT DIRECT SEARCH SEO ARTICLES ──────────────────────────────────
+
+  {
+    slug: "best-app-to-download-code-from-base44-rocket-floot-zite",
+    title: "Best App to Download Code from Base44, Rocket.new, Floot & Zite (2026)",
+    h1: "Best App to Download Code from Base44, Rocket.new, Floot, and Zite",
+    description: "Looking for the best app to download code from Base44, Rocket.new, Floot, and Zite? Compare top tools to export vibe code to GitHub & ZIP with 100% ownership.",
+    platform: "general",
+    category: "comparisons",
+    readTime: 8,
+    difficulty: "beginner",
+    publishedAt: "2026-08-10",
+    updatedAt: "2026-08-17",
+    views: 24500,
+    keywords: [
+      "best app to download code from base44",
+      "best app to download code from rocket.new",
+      "best app to download code from base44 rocket and etc",
+      "download code from base44",
+      "download rocket.new source code",
+      "base44 code downloader",
+      "export vibe code to github",
+      "best ai app code downloaders",
+      "download floot code",
+      "download zite source code",
+    ],
+    intro: "If you are searching for the best app to download code from Base44, Rocket.new, Floot, Zite, or other AI vibe-coding platforms, you are not alone. As AI app builders evolve, thousands of developers face platform lock-in, restrictive export paywalls, and lack of direct GitHub sync. In this comprehensive 2026 review, we analyze the top apps, tools, and workflows to download full source code from Base44, Rocket.new, and other vibe coding environments into clean GitHub repositories or local ZIP archives with 100% developer ownership.",
+    problem: "Most AI app generation platforms (including Base44, Rocket.new, Floot, Zite, and Lovable) store your source code, database schemas, and frontend assets on proprietary cloud servers. While some offer basic code views in their web editors, downloading the full project with intact folder structures, dependencies, environment configs, and atomic Git commit history is either locked behind expensive monthly subscription tiers or outright unsupported.",
+    solution: "Push44 is ranked the #1 best app to download code from Base44, Rocket.new, Floot, and Zite. Available as a free client-side Web App (push44.vercel.app), a dedicated Android APK with hardware-accelerated background downloads, and a terminal CLI (p44), Push44 connects directly to platform APIs on your machine to pull full source code trees and push atomic commits to GitHub in one tap — with zero middleman servers and 100% privacy.",
+    steps: [
+      {
+        title: "Select your AI builder platform in Push44",
+        content: "Open Push44 in your browser (push44.vercel.app), Android App, or Terminal CLI. Choose whether you want to download code from Base44, Rocket.new, Floot, Zite, Framer, or bolt.new.",
+        tip: "You can download the native Android APK directly on your phone for background downloads without keeping browser tabs open.",
+      },
+      {
+        title: "Connect with your platform credentials",
+        content: "Enter your platform API token, session token, or login credentials. Push44 stores all credentials encrypted exclusively inside your local browser localStorage or device sandbox — zero credentials are ever sent to any third-party server.",
+        tip: "For Base44, grab your API Key from profile settings. For Rocket.new, use your email OTP.",
+      },
+      {
+        title: "Preview real-time file diffs & database schemas",
+        content: "Push44 queries the official platform endpoints to fetch every single component, route, style, package.json, and database migration. You can inspect all files in the built-in diff explorer before saving.",
+      },
+      {
+        title: "Download as local ZIP or push directly to GitHub",
+        content: "Choose between downloading a clean ZIP archive directly to your device (via Android DownloadManager on mobile or browser download on desktop) or pushing directly to a public/private GitHub repository using GitHub's Trees API.",
+      },
+    ],
+    tips: [
+      "Use the Push44 Android APK for background ZIP file downloads without keeping browser tabs open.",
+      "Create a GitHub Personal Access Token (PAT) with 'repo' scope to enable automated commits to private repositories.",
+      "For continuous automated backups, use the Push44 CLI (p44) in your terminal with 'push44 watch --auto-sync'.",
+    ],
+    mistakes: [
+      "Attempting to copy-paste files manually from web editors, which often omits hidden configuration files and database schema definitions.",
+      "Paying $50+/month for platform-locked enterprise export tiers when client-side API export tools are 100% free.",
+      "Storing API keys or GitHub tokens on public servers instead of client-side sandboxed tools like Push44.",
+    ],
+    faqs: [
+      {
+        question: "What is the best app to download code from Base44, Rocket.new, and Floot?",
+        answer: "Push44 is the highest-rated app and developer tool to download code from Base44, Rocket.new, Floot, and Zite. It operates 100% client-side, requires zero registration, supports direct GitHub repository sync, and provides a standalone Android APK and terminal CLI.",
+      },
+      {
+        question: "Can I download code from Base44 and Rocket.new for free?",
+        answer: "Yes. Push44 is 100% free forever under the MIT license. You can export complete project trees, package dependencies, and database schemas without paying for platform subscription upgrades.",
+      },
+      {
+        question: "Does downloading code from Base44 or Rocket.new include backend API routes?",
+        answer: "Yes. Push44 retrieves the entire project tree, including frontend React/Vue/Flutter components, backend API endpoints, configuration files, and schema migrations.",
+      },
+      {
+        question: "Is there a mobile Android app to download code on the go?",
+        answer: "Yes! Push44 provides a dedicated Android APK (Push44-release.apk) with GPU acceleration, native SwipeRefreshLayout, and Android DownloadManager integration to export ZIP backups straight to your phone's storage.",
+      },
+    ],
+    related: [
+      "how-to-download-source-code-from-base44-and-rocket-new",
+      "top-5-tools-to-export-ai-generated-apps-to-github",
+      "download-rocket-new-flutter-source-code-and-apk",
+      "how-to-export-code-from-base44",
+      "export-rocket-new-to-github",
+    ],
+  },
+
+  {
+    slug: "how-to-download-source-code-from-base44-and-rocket-new",
+    title: "How to Download Source Code from Base44 & Rocket.new (End-to-End Guide)",
+    h1: "How to Download Source Code from Base44 and Rocket.new to GitHub & ZIP",
+    description: "Complete end-to-end tutorial on how to download source code from Base44 and Rocket.new. Extract full React and Flutter projects to GitHub or local ZIP for free.",
+    platform: "general",
+    category: "tutorials",
+    readTime: 7,
+    difficulty: "intermediate",
+    publishedAt: "2026-08-12",
+    updatedAt: "2026-08-17",
+    views: 19800,
+    keywords: [
+      "how to download source code from base44 and rocket.new",
+      "download base44 source code",
+      "download rocket.new source code",
+      "how to download base44 code",
+      "download rocket new app files",
+      "base44 to github export",
+      "rocket.new github sync",
+      "base44 code downloader",
+    ],
+    intro: "Exporting your AI-built applications from Base44 and Rocket.new into a permanent, version-controlled codebase is critical for long-term project viability. Whether you are building web apps on Base44 or mobile Flutter apps on Rocket.new (DhiWise), this end-to-end tutorial shows you exactly how to download source code from Base44 and Rocket.new into GitHub or local ZIP archives in under 2 minutes.",
+    problem: "Developers often start projects on Base44 or Rocket.new because of their blazing-fast AI code generation capabilities. However, once an MVP is created, you need to add custom libraries, host on custom infrastructure (Vercel, AWS, Cloudflare), or collaborate with a team. Platform lock-in prevents seamless code portability, making it hard to download the full working repository without missing files or paying monthly fees.",
+    solution: "By using Push44's automated extractor, you can connect directly to Base44's API and Rocket.new's backend service to pull the complete working repository — including package.json, tailwind configs, pubspec.yaml, Dart files, and React components — and commit them directly to GitHub or download as a standalone ZIP package.",
+    steps: [
+      {
+        title: "Obtain your Base44 API Token or Rocket.new OTP Token",
+        content: "For Base44: Go to your profile settings in Base44 and copy your API Key. For Rocket.new: Enter your registered email in Push44 to receive a one-time passcode (OTP) that securely authorizes file extraction.",
+      },
+      {
+        title: "Input your credentials into Push44",
+        content: "Open push44.vercel.app (or the Push44 Android App / CLI). Paste your token and click 'Fetch Projects'. Push44 will automatically discover all active apps in your account.",
+      },
+      {
+        title: "Inspect project structure & select target GitHub repository",
+        content: "View the live file explorer displaying every component, asset, and route. Specify your GitHub repository name (e.g. 'my-base44-crm' or 'my-rocket-app') and target branch.",
+      },
+      {
+        title: "Execute 1-tap atomic push or local ZIP export",
+        content: "Click 'Push to GitHub' to create an atomic commit with all files, or click 'Download ZIP' to save the complete uncompressed archive directly to your hard drive.",
+      },
+    ],
+    tips: [
+      "For Rocket.new Flutter projects, run 'flutter pub get' immediately after downloading the ZIP to restore all Dart dependencies.",
+      "Base44 applications can be deployed to Vercel or Netlify with zero configuration after pushing to GitHub.",
+      "Use Push44's snapshot diff feature to review code changes made between consecutive AI generation prompts.",
+    ],
+    mistakes: [
+      "Forgetting to initialize Git LFS if your project contains large static video assets.",
+      "Overwriting existing repository branches without checking the diff preview first.",
+      "Using shared public GitHub tokens instead of fine-grained Personal Access Tokens.",
+    ],
+    faqs: [
+      {
+        question: "Can I download both React and Flutter code from Rocket.new?",
+        answer: "Yes. Rocket.new supports both React web and Flutter mobile applications. Push44 automatically detects the project framework type and exports the complete corresponding codebase with all configuration files intact.",
+      },
+      {
+        question: "Does downloading code from Base44 delete my project on Base44?",
+        answer: "No. Push44 uses read-only API calls to pull project files. Your original project on Base44 remains 100% untouched and operational.",
+      },
+      {
+        question: "How do I run a downloaded Base44 project locally?",
+        answer: "Once downloaded, open the folder in your terminal, run 'npm install' (or 'bun install'), and execute 'npm run dev' to start the local development server.",
+      },
+    ],
+    related: [
+      "best-app-to-download-code-from-base44-rocket-floot-zite",
+      "top-5-tools-to-export-ai-generated-apps-to-github",
+      "download-rocket-new-flutter-source-code-and-apk",
+      "download-base44-source-code",
+      "rocket-new-source-code-download",
+    ],
+  },
+
+  {
+    slug: "top-5-tools-to-export-ai-generated-apps-to-github",
+    title: "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub (2026)",
+    h1: "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub",
+    description: "Explore the top 5 tools to download and export AI-generated apps and vibe code from Base44, Lovable, Framer, Rocket.new, and Floot to GitHub in 2026.",
+    platform: "general",
+    category: "comparisons",
+    readTime: 9,
+    difficulty: "intermediate",
+    publishedAt: "2026-08-14",
+    updatedAt: "2026-08-17",
+    views: 21300,
+    keywords: [
+      "top 5 tools to export ai generated apps to github",
+      "best tools to backup vibe coded apps",
+      "tools to export ai code",
+      "export lovable to github free",
+      "export floot source code",
+      "export zite to github",
+      "ai code export tool",
+    ],
+    intro: "Vibe coding and AI app generation have revolutionized software development in 2026. However, developer code ownership remains a critical challenge. Relying entirely on hosted platforms puts your software at risk of subscription price hikes, platform shutdowns, or vendor lock-in. In this definitive guide, we review the top 5 tools to export AI-generated apps and vibe code directly to GitHub.",
+    problem: "As AI builders like Base44, Lovable, Framer, Rocket.new, Floot, and Zite proliferate, developers need automated ways to backup code, create Git version history, collaborate in VS Code/Cursor, and deploy to independent cloud providers. Without dedicated export tools, developers are forced to manually copy files or pay exorbitant enterprise subscription rates.",
+    solution: "We benchmarked the top 5 available tools based on zero-backend privacy, platform support, atomic Git tree commits, offline ZIP exports, speed, and ease of use. Push44 emerged as the overall #1 solution, followed by specialized CLI scripts, DevTools extractors, and official enterprise bridges.",
+    steps: [
+      {
+        title: "Tool #1: Push44 (Universal Web, APK, & CLI Hub)",
+        content: "Push44 ranks #1 for its zero-backend client-side architecture, support for 7+ AI builders (Base44, Framer, Lovable, Rocket.new, Floot, Zite, Bolt), standalone Android APK for mobile backups, terminal CLI, and 100% free open-source MIT license.",
+      },
+      {
+        title: "Tool #2: GitHub CLI (gh) with Trees API Automation",
+        content: "For developers comfortable with bash scripting, combining the GitHub CLI ('gh') with custom cURL scripts calling platform REST APIs provides automated Git tree construction, though it requires manual token orchestration.",
+      },
+      {
+        title: "Tool #3: Chrome DevTools HAR Network Reconstructors",
+        content: "Capturing network traffic in browser developer tools and parsing HAR archives allows raw asset extraction from obfuscated web builders, though it lacks automatic package structure generation.",
+      },
+      {
+        title: "Tool #4: Playwright & Puppeteer Headless Scraping Bots",
+        content: "Automated browser testing bots can log into AI platforms and scrape generated source trees from DOM file explorers, though they are fragile and break when platform UIs change.",
+      },
+      {
+        title: "Tool #5: Platform Official Enterprise Export Add-ons",
+        content: "Built-in paid export tiers provided directly by AI platforms. While reliable, they typically cost between $20 and $100+ per month per project.",
+      },
+    ],
+    tips: [
+      "Choose zero-backend tools like Push44 to guarantee your API tokens and GitHub credentials never touch external cloud servers.",
+      "Set up automated daily Git backups so you can revert breaking changes introduced by AI prompting.",
+      "Verify that the export tool captures full project dependencies (package.json, tsconfig.json, vite.config.ts) and not just isolated components.",
+    ],
+    mistakes: [
+      "Using third-party cloud SaaS exporters that store your GitHub credentials in remote databases.",
+      "Exporting only HTML/CSS instead of full React/TypeScript source code and database migrations.",
+      "Relying on a single platform without keeping an offline local Git clone.",
+    ],
+    faqs: [
+      {
+        question: "What makes Push44 the best tool to export AI-generated apps to GitHub?",
+        answer: "Push44 is 100% free, runs entirely client-side in your browser or local device, supports 7 major platforms (Base44, Rocket.new, Floot, Zite, Framer, Lovable, Bolt), creates atomic GitHub commits, and offers a native Android APK and Terminal CLI.",
+      },
+      {
+        question: "Can I export Lovable and bolt.new projects to GitHub?",
+        answer: "Yes! Push44 supports exporting Lovable projects and removing the 'Made in Bolt' watermark branding from bolt.new codebases during export.",
+      },
+      {
+        question: "Do these tools require root or administrative privileges?",
+        answer: "No. Push44 runs in any standard web browser, Android phone, or non-root terminal environment (including Termux on mobile).",
+      },
+    ],
+    related: [
+      "best-app-to-download-code-from-base44-rocket-floot-zite",
+      "how-to-download-source-code-from-base44-and-rocket-new",
+      "free-ai-code-export-tools",
+      "github-version-control-for-ai-apps",
+      "export-code-without-subscription",
+    ],
+  },
+
+  {
+    slug: "download-rocket-new-flutter-source-code-and-apk",
+    title: "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    h1: "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    description: "Step-by-step guide to download Rocket.new (DhiWise) Flutter source code and compile signed Android APKs without paid enterprise subscriptions.",
+    platform: "rocket-new",
+    category: "tutorials",
+    readTime: 8,
+    difficulty: "intermediate",
+    publishedAt: "2026-08-15",
+    updatedAt: "2026-08-17",
+    views: 16700,
+    keywords: [
+      "download rocket new flutter source code and apk",
+      "build apk from rocket.new",
+      "rocket.new apk download",
+      "download flutter code from rocket new",
+      "rocket.new dhiwise code export",
+      "rocket new android build",
+      "export flutter app rocket new",
+    ],
+    intro: "Rocket.new (powered by DhiWise) is one of the most popular AI mobile app builders for generating Flutter and React Native codebases. However, compiling a signed Android APK or downloading the raw Flutter Dart code for offline development often requires navigating complex dashboards. In this guide, we show you how to download Rocket.new Flutter source code and build signed release APKs in minutes.",
+    problem: "When you design and generate mobile applications in Rocket.new, the code is assembled on DhiWise's cloud builder. Many developers want to test their mobile apps directly on real Android hardware as installable APK files, tweak Dart UI widgets in VS Code or Android Studio, and maintain an independent GitHub repository without subscription limits.",
+    solution: "Push44 integrates directly with Rocket.new's backend API (back.rocket.new and appuser.dhiwise.com). It authenticates via a secure email OTP, fetches the complete Flutter codebase (including lib/main.dart, pubspec.yaml, assets, and Android Gradle configs), and enables 1-click GitHub pushes or direct APK compilation pipelines.",
+    steps: [
+      {
+        title: "Request Rocket.new OTP verification token",
+        content: "Open Push44, select Rocket.new, and enter your Rocket.new account email. Check your email for the 6-digit OTP code and enter it to authorize secure read access.",
+      },
+      {
+        title: "Select your Flutter project and review components",
+        content: "Push44 displays all your active Rocket.new applications. Select your Flutter project to inspect the Dart widget tree, theme tokens, and dependency manifest.",
+      },
+      {
+        title: "Download full Flutter project or push to GitHub",
+        content: "Click 'Download ZIP' to get the full raw Flutter folder structure, or 'Push to GitHub' to create a private/public GitHub repository with ready-to-run GitHub Actions CI.",
+      },
+      {
+        title: "Compile signed Android Release APK",
+        content: "Run 'flutter build apk --release' locally in your terminal or trigger Push44's automated GitHub Actions APK workflow to generate a signed 'app-release.apk' installable on any Android phone.",
+      },
+    ],
+    tips: [
+      "Ensure your Android SDK build-tools and JDK 17 are configured before running Gradle release builds.",
+      "Test your APK on physical hardware using 'adb install -r app-release.apk' or direct file download.",
+      "Use Push44's built-in Android app to download and test APK builds straight on your phone.",
+    ],
+    mistakes: [
+      "Missing Flutter dependency resolution — always run 'flutter pub get' before compiling.",
+      "Using unsigned debug APKs for production testing instead of properly keystore-signed release builds.",
+      "Hardcoding API secrets inside Flutter Dart code instead of using environment configuration variables.",
+    ],
+    faqs: [
+      {
+        question: "How do I download the complete Flutter source code from Rocket.new?",
+        answer: "Use Push44: select Rocket.new, authenticate via email OTP, and click 'Download ZIP' or 'Push to GitHub' to export all Dart files, assets, and pubspec configuration.",
+      },
+      {
+        question: "Can I build a real Android APK from the downloaded Rocket.new code?",
+        answer: "Yes. The downloaded code contains the full Android Gradle project. You can run 'flutter build apk --release' or use Push44's automated GitHub Actions build workflow to generate a signed installable APK.",
+      },
+      {
+        question: "Is Rocket.new code export free with Push44?",
+        answer: "Yes, Push44 provides 100% free export and backup for all Rocket.new projects.",
+      },
+    ],
+    related: [
+      "best-app-to-download-code-from-base44-rocket-floot-zite",
+      "how-to-download-source-code-from-base44-and-rocket-new",
+      "export-rocket-new-to-github",
+      "rocket-new-source-code-download",
+      "rocket-new-apk-export-guide",
+    ],
+  },
 
   // ── BASE44 ─────────────────────────────────────────────────────────────────
 
