@@ -23,6 +23,7 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CliShowcase } from "@/components/CliShowcase";
+import { AndroidAppModal } from "@/components/AndroidAppModal";
 import {
   Base44Logo,
   RocketLogo,
@@ -671,6 +672,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 // ── Main World-Class Landing Page ────────────────────────────────────────────
 
 export default function LandingPage() {
+  const [androidModalOpen, setAndroidModalOpen] = useState(false);
+
   return (
     <div
       style={{
@@ -727,7 +730,7 @@ export default function LandingPage() {
                   letterSpacing: "0.04em",
                 }}
               >
-                WEB &amp; TERMINAL CLI
+                WEB · ANDROID APK · CLI
               </span>
               <span>Direct GitHub Sync for 7 Major AI Platforms · 100% Free</span>
             </div>
@@ -766,14 +769,14 @@ export default function LandingPage() {
                 maxWidth: 620,
               }}
             >
-              Bypass export restrictions and subscription lock-in. Push full source code from <strong>Base44, Framer, Lovable, Rocket.new, Floot, Zite</strong>, and <strong>bolt.new</strong> directly to GitHub — in your browser or terminal CLI.
+              Bypass export restrictions and subscription lock-in. Push full source code from <strong>Base44, Framer, Lovable, Rocket.new, Floot, Zite</strong>, and <strong>bolt.new</strong> directly to GitHub — in your browser, terminal CLI, or native Android App.
             </p>
 
             {/* Action Buttons */}
             <div
               style={{
                 display: "flex",
-                gap: 14,
+                gap: 12,
                 justifyContent: "center",
                 flexWrap: "wrap",
                 marginBottom: 64,
@@ -809,13 +812,60 @@ export default function LandingPage() {
               >
                 Start Exporting Free <ArrowRight size={16} strokeWidth={2.5} />
               </Link>
+
+              <button
+                onClick={() => setAndroidModalOpen(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "14px 22px",
+                  background: "#ffffff",
+                  color: "#ff5500",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  borderRadius: 12,
+                  border: "1px solid rgba(255,85,0,0.35)",
+                  letterSpacing: "-0.01em",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,85,0,0.06)";
+                  e.currentTarget.style.borderColor = "#ff5500";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#ffffff";
+                  e.currentTarget.style.borderColor = "rgba(255,85,0,0.35)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <Smartphone size={17} />
+                <span>Get Android APK</span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: "2px 7px",
+                    borderRadius: 99,
+                    background: "rgba(34,197,94,0.12)",
+                    color: "#16a34a",
+                    border: "1px solid rgba(34,197,94,0.25)",
+                  }}
+                >
+                  v1.0.0
+                </span>
+              </button>
+
               <a
                 href="#cli"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 8,
-                  padding: "14px 28px",
+                  padding: "14px 24px",
                   background: "#ffffff",
                   color: "#1c1714",
                   fontWeight: 600,
@@ -1242,7 +1292,355 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 6. CLI SHOWCASE ───────────────────────────────────────────────── */}
+      {/* ── 6. NATIVE ANDROID APP SHOWCASE ─────────────────────────────── */}
+      <section
+        id="android"
+        style={{
+          padding: "100px 20px",
+          background: "linear-gradient(180deg, #171310 0%, #100d0b 100%)",
+          color: "#fafaf9",
+          borderBottom: "1px solid #29211b",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Subtle Ambient Radial Glow */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 700,
+            height: 250,
+            background: "radial-gradient(circle, rgba(255, 85, 0, 0.12) 0%, rgba(23, 19, 16, 0) 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div style={{ maxWidth: 1140, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                fontSize: 11,
+                fontWeight: 800,
+                color: "#ff5500",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                padding: "5px 14px",
+                borderRadius: 99,
+                background: "rgba(255, 85, 0, 0.1)",
+                border: "1px solid rgba(255, 85, 0, 0.25)",
+                marginBottom: 14,
+              }}
+            >
+              <Smartphone size={13} /> Native Android Application
+            </div>
+
+            <h2
+              style={{
+                fontSize: "clamp(30px, 4.5vw, 54px)",
+                fontWeight: 900,
+                color: "#fafaf9",
+                letterSpacing: "-0.04em",
+                margin: "0 0 16px",
+                lineHeight: 1.08,
+              }}
+            >
+              Push &amp; Export On-the-Go with Native Android.
+            </h2>
+            <p
+              style={{
+                fontSize: 17,
+                color: "#a8a29e",
+                maxWidth: 620,
+                margin: "0 auto",
+                lineHeight: 1.65,
+              }}
+            >
+              Enjoy hardware-accelerated GPU compositing, native Android DownloadManager integration for background ZIP exports, and client-side keystore token isolation.
+            </p>
+          </div>
+
+          {/* 4-Card Feature Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 16,
+              marginBottom: 36,
+            }}
+          >
+            <motion.div
+              whileHover={{ y: -2 }}
+              style={{
+                background: "#1c1714",
+                border: "1px solid #2e2621",
+                borderRadius: 16,
+                padding: "24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "rgba(255,85,0,0.15)",
+                  color: "#ff5500",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Zap size={20} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>
+                GPU Hardware Accelerated
+              </h3>
+              <p style={{ fontSize: 13.5, color: "#a8a29e", lineHeight: 1.6, margin: 0 }}>
+                High-performance Chromium WebView with GPU layer compositing for fluid 60fps gestures and zero browser tab churn.
+              </p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -2 }}
+              style={{
+                background: "#1c1714",
+                border: "1px solid #2e2621",
+                borderRadius: 16,
+                padding: "24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "rgba(56,189,248,0.15)",
+                  color: "#38bdf8",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Download size={20} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>
+                Android DownloadManager
+              </h3>
+              <p style={{ fontSize: 13.5, color: "#a8a29e", lineHeight: 1.6, margin: 0 }}>
+                Direct file system interception for ZIP backups. Saves straight to device Downloads with system status notifications.
+              </p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -2 }}
+              style={{
+                background: "#1c1714",
+                border: "1px solid #2e2621",
+                borderRadius: 16,
+                padding: "24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "rgba(34,197,94,0.15)",
+                  color: "#22c55e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <RefreshCw size={20} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>
+                Swipe Refresh &amp; Gestures
+              </h3>
+              <p style={{ fontSize: 13.5, color: "#a8a29e", lineHeight: 1.6, margin: 0 }}>
+                Native SwipeRefreshLayout for 1-drag sync, plus smart back navigation preserving in-memory diff states.
+              </p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -2 }}
+              style={{
+                background: "#1c1714",
+                border: "1px solid #2e2621",
+                borderRadius: 16,
+                padding: "24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "rgba(168,85,247,0.15)",
+                  color: "#c084fc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <ShieldCheck size={20} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>
+                100% Client-Side Privacy
+              </h3>
+              <p style={{ fontSize: 13.5, color: "#a8a29e", lineHeight: 1.6, margin: 0 }}>
+                Zero middleman servers. Credentials and snapshots stay strictly isolated within Android's private app data sandbox.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Master APK Download Banner Card */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #221b16 0%, #171310 100%)",
+              border: "1px solid #382c23",
+              borderRadius: 20,
+              padding: "32px 36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 32,
+              flexWrap: "wrap",
+              boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 85, 0, 0.15)",
+            }}
+          >
+            <div style={{ flex: "1 1 340px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    padding: "3px 10px",
+                    background: "rgba(34, 197, 94, 0.15)",
+                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                    color: "#4ade80",
+                    borderRadius: 99,
+                  }}
+                >
+                  v1.0.0 Official Release
+                </span>
+                <span style={{ fontSize: 13, color: "#a8a29e" }}>Package: app.vercel.push44</span>
+              </div>
+
+              <h3 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 10px", letterSpacing: "-0.03em" }}>
+                Download Push44 for Android
+              </h3>
+              <p style={{ fontSize: 14, color: "#d6d3d1", lineHeight: 1.6, margin: "0 0 20px" }}>
+                Standalone release binary with valid signature. Installs seamlessly on Android 7.0 (API 24) through Android 15.
+              </p>
+
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <a
+                  href="/Push44-release.apk"
+                  download="Push44-release.apk"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "13px 24px",
+                    background: "#ff5500",
+                    color: "#ffffff",
+                    fontWeight: 800,
+                    fontSize: 14.5,
+                    borderRadius: 11,
+                    textDecoration: "none",
+                    boxShadow: "0 4px 16px rgba(255, 85, 0, 0.35)",
+                    transition: "transform 0.15s, background 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.background = "#ea580c";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.background = "#ff5500";
+                  }}
+                >
+                  <Download size={17} />
+                  Download Release APK (4.51 MB)
+                </a>
+
+                <button
+                  onClick={() => setAndroidModalOpen(true)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "13px 18px",
+                    background: "rgba(255, 255, 255, 0.06)",
+                    border: "1px solid rgba(255, 255, 255, 0.14)",
+                    color: "#fafaf9",
+                    fontWeight: 600,
+                    fontSize: 13.5,
+                    borderRadius: 11,
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)")}
+                >
+                  <QrCode size={16} /> Scan QR / Install Guide
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Scan Box */}
+            <div
+              style={{
+                background: "#120e0b",
+                border: "1px solid #2e2621",
+                borderRadius: 16,
+                padding: "16px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  background: "#ffffff",
+                  padding: 8,
+                  borderRadius: 10,
+                  marginBottom: 8,
+                }}
+              >
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+                    "https://push44.vercel.app/Push44-release.apk"
+                  )}`}
+                  alt="Scan to download APK"
+                  style={{ width: 110, height: 110, display: "block" }}
+                />
+              </div>
+              <span style={{ fontSize: 11, color: "#a8a29e", fontWeight: 600 }}>
+                Scan to install on phone
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. CLI SHOWCASE ───────────────────────────────────────────────── */}
       <CliShowcase />
 
       {/* ── 7. PLATFORMS DEEP DIVE ────────────────────────────────────────── */}
@@ -1608,6 +2006,36 @@ export default function LandingPage() {
             >
               Launch App Free <ArrowRight size={17} strokeWidth={2.5} />
             </Link>
+            <button
+              onClick={() => setAndroidModalOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "15px 28px",
+                background: "rgba(255, 85, 0, 0.12)",
+                color: "#ff5500",
+                fontWeight: 700,
+                fontSize: 16,
+                borderRadius: 12,
+                border: "1px solid rgba(255, 85, 0, 0.35)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 85, 0, 0.2)";
+                e.currentTarget.style.borderColor = "#ff5500";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 85, 0, 0.12)";
+                e.currentTarget.style.borderColor = "rgba(255, 85, 0, 0.35)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <Smartphone size={18} />
+              <span>Get Android App</span>
+            </button>
             <a
               href="#cli"
               style={{
@@ -1639,6 +2067,12 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Android Download Modal */}
+      <AndroidAppModal
+        isOpen={androidModalOpen}
+        onClose={() => setAndroidModalOpen(false)}
+      />
 
       <Footer />
     </div>

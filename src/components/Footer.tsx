@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Shield, Github, Terminal, Sparkles, Heart } from "lucide-react";
+import { Shield, Github, Terminal, Sparkles, Heart, Smartphone, Download } from "lucide-react";
 import appLogo from "@/assets/logo.png";
 
 export function Footer() {
@@ -33,27 +33,51 @@ export function Footer() {
                 Push44
               </span>
             </Link>
-            <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "#78716c", maxWidth: 280, margin: "0 0 24px" }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "#78716c", maxWidth: 280, margin: "0 0 20px" }}>
               The universal developer hub to export AI-generated code from Base44, Framer, Lovable, Rocket, Floot, and Zite directly to GitHub. 100% free, zero backend.
             </p>
 
-            {/* Privacy Badge */}
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#ff5500",
-                padding: "6px 14px",
-                border: "1px solid rgba(255,85,0,0.25)",
-                background: "rgba(255,85,0,0.08)",
-                borderRadius: 99,
-                marginBottom: 20,
-              }}
-            >
-              <Shield size={13} /> Zero Backend · 100% Client-Side Privacy
+            {/* Privacy & Android Badges */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#ff5500",
+                  padding: "6px 14px",
+                  border: "1px solid rgba(255,85,0,0.25)",
+                  background: "rgba(255,85,0,0.08)",
+                  borderRadius: 99,
+                  width: "fit-content",
+                }}
+              >
+                <Shield size={13} /> Zero Backend · 100% Client-Side Privacy
+              </div>
+
+              <a
+                href="/Push44-release.apk"
+                download="Push44-release.apk"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#38bdf8",
+                  padding: "6px 14px",
+                  border: "1px solid rgba(56,189,248,0.25)",
+                  background: "rgba(56,189,248,0.08)",
+                  borderRadius: 99,
+                  width: "fit-content",
+                  textDecoration: "none",
+                  transition: "background 0.15s ease",
+                }}
+              >
+                <Smartphone size={13} /> Android APK v1.0.0 (4.5 MB)
+              </a>
             </div>
           </div>
 
@@ -61,6 +85,7 @@ export function Footer() {
             title="Product"
             links={[
               { label: "Features", href: "/#features" },
+              { label: "Android App (APK)", href: "/Push44-release.apk" },
               { label: "Terminal CLI (p44)", href: "/#cli" },
               { label: "Platforms", href: "/#platforms" },
               { label: "FAQ", href: "/#faq" },
@@ -87,6 +112,7 @@ export function Footer() {
               { label: "Tool Comparisons", to: "/compare/base44-vs-rocket-new" },
               { label: "Export Best Practices", to: "/blog/ai-project-backup-best-practices/" },
               { label: "Code Ownership Guide", to: "/blog/ai-code-ownership-guide/" },
+              { label: "GitHub Release APK", href: "https://github.com/The-habib/Push44/releases/tag/v1.0.0-apk" },
             ]}
           />
 
@@ -174,6 +200,9 @@ function FooterCol({
             <a
               key={link.label}
               href={link.href}
+              download={link.href?.endsWith(".apk") ? "Push44-release.apk" : undefined}
+              target={link.href?.startsWith("http") ? "_blank" : undefined}
+              rel={link.href?.startsWith("http") ? "noopener noreferrer" : undefined}
               style={style}
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#ff5500")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#a8a29e")}

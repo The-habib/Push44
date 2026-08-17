@@ -1,11 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Menu, X, ArrowRight, Terminal, UploadCloud, LayoutDashboard, Settings, Layers, BookOpen } from "lucide-react";
+import { Menu, X, ArrowRight, Terminal, UploadCloud, LayoutDashboard, Settings, Layers, BookOpen, Smartphone } from "lucide-react";
 import appLogo from "@/assets/logo.png";
+import { AndroidAppModal } from "./AndroidAppModal";
+import { AndroidBanner } from "./AndroidBanner";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled]   = useState(false);
+  const [androidModalOpen, setAndroidModalOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
@@ -26,6 +29,7 @@ export function Navbar() {
 
   return (
     <>
+      <AndroidBanner onOpenModal={() => setAndroidModalOpen(true)} />
       <header
         style={{
           position: "sticky",
@@ -102,6 +106,7 @@ export function Navbar() {
                 {isLanding && (
                   <>
                     <NavLink href="#features">Features</NavLink>
+                    <NavLink href="#android">Android App</NavLink>
                     <NavLink href="#cli">CLI Terminal</NavLink>
                     <NavLink href="#platforms">Platforms</NavLink>
                     <NavLink href="#faq">FAQ</NavLink>
@@ -116,6 +121,39 @@ export function Navbar() {
 
           {/* Action CTAs */}
           <div style={{ display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}>
+            {/* Android APK Modal Trigger Button */}
+            <button
+              onClick={() => setAndroidModalOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                height: 35,
+                padding: "0 12px",
+                background: "rgba(255, 85, 0, 0.08)",
+                color: "#ff5500",
+                fontWeight: 700,
+                fontSize: 13,
+                borderRadius: 9,
+                border: "1px solid rgba(255, 85, 0, 0.25)",
+                cursor: "pointer",
+                letterSpacing: "-0.01em",
+                transition: "all 0.15s ease",
+              }}
+              className="hidden-mobile"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 85, 0, 0.14)";
+                e.currentTarget.style.borderColor = "rgba(255, 85, 0, 0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 85, 0, 0.08)";
+                e.currentTarget.style.borderColor = "rgba(255, 85, 0, 0.25)";
+              }}
+            >
+              <Smartphone size={14} />
+              <span>Android APK</span>
+            </button>
+
             <a
               href="#cli"
               style={{
@@ -245,6 +283,29 @@ export function Navbar() {
           className="show-mobile"
         >
           <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                setAndroidModalOpen(true);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "11px 14px",
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#ff5500",
+                background: "rgba(255, 85, 0, 0.08)",
+                border: "1px solid rgba(255, 85, 0, 0.25)",
+                marginBottom: 6,
+                cursor: "pointer",
+              }}
+            >
+              <Smartphone size={16} /> Get Android APK (4.5 MB)
+            </button>
             <MobileNavLink to="/push" onClick={() => setMenuOpen(false)}>
               Push App
             </MobileNavLink>
@@ -286,6 +347,12 @@ export function Navbar() {
           </nav>
         </div>
       )}
+
+      {/* Android Download Modal */}
+      <AndroidAppModal
+        isOpen={androidModalOpen}
+        onClose={() => setAndroidModalOpen(false)}
+      />
 
       <style>{`
         @media (min-width: 768px) {
