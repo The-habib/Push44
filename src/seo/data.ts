@@ -105,6 +105,7 @@ export const POPULAR_SEARCHES = [
   { label: "Export Rocket.new to GitHub",         slug: "export-rocket-new-to-github" },
   { label: "Export Floot project",                slug: "how-to-export-floot-project" },
   { label: "Export Zite to GitHub",               slug: "zite-github-export-guide" },
+  { label: "How to download Zite app for free",  slug: "how-to-download-zite-app-for-free" },
   { label: "Backup AI-generated apps",            slug: "backup-ai-generated-apps" },
   { label: "AI version control guide",            slug: "github-version-control-for-ai-apps" },
   { label: "Export code without subscription",    slug: "export-code-without-subscription" },
@@ -1085,6 +1086,91 @@ export const ARTICLES: Article[] = [
       { question: "Can I export a Zite app to a private GitHub repository?", answer: "Yes. Use a GitHub PAT with 'repo' scope to push to private repositories." },
     ],
     related: ["how-to-export-zite-project", "github-version-control-for-ai-apps", "backup-ai-generated-apps"],
+  },
+
+  {
+    slug: "how-to-download-zite-app-for-free",
+    title: "How to Download Zite App for Free (Source Code & Assets) | Push44",
+    h1: "How to Download Zite App for Free",
+    description: "Step-by-step guide to download your Zite app source code, templates, and components for free using Push44 and GitHub. 100% client-side with no paywalls.",
+    platform: "zite",
+    category: "export",
+    readTime: 6,
+    difficulty: "beginner",
+    publishedAt: "2026-08-20",
+    updatedAt: "2026-08-20",
+    views: 1800,
+    keywords: [
+      "how to download zite app for free",
+      "download zite app",
+      "zite app source code download",
+      "download zite project",
+      "export zite app for free",
+      "zite code backup free",
+      "zite fillout source code",
+    ],
+    intro: "Zite enables rapid AI application generation on top of Fillout's web application infrastructure. If you want to download your Zite app's source code, components, and schema configurations to your local machine or version-control it on GitHub without paying a dime, Push44 makes downloading your Zite app fast, secure, and 100% free.",
+    problem: "Zite does not provide a standard 'Download Project as ZIP' button inside the visual workspace dashboard. Creators who want to back up their projects, inspect generated components, or migrate logic to custom web servers risk platform lock-in if they cannot extract their raw application code.",
+    solution: "Push44 uses your active browser session and CSRF tokens to query Zite's backend API directly from your browser. It retrieves the complete snapshot template — including form structures, component hierarchies, styling configurations, and dynamic logic — and commits everything directly to your private or public GitHub repository or prepares it for offline use.",
+    steps: [
+      {
+        title: "Log into Zite and open Developer Tools",
+        content: "Navigate to your Zite workspace (build.fillout.com) in Chrome, Firefox, or Brave. Open your browser's Developer Tools by pressing F12 or right-clicking and selecting 'Inspect'.",
+        tip: "Ensure you are actively logged in and have opened the Zite project editor before checking cookies.",
+      },
+      {
+        title: "Extract your session ID and CSRF token",
+        content: "In Developer Tools, go to the Application tab (or Storage tab in Firefox), expand Cookies on the left panel, and click on the build.fillout.com domain. Copy the values for 'connect.sid' (session ID) and 'fillout-csrf-token' (CSRF token).",
+        tip: "Both tokens are required because Zite employs strict CSRF verification on all API endpoints.",
+      },
+      {
+        title: "Open Push44 and select Zite",
+        content: "Go to Push44 (push44.vercel.app), select Zite as your platform, and paste both the session ID and CSRF token into their respective fields. Push44 stores these credentials solely in your browser's local memory.",
+      },
+      {
+        title: "Select your Zite application and GitHub repository",
+        content: "Push44 will immediately fetch and display all apps linked to your Zite account. Select the application you wish to download, provide your GitHub Personal Access Token (PAT) with 'repo' scope, and specify your target repository name.",
+      },
+      {
+        title: "Export and download your complete source files",
+        content: "Click 'Push to GitHub'. Push44 extracts the entire application snapshot template and pushes all files to your GitHub repo. You can now git clone your repo or click 'Download ZIP' from GitHub to have the entire project on your local machine.",
+        tip: "You can keep syncing future iterations of your Zite app to the same repository anytime you make changes.",
+      },
+    ],
+    tips: [
+      "Always obtain fresh session cookies if Push44 returns an authentication error, as Zite session tokens naturally expire after browser logout.",
+      "Push44 operates entirely in client-side memory — your session credentials and GitHub tokens never touch any third-party intermediary server.",
+      "Once exported to GitHub, you can use standard Git commands ('git clone', 'git diff', 'git log') to maintain a complete history of all AI prompt iterations.",
+    ],
+    mistakes: [
+      "Entering only the session token and forgetting the CSRF token — both are strictly needed for Zite API validation.",
+      "Attempting to download a deleted or archived Zite workspace that is no longer accessible via your account.",
+      "Using a GitHub token that lacks the 'repo' scope, which causes push permission errors.",
+    ],
+    faqs: [
+      {
+        question: "Is downloading my Zite app using Push44 really free?",
+        answer: "Yes, 100% free and open source. Push44 does not charge fees, require paid subscriptions, or impose limits on how many Zite apps you can export.",
+      },
+      {
+        question: "What files and data are included in the downloaded Zite app?",
+        answer: "The export includes the complete Zite snapshot template files, including component trees, layout definitions, schema structures, styling rules, and form validation configurations.",
+      },
+      {
+        question: "Can I run or host my Zite app locally after downloading it?",
+        answer: "Yes. Once downloaded or cloned from GitHub, you have full ownership of the template code and component structure, allowing you to inspect, modify, or integrate the components into your own React / Node.js setups.",
+      },
+      {
+        question: "Will exporting or downloading my Zite app affect my live project on Zite?",
+        answer: "Not at all. Push44 only performs read-only requests to fetch your project template. Your active Zite app and live forms remain completely untouched.",
+      },
+    ],
+    related: [
+      "how-to-export-zite-project",
+      "zite-github-export-guide",
+      "free-way-to-export-zite-to-github",
+      "best-app-to-download-code-from-base44-rocket-floot-zite",
+    ],
   },
 
   // ── GENERAL ───────────────────────────────────────────────────────────────
@@ -2171,7 +2257,7 @@ export const PLATFORMS: PlatformData[] = [
     description: "Zite is an AI builder on the Fillout infrastructure. Push44 uses Zite's session and CSRF tokens to read project snapshot templates and push them to GitHub.",
     color: "#8b5cf6",
     bgColor: "#fdf4ff",
-    articles: ["how-to-export-zite-project", "zite-github-export-guide", "zite-csrf-token-guide"],
+    articles: ["how-to-export-zite-project", "zite-github-export-guide", "zite-csrf-token-guide", "free-way-to-export-zite-to-github", "how-to-download-zite-app-for-free"],
     features: ["Session + CSRF token authentication", "Project snapshot template export", "GitHub version control", "Supports all Zite app types", "Vite proxy for CORS handling"],
     exportSteps: ["Get Zite session ID and CSRF token from browser cookies", "Connect in Push44 with both tokens", "Select your Zite app", "Enter GitHub repo details", "Push snapshot template to GitHub"],
     faqs: [

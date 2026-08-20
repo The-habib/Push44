@@ -6,7 +6,7 @@
     <atom:link href="https://push44.vercel.app/rss.xml" rel="self" type="application/rss+xml" />
     <description>Guides, tutorials and comparisons for exporting AI-generated source code to GitHub.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 17 Aug 2026 14:25:32 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 20 Aug 2026 17:53:26 GMT</lastBuildDate>
     <managingEditor>team@push44.app (Push44 Team)</managingEditor>
     <webMaster>team@push44.app (Push44 Team)</webMaster>
     <image>
@@ -15,6 +15,15 @@
       <link>https://push44.vercel.app/blog</link>
     </image>
     
+  <item>
+    <title><![CDATA[How to Download Zite App for Free]]></title>
+    <link>https://push44.vercel.app/blog/how-to-download-zite-app-for-free</link>
+    <guid isPermaLink="true">https://push44.vercel.app/blog/how-to-download-zite-app-for-free</guid>
+    <description><![CDATA[Step-by-step guide to download your Zite app source code, templates, and components for free using Push44 and GitHub. 100% client-side with no paywalls.]]></description>
+    <pubDate>Thu, 20 Aug 2026 00:00:00 GMT</pubDate>
+    <category>export</category>
+    <author>team@push44.app (Push44 Team)</author>
+  </item>
   <item>
     <title><![CDATA[Best App to Download Code from Base44, Rocket.new, Floot, and Zite]]></title>
     <link>https://push44.vercel.app/blog/best-app-to-download-code-from-base44-rocket-floot-zite</link>
@@ -184,15 +193,6 @@
     <description><![CDATA[Protect your AI-built apps with regular GitHub backups. Complete guide covering Base44, Rocket.new, Floot, and Zite. Free tool, no limits.]]></description>
     <pubDate>Mon, 01 Jun 2026 00:00:00 GMT</pubDate>
     <category>backup</category>
-    <author>team@push44.app (Push44 Team)</author>
-  </item>
-  <item>
-    <title><![CDATA[GitHub Version Control for AI-Generated Apps]]></title>
-    <link>https://push44.vercel.app/blog/github-version-control-for-ai-apps</link>
-    <guid isPermaLink="true">https://push44.vercel.app/blog/github-version-control-for-ai-apps</guid>
-    <description><![CDATA[Add Git version control to any AI-built app. Track every change, collaborate with developers, and own your history. Works with Base44, Rocket.new, Floot, Zite.]]></description>
-    <pubDate>Fri, 05 Jun 2026 00:00:00 GMT</pubDate>
-    <category>version-control</category>
     <author>team@push44.app (Push44 Team)</author>
   </item>
   </channel>
