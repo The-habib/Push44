@@ -131,7 +131,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         `https://stackblitz.com/api/users/sessions/sso?login=${encodeURIComponent(email)}`,
         {
           headers: {
-            "Cookie":           buildCookieHeader({ _stackblitz_session: sbSession }),
+            // StackBlitz ties the SSO check to the complete login cookie jar,
+            // not only the Rails session cookie.
+            "Cookie":           buildCookieHeader(signInCookies),
             "x-csrf-token":     csrf,
             "User-Agent":       UA,
             "Accept":           "application/json",
@@ -157,7 +159,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         "Content-Type":      "application/json",
         "x-csrf-token":      csrf,
         "x-requested-with":  "XMLHttpRequest",
-        "Cookie":            buildCookieHeader({ _stackblitz_session: sbSession }),
+         // Preserve every cookie issued by /sign_in. In particular,
+         // CSRF-TOKEN and bolt_oauth_provider are used by the OAuth handoff.
+         "Cookie":            buildCookieHeader(signInCookies),
         "Origin":            "https://stackblitz.com",
         "Referer":           signInUrl,
         "User-Agent":        UA,
