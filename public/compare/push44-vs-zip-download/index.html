@@ -305,33 +305,35 @@
 </nav>
 
 <!-- COMPARISON HERO -->
-<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:64px 24px">
+<div style="background:#faf8f5;border-bottom:1px solid #e7e2db;padding:64px 24px">
   <div style="max-width:900px;margin:0 auto">
 
-    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
-      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a><span>›</span>
-      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a><span>›</span>
-      <span style="color:#94a3b8" aria-current="page">Comparison</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Push44</a><span>›</span>
+      <a href="/blog">Blog</a><span>›</span>
+      <span aria-current="page">Comparison</span>
     </nav>
 
-    <span class="badge" style="background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);margin-bottom:20px;margin-top:12px;display:inline-flex">⚖️ Comparison</span>
-    <h1 style="font-size:clamp(28px,4vw,44px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">Push44 vs ZIP Download</h1>
-    <p style="font-size:17px;color:#94a3b8;line-height:1.7;max-width:600px;margin-bottom:32px">Compare Push44 (automated GitHub push) vs ZIP download for exporting AI-generated code. Git history, automation, and long-term value compared.</p>
+    <span class="badge" style="background:#fff4ed;color:#f50;border:1px solid rgba(255,85,0,0.2);margin-bottom:16px;display:inline-flex">⚖️ Comparison</span>
+    <h1 style="font-size:clamp(28px,4vw,44px);font-weight:900;color:#191411;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px">Push44 vs ZIP Download</h1>
+    <p style="font-size:17px;color:#544e47;line-height:1.7;max-width:640px;margin-bottom:28px">Compare Push44 (automated GitHub push) vs ZIP download for exporting AI-generated code. Git history, automation, and long-term value compared.</p>
 
-    <!-- Score summary -->
+    <!-- Score summary bento cards -->
     <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#f97316">5</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">Push44 wins</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #f50;border-radius:14px;padding:16px 22px;text-align:center;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="margin-bottom:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:12px">P</span></div>
+        <div style="font-size:26px;font-weight:900;color:#f50">5</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">Push44 Wins</div>
       </div>
-      <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#22c55e">1</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">ZIP Download wins</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #16a34a;border-radius:14px;padding:16px 22px;text-align:center;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="margin-bottom:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:12px">Z</span></div>
+        <div style="font-size:26px;font-weight:900;color:#16a34a">1</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">ZIP Download Wins</div>
       </div>
       
-      <div style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#64748b">1</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">Ties</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #8c857b;border-radius:14px;padding:16px 22px;text-align:center;min-width:110px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="font-size:26px;font-weight:900;color:#8c857b;margin-top:20px">1</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">Ties</div>
       </div>
     </div>
   </div>
@@ -360,8 +362,12 @@
         <thead>
           <tr>
             <th scope="col" style="width:25%">Aspect</th>
-            <th scope="col" style="color:#f97316">Push44</th>
-            <th scope="col" style="color:#22c55e">ZIP Download</th>
+            <th scope="col" style="color:#f50">
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:9px">P</span><span>Push44</span></span>
+            </th>
+            <th scope="col" style="color:#16a34a">
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:9px">Z</span><span>ZIP Download</span></span>
+            </th>
             <th scope="col">Winner</th>
           </tr>
         </thead>
@@ -379,15 +385,16 @@
               <td>
                 <div style="margin-bottom:4px">None (just download)</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:100%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:100%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">5/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-b">
-                  ✓ ZIP Download
+                <span class="winner-b" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#f0fdf4;border:1px solid #bbf7d0">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">Z</span>
+                  ZIP Download
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">ZIP download wins on initial setup, but Push44 wins for every subsequent use.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">ZIP download wins on initial setup, but Push44 wins for every subsequent use.</div>
               </td>
             </tr>
             <tr>
@@ -402,15 +409,16 @@
               <td>
                 <div style="margin-bottom:4px">None</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:0%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:0%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">0/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-a">
-                  ✓ Push44
+                <span class="winner-a" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#fff4ed;border:1px solid rgba(255,85,0,0.2)">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">P</span>
+                  Push44
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">Git history is the most important long-term advantage of Push44.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">Git history is the most important long-term advantage of Push44.</div>
               </td>
             </tr>
             <tr>
@@ -425,15 +433,16 @@
               <td>
                 <div style="margin-bottom:4px">Manual each time</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">2/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-a">
-                  ✓ Push44
+                <span class="winner-a" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#fff4ed;border:1px solid rgba(255,85,0,0.2)">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">P</span>
+                  Push44
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">Push44 exports take one click after initial setup.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">Push44 exports take one click after initial setup.</div>
               </td>
             </tr>
             <tr>
@@ -448,15 +457,16 @@
               <td>
                 <div style="margin-bottom:4px">Preserved in ZIP</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:100%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:100%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">5/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-tie">
+                <span class="winner-tie" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#f3efe9">
+                  
                   Tie
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">Both preserve directory structure correctly.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">Both preserve directory structure correctly.</div>
               </td>
             </tr>
             <tr>
@@ -471,15 +481,16 @@
               <td>
                 <div style="margin-bottom:4px">Often requires paid plan</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">2/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-a">
-                  ✓ Push44
+                <span class="winner-a" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#fff4ed;border:1px solid rgba(255,85,0,0.2)">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">P</span>
+                  Push44
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">Push44 uses platform APIs available to all users. ZIP export is often paywalled.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">Push44 uses platform APIs available to all users. ZIP export is often paywalled.</div>
               </td>
             </tr>
             <tr>
@@ -494,15 +505,16 @@
               <td>
                 <div style="margin-bottom:4px">Manual sharing required</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:20%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:20%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">1/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-a">
-                  ✓ Push44
+                <span class="winner-a" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#fff4ed;border:1px solid rgba(255,85,0,0.2)">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">P</span>
+                  Push44
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">GitHub makes collaboration trivial; ZIP files require manual distribution.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">GitHub makes collaboration trivial; ZIP files require manual distribution.</div>
               </td>
             </tr>
             <tr>
@@ -517,15 +529,16 @@
               <td>
                 <div style="margin-bottom:4px">Keep old ZIP files manually</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:40%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">2/5</span>
                 </div>
               </td>
               <td>
-                <span class="winner-a">
-                  ✓ Push44
+                <span class="winner-a" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;background:#fff4ed;border:1px solid rgba(255,85,0,0.2)">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:7px">P</span>
+                  Push44
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">Git's rollback capability is far superior to maintaining old ZIPs.</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">Git's rollback capability is far superior to maintaining old ZIPs.</div>
               </td>
             </tr>
         </tbody>

@@ -1,0 +1,341 @@
+[
+  {
+    "name": "01_blog_hub",
+    "url": "https://push44.vercel.app/blog",
+    "status": 200,
+    "title": "Push44 Blog — Guides to Export AI-Generated Code",
+    "h1Count": 1,
+    "h1Text": "Export Code from Every AI Builder",
+    "headings": [
+      "Popular Searches",
+      "All Categories",
+      "Featured Guides",
+      "All Guides",
+      "Export from Every Platform"
+    ],
+    "screenshotPath": "screenshots/live/01_blog_hub.png",
+    "consoleErrors": [],
+    "loadTimeMs": 4956
+  },
+  {
+    "name": "02_platform_base44",
+    "url": "https://push44.vercel.app/platforms/base44",
+    "status": 200,
+    "title": "Base44 GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "Base44 Export Hub",
+    "headings": [
+      "What Push44 Does with Base44",
+      "How to Export Base44",
+      "Base44 Guides",
+      "Base44 FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/02_platform_base44.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2787
+  },
+  {
+    "name": "03_platform_bolt_new",
+    "url": "https://push44.vercel.app/platforms/bolt-new",
+    "status": 200,
+    "title": "bolt.new GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "bolt.new Export Hub",
+    "headings": [
+      "What Push44 Does with bolt.new",
+      "How to Export bolt.new",
+      "bolt.new Guides",
+      "bolt.new FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/03_platform_bolt_new.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2288
+  },
+  {
+    "name": "04_platform_floot",
+    "url": "https://push44.vercel.app/platforms/floot",
+    "status": 200,
+    "title": "Floot GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "Floot Export Hub",
+    "headings": [
+      "What Push44 Does with Floot",
+      "How to Export Floot",
+      "Floot Guides",
+      "Floot FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/04_platform_floot.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2181
+  },
+  {
+    "name": "05_platform_rocket_new",
+    "url": "https://push44.vercel.app/platforms/rocket-new",
+    "status": 200,
+    "title": "Rocket.new GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "Rocket.new Export Hub",
+    "headings": [
+      "What Push44 Does with Rocket.new",
+      "How to Export Rocket.new",
+      "Rocket.new Guides",
+      "Rocket.new FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/05_platform_rocket_new.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2150
+  },
+  {
+    "name": "06_platform_zite",
+    "url": "https://push44.vercel.app/platforms/zite",
+    "status": 200,
+    "title": "Zite GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "Zite Export Hub",
+    "headings": [
+      "What Push44 Does with Zite",
+      "How to Export Zite",
+      "Zite Guides",
+      "Zite FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/06_platform_zite.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2208
+  },
+  {
+    "name": "07_platform_framer",
+    "url": "https://push44.vercel.app/platforms/framer",
+    "status": 200,
+    "title": "Framer GitHub Export Guide — Push44",
+    "h1Count": 1,
+    "h1Text": "Framer Export Hub",
+    "headings": [
+      "What Push44 Does with Framer",
+      "How to Export Framer",
+      "Framer Guides",
+      "Framer FAQ",
+      "Other Platforms"
+    ],
+    "screenshotPath": "screenshots/live/07_platform_framer.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2122
+  },
+  {
+    "name": "08_compare_base44_vs_rocket",
+    "url": "https://push44.vercel.app/compare/base44-vs-rocket-new",
+    "status": 200,
+    "title": "Base44 vs Rocket.new: Which AI Builder to Choose? | Push44",
+    "h1Count": 1,
+    "h1Text": "Base44 vs Rocket.new — AI Builder Comparison",
+    "headings": [
+      "Overview",
+      "Detailed Comparison",
+      "Start Exporting for Free",
+      "More Comparisons"
+    ],
+    "screenshotPath": "screenshots/live/08_compare_base44_vs_rocket.png",
+    "consoleErrors": [],
+    "loadTimeMs": 1861
+  },
+  {
+    "name": "09_compare_push44_vs_zip",
+    "url": "https://push44.vercel.app/compare/push44-vs-zip-download",
+    "status": 200,
+    "title": "Push44 vs ZIP Download: Best AI Code Export | Push44",
+    "h1Count": 1,
+    "h1Text": "Push44 vs ZIP Download",
+    "headings": [
+      "Overview",
+      "Detailed Comparison",
+      "Start Exporting for Free",
+      "More Comparisons"
+    ],
+    "screenshotPath": "screenshots/live/09_compare_push44_vs_zip.png",
+    "consoleErrors": [],
+    "loadTimeMs": 1955
+  },
+  {
+    "name": "10_compare_best_tools",
+    "url": "https://push44.vercel.app/compare/best-ai-export-tools-2025",
+    "status": 200,
+    "title": "Best AI Code Export Tools 2025 | Comparison | Push44",
+    "h1Count": 1,
+    "h1Text": "Best AI Code Export Tools in 2025",
+    "headings": [
+      "Overview",
+      "Detailed Comparison",
+      "Start Exporting for Free",
+      "More Comparisons"
+    ],
+    "screenshotPath": "screenshots/live/10_compare_best_tools.png",
+    "consoleErrors": [],
+    "loadTimeMs": 1734
+  },
+  {
+    "name": "11_privacy_policy",
+    "url": "https://push44.vercel.app/privacy",
+    "status": 200,
+    "title": "Push44 — Push Base44, Rocket.new & Vibe-Coded Apps to GitHub in One Tap",
+    "h1Count": 1,
+    "h1Text": "Privacy Policy",
+    "headings": [
+      "1. Zero Backend & No Server Storage",
+      "2. Direct Browser-to-Service Communication",
+      "3. Zero Telemetry & No Tracking",
+      "4. Third-Party Platform Policies",
+      "5. Local Storage Lifecycle"
+    ],
+    "screenshotPath": "screenshots/live/11_privacy_policy.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2263
+  },
+  {
+    "name": "12_terms_of_service",
+    "url": "https://push44.vercel.app/terms",
+    "status": 200,
+    "title": "Push44 — Push Base44, Rocket.new & Vibe-Coded Apps to GitHub in One Tap",
+    "h1Count": 1,
+    "h1Text": "Terms of Service",
+    "headings": [
+      "1. Acceptance of Terms",
+      "2. Nature of the Service",
+      "3. Disclaimer of Warranties (\"As Is\")",
+      "4. User Credential Responsibility",
+      "5. Limitation of Liability"
+    ],
+    "screenshotPath": "screenshots/live/12_terms_of_service.png",
+    "consoleErrors": [],
+    "loadTimeMs": 1743
+  },
+  {
+    "name": "13_article_base44_export",
+    "url": "https://push44.vercel.app/blog/how-to-export-code-from-base44",
+    "status": 200,
+    "title": "How to Export Code from Base44 | Push44 Guide",
+    "h1Count": 1,
+    "h1Text": "How to Export Code from Base44",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/13_article_base44_export.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2559
+  },
+  {
+    "name": "14_article_rocket_apk",
+    "url": "https://push44.vercel.app/blog/download-rocket-new-flutter-source-code-and-apk",
+    "status": 200,
+    "title": "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    "h1Count": 1,
+    "h1Text": "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/14_article_rocket_apk.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2451
+  },
+  {
+    "name": "15_article_floot_export",
+    "url": "https://push44.vercel.app/blog/export-floot-to-github",
+    "status": 200,
+    "title": "Export Floot to GitHub — Complete Guide | Push44",
+    "h1Count": 1,
+    "h1Text": "Export Floot to GitHub",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/15_article_floot_export.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2075
+  },
+  {
+    "name": "16_article_zite_export",
+    "url": "https://push44.vercel.app/blog/zite-github-export-guide",
+    "status": 200,
+    "title": "Zite to GitHub: Complete Export Guide | Push44",
+    "h1Count": 1,
+    "h1Text": "Zite GitHub Export Guide",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/16_article_zite_export.png",
+    "consoleErrors": [],
+    "loadTimeMs": 1975
+  },
+  {
+    "name": "17_article_bolt_branding",
+    "url": "https://push44.vercel.app/blog/bolt-new-badge-removal-guide",
+    "status": 200,
+    "title": "bolt.new Badge Removal: Step-by-Step Guide | Push44",
+    "h1Count": 1,
+    "h1Text": "bolt.new Badge Removal: Complete Guide",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/17_article_bolt_branding.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2403
+  },
+  {
+    "name": "18_article_top5_tools",
+    "url": "https://push44.vercel.app/blog/top-5-tools-to-export-ai-generated-apps-to-github",
+    "status": 200,
+    "title": "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub (2026)",
+    "h1Count": 1,
+    "h1Text": "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/18_article_top5_tools.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2414
+  },
+  {
+    "name": "19_article_why_push44_free",
+    "url": "https://push44.vercel.app/blog/why-push44-is-free",
+    "status": 200,
+    "title": "Why Push44 Is Free (and How It Stays That Way) | Push44",
+    "h1Count": 1,
+    "h1Text": "Why Push44 Is Free",
+    "headings": [
+      "✅ Quick Summary",
+      "The Problem",
+      "How Push44 Solves It",
+      "Step-by-Step Guide",
+      "Pro Tips"
+    ],
+    "screenshotPath": "screenshots/live/19_article_why_push44_free.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2076
+  }
+]

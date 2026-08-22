@@ -486,40 +486,49 @@ export function generateBlogHome(): string {
 ${nav("Blog")}
 
 <!-- HERO -->
-<section class="blog-hero" aria-label="Blog hero">
-  <div class="blog-hero-inner">
-    <p class="section-badge" style="color:#fb923c;background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.3);margin-bottom:20px">
-      📚 Knowledge Base &amp; Documentation
+<section class="blog-hero" aria-label="Blog hero" style="background:#faf8f5;border-bottom:1px solid #e7e2db;padding:72px 24px">
+  <div class="blog-hero-inner" style="max-width:820px;margin:0 auto;text-align:center">
+    <p class="section-badge" style="color:#f50;background:#fff4ed;border:1px solid rgba(255,85,0,0.2);margin-bottom:20px;display:inline-flex">
+      📚 Official Knowledge Base &amp; Tutorials
     </p>
-    <h1>Export Code from <span>Every AI Builder</span></h1>
-    <p>Step-by-step guides, tutorials, comparisons and documentation to export, backup and own your AI-generated source code.</p>
+    <h1 style="font-size:clamp(32px,5vw,52px);font-weight:900;color:#191411;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">Export Code from <span style="color:#f50">Every AI Builder</span></h1>
+    <p style="font-size:17px;color:#544e47;line-height:1.7;margin-bottom:32px;max-width:620px;margin-left:auto;margin-right:auto">Step-by-step guides, tutorials, comparisons and documentation to export, backup and own your AI-generated source code.</p>
 
     <!-- Search -->
-    <form class="search-box" role="search" action="/blog" method="get" aria-label="Search guides">
-      <span class="search-icon" aria-hidden="true">🔍</span>
-      <input type="search" name="q" placeholder="Search guides... e.g. How to export code from Base44" aria-label="Search guides" />
-      <button type="submit" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;font-weight:600">Search</button>
+    <form class="search-box" role="search" action="/blog" method="get" aria-label="Search guides" style="background:#ffffff;border:1px solid #e7e2db;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03);max-width:540px;margin:0 auto 28px">
+      <span class="search-icon" aria-hidden="true" style="color:#8c857b">🔍</span>
+      <input type="search" name="q" placeholder="Search guides... e.g. How to export code from Base44" aria-label="Search guides" style="background:none;border:none;outline:none;color:#191411;font-size:15px;flex:1;font-family:inherit;width:100%" />
+      <button type="submit" style="background:#f50;color:#fff;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">Search</button>
     </form>
 
     <!-- Popular search chips -->
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
-      ${POPULAR_SEARCHES.slice(0, 8).map(s => `
-        <a href="/blog/${s.slug}" class="chip" style="border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#cbd5e1">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+      <span style="font-size:12px;font-weight:700;color:#8c857b;align-self:center;margin-right:4px">Trending:</span>
+      ${POPULAR_SEARCHES.slice(0, 7).map(s => `
+        <a href="/blog/${s.slug}" class="chip" style="border-color:#e7e2db;background:#ffffff;color:#544e47;font-size:12px;padding:6px 12px">
           ${escHtml(s.label)}
         </a>`).join("")}
     </div>
   </div>
 </section>
 
-<!-- POPULAR SEARCHES -->
-<section style="padding:48px 24px;background:#fafafa;border-bottom:1px solid var(--border)" aria-labelledby="popular-searches-heading">
+<!-- DEDICATED PLATFORM HUBS -->
+<section style="padding:64px 24px;background:#f3efe9;border-bottom:1px solid var(--border)" aria-labelledby="platform-hubs-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:28px">
-      <h2 id="popular-searches-heading" style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:6px">Popular Searches</h2>
-      <p style="font-size:14px;color:var(--muted)">What developers search for most</p>
+    <div style="text-align:center;margin-bottom:36px">
+      <p class="section-badge">Platform Centers</p>
+      <h2 id="platform-hubs-heading" class="section-title">Dedicated Platform Hubs</h2>
+      <p class="section-subtitle">Official integration guides, badge removal workflows, and source code exporters</p>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
-      ${POPULAR_SEARCHES.map(s => `<a href="/blog/${s.slug}" class="chip">${escHtml(s.label)}</a>`).join("")}
+    <div class="grid-4">
+      ${PLATFORMS.map(p => `
+        <a href="/platforms/${p.slug}" class="cat-card" style="background:#ffffff;border:1px solid #e7e2db;padding:24px" aria-label="${p.name} export hub">
+          <div style="width:48px;height:48px;border-radius:14px;background:#ffffff;border:1px solid #e7e2db;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 1px 4px rgba(0,0,0,0.03)" aria-hidden="true">
+            ${renderPlatformSvg(p.slug, 26)}
+          </div>
+          <div class="cat-name" style="font-size:16px">${escHtml(p.name)}</div>
+          <div class="cat-desc" style="font-size:13px">${p.articles.length} guides · Complete Hub</div>
+        </a>`).join("")}
     </div>
   </div>
 </section>
@@ -702,6 +711,37 @@ ${footer()}`;
   });
 }
 
+// ─── Platform SVG Logo Helper ──────────────────────────────────────────────────
+
+export function renderPlatformSvg(platform: string, size = 16): string {
+  const norm = (platform || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (norm.includes("base44")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="24" height="24" rx="6" fill="#f50" /><text x="12" y="16.5" text-anchor="middle" fill="#fff" font-size="11" font-weight="900" font-family="system-ui,-apple-system,sans-serif">44</text></svg>`;
+  }
+  if (norm.includes("rocket")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="24" height="24" rx="6" fill="#10B981" /><path d="M12 4c3 0 6 3 6 7l-2 3H8l-2-3c0-4 3-7 6-7z" fill="#fff" /><path d="M9 14l-2 4h10l-2-4H9z" fill="#F59E0B" /></svg>`;
+  }
+  if (norm.includes("floot")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="24" height="24" rx="6" fill="#3B82F6" /><path d="M7 16V8h10v3H11v2h5v3H7z" fill="#fff" /></svg>`;
+  }
+  if (norm.includes("zite")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="24" height="24" rx="6" fill="#8B5CF6" /><path d="M7 8h10l-6 8h6v2H7l6-8H7V8z" fill="#fff" /></svg>`;
+  }
+  if (norm.includes("bolt")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 95 83" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><path fill="#2B5CFF" d="M66.657 0H28.343a7.948 7.948 0 0 0-6.887 3.979L2.288 37.235a7.948 7.948 0 0 0 0 7.938L21.456 78.43a7.948 7.948 0 0 0 6.887 3.979h38.314a7.948 7.948 0 0 0 6.886-3.98l19.17-33.256a7.948 7.948 0 0 0 0-7.938L73.542 3.98A7.948 7.948 0 0 0 66.657 0Z"/><path fill="#fff" fill-rule="evenodd" clip-rule="evenodd" d="M50.642 59.608c-3.468 0-6.873-1.261-8.827-3.973l-.69 3.198-12.729 6.762 1.374-6.762 9.27-42.04h11.35l-3.279 14.818c2.649-2.9 5.108-3.973 8.26-3.973 6.81 0 11.35 4.477 11.35 12.675 0 8.45-5.233 19.295-16.079 19.295Zm4.351-16.9c0 3.91-2.774 6.874-6.368 6.874-2.018 0-3.847-.757-5.045-2.08l1.766-7.757c1.324-1.324 2.837-2.08 4.603-2.08 2.711 0 5.044 2.017 5.044 5.044Z"/></svg>`;
+  }
+  if (norm.includes("framer")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><path d="M4 0h16v8h-8zM4 8h8l8 8H4zM4 16h8v8z" fill="#0055FF" /></svg>`;
+  }
+  if (norm.includes("lovable")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0"><path clip-rule="evenodd" fill-rule="evenodd" d="M7.082 0c3.91 0 7.081 3.179 7.081 7.1v2.7h2.357c3.91 0 7.082 3.178 7.082 7.1 0 3.923-3.17 7.1-7.082 7.1H0V7.1C0 3.18 3.17 0 7.082 0z" fill="#FF3366" /></svg>`;
+  }
+  if (norm.includes("github")) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:middle;flex-shrink:0"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:4px;background:#f50;color:#fff;font-weight:900;font-size:${Math.round(size * 0.55)}px">${(platform[0] || "P").toUpperCase()}</span>`;
+}
+
 // ─── Article Card Helper ───────────────────────────────────────────────────────
 
 function articleCard(a: Article): string {
@@ -709,7 +749,7 @@ function articleCard(a: Article): string {
   return `
 <a href="/blog/${a.slug}" class="article-card" data-category="${escHtml(a.category)}" data-platform="${escHtml(a.platform)}" aria-label="${escHtml(a.h1)}">
   <div class="article-card-meta">
-    ${a.platform !== "general" ? `<span class="badge badge-platform" style="--platform-color:${pm.color};--platform-bg:${pm.bgColor}">${pm.name}</span>` : ""}
+    ${a.platform !== "general" ? `<span class="badge badge-platform" style="--platform-color:${pm.color};--platform-bg:${pm.bgColor};display:inline-flex;align-items:center;gap:6px">${renderPlatformSvg(a.platform, 14)}<span>${pm.name}</span></span>` : ""}
     <span class="badge badge-difficulty-${a.difficulty}">${a.difficulty}</span>
   </div>
   <div class="article-card-title">${escHtml(a.h1)}</div>
@@ -783,42 +823,41 @@ export function generateArticlePage(article: Article): string {
 ${nav("Blog")}
 
 <!-- ARTICLE HERO -->
-<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:48px 24px 64px;margin-bottom:0">
-  <div style="max-width:800px;margin:0 auto">
+<div style="background:#faf8f5;border-bottom:1px solid #e7e2db;padding:48px 24px 56px;margin-bottom:0">
+  <div style="max-width:820px;margin:0 auto">
 
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
-      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Push44</a>
       <span aria-hidden="true">›</span>
-      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a>
+      <a href="/blog">Blog</a>
       <span aria-hidden="true">›</span>
-      ${article.platform !== "general" ? `<a href="/platforms/${article.platform}" style="color:rgba(148,163,184,0.7)">${pm.name}</a><span aria-hidden="true">›</span>` : ""}
-      <span style="color:#94a3b8" aria-current="page">${escHtml(article.h1.slice(0, 40))}${article.h1.length > 40 ? "…" : ""}</span>
+      ${article.platform !== "general" ? `<a href="/platforms/${article.platform}">${pm.name}</a><span aria-hidden="true">›</span>` : ""}
+      <span aria-current="page">${escHtml(article.h1.slice(0, 40))}${article.h1.length > 40 ? "…" : ""}</span>
     </nav>
 
     <!-- Meta -->
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
-      ${article.platform !== "general" ? `<span class="badge badge-platform" style="--platform-color:${pm.color};--platform-bg:rgba(255,255,255,0.1);color:${pm.color}">${pm.name}</span>` : ""}
+      ${article.platform !== "general" ? `<span class="badge badge-platform" style="--platform-color:${pm.color};--platform-bg:${pm.bgColor};display:inline-flex;align-items:center;gap:6px">${renderPlatformSvg(article.platform, 14)}<span>${pm.name}</span></span>` : ""}
       <span class="badge badge-difficulty-${article.difficulty}">${article.difficulty}</span>
-      <span style="font-size:13px;color:#64748b">⏱ ${article.readTime} min read</span>
-      <span style="font-size:13px;color:#64748b">• 👁 ${article.views.toLocaleString()} views</span>
+      <span style="font-size:13px;color:#8c857b">⏱ ${article.readTime} min read</span>
+      <span style="font-size:13px;color:#8c857b">• 👁 ${article.views.toLocaleString()} views</span>
     </div>
 
-    <h1 style="font-size:clamp(28px,4.5vw,42px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">${escHtml(article.h1)}</h1>
-    <p style="font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:24px;max-width:640px">${escHtml(article.intro)}</p>
+    <h1 style="font-size:clamp(28px,4.5vw,44px);font-weight:900;color:#191411;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">${escHtml(article.h1)}</h1>
+    <p style="font-size:17.5px;color:#544e47;line-height:1.75;margin-bottom:28px;max-width:680px">${escHtml(article.intro)}</p>
 
-    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding-top:18px;border-top:1px solid #e7e2db">
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:#191411;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
         <div>
-          <div style="font-size:13px;font-weight:600;color:#e2e8f0">Push44 Team</div>
-          <div style="font-size:12px;color:#64748b">Updated ${new Date(article.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
+          <div style="font-size:13px;font-weight:700;color:#191411">Push44 Engineering</div>
+          <div style="font-size:12px;color:#8c857b">Updated ${new Date(article.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
         </div>
       </div>
       <!-- Share -->
       <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
-        <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">Share on X</a>
-        <a href="https://news.ycombinator.com/submitlink?u=${encodeURIComponent(canonical)}&t=${encodeURIComponent(article.h1)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">HN</a>
+        <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:700;color:#191411;background:#ffffff;border:1px solid #e7e2db;padding:6px 14px;border-radius:10px;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,0.02)">Share on X</a>
       </div>
     </div>
   </div>
@@ -1009,7 +1048,9 @@ ${nav("Platforms")}
     </nav>
 
     <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;background:${platform.color};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">${platform.name[0]}</div>
+      <div style="width:64px;height:64px;border-radius:18px;background:#ffffff;border:1px solid #e7e2db;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.04)" aria-hidden="true">
+        ${renderPlatformSvg(platform.slug, 40)}
+      </div>
       <div>
         <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">${escHtml(platform.name)} Export Hub</h1>
         <p style="font-size:16px;color:var(--muted)">${escHtml(platform.tagline)}</p>
@@ -1094,8 +1135,10 @@ ${platform.faqs.length > 0 ? `
     <h2 id="other-platforms-heading" class="section-title">Other Platforms</h2>
     <div class="grid-4" style="margin-top:24px">
       ${PLATFORMS.filter(p => p.slug !== platform.slug).map(p => `
-        <a href="/platforms/${p.slug}" class="cat-card" style="background:${p.bgColor}" aria-label="${p.name} export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:${p.color};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">${p.name[0]}</div>
+        <a href="/platforms/${p.slug}" class="cat-card" style="background:#ffffff;border:1px solid #e7e2db" aria-label="${p.name} export hub">
+          <div style="width:48px;height:48px;border-radius:14px;background:#ffffff;border:1px solid #e7e2db;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 1px 4px rgba(0,0,0,0.03)" aria-hidden="true">
+            ${renderPlatformSvg(p.slug, 26)}
+          </div>
           <div class="cat-name">${escHtml(p.name)}</div>
           <div class="cat-desc">${p.articles.length} guides</div>
         </a>`).join("")}
@@ -1160,33 +1203,35 @@ export function generateComparisonPage(comparison: Comparison): string {
 ${nav()}
 
 <!-- COMPARISON HERO -->
-<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:64px 24px">
+<div style="background:#faf8f5;border-bottom:1px solid #e7e2db;padding:64px 24px">
   <div style="max-width:900px;margin:0 auto">
 
-    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
-      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a><span>›</span>
-      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a><span>›</span>
-      <span style="color:#94a3b8" aria-current="page">Comparison</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Push44</a><span>›</span>
+      <a href="/blog">Blog</a><span>›</span>
+      <span aria-current="page">Comparison</span>
     </nav>
 
-    <span class="badge" style="background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);margin-bottom:20px;margin-top:12px;display:inline-flex">⚖️ Comparison</span>
-    <h1 style="font-size:clamp(28px,4vw,44px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">${escHtml(comparison.h1)}</h1>
-    <p style="font-size:17px;color:#94a3b8;line-height:1.7;max-width:600px;margin-bottom:32px">${escHtml(comparison.description)}</p>
+    <span class="badge" style="background:#fff4ed;color:#f50;border:1px solid rgba(255,85,0,0.2);margin-bottom:16px;display:inline-flex">⚖️ Comparison</span>
+    <h1 style="font-size:clamp(28px,4vw,44px);font-weight:900;color:#191411;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px">${escHtml(comparison.h1)}</h1>
+    <p style="font-size:17px;color:#544e47;line-height:1.7;max-width:640px;margin-bottom:28px">${escHtml(comparison.description)}</p>
 
-    <!-- Score summary -->
+    <!-- Score summary bento cards -->
     <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#f97316">${aWins}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">${escHtml(aLabel)} wins</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #f50;border-radius:14px;padding:16px 22px;text-align:center;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="margin-bottom:4px">${renderPlatformSvg(aLabel, 22)}</div>
+        <div style="font-size:26px;font-weight:900;color:#f50">${aWins}</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">${escHtml(aLabel)} Wins</div>
       </div>
-      <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#22c55e">${bWins}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">${escHtml(bLabel)} wins</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #16a34a;border-radius:14px;padding:16px 22px;text-align:center;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="margin-bottom:4px">${renderPlatformSvg(bLabel, 22)}</div>
+        <div style="font-size:26px;font-weight:900;color:#16a34a">${bWins}</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">${escHtml(bLabel)} Wins</div>
       </div>
       ${ties > 0 ? `
-      <div style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2);border-radius:12px;padding:14px 20px;text-align:center;min-width:100px">
-        <div style="font-size:24px;font-weight:900;color:#64748b">${ties}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">Ties</div>
+      <div style="background:#ffffff;border:1px solid #e7e2db;border-top:3px solid #8c857b;border-radius:14px;padding:16px 22px;text-align:center;min-width:110px;box-shadow:0 1px 4px rgba(0,0,0,0.03)">
+        <div style="font-size:26px;font-weight:900;color:#8c857b;margin-top:20px">${ties}</div>
+        <div style="font-size:11px;font-weight:700;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">Ties</div>
       </div>` : ""}
     </div>
   </div>
@@ -1215,8 +1260,12 @@ ${nav()}
         <thead>
           <tr>
             <th scope="col" style="width:25%">Aspect</th>
-            <th scope="col" style="color:#f97316">${escHtml(aLabel)}</th>
-            <th scope="col" style="color:#22c55e">${escHtml(bLabel)}</th>
+            <th scope="col" style="color:#f50">
+              <span style="display:inline-flex;align-items:center;gap:6px">${renderPlatformSvg(aLabel, 16)}<span>${escHtml(aLabel)}</span></span>
+            </th>
+            <th scope="col" style="color:#16a34a">
+              <span style="display:inline-flex;align-items:center;gap:6px">${renderPlatformSvg(bLabel, 16)}<span>${escHtml(bLabel)}</span></span>
+            </th>
             <th scope="col">Winner</th>
           </tr>
         </thead>
@@ -1234,15 +1283,16 @@ ${nav()}
               <td>
                 <div style="margin-bottom:4px">${escHtml(a.b.value)}</div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div class="score-bar"><div class="score-fill" style="width:${(a.b.score / 5) * 100}%;background:#22c55e"></div></div>
+                  <div class="score-bar"><div class="score-fill" style="width:${(a.b.score / 5) * 100}%;background:#16a34a"></div></div>
                   <span style="font-size:12px;color:var(--muted)">${a.b.score}/5</span>
                 </div>
               </td>
               <td>
-                <span class="${a.winner === "a" ? "winner-a" : a.winner === "b" ? "winner-b" : "winner-tie"}">
-                  ${a.winner === "a" ? "✓ " + escHtml(aLabel) : a.winner === "b" ? "✓ " + escHtml(bLabel) : "Tie"}
+                <span class="${a.winner === "a" ? "winner-a" : a.winner === "b" ? "winner-b" : "winner-tie"}" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;${a.winner === 'a' ? 'background:#fff4ed;border:1px solid rgba(255,85,0,0.2)' : a.winner === 'b' ? 'background:#f0fdf4;border:1px solid #bbf7d0' : 'background:#f3efe9'}">
+                  ${a.winner === "a" ? renderPlatformSvg(aLabel, 13) : a.winner === "b" ? renderPlatformSvg(bLabel, 13) : ""}
+                  ${a.winner === "a" ? escHtml(aLabel) : a.winner === "b" ? escHtml(bLabel) : "Tie"}
                 </span>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4">${escHtml(a.note)}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4">${escHtml(a.note)}</div>
               </td>
             </tr>`).join("")}
         </tbody>
