@@ -40,8 +40,10 @@ if (!command) {
 async function checkRanking(keyword: string, targetDomain?: string) {
   console.log(`🔎 Searching SERP rankings for: "${keyword}"...\n`);
 
+  const chromiumPath = process.env.CHROMIUM_PATH || Bun.which('chromium') || undefined;
   const browser = await chromium.launch({
-    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+    ...(chromiumPath ? { executablePath: chromiumPath } : {}),
+    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage({

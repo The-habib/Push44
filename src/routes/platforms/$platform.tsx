@@ -248,7 +248,7 @@ export default function PlatformPage() {
                     key={p.slug}
                     to="/platforms/$platform"
                     params={{ platform: p.slug }}
-                    className="group bg-[#faf8f5] hover:bg-white border border-[#e7e2db] hover:border-[#f50]/40 p-3.5 rounded-xl text-center shadow-2xs hover:shadow-sm transition-all"
+                    className="group bg-[#faf8f5] hover:bg-white border border-[#e7e2db] hover:border-[#f50]/40 p-3.5 rounded-xl text-center shadow-2xs hover:shadow-sm transition-[background-color,border-color,box-shadow] focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
                   >
                     <div className="w-9 h-9 mx-auto rounded-xl flex items-center justify-center bg-white border border-[#e7e2db] mb-2 shadow-2xs group-hover:scale-110 transition-transform">
                       <PlatformLogo platform={p.slug} size={22} />

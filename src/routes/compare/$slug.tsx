@@ -84,7 +84,7 @@ export default function ComparisonPage() {
           <div className="flex items-center justify-center gap-4 flex-wrap pt-2">
             <motion.div
               whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-              className="group relative bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
+              className="group relative bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-[border-color,box-shadow] overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#f50]" />
               <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
@@ -96,7 +96,7 @@ export default function ComparisonPage() {
 
             <motion.div
               whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-              className="group relative bg-white border border-[#e7e2db] hover:border-emerald-500/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
+              className="group relative bg-white border border-[#e7e2db] hover:border-emerald-500/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-[border-color,box-shadow] overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600" />
               <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
@@ -109,7 +109,7 @@ export default function ComparisonPage() {
             {ties > 0 && (
               <motion.div
                 whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-                className="group relative bg-white border border-[#e7e2db] rounded-2xl p-6 w-40 shadow-2xs text-center transition-all overflow-hidden"
+                className="group relative bg-white border border-[#e7e2db] rounded-2xl p-6 w-40 shadow-2xs text-center transition-[border-color,box-shadow] overflow-hidden"
               >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-[#8c857b]" />
                 <div className="text-4xl font-extrabold text-[#8c857b] mb-1">{ties}</div>

@@ -1,10 +1,6 @@
 #!/usr/bin/env bun
 import * as fs from 'fs';
 import * as path from 'path';
-import { colord, extend } from 'colord';
-import a11yPlugin from 'colord/plugins/a11y';
-
-extend([a11yPlugin]);
 
 const args = process.argv.slice(2);
 const command = args[0];

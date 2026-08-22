@@ -504,10 +504,10 @@ function generateTokens(style: string) {
 // ─── 3. UI Component Auditor ──────────────────────────────────────────────────
 
 function auditComponent(filePath: string) {
-  console.log(`🔍 Auditing Modern UI Design & A11y Standards for: \${filePath}\n`);
+  console.log(`🔍 Auditing Modern UI Design & A11y Standards for: ${filePath}\n`);
 
   if (!fs.existsSync(filePath)) {
-    console.error(`❌ File not found: \${filePath}`);
+    console.error(`❌ File not found: ${filePath}`);
     return;
   }
 
@@ -537,7 +537,7 @@ function auditComponent(filePath: string) {
   const hexMatches = content.match(/#[0-9a-fA-F]{3,8}/g) || [];
   if (hexMatches.length > 3) {
     score -= 10;
-    warnings.push(`⚠️ Found \${hexMatches.length} hardcoded hex colors. Use CSS semantic tokens (e.g. text-foreground, bg-card).`);
+    warnings.push(`⚠️ Found ${hexMatches.length} hardcoded hex colors. Use CSS semantic tokens (e.g. text-foreground, bg-card).`);
   } else {
     passes.push('✅ Semantic design system tokens in use.');
   }
@@ -561,15 +561,15 @@ function auditComponent(filePath: string) {
   }
 
   console.log(`========================================`);
-  console.log(`🎨 MODERN DESIGN GRADE: \${Math.max(0, score)}/100`);
+  console.log(`🎨 MODERN DESIGN GRADE: ${Math.max(0, score)}/100`);
   console.log(`========================================\n`);
 
   console.log('PASSED CRITERIA:');
-  passes.forEach((p) => console.log(`  \${p}`));
+  passes.forEach((p) => console.log(`  ${p}`));
 
   if (warnings.length > 0) {
     console.log('\nAREAS FOR POLISH:');
-    warnings.forEach((w) => console.log(`  \${w}`));
+    warnings.forEach((w) => console.log(`  ${w}`));
   } else {
     console.log('\n🏆 Flawless modern UI engineering!');
   }

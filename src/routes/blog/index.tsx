@@ -119,7 +119,7 @@ export default function BlogHome() {
             transition={{ duration: 0.45, delay: 0.1 }}
             className="relative max-w-xl mx-auto mb-8"
           >
-            <div className="flex items-center gap-3 bg-white border border-[#e7e2db] focus-within:border-[#f50] focus-within:ring-4 focus-within:ring-[#f50]/10 rounded-2xl px-4 py-1.5 shadow-sm transition-all duration-200">
+            <div className="flex items-center gap-3 bg-white border border-[#e7e2db] focus-within:border-[#f50] focus-within:ring-4 focus-within:ring-[#f50]/10 rounded-2xl px-4 py-1.5 shadow-sm transition-[border-color,box-shadow] duration-200">
               <Search size={18} className="text-[#8c857b] shrink-0" />
               <input
                 ref={inputRef}
@@ -132,14 +132,14 @@ export default function BlogHome() {
                 }}
                 placeholder={placeholder || "Search guides & tutorials..."}
                 className="w-full bg-transparent border-none outline-none text-[#191411] text-[15px] py-2.5 placeholder:text-[#8c857b]"
-                aria-label="Search guides"
+                aria-label="Search guides and tutorials"
                 autoComplete="off"
               />
               {query && (
                 <button
                   onClick={() => { setQuery(""); setSearchResults([]); inputRef.current?.focus(); }}
-                  aria-label="Clear search"
-                  className="p-1 text-[#8c857b] hover:text-[#191411] rounded-lg transition-colors cursor-pointer"
+                  aria-label="Clear search query"
+                  className="p-1 text-[#8c857b] hover:text-[#191411] rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
                 >
                   <X size={16} />
                 </button>
@@ -161,7 +161,7 @@ export default function BlogHome() {
                       key={a.slug}
                       to="/blog/$slug"
                       params={{ slug: a.slug }}
-                      className="flex items-center justify-between p-4 hover:bg-[#faf8f5] transition-colors text-left group"
+                      className="flex items-center justify-between p-4 hover:bg-[#faf8f5] transition-colors text-left group focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
                     >
                       <div className="pr-4">
                         <div className="text-[14px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors leading-snug">
@@ -175,7 +175,7 @@ export default function BlogHome() {
                           </span>
                         </div>
                       </div>
-                      <ArrowRight size={15} className="text-[#8c857b] group-hover:text-[#f50] group-hover:translate-x-1 transition-all shrink-0" />
+                      <ArrowRight size={15} className="text-[#8c857b] group-hover:text-[#f50] group-hover:translate-x-1 transition-transform shrink-0" />
                     </Link>
                   ))}
                 </motion.div>
@@ -196,7 +196,7 @@ export default function BlogHome() {
                 key={s.slug}
                 to="/blog/$slug"
                 params={{ slug: s.slug }}
-                className="inline-flex items-center px-3 py-1 bg-white hover:bg-[#f3efe9] border border-[#e7e2db] hover:border-[#f50]/40 rounded-full text-[12px] font-medium text-[#544e47] hover:text-[#f50] transition-all shadow-2xs"
+                className="inline-flex items-center px-3 py-1 bg-white hover:bg-[#f3efe9] border border-[#e7e2db] hover:border-[#f50]/40 rounded-full text-[12px] font-medium text-[#544e47] hover:text-[#f50] transition-[background-color,border-color,color,box-shadow] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
               >
                 {s.label}
               </Link>
@@ -383,7 +383,7 @@ export default function BlogHome() {
           ) : (
             <div className="bg-white rounded-3xl border border-[#e7e2db] p-12 text-center max-w-lg mx-auto">
               <BookOpen size={36} className="mx-auto text-[#8c857b] mb-4" />
-              <h3 className="text-lg font-bold text-[#191411] mb-2">No guides found</h3>
+              <h3 className="text-lg font-bold text-[#191411] tracking-tight mb-2">No guides found</h3>
               <p className="text-[14px] text-[#544e47] mb-6">We couldn't find any articles in this topic category yet.</p>
               <Link to="/blog" search={{}} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f50] hover:bg-[#e64d00] text-white text-[13px] font-bold rounded-xl shadow-xs transition-colors">
                 Browse all guides
@@ -424,7 +424,7 @@ export default function BlogHome() {
                       {p.articles.length} guides
                     </span>
                   </div>
-                  <h3 className="text-[16px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors mb-1">
+                  <h3 className="text-[16px] font-bold text-[#191411] tracking-tight group-hover:text-[#f50] transition-colors mb-1">
                     {p.name}
                   </h3>
                   <p className="text-[12.5px] text-[#544e47] line-clamp-2 leading-relaxed mb-4">
@@ -468,7 +468,7 @@ export default function BlogHome() {
                     <GitCompare size={11} className="text-[#f50]" />
                     Versus Breakdown
                   </div>
-                  <h3 className="text-[17px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors leading-snug mb-2.5">
+                  <h3 className="text-[17px] font-bold text-[#191411] tracking-tight group-hover:text-[#f50] transition-colors leading-snug mb-2.5">
                     {c.h1}
                   </h3>
                   <p className="text-[13.5px] text-[#544e47] line-clamp-2 leading-relaxed mb-6">

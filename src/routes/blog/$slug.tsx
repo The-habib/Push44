@@ -178,7 +178,8 @@ export default function ArticlePage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={copyPageUrl}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-all shadow-2xs cursor-pointer"
+                aria-label="Copy guide URL to clipboard"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-colors shadow-2xs cursor-pointer focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
               >
                 {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
                 {copied ? "Copied" : "Copy Link"}
@@ -187,7 +188,8 @@ export default function ArticlePage() {
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-all shadow-2xs"
+                aria-label="Share guide on X (Twitter)"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-colors shadow-2xs focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
               >
                 <Share2 size={13} />
                 Share on X
@@ -357,13 +359,15 @@ export default function ArticlePage() {
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => toast.success("Thank you! Glad this guide helped your workflow.")}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f3efe9] hover:bg-[#eae4dc] text-[#191411] font-bold text-[13.5px] rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Vote guide as helpful"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f3efe9] hover:bg-[#eae4dc] text-[#191411] font-bold text-[13.5px] rounded-xl transition-[transform,background-color] shadow-2xs hover:scale-105 active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
               >
                 👍 Yes, exactly what I needed
               </button>
               <button
                 onClick={() => toast.info("Feedback noted! Feel free to open an issue on GitHub if steps need updating.")}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#faf8f5] hover:bg-[#f3efe9] border border-[#e7e2db] text-[#544e47] font-medium text-[13.5px] rounded-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Vote guide as needing improvement"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#faf8f5] hover:bg-[#f3efe9] border border-[#e7e2db] text-[#544e47] font-medium text-[13.5px] rounded-xl transition-[transform,background-color] hover:scale-105 active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#f50] focus-visible:outline-none"
               >
                 👎 Needs improvement
               </button>
