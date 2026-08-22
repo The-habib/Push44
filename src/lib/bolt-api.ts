@@ -94,6 +94,50 @@ async function boltFetch(
   return fetch(url, { ...opts, headers });
 }
 
+async function fetchBoltSiteFile(siteUrl: string, path: string = ""): Promise<string> {
+  const cleanHost = siteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  const cleanPath = path.startsWith("/") ? path : (path ? `/${path}` : "");
+  const fullUrl = `https://${cleanHost}${cleanPath}`;
+
+  const fetchUrl = typeof window !== "undefined"
+    ? `${PROXY}/site?url=${encodeURIComponent(fullUrl)}`
+    : fullUrl;
+
+  const res = await fetch(fetchUrl, {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Live site returned ${res.status}. Make sure the project is deployed in bolt.new.`);
+  }
+  return res.text();
+}
+
+async function fetchBoltSiteBuffer(siteUrl: string, path: string = ""): Promise<ArrayBuffer | null> {
+  const cleanHost = siteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  const cleanPath = path.startsWith("/") ? path : (path ? `/${path}` : "");
+  const fullUrl = `https://${cleanHost}${cleanPath}`;
+
+  const fetchUrl = typeof window !== "undefined"
+    ? `${PROXY}/site?url=${encodeURIComponent(fullUrl)}`
+    : fullUrl;
+
+  try {
+    const res = await fetch(fetchUrl, {
+      headers: {
+        Accept: "*/*",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      },
+    });
+    if (!res.ok) return null;
+    return await res.arrayBuffer();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Sanitize and extract the pure session cookie value for bolt.new.
  * Handles:
@@ -385,13 +429,7 @@ export async function removeBoltBadge({
 
   let html: string;
   try {
-    const htmlRes = await fetch(`https://${siteUrl}/`);
-    if (!htmlRes.ok) {
-      throw new Error(
-        `Live site returned ${htmlRes.status}. Make sure the project is deployed in bolt.new.`
-      );
-    }
-    html = await htmlRes.text();
+    html = await fetchBoltSiteFile(siteUrl, "/");
   } catch (e: any) {
     if (e?.message?.includes("returned")) throw e;
     throw new Error(
@@ -416,19 +454,12 @@ export async function removeBoltBadge({
   notify("downloading-assets", jsFile);
 
   const [jsBuf, cssBuf, svgBuf] = await Promise.all([
-    fetch(`https://${siteUrl}/assets/${jsFile}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to download JS bundle (${r.status})`);
-        return r.arrayBuffer();
-      }),
-    cssFile
-      ? fetch(`https://${siteUrl}/assets/${cssFile}`)
-          .then((r) => (r.ok ? r.arrayBuffer() : null))
-          .catch(() => null)
-      : Promise.resolve(null),
-    fetch(`https://${siteUrl}/vite.svg`)
-      .then((r) => (r.ok ? r.arrayBuffer() : null))
-      .catch(() => null),
+    fetchBoltSiteBuffer(siteUrl, `/assets/${jsFile}`).then((buf) => {
+      if (!buf) throw new Error("Failed to download JS bundle");
+      return buf;
+    }),
+    cssFile ? fetchBoltSiteBuffer(siteUrl, `/assets/${cssFile}`) : Promise.resolve(null),
+    fetchBoltSiteBuffer(siteUrl, "/vite.svg"),
   ]);
 
   // Prepend badge blocker to JS bundle

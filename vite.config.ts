@@ -336,6 +336,30 @@ function boltProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     if (!req.url?.startsWith("/api/bolt/") && req.url !== "/api/bolt" && !req.url?.startsWith("/api/bolt?")) return next();
 
+    const rawReqUrl = new URL(req.url ?? "/", "http://localhost");
+    const siteUrlParam = rawReqUrl.searchParams.get("url");
+    if (siteUrlParam) {
+      try {
+        const decodedTarget = decodeURIComponent(siteUrlParam);
+        const siteRes = await fetch(decodedTarget, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+            "Accept": (req.headers["accept"] as string) || "*/*",
+          },
+        });
+        const siteBuf = await siteRes.arrayBuffer();
+        res.writeHead(siteRes.status, {
+          "Content-Type": siteRes.headers.get("content-type") || "application/octet-stream",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=3600",
+        });
+        return res.end(Buffer.from(siteBuf));
+      } catch (err: any) {
+        res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        return res.end(JSON.stringify({ error: "Site proxy error: " + (err?.message ?? "unknown") }));
+      }
+    }
+
     // token is stored URL-encoded; bolt.new expects the decoded form as the cookie value
     const rawToken = (req.headers["x-bolt-token"] ?? "") as string;
     let token = decodeURIComponent(rawToken).trim();
