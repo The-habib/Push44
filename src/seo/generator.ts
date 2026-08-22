@@ -346,12 +346,30 @@ function schemaOrg(schemas: object[]): string {
         "@id": `${BASE_URL}/#website`,
         "url": BASE_URL,
         "name": "Push44",
-        "alternateName": "Push44",
+        "alternateName": [
+          "Push 44",
+          "Push44 App",
+          "Push44 - AI Code Exporter"
+        ],
         "publisher": { "@id": `${BASE_URL}/#organization` },
         "potentialAction": {
           "@type": "SearchAction",
           "target": { "@type": "EntryPoint", "urlTemplate": `${BASE_URL}/blog?q={search_term_string}` },
           "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "WebApplication",
+        "@id": `${BASE_URL}/#webapp`,
+        "url": BASE_URL,
+        "name": "Push44",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
         },
       },
     ],
@@ -400,7 +418,8 @@ export function generateHtmlShell({ title, description, canonical, ogType = "art
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="msapplication-TileColor" content="#f97316" />
   <meta name="msapplication-TileImage" content="${BASE_URL}/icon-512.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="${BASE_URL}/logo.png" />
+  <link rel="icon" type="image/svg+xml" href="${BASE_URL}/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="${BASE_URL}/logo.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="${BASE_URL}/icon-512.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="${BASE_URL}/logo.png" />
   <link rel="apple-touch-icon" sizes="512x512" href="${BASE_URL}/icon-512.png" />
