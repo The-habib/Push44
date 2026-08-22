@@ -1,0 +1,302 @@
+[
+  {
+    "name": "01_mobile_blog_hub",
+    "url": "https://push44.vercel.app/blog",
+    "status": 200,
+    "title": "Push44 Blog — Guides to Export AI-Generated Code",
+    "h1": "Export Code from Every AI Builder",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 395,
+    "viewportWidth": 395,
+    "smallTouchTargetsCount": 20,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Search guides (226x19px)",
+      "Search (54x16px)",
+      "View all guides → (117x23px)"
+    ],
+    "screenshotPath": "screenshots/mobile/01_mobile_blog_hub.png",
+    "consoleErrors": [],
+    "loadTimeMs": 29229
+  },
+  {
+    "name": "02_mobile_platform_base44",
+    "url": "https://push44.vercel.app/platforms/base44",
+    "status": 200,
+    "title": "Base44 GitHub Export Guide — Push44",
+    "h1": "Base44 Export Hub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/02_mobile_platform_base44.png",
+    "consoleErrors": [],
+    "loadTimeMs": 4782
+  },
+  {
+    "name": "03_mobile_platform_bolt_new",
+    "url": "https://push44.vercel.app/platforms/bolt-new",
+    "status": 200,
+    "title": "bolt.new GitHub Export Guide — Push44",
+    "h1": "bolt.new Export Hub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/03_mobile_platform_bolt_new.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3210
+  },
+  {
+    "name": "04_mobile_platform_floot",
+    "url": "https://push44.vercel.app/platforms/floot",
+    "status": 200,
+    "title": "Floot GitHub Export Guide — Push44",
+    "h1": "Floot Export Hub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/04_mobile_platform_floot.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3159
+  },
+  {
+    "name": "05_mobile_platform_rocket_new",
+    "url": "https://push44.vercel.app/platforms/rocket-new",
+    "status": 200,
+    "title": "Rocket.new GitHub Export Guide — Push44",
+    "h1": "Rocket.new Export Hub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 402,
+    "viewportWidth": 402,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/05_mobile_platform_rocket_new.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3393
+  },
+  {
+    "name": "06_mobile_platform_zite",
+    "url": "https://push44.vercel.app/platforms/zite",
+    "status": 200,
+    "title": "Zite GitHub Export Guide — Push44",
+    "h1": "Zite Export Hub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/06_mobile_platform_zite.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2879
+  },
+  {
+    "name": "07_mobile_compare_base44_vs_rocket",
+    "url": "https://push44.vercel.app/compare/base44-vs-rocket-new",
+    "status": 200,
+    "title": "Base44 vs Rocket.new: Which AI Builder to Choose? | Push44",
+    "h1": "Base44 vs Rocket.new — AI Builder Comparison",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/07_mobile_compare_base44_vs_rocket.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2458
+  },
+  {
+    "name": "08_mobile_compare_push44_vs_zip",
+    "url": "https://push44.vercel.app/compare/push44-vs-zip-download",
+    "status": 200,
+    "title": "Push44 vs ZIP Download: Best AI Code Export | Push44",
+    "h1": "Push44 vs ZIP Download",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 19,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "GitHub ↗ (57x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/08_mobile_compare_push44_vs_zip.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2500
+  },
+  {
+    "name": "09_mobile_privacy_policy",
+    "url": "https://push44.vercel.app/privacy",
+    "status": 200,
+    "title": "Push44 — Push Base44, Rocket.new & Vibe-Coded Apps to GitHub in One Tap",
+    "h1": "Privacy Policy",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 23,
+    "smallTouchTargetExamples": [
+      "Push44 (99x28px)",
+      "Toggle menu (35x31px)",
+      "Push44 (47x21px)",
+      "Push44 (109x30px)"
+    ],
+    "screenshotPath": "screenshots/mobile/09_mobile_privacy_policy.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2292
+  },
+  {
+    "name": "10_mobile_terms_of_service",
+    "url": "https://push44.vercel.app/terms",
+    "status": 200,
+    "title": "Push44 — Push Base44, Rocket.new & Vibe-Coded Apps to GitHub in One Tap",
+    "h1": "Terms of Service",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 25,
+    "smallTouchTargetExamples": [
+      "Push44 (99x28px)",
+      "Toggle menu (35x31px)",
+      "Push44 (47x21px)",
+      "← Return to Push44 Home (205x22px)"
+    ],
+    "screenshotPath": "screenshots/mobile/10_mobile_terms_of_service.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2289
+  },
+  {
+    "name": "11_mobile_article_base44_export",
+    "url": "https://push44.vercel.app/blog/how-to-export-code-from-base44",
+    "status": 200,
+    "title": "How to Export Code from Base44 | Push44 Guide",
+    "h1": "How to Export Code from Base44",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 30,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "Base44 (48x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/11_mobile_article_base44_export.png",
+    "consoleErrors": [],
+    "loadTimeMs": 4632
+  },
+  {
+    "name": "12_mobile_article_rocket_apk",
+    "url": "https://push44.vercel.app/blog/download-rocket-new-flutter-source-code-and-apk",
+    "status": 200,
+    "title": "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    "h1": "How to Download Rocket.new Flutter Source Code & Build Android APKs",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 32,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "Rocket.new (73x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/12_mobile_article_rocket_apk.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3587
+  },
+  {
+    "name": "13_mobile_article_bolt_branding",
+    "url": "https://push44.vercel.app/blog/bolt-new-badge-removal-guide",
+    "status": 200,
+    "title": "bolt.new Badge Removal: Step-by-Step Guide | Push44",
+    "h1": "bolt.new Badge Removal: Complete Guide",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 30,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "bolt.new (54x21px)"
+    ],
+    "screenshotPath": "screenshots/mobile/13_mobile_article_bolt_branding.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3715
+  },
+  {
+    "name": "14_mobile_article_top5_tools",
+    "url": "https://push44.vercel.app/blog/top-5-tools-to-export-ai-generated-apps-to-github",
+    "status": 200,
+    "title": "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub (2026)",
+    "h1": "Top 5 Tools to Export AI-Generated Apps & Vibe Code to GitHub",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 26,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "Introduction (315x32px)"
+    ],
+    "screenshotPath": "screenshots/mobile/14_mobile_article_top5_tools.png",
+    "consoleErrors": [],
+    "loadTimeMs": 3573
+  },
+  {
+    "name": "15_mobile_article_why_push44_free",
+    "url": "https://push44.vercel.app/blog/why-push44-is-free",
+    "status": 200,
+    "title": "Why Push44 Is Free (and How It Stays That Way) | Push44",
+    "h1": "Why Push44 Is Free",
+    "hasHorizontalOverflow": false,
+    "scrollWidth": 393,
+    "viewportWidth": 393,
+    "smallTouchTargetsCount": 26,
+    "smallTouchTargetExamples": [
+      "Push44 (103x30px)",
+      "Push44 (48x21px)",
+      "Blog (28x21px)",
+      "Introduction (315x32px)"
+    ],
+    "screenshotPath": "screenshots/mobile/15_mobile_article_why_push44_free.png",
+    "consoleErrors": [],
+    "loadTimeMs": 2796
+  }
+]
