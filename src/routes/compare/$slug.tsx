@@ -152,26 +152,34 @@ export default function ComparisonPage() {
 
         {/* DETAILED BREAKDOWN TABLE */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">Feature-by-Feature Matrix</h2>
-            <span className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider bg-[#f3efe9] px-3 py-1 rounded-full">
-              {comparison.aspects.length} Categories
-            </span>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">Feature-by-Feature Matrix</h2>
+              <p className="text-[13px] text-[#8c857b] m-0 sm:hidden">↔ Swipe table horizontally to compare</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex text-[11px] font-semibold text-[#8c857b] items-center gap-1">
+                ↔ Swipe table
+              </span>
+              <span className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider bg-[#f3efe9] px-3 py-1 rounded-full">
+                {comparison.aspects.length} Categories
+              </span>
+            </div>
           </div>
 
           <div className="bg-white border border-[#e7e2db] rounded-3xl shadow-2xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[620px]">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left border-collapse min-w-[640px]">
                 <thead>
                   <tr className="bg-[#f3efe9]/60 border-b border-[#e7e2db]">
-                    <th className="px-6 py-4 text-[12px] font-bold text-[#8c857b] uppercase tracking-wider w-[26%]">Feature Aspect</th>
-                    <th className="px-6 py-4 text-[12px] font-bold text-[#f50] uppercase tracking-wider w-[32%]">
+                    <th className="px-6 py-4 text-[12px] font-bold text-[#8c857b] uppercase tracking-wider w-[28%] sticky left-0 bg-[#f3efe9] sm:static z-10">Feature Aspect</th>
+                    <th className="px-6 py-4 text-[12px] font-bold text-[#f50] uppercase tracking-wider w-[31%]">
                       <div className="inline-flex items-center gap-2">
                         <PlatformLogo platform={aLabel} size={18} />
                         <span>{aLabel}</span>
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-[12px] font-bold text-emerald-700 uppercase tracking-wider w-[32%]">
+                    <th className="px-6 py-4 text-[12px] font-bold text-emerald-700 uppercase tracking-wider w-[31%]">
                       <div className="inline-flex items-center gap-2">
                         <PlatformLogo platform={bLabel} size={18} />
                         <span>{bLabel}</span>
@@ -183,7 +191,7 @@ export default function ComparisonPage() {
                 <tbody className="divide-y divide-[#f3efe9]">
                   {comparison.aspects.map((a: Aspect, i: number) => (
                     <tr key={i} className="hover:bg-[#faf8f5] transition-colors">
-                      <td className="px-6 py-5 align-top font-bold text-[#191411] text-[14.5px]">
+                      <td className="px-6 py-5 align-top font-bold text-[#191411] text-[14.5px] sticky left-0 bg-white sm:static z-10 shadow-[2px_0_6px_rgba(0,0,0,0.02)] sm:shadow-none">
                         {a.aspect}
                       </td>
                       <td className="px-6 py-5 align-top space-y-2">

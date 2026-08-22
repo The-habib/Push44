@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
 import {
   Clock, ChevronRight, CheckCircle2, AlertTriangle, Share2,
-  Copy, Check, ArrowRight, Sparkles, BookOpen, Layers, Terminal
+  Copy, Check, ArrowRight, Sparkles, BookOpen, Layers, Terminal, Bookmark
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -204,6 +204,29 @@ export default function ArticlePage() {
         {/* Main Article Body */}
         <main className="w-full lg:flex-1 min-w-0 space-y-12">
           
+          {/* Mobile Quick-Jump TOC */}
+          <div className="lg:hidden bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-2xs">
+            <div className="flex items-center justify-between mb-3 text-[#191411]">
+              <span className="text-[12px] font-bold uppercase tracking-wider flex items-center gap-1.5 text-[#8c857b]">
+                <Bookmark size={14} className="text-[#f50]" /> Quick Navigation
+              </span>
+              <span className="text-[11px] font-semibold text-[#8c857b] bg-[#f3efe9] px-2.5 py-0.5 rounded-full">
+                {toc.length} sections
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {toc.map(({ id, label }) => (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  className="text-[12.5px] font-semibold text-[#544e47] hover:text-[#f50] bg-[#faf8f5] hover:bg-[#fff4ed] border border-[#e7e2db] hover:border-[#f50]/30 px-3 py-1.5 rounded-xl transition-[background-color,border-color,color] min-h-[36px] inline-flex items-center"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+
           {/* Quick Answer Banner */}
           <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-6 shadow-2xs">
             <div className="flex items-start gap-3.5">

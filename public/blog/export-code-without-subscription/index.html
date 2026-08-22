@@ -66,7 +66,7 @@
       --accent-glow:rgba(255,85,0,0.22);
     }
 
-    /* ── Layout ── */
+    /* ── Layout & Mobile Ergonomics ── */
     .container{max-width:1200px;margin:0 auto;padding:0 24px}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
 
@@ -77,18 +77,18 @@
     .nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:62px;
       display:flex;align-items:center;gap:0}
     .nav-logo{display:flex;align-items:center;gap:10px;font-weight:900;
-      font-size:17px;color:var(--dark);letter-spacing:-0.04em;flex-shrink:0}
+      font-size:17px;color:var(--dark);letter-spacing:-0.04em;flex-shrink:0;min-height:44px}
     .nav-logo img{width:30px;height:30px;border-radius:8px;object-fit:contain}
     .nav-links{display:flex;align-items:center;gap:4px;margin-left:36px;flex:1}
     .nav-link{background:none;border:none;cursor:pointer;font-size:13.5px;
-      color:var(--muted);font-weight:600;padding:7px 14px;border-radius:8px;
-      transition:all 0.15s;font-family:inherit;display:inline-block}
+      color:var(--muted);font-weight:600;padding:8px 14px;border-radius:8px;
+      transition:all 0.15s;font-family:inherit;display:inline-flex;align-items:center;min-height:38px}
     .nav-link:hover{color:var(--dark);background:var(--bg)}
     .nav-link.active{color:var(--dark);font-weight:700;background:#ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.04);border:1px solid var(--border)}
     .nav-cta{margin-left:auto;background:var(--orange);
       color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13.5px;
-      padding:9px 18px;cursor:pointer;display:inline-flex;align-items:center;
-      gap:8px;transition:all 0.18s cubic-bezier(0.16,1,0.3,1);box-shadow:0 2px 10px var(--accent-glow);font-family:inherit}
+      padding:10px 18px;cursor:pointer;display:inline-flex;align-items:center;
+      gap:8px;transition:all 0.18s cubic-bezier(0.16,1,0.3,1);box-shadow:0 2px 10px var(--accent-glow);font-family:inherit;min-height:42px}
     .nav-cta:hover{background:var(--orange-dark);transform:translateY(-1.5px);box-shadow:0 6px 20px var(--accent-glow)}
 
     /* ── Buttons ── */
@@ -96,16 +96,16 @@
       background:var(--orange);color:#fff;border:none;
       border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;
       text-decoration:none;box-shadow:0 2px 10px var(--accent-glow);
-      transition:all 0.18s cubic-bezier(0.16,1,0.3,1);font-family:inherit}
+      transition:all 0.18s cubic-bezier(0.16,1,0.3,1);font-family:inherit;min-height:44px}
     .btn-primary:hover{background:var(--orange-dark);transform:translateY(-1.5px);box-shadow:0 6px 22px var(--accent-glow)}
     .btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;
       background:#ffffff;color:#544e47;border:1px solid var(--border);
       border-radius:10px;font-weight:600;font-size:14.5px;cursor:pointer;
-      text-decoration:none;transition:all 0.18s;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+      text-decoration:none;transition:all 0.18s;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,0.03);min-height:44px}
     .btn-ghost:hover{border-color:#d6d3d1;background:var(--bg);color:var(--dark);transform:translateY(-1px)}
 
     /* ── Badges ── */
-    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
       border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:0.02em}
     .badge-platform{background:var(--platform-bg,#fff7ed);color:var(--platform-color,#ff5500);
       border:1px solid color-mix(in srgb,var(--platform-color,#ff5500) 30%,transparent)}
@@ -132,7 +132,7 @@
     .footer-brand{font-size:13.5px;line-height:1.7;color:#78716c;margin-top:12px}
     .footer-col h4{font-size:11px;font-weight:800;color:#fafaf9;letter-spacing:0.1em;
       text-transform:uppercase;margin-bottom:16px}
-    .footer-col a{display:block;font-size:14px;color:#a8a29e;margin-bottom:10px;transition:color 0.15s}
+    .footer-col a{display:flex;align-items:center;font-size:14px;color:#a8a29e;margin-bottom:10px;transition:color 0.15s;min-height:36px}
     .footer-col a:hover{color:var(--orange)}
     .footer-bottom{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);
       display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -141,7 +141,7 @@
     /* ── Chips ── */
     .chip{display:inline-flex;align-items:center;padding:8px 16px;background:#ffffff;
       border:1px solid var(--border);border-radius:30px;font-size:13px;font-weight:600;
-      color:#544e47;cursor:pointer;transition:all 0.15s;white-space:nowrap;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
+      color:#544e47;cursor:pointer;transition:all 0.15s;white-space:nowrap;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,0.02);min-height:38px}
     .chip:hover{border-color:var(--orange);color:var(--orange);background:#fff7ed;transform:translateY(-1px)}
 
     /* ── Article Card ── */
@@ -154,13 +154,18 @@
     .article-card-desc{font-size:14px;color:var(--muted);line-height:1.6}
     .article-card-footer{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#a8a29e;margin-top:auto}
 
-    /* ── Comparison Table ── */
-    .comparison-table{width:100%;border-collapse:collapse;margin:28px 0;background:#ffffff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+    /* ── Comparison Table & Sticky Column ── */
+    .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid var(--border);background:#ffffff;margin:20px 0}
+    .table-scroll-hint{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px}
+    .comparison-table{width:100%;border-collapse:collapse;min-width:620px}
     .comparison-table th{background:#f3efe9;padding:16px 20px;text-align:left;
       font-size:12.5px;font-weight:800;color:var(--dark);letter-spacing:0.06em;
       text-transform:uppercase;border-bottom:1px solid var(--border)}
     .comparison-table td{padding:16px 20px;border-bottom:1px solid #f3efe9;font-size:14px;vertical-align:top}
+    .comparison-table th:first-child{position:sticky;left:0;background:#f3efe9;z-index:2}
+    .comparison-table td:first-child{position:sticky;left:0;background:#ffffff;z-index:1;box-shadow:2px 0 6px rgba(0,0,0,0.03)}
     .comparison-table tr:hover td{background:#faf8f5}
+    .comparison-table tr:hover td:first-child{background:#faf8f5}
     .winner-a{color:var(--orange);font-weight:700}
     .winner-b{color:#16a34a;font-weight:700}
     .winner-tie{color:#78716c;font-weight:600}
@@ -168,8 +173,8 @@
     .score-fill{height:100%;border-radius:3px;background:var(--orange)}
 
     /* ── TOC Sidebar ── */
-    .toc-link{display:block;font-size:13.5px;color:var(--muted);padding:6px 0 6px 14px;
-      border-left:2px solid var(--border);transition:all 0.15s;text-decoration:none;line-height:1.45}
+    .toc-link{display:flex;align-items:center;font-size:13.5px;color:var(--muted);padding:8px 0 8px 14px;
+      border-left:2px solid var(--border);transition:all 0.15s;text-decoration:none;line-height:1.45;min-height:36px}
     .toc-link:hover{color:var(--orange);border-left-color:var(--orange)}
     .toc-link.active{color:var(--orange);border-left-color:var(--orange);font-weight:700}
     .toc-link.h3{padding-left:26px;font-size:12.5px}
@@ -248,10 +253,10 @@
     .reading-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#ff5500,#ff884d);z-index:200;transition:width 0.1s}
 
     /* ── Breadcrumbs ── */
-    .breadcrumbs{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:24px;flex-wrap:wrap}
-    .breadcrumbs a{color:var(--muted);transition:color 0.15s;font-weight:500}
+    .breadcrumbs{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:24px;flex-wrap:wrap}
+    .breadcrumbs a{color:var(--muted);transition:color 0.15s;font-weight:600;display:inline-flex;align-items:center;min-height:36px;padding:2px 4px}
     .breadcrumbs a:hover{color:var(--orange)}
-    .breadcrumbs span{color:#d6d3d1}
+    .breadcrumbs span{color:#8c857b;display:inline-flex;align-items:center;padding:2px 2px}
 
     /* ── Platform Hero ── */
     .platform-hero{padding:72px 24px;border-bottom:1px solid var(--border);background:#ffffff}
@@ -347,10 +352,23 @@
   </div>
 </div>
 
+<div class="reading-progress" id="read-progress" style="width:0%"></div>
+
 <!-- ARTICLE BODY -->
 <div class="article-layout" role="main">
   <!-- Content -->
   <article class="article-content" aria-label="How to Export AI Code Without a Subscription">
+
+    <!-- Mobile Quick-Jump TOC -->
+    <div style="background:#ffffff;border:1px solid #e7e2db;border-radius:14px;padding:18px 20px;margin-bottom:28px" class="mobile-toc-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:800;color:#8c857b;text-transform:uppercase;letter-spacing:0.04em">📑 Quick Navigation</span>
+        <span style="font-size:11px;font-weight:700;color:#8c857b;background:#f3efe9;padding:2px 8px;border-radius:99px">7 sections</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <a href="#introduction" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">Introduction</a><a href="#the-problem" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">The Problem</a><a href="#the-solution" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">The Solution</a><a href="#step-by-step" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">Step-by-Step Guide</a><a href="#tips" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">Pro Tips</a><a href="#faq" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">FAQ</a><a href="#related" class="chip" style="font-size:12px;padding:6px 12px;min-height:34px">Related Guides</a>
+      </div>
+    </div>
 
     <!-- Quick Summary -->
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:36px">
@@ -532,10 +550,10 @@
     </div>
 
     <!-- Start Exporting CTA -->
-    <div class="sidebar-card" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-color:rgba(255,255,255,0.08)">
-      <h4 style="color:#94a3b8">Free Tool</h4>
+    <div class="sidebar-card" style="background:#191411;border:1px solid #2b2521;color:#ffffff">
+      <h4 style="color:#f50">Free Tool</h4>
       <div style="font-weight:800;font-size:15px;color:#f8fafc;margin-bottom:8px">Push44 — Export to GitHub</div>
-      <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
+      <p style="font-size:13px;color:#a8a29e;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
       <a href="/" class="btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:11px 0">Start Exporting →</a>
     </div>
 
@@ -543,12 +561,12 @@
     <div class="sidebar-card">
       <h4>People Also Search</h4>
       
-        <a href="/blog/best-app-to-download-code-from-base44-rocket-floot-zite" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Best app to download code from Base44 &amp; Rocket.new</a>
-        <a href="/blog/how-to-download-source-code-from-base44-and-rocket-new" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to download source code from Base44 &amp; Rocket.new</a>
-        <a href="/blog/top-5-tools-to-export-ai-generated-apps-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Top 5 tools to export AI apps to GitHub</a>
-        <a href="/blog/download-rocket-new-flutter-source-code-and-apk" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Download Rocket.new Flutter code &amp; APK</a>
-        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
-        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
+        <a href="/blog/best-app-to-download-code-from-base44-rocket-floot-zite" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">Best app to download code from Base44 &amp; Rocket.new</a>
+        <a href="/blog/how-to-download-source-code-from-base44-and-rocket-new" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">How to download source code from Base44 &amp; Rocket.new</a>
+        <a href="/blog/top-5-tools-to-export-ai-generated-apps-to-github" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">Top 5 tools to export AI apps to GitHub</a>
+        <a href="/blog/download-rocket-new-flutter-source-code-and-apk" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">Download Rocket.new Flutter code &amp; APK</a>
+        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
+        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:8px 0;border-bottom:1px solid #f3efe9;transition:color 0.15s;min-height:36px;display:flex;align-items:center" onmouseover="this.style.color='#ff5500'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
     </div>
 
     <!-- Platform Hub -->
@@ -556,6 +574,15 @@
 
   </aside>
 </div>
+
+<script>
+  window.addEventListener('scroll', function() {
+    var total = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = total > 0 ? (window.scrollY / total) * 100 : 0;
+    var bar = document.getElementById('read-progress');
+    if (bar) bar.style.width = Math.min(progress, 100) + '%';
+  });
+</script>
 
 
 <footer class="footer" role="contentinfo">
