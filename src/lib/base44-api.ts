@@ -121,8 +121,10 @@ async function getSandboxStatus(appId: string, token: string): Promise<string> {
 async function wakeAndWaitForSandbox(
   appId: string,
   token: string,
+  onStatus?: (status: string) => void,
   timeoutMs = 60_000
 ): Promise<void> {
+  onStatus?.("Base44 sandbox is sleeping. Sending wake signal...");
   for (const path of [
     `/apps/${appId}/sandbox/start`,
     `/apps/${appId}/sandbox/wake`,
@@ -135,25 +137,42 @@ async function wakeAndWaitForSandbox(
     } catch {}
   }
 
+  const startTime = Date.now();
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    onStatus?.(`Waking Base44 sandbox container... (${elapsed}s elapsed)`);
     const status = await getSandboxStatus(appId, token);
-    if (status === "alive") return;
-    await new Promise((r) => setTimeout(r, 3_000));
+    if (status === "alive") {
+      onStatus?.("Base44 sandbox is active. Fetching source files...");
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 2_500));
   }
 
-  throw new Error(
-    "The sandbox is taking too long to wake up. Please open your app on Base44 first to wake it manually, then try again."
+  const err: any = new Error(
+    "The Base44 sandbox is sleeping or taking too long to start. Please open your app on Base44 to start the container, then try again."
   );
+  err.isContainerSleeping = true;
+  err.platform = "base44";
+  throw err;
 }
 
-export async function fetchBase44AppFiles({ data }: { data: { token: string; appId: string } }): Promise<Base44File[]> {
+export async function fetchBase44AppFiles({
+  data,
+  onStatus,
+}: {
+  data: { token: string; appId: string };
+  onStatus?: (status: string) => void;
+}): Promise<Base44File[]> {
   const { token, appId } = data;
+  onStatus?.("Checking Base44 sandbox status...");
   const status = await getSandboxStatus(appId, token);
   if (status !== "alive") {
-    await wakeAndWaitForSandbox(appId, token);
+    await wakeAndWaitForSandbox(appId, token, onStatus);
   }
 
+  onStatus?.("Downloading source files from Base44 sandbox...");
   const d = await b44Fetch(`/apps/${appId}/sandbox/files`, undefined, token);
   const filesObj: Record<string, string> = d?.files ?? {};
 
@@ -269,6 +288,7 @@ export async function removeBase44Badge({
 }
 
 export type Base44LiveRemoveStep =
+  | "waking-sandbox"
   | "checking-css"
   | "sending-instruction"
   | "waiting-ai"
@@ -319,7 +339,14 @@ export async function removeBase44LiveBadge({
   // 2. Check if CSS is already hiding the badge in sandbox files
   let hasBlocker = false;
   try {
-    const files = await fetchBase44AppFiles({ data: { token, appId } });
+    const files = await fetchBase44AppFiles({
+      data: { token, appId },
+      onStatus: (st) => {
+        if (st.toLowerCase().includes("waking") || st.toLowerCase().includes("sleeping")) {
+          notify("waking-sandbox");
+        }
+      },
+    });
     const css = files.find(f => f.path.endsWith(".css") || f.path === "src/index.css");
     if (css?.content && css.content.includes("base44-edit-badge")) {
       hasBlocker = true;

@@ -116,6 +116,7 @@ export default function PushPage() {
   // ── Files ──────────────────────────────────────────────────────────────────
   const [files, setFiles]           = useState<FileEntry[]>([]);
   const [filesLoading, setFilesLoading] = useState(false);
+  const [filesStatusMsg, setFilesStatusMsg] = useState("");
   const [filesError, setFilesError]     = useState("");
   const [containerSleeping, setContainerSleeping] = useState(false);
   const [containerUrl, setContainerUrl]            = useState("");
@@ -324,7 +325,7 @@ export default function PushPage() {
 
   const selectApp = async (app: AppItem) => {
     setSelectedApp(app);
-    setFilesLoading(true); setFilesError(""); setFiles([]);
+    setFilesLoading(true); setFilesStatusMsg(""); setFilesError(""); setFiles([]);
     setContainerSleeping(false);
     resetBase44BadgeState();
     resetZiteBadgeState();
@@ -332,7 +333,10 @@ export default function PushPage() {
     try {
       let result: FileEntry[] = [];
       if (platform === "base44") {
-        result = await fetchBase44AppFiles({ data: { token: creds.base44Token!, appId: app.id } });
+        result = await fetchBase44AppFiles({
+          data: { token: creds.base44Token!, appId: app.id },
+          onStatus: (st) => setFilesStatusMsg(st),
+        });
       } else if (platform === "rocket") {
         result = await fetchRocketAppFiles({ data: { token: creds.rocketToken!, appId: app.id, applicationId: app.applicationId, companyId: creds.rocketCompanyId } });
       } else if (platform === "zite") {
@@ -356,15 +360,22 @@ export default function PushPage() {
       setFiles(result);
     } catch (e: any) {
       const msg: string = e?.message ?? "";
-      if (msg.toLowerCase().includes("sleeping") || e?.isContainerSleeping) {
+      if (msg.toLowerCase().includes("sleeping") || msg.toLowerCase().includes("sandbox") || e?.isContainerSleeping) {
         setContainerSleeping(true);
-        setContainerUrl(`https://rocket.new/${app.id}`);
+        if (platform === "base44") {
+          setContainerUrl(`https://app.base44.com/apps/${app.id}`);
+        } else if (platform === "rocket") {
+          setContainerUrl(`https://rocket.new/${app.id}`);
+        } else {
+          setContainerUrl("");
+        }
       } else {
         setFilesError(msg || "Failed to load files");
         toast.error(msg || "Failed to load files");
       }
     } finally {
       setFilesLoading(false);
+      setFilesStatusMsg("");
     }
   };
 
@@ -1016,6 +1027,14 @@ export default function PushPage() {
           </>
         )}
 
+        {/* Files loading status message (e.g. waking sandbox) */}
+        {filesLoading && filesStatusMsg && (
+          <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: "#fff7ed", border: "1px solid #fed7aa", display: "flex", gap: 10, alignItems: "center" }}>
+            <Loader2 size={15} color="#ea580c" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{filesStatusMsg}</span>
+          </div>
+        )}
+
         {/* Files error */}
         {filesError && (
           <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 7, background: "#fef2f2", border: "1px solid #fecaca", display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -1024,15 +1043,24 @@ export default function PushPage() {
           </div>
         )}
 
-        {/* Container sleeping (Rocket) */}
+        {/* Container sleeping (Base44 & Rocket) */}
         {containerSleeping && (
-          <div style={{ marginTop: 10, padding: 14, borderRadius: 8, background: "#f5f3ff", border: "1px solid #ddd6fe" }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: "#5b21b6", marginBottom: 4 }}>Container is sleeping</div>
-            <p style={{ fontSize: 13, color: "#7c3aed", margin: "0 0 10px" }}>Open the app in Rocket.new to wake the container, then try again.</p>
+          <div style={{ marginTop: 10, padding: 14, borderRadius: 8, background: platform === "base44" ? "#fff7ed" : "#f5f3ff", border: platform === "base44" ? "1px solid #fed7aa" : "1px solid #ddd6fe" }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: platform === "base44" ? "#9a3412" : "#5b21b6", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+              <AlertCircle size={15} color={platform === "base44" ? "#ea580c" : "#7c3aed"} />
+              {platform === "base44" ? "Base44 Sandbox is Sleeping" : "Container is Sleeping"}
+            </div>
+            <p style={{ fontSize: 13, color: platform === "base44" ? "#c2410c" : "#7c3aed", margin: "0 0 10px" }}>
+              {platform === "base44"
+                ? "Your Base44 project sandbox is paused. Open your app on Base44 to start the container, then try again."
+                : "Open the app in Rocket.new to wake the container, then try again."}
+            </p>
             <div style={{ display: "flex", gap: 8 }}>
-              <a href={containerUrl} target="_blank" rel="noopener" className="btn btn-sm" style={{ background: "#7c3aed", color: "#fff", borderColor: "#7c3aed" }}>
-                Open in Rocket.new <ExternalLink size={11} />
-              </a>
+              {containerUrl && (
+                <a href={containerUrl} target="_blank" rel="noopener" className="btn btn-sm" style={{ background: platform === "base44" ? "#ea580c" : "#7c3aed", color: "#fff", borderColor: platform === "base44" ? "#ea580c" : "#7c3aed" }}>
+                  {platform === "base44" ? "Open in Base44" : "Open in Rocket.new"} <ExternalLink size={11} />
+                </a>
+              )}
               <button className="btn btn-secondary btn-sm" onClick={() => { setContainerSleeping(false); selectedApp && selectApp(selectedApp); }}>
                 Try again
               </button>
@@ -1781,6 +1809,7 @@ interface Base44BadgePanelProps {
 
 function base44StepLabel(step: string): string {
   switch (step) {
+    case "waking-sandbox":      return "Waking Base44 sandbox container…";
     case "checking-css":        return "Checking app CSS rules…";
     case "sending-instruction": return "Sending blocker rule to Base44 AI…";
     case "waiting-ai":           return "Base44 AI is updating source files…";
@@ -1828,8 +1857,8 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
             <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{step ? base44StepLabel(step) : "Starting live badge removal…"}</span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            {(["checking-css", "sending-instruction", "waiting-ai", "deploying"] as const).map((s) => {
-              const steps = ["checking-css", "sending-instruction", "waiting-ai", "deploying"] as const;
+            {(["waking-sandbox", "checking-css", "sending-instruction", "waiting-ai", "deploying"] as const).map((s) => {
+              const steps = ["waking-sandbox", "checking-css", "sending-instruction", "waiting-ai", "deploying"] as const;
               const isDone = step && steps.indexOf(step as any) > steps.indexOf(s);
               const isActive = step === s;
               return (
