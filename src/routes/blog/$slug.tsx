@@ -58,9 +58,17 @@ export default function ArticlePage() {
   const { article } = Route.useLoaderData();
   const [activeSection, setActiveSection] = useState("introduction");
   const [copied, setCopied] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  useEffect(() => {
+    const unsub = scrollYProgress.on("change", (latest) => {
+      setReadProgress(Math.round(latest * 100));
+    });
+    return () => unsub();
+  }, [scrollYProgress]);
 
   const pm = PLATFORM_META[article.platform] || PLATFORM_META.general;
   const relatedArticles = getRelatedArticles(article);
