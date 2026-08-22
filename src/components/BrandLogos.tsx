@@ -127,3 +127,32 @@ export function FramerLogo({ size = 20, className = "" }: { size?: number; class
     </svg>
   );
 }
+
+export function PlatformLogo({
+  platform,
+  size = 24,
+  className = "",
+}: {
+  platform: string;
+  size?: number;
+  className?: string;
+}) {
+  const norm = (platform || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (norm.includes("base44")) return <Base44Logo size={size} className={className} />;
+  if (norm.includes("rocket")) return <RocketLogo size={size} className={className} />;
+  if (norm.includes("floot")) return <FlootLogo size={size} className={className} />;
+  if (norm.includes("zite")) return <ZiteLogo size={size} className={className} />;
+  if (norm.includes("bolt")) return <BoltLogo size={size} className={className} />;
+  if (norm.includes("lovable")) return <LovableLogo size={size} className={className} />;
+  if (norm.includes("framer")) return <FramerLogo size={size} className={className} />;
+  if (norm.includes("github")) return <GitHubLogo size={size} className={className} />;
+
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className={`rounded-lg bg-[#f3efe9] text-[#191411] font-black flex items-center justify-center text-xs ${className}`}
+    >
+      {(platform[0] || "P").toUpperCase()}
+    </div>
+  );
+}

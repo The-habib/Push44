@@ -4,6 +4,7 @@ import { ChevronRight, Award, Trophy, Check, ArrowRight, GitCompare, Sparkles, S
 import { getComparison, COMPARISONS, type Comparison } from "@/seo/data";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { PlatformLogo } from "@/components/BrandLogos";
 
 export const Route = createFileRoute("/compare/$slug")({
   head: ({ params }) => {
@@ -83,18 +84,24 @@ export default function ComparisonPage() {
           <div className="flex items-center justify-center gap-4 flex-wrap pt-2">
             <motion.div
               whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-              className="group relative bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 w-44 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
+              className="group relative bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-[#f50]" />
+              <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                <PlatformLogo platform={aLabel} size={24} />
+              </div>
               <div className="text-4xl font-extrabold text-[#f50] mb-1">{aWins}</div>
               <div className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider">{aLabel} Wins</div>
             </motion.div>
 
             <motion.div
               whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-              className="group relative bg-white border border-[#e7e2db] hover:border-emerald-500/40 rounded-2xl p-6 w-44 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
+              className="group relative bg-white border border-[#e7e2db] hover:border-emerald-500/40 rounded-2xl p-6 w-48 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600" />
+              <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                <PlatformLogo platform={bLabel} size={24} />
+              </div>
               <div className="text-4xl font-extrabold text-emerald-600 mb-1">{bWins}</div>
               <div className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider">{bLabel} Wins</div>
             </motion.div>
@@ -158,8 +165,18 @@ export default function ComparisonPage() {
                 <thead>
                   <tr className="bg-[#f3efe9]/60 border-b border-[#e7e2db]">
                     <th className="px-6 py-4 text-[12px] font-bold text-[#8c857b] uppercase tracking-wider w-[26%]">Feature Aspect</th>
-                    <th className="px-6 py-4 text-[12px] font-bold text-[#f50] uppercase tracking-wider w-[32%]">{aLabel}</th>
-                    <th className="px-6 py-4 text-[12px] font-bold text-emerald-700 uppercase tracking-wider w-[32%]">{bLabel}</th>
+                    <th className="px-6 py-4 text-[12px] font-bold text-[#f50] uppercase tracking-wider w-[32%]">
+                      <div className="inline-flex items-center gap-2">
+                        <PlatformLogo platform={aLabel} size={18} />
+                        <span>{aLabel}</span>
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-[12px] font-bold text-emerald-700 uppercase tracking-wider w-[32%]">
+                      <div className="inline-flex items-center gap-2">
+                        <PlatformLogo platform={bLabel} size={18} />
+                        <span>{bLabel}</span>
+                      </div>
+                    </th>
                     <th className="px-6 py-4 text-[12px] font-bold text-[#8c857b] uppercase tracking-wider w-[10%]">Winner</th>
                   </tr>
                 </thead>
@@ -188,11 +205,13 @@ export default function ComparisonPage() {
                         </div>
                       </td>
                       <td className="px-6 py-5 align-top">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                           a.winner === 'a' ? 'bg-[#fff4ed] text-[#f50] border border-[#f50]/20' :
                           a.winner === 'b' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
                           'bg-[#f3efe9] text-[#544e47]'
                         }`}>
+                          {a.winner === 'a' && <PlatformLogo platform={aLabel} size={13} />}
+                          {a.winner === 'b' && <PlatformLogo platform={bLabel} size={13} />}
                           {a.winner === 'a' ? aLabel : a.winner === 'b' ? bLabel : 'Tie'}
                         </span>
                         {a.note && <div className="text-[12px] text-[#8c857b] mt-2 leading-relaxed">{a.note}</div>}

@@ -9,6 +9,7 @@ import {
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { PlatformLogo } from "@/components/BrandLogos";
 
 type BlogSearch = { category?: string };
 
@@ -416,11 +417,8 @@ export default function BlogHome() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white shadow-xs"
-                      style={{ backgroundColor: p.color }}
-                    >
-                      {p.name[0]}
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white border border-[#e7e2db] shadow-2xs p-2 group-hover:scale-105 transition-transform">
+                      <PlatformLogo platform={p.slug} size={24} />
                     </div>
                     <span className="text-[11px] font-bold text-[#8c857b] bg-[#f3efe9] px-2.5 py-0.5 rounded-full">
                       {p.articles.length} guides

@@ -12,6 +12,7 @@ import {
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { PlatformLogo } from "@/components/BrandLogos";
 
 export const Route = createFileRoute("/blog/$slug")({
   head: ({ params }) => {
@@ -133,7 +134,7 @@ export default function ArticlePage() {
                 className="inline-flex items-center gap-1.5 text-[11.5px] font-bold px-3 py-1 rounded-full"
                 style={{ color: pm.color, backgroundColor: pm.bgColor, border: `1px solid ${pm.color}30` }}
               >
-                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pm.color }} />
+                <PlatformLogo platform={article.platform} size={14} className="shrink-0" />
                 {pm.name}
               </span>
             )}

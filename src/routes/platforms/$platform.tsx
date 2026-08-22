@@ -5,6 +5,7 @@ import { getPlatform, getPlatformArticles, PLATFORMS, type PlatformData } from "
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { PlatformLogo } from "@/components/BrandLogos";
 
 export const Route = createFileRoute("/platforms/$platform")({
   head: ({ params }) => {
@@ -69,10 +70,10 @@ export default function PlatformPage() {
             <div className="max-w-3xl space-y-6">
               <div className="flex items-center gap-5">
                 <div
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl font-extrabold text-white shadow-md shrink-0"
-                  style={{ backgroundColor: platform.color, boxShadow: `0 8px 24px ${platform.color}30` }}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center bg-white border border-[#e7e2db] shadow-md shrink-0 p-3"
+                  style={{ boxShadow: `0 8px 24px ${platform.color}25` }}
                 >
-                  {platform.name[0]}
+                  <PlatformLogo platform={platform.slug} size={48} />
                 </div>
                 <div>
                   <div className="inline-flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wider text-[#8c857b] mb-1">
@@ -249,11 +250,8 @@ export default function PlatformPage() {
                     params={{ platform: p.slug }}
                     className="group bg-[#faf8f5] hover:bg-white border border-[#e7e2db] hover:border-[#f50]/40 p-3.5 rounded-xl text-center shadow-2xs hover:shadow-sm transition-all"
                   >
-                    <div
-                      className="w-8 h-8 mx-auto rounded-lg flex items-center justify-center text-white font-black text-xs mb-2 shadow-2xs"
-                      style={{ backgroundColor: p.color }}
-                    >
-                      {p.name[0]}
+                    <div className="w-9 h-9 mx-auto rounded-xl flex items-center justify-center bg-white border border-[#e7e2db] mb-2 shadow-2xs group-hover:scale-110 transition-transform">
+                      <PlatformLogo platform={p.slug} size={22} />
                     </div>
                     <div className="text-[12.5px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors truncate">
                       {p.name}

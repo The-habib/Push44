@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Clock, ArrowUpRight, Sparkles, BookOpen } from "lucide-react";
 import { PLATFORM_META, type Article } from "@/seo/data";
+import { PlatformLogo } from "@/components/BrandLogos";
 
 export function ArticleCard({ article, index = 0 }: { article: Article; index?: number }) {
   const pm = PLATFORM_META[article.platform] || PLATFORM_META.general;
@@ -50,10 +51,10 @@ export function ArticleCard({ article, index = 0 }: { article: Article; index?: 
         <div className="flex items-center gap-2 flex-wrap mb-4">
           {article.platform !== "general" && (
             <span
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-2xs"
               style={{ color: pm.color, backgroundColor: pm.bgColor, border: `1px solid ${pm.color}30` }}
             >
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: pm.color }} />
+              <PlatformLogo platform={article.platform} size={14} className="shrink-0" />
               {pm.name}
             </span>
           )}
