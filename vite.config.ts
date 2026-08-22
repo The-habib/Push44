@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { seoPlugin } from "./src/seo/vite-plugin";
+import boltLoginHandler from "./api/bolt-login";
 
 function ziteProxyPlugin(): Plugin {
   const ZITE_BASE = "https://server.zite.com";
@@ -333,7 +334,7 @@ function lovableProxyPlugin(): Plugin {
 
 function boltProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-    if (!req.url?.startsWith("/api/bolt")) return next();
+    if (!req.url?.startsWith("/api/bolt/")) return next();
 
     // token is stored URL-encoded; bolt.new expects the decoded form as the cookie value
     const rawToken = (req.headers["x-bolt-token"] as string) ?? "";
@@ -384,6 +385,19 @@ function boltProxyPlugin(): Plugin {
 
   return {
     name: "bolt-proxy",
+    configureServer(server) { server.middlewares.use(handler as any); },
+    configurePreviewServer(server) { server.middlewares.use(handler as any); },
+  };
+}
+
+function boltLoginPlugin(): Plugin {
+  const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (req.url !== "/api/bolt-login") return next();
+    await boltLoginHandler(req, res);
+  };
+
+  return {
+    name: "bolt-login",
     configureServer(server) { server.middlewares.use(handler as any); },
     configurePreviewServer(server) { server.middlewares.use(handler as any); },
   };
@@ -493,6 +507,7 @@ export default defineConfig({
     flootProxyPlugin(),
     lovableProxyPlugin(),
     boltProxyPlugin(),
+    boltLoginPlugin(),
     framerProxyPlugin(),
     githubOAuthPlugin(),
   ],
