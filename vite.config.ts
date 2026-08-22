@@ -355,7 +355,10 @@ function boltProxyPlugin(): Plugin {
       if (eq !== -1) token = first.slice(eq + 1).trim();
     }
 
-    const targetPath = req.url.replace(/^\/api\/bolt/, "") || "/";
+    let targetPath = req.url.replace(/^\/api\/bolt(-proxy)?/, "") || "/";
+    if (!targetPath.startsWith("/api/") && targetPath !== "/api") {
+      targetPath = `/api${targetPath}`;
+    }
     const contentType = (req.headers["content-type"] as string) ?? "application/json";
 
     const forwardHeaders: Record<string, string> = {

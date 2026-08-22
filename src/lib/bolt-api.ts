@@ -135,6 +135,13 @@ export interface BoltProject {
   updatedAt: string;
 }
 
+export interface BoltProjectItem {
+  id: string;
+  name: string;
+  updated_at: string;
+  siteUrl?: string;
+}
+
 export type BoltRemoveStep =
   | "fetching-html"
   | "downloading-assets"
@@ -144,6 +151,46 @@ export type BoltRemoveStep =
   | "done";
 
 // ── API functions ─────────────────────────────────────────────────────────────
+
+/**
+ * List all projects belonging to the authenticated bolt.new user account.
+ * Calls GET /api/projects?access=owned on bolt.new.
+ */
+export async function listBoltProjects({
+  data,
+}: {
+  data: { token: string };
+}): Promise<BoltProjectItem[]> {
+  const token = cleanBoltToken(data.token);
+  if (!token) throw new Error("Enter your bolt.new session token (__session cookie).");
+
+  let res: Response;
+  try {
+    res = await boltFetch("/projects?access=owned", token);
+  } catch {
+    return [];
+  }
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const body = (await res.json().catch(() => ({}))) as any;
+  const list = Array.isArray(body?.projects) ? body.projects : [];
+
+  return list.map((p: any) => {
+    const id = String(p.slug || p.id || p.projectId || "").trim();
+    const name = String(p.title || p.name || p.publishedUrl || p.slug || id || "Untitled Project").trim();
+    const updatedAt = p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString();
+    const siteUrl = p.publishedUrl || p.siteUrl || (id.startsWith("sb1-") ? `https://${id}.bolt.host` : "");
+    return {
+      id,
+      name,
+      updated_at: updatedAt,
+      siteUrl,
+    };
+  }).filter((p: BoltProjectItem) => Boolean(p.id));
+}
 
 /**
  * Validate a bolt.new session token + project ID.

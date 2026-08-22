@@ -62,7 +62,40 @@ export class BoltAdapter implements UniversalPlatformAdapter {
   }
 
   async listApps(creds: StoredCredentials): Promise<RemoteApp[]> {
+    const token = cleanBoltToken(creds.boltToken || "");
     const cleanId = cleanBoltProjectId(creds.boltProjectId || "");
+
+    if (token) {
+      try {
+        const res = await requestWithRetry(`${BOLT_BASE}/api/projects?access=owned`, {
+          headers: {
+            Cookie: `__session=${token}`,
+            Accept: "application/json",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+          },
+        });
+        if (res.ok) {
+          const body = (await res.json().catch(() => ({}))) as any;
+          const list = Array.isArray(body?.projects) ? body.projects : [];
+          if (list.length > 0) {
+            return list.map((p: any) => {
+              const id = String(p.slug || p.id || p.projectId || "").trim();
+              const name = String(p.title || p.name || p.publishedUrl || p.slug || id).trim();
+              return {
+                id,
+                name,
+                platform: "bolt" as const,
+                updated_at: p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString(),
+                url: p.publishedUrl || (id.startsWith("sb1-") ? `https://${id}.bolt.host` : undefined),
+              };
+            }).filter((a: RemoteApp) => Boolean(a.id));
+          }
+        }
+      } catch {
+        // Fall back to stored project ID if available
+      }
+    }
+
     if (cleanId) {
       return [
         {

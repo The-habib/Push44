@@ -24,12 +24,20 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return res.end();
   }
 
-  // Route pattern: /api/bolt-proxy?p=<encoded-subpath>
+  // Route pattern: /api/bolt-proxy?p=<encoded-subpath> or /api/bolt/<subpath>
   const rawUrl  = new URL(req.url ?? "/", "http://localhost");
-  const subpath = "/" + decodeURIComponent(rawUrl.searchParams.get("p") ?? "");
-  rawUrl.searchParams.delete("p");
+  let subpath = "";
+  if (rawUrl.searchParams.has("p")) {
+    subpath = "/" + decodeURIComponent(rawUrl.searchParams.get("p") ?? "").replace(/^\//, "");
+    rawUrl.searchParams.delete("p");
+  } else {
+    subpath = rawUrl.pathname.replace(/^\/api\/bolt(-proxy)?/, "") || "/";
+  }
   const qs = rawUrl.search;
-  const targetPath = subpath + qs;
+  let targetPath = (subpath.startsWith("/") ? subpath : `/${subpath}`) + qs;
+  if (!targetPath.startsWith("/api/") && targetPath !== "/api") {
+    targetPath = `/api${targetPath}`;
+  }
 
   const headers = req.headers as Record<string, string>;
 

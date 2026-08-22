@@ -27,7 +27,7 @@ import {
   type FlootDeployStatus, type FlootMobileBuildStatus,
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles, removeZiteBadge } from "@/lib/zite-api";
-import { validateBoltProject, removeBoltBadge, cleanBoltProjectId, type BoltRemoveStep } from "@/lib/bolt-api";
+import { listBoltProjects, validateBoltProject, removeBoltBadge, cleanBoltProjectId, type BoltRemoveStep } from "@/lib/bolt-api";
 import { listLovableProjects, fetchLovableAppFiles, removeLovableBadge, type LovableBadgeStatus } from "@/lib/lovable-api";
 import { listFramerProjects, fetchFramerAppFiles, remixFramerTemplate, removeFramerBadge } from "@/lib/framer-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
@@ -248,11 +248,27 @@ export default function PushPage() {
         result = await listFlootApps({ data: { token: creds.flootToken } });
       } else if (pid === "bolt") {
         if (!creds.boltToken) throw new Error("Connect bolt.new in Settings first.");
-        if (creds.boltProjectId) {
-          const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
-          const boltApp: AppItem = { id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt };
-          result = [boltApp];
-          setSelectedApp(boltApp);
+        const boltProjects = await listBoltProjects({ data: { token: creds.boltToken } });
+        if (boltProjects.length > 0) {
+          result = boltProjects.map((p) => ({
+            id: p.id,
+            name: p.name || p.id,
+            updated_at: p.updated_at,
+            icon: p.siteUrl,
+          }));
+          if (creds.boltProjectId) {
+            const match = result.find((a) => a.id === creds.boltProjectId);
+            if (match) setSelectedApp(match);
+          }
+        } else if (creds.boltProjectId) {
+          try {
+            const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
+            const boltApp: AppItem = { id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt };
+            result = [boltApp];
+            setSelectedApp(boltApp);
+          } catch {
+            result = [];
+          }
         } else {
           result = [];
         }
