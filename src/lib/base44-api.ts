@@ -393,6 +393,26 @@ export async function removeBase44LiveBadge({
     body: JSON.stringify({ path: targetPath, content: newCss }),
   }, token);
 
+  // Also inject blocker into index.html for instant first-paint hiding
+  try {
+    const htmlRes = await b44Fetch(`/apps/${appId}/sandbox/files/content?path=index.html`, undefined, token);
+    let htmlContent = htmlRes?.content || "";
+    if (htmlContent && !htmlContent.includes("Base44 Badge Blocker")) {
+      const BADGE_HTML_BLOCKER =
+        `\n    <!-- Push44 – Base44 Badge Blocker -->\n` +
+        `    <style>#base44-edit-badge,#base44-badge,.base44-badge,div[id*='base44'],[data-base44-badge],.made-with-base44,[class*='base44'],#admin-footer{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>\n`;
+      if (htmlContent.includes("</head>")) {
+        htmlContent = htmlContent.replace("</head>", `${BADGE_HTML_BLOCKER}</head>`);
+      } else if (htmlContent.includes("<body")) {
+        htmlContent = htmlContent.replace("<body", `${BADGE_HTML_BLOCKER}<body`);
+      }
+      await b44Fetch(`/apps/${appId}/sandbox/files/content`, {
+        method: "PUT",
+        body: JSON.stringify({ path: "index.html", content: htmlContent }),
+      }, token);
+    }
+  } catch {}
+
   // 5. Create a manual checkpoint so Base44 build pipeline compiles the updated sandbox
   notify("creating-checkpoint");
   let checkpointId: string | undefined;
