@@ -18,7 +18,7 @@ const PLATFORMS = [
   { name: "Rocket.new", slug: "rocket-new", tag: "Flutter & APK", logo: RocketLogo, color: "#ef4444" },
   { name: "Floot", slug: "floot", tag: "Next.js & React", logo: FlootLogo, color: "#00d26a" },
   { name: "Zite", slug: "zite", tag: "Enterprise Full-Stack", logo: ZiteLogo, color: "#6366f1" },
-  { name: "bolt.new", slug: "bolt-new", tag: "WebContainer Clean", logo: BoltLogo, color: "#eab308" },
+  { name: "bolt.new", slug: "bolt-new", tag: "WebContainer Clean", logo: BoltLogo, color: "#2B5CFF" },
   { name: "GitHub", slug: "github", tag: "Direct Trees API", logo: GitHubLogo, color: "#fafaf9" },
 ];
 

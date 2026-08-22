@@ -39,7 +39,7 @@ const PLATFORM_CONFIG: Record<
   rocket: { label: "Rocket.new", color: "#ea580c", Logo: RocketLogo },
   floot: { label: "Floot", color: "#8b5cf6", Logo: FlootLogo },
   zite: { label: "Zite", color: "#0284c7", Logo: ZiteLogo },
-  bolt: { label: "bolt.new", color: "#eab308", Logo: BoltLogo },
+  bolt: { label: "bolt.new", color: "#2B5CFF", Logo: BoltLogo },
 };
 
 function PlatformBadge({ platform }: { platform?: Platform }) {

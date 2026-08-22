@@ -49,20 +49,35 @@ export function BoltLogo({ size = 20, className = "" }: { size?: number; classNa
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 95 83"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       style={{ flexShrink: 0 }}
     >
-      <rect width="32" height="32" rx="7" fill="#09090b" />
       <path
-        d="M18.2 4.5L7.5 17.5h8.2l-2.9 10 11.7-13h-8.2l1.9-10z"
-        fill="#FACC15"
-        stroke="#FACC15"
-        strokeWidth="0.5"
-        strokeLinejoin="round"
+        fill="url(#push44-bolt-hex-grad)"
+        d="M66.657 0H28.343a7.948 7.948 0 0 0-6.887 3.979L2.288 37.235a7.948 7.948 0 0 0 0 7.938L21.456 78.43a7.948 7.948 0 0 0 6.887 3.979h38.314a7.948 7.948 0 0 0 6.886-3.98l19.17-33.256a7.948 7.948 0 0 0 0-7.938L73.542 3.98A7.948 7.948 0 0 0 66.657 0Z"
       />
+      <path
+        fill="#ffffff"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M50.642 59.608c-3.468 0-6.873-1.261-8.827-3.973l-.69 3.198-12.729 6.762 1.374-6.762 9.27-42.04h11.35l-3.279 14.818c2.649-2.9 5.108-3.973 8.26-3.973 6.81 0 11.35 4.477 11.35 12.675 0 8.45-5.233 19.295-16.079 19.295Zm4.351-16.9c0 3.91-2.774 6.874-6.368 6.874-2.018 0-3.847-.757-5.045-2.08l1.766-7.757c1.324-1.324 2.837-2.08 4.603-2.08 2.711 0 5.044 2.017 5.044 5.044Z"
+      />
+      <defs>
+        <linearGradient
+          id="push44-bolt-hex-grad"
+          x1="47.5"
+          x2="47.5"
+          y1="0"
+          y2="82.409"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#2B5CFF" />
+          <stop offset="1" stopColor="#1A3799" />
+        </linearGradient>
+      </defs>
     </svg>
   );
 }
