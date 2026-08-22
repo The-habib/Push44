@@ -67,29 +67,61 @@ export class BoltAdapter implements UniversalPlatformAdapter {
 
     if (token) {
       try {
-        const res = await requestWithRetry(`${BOLT_BASE}/api/projects?access=owned`, {
-          headers: {
-            Cookie: `__session=${token}`,
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-          },
-        });
-        if (res.ok) {
-          const body = (await res.json().catch(() => ({}))) as any;
-          const list = Array.isArray(body?.projects) ? body.projects : [];
-          if (list.length > 0) {
-            return list.map((p: any) => {
-              const id = String(p.slug || p.id || p.projectId || "").trim();
-              const name = String(p.title || p.name || p.publishedUrl || p.slug || id).trim();
-              return {
-                id,
-                name,
-                platform: "bolt" as const,
-                updated_at: p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString(),
-                url: p.publishedUrl || (id.startsWith("sb1-") ? `https://${id}.bolt.host` : undefined),
-              };
-            }).filter((a: RemoteApp) => Boolean(a.id));
+        const headers = {
+          Cookie: `__session=${token}`,
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        };
+
+        const [chatsRes, projRes] = await Promise.all([
+          requestWithRetry(`${BOLT_BASE}/api/chats`, { headers }).catch(() => null),
+          requestWithRetry(`${BOLT_BASE}/api/projects?access=owned`, { headers }).catch(() => null),
+        ]);
+
+        const items: RemoteApp[] = [];
+        const seenIds = new Set<string>();
+
+        if (chatsRes && chatsRes.ok) {
+          const body = (await chatsRes.json().catch(() => ({}))) as any;
+          const list = Array.isArray(body?.chats) ? body.chats : [];
+          for (const c of list) {
+            const rawId = String(c.projectId || c.id || "").trim();
+            if (!rawId) continue;
+            const id = rawId.startsWith("sb1-") ? rawId : `sb1-${rawId}`;
+            seenIds.add(id);
+            seenIds.add(rawId);
+            items.push({
+              id,
+              name: String(c.description || `Bolt Project ${rawId}`).trim(),
+              platform: "bolt",
+              updated_at: c.updatedAt || c.createdAt || new Date().toISOString(),
+              url: `https://bolt.new/~/sb1-${rawId.replace(/^sb1-/, "")}`,
+            });
           }
+        }
+
+        if (projRes && projRes.ok) {
+          const body = (await projRes.json().catch(() => ({}))) as any;
+          const list = Array.isArray(body?.projects) ? body.projects : [];
+          for (const p of list) {
+            const rawId = String(p.slug || p.id || p.projectId || "").trim();
+            if (!rawId) continue;
+            const id = rawId.startsWith("sb1-") ? rawId : `sb1-${rawId}`;
+            if (seenIds.has(id) || seenIds.has(rawId)) continue;
+            seenIds.add(id);
+            seenIds.add(rawId);
+            items.push({
+              id,
+              name: String(p.title || p.name || p.publishedUrl || p.slug || id).trim(),
+              platform: "bolt",
+              updated_at: p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString(),
+              url: p.publishedUrl || (id.startsWith("sb1-") ? `https://${id}.bolt.host` : undefined),
+            });
+          }
+        }
+
+        if (items.length > 0) {
+          return items;
         }
       } catch {
         // Fall back to stored project ID if available

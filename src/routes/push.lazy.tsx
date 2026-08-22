@@ -256,9 +256,15 @@ export default function PushPage() {
             updated_at: p.updated_at,
             icon: p.siteUrl,
           }));
-          if (creds.boltProjectId) {
-            const match = result.find((a) => a.id === creds.boltProjectId);
-            if (match) setSelectedApp(match);
+          const match = creds.boltProjectId
+            ? result.find((a) => a.id === creds.boltProjectId || a.id === `sb1-${creds.boltProjectId.replace(/^sb1-/, "")}`)
+            : null;
+          const toSelect = match || result[0];
+          if (toSelect) {
+            setSelectedApp(toSelect);
+            if (!creds.boltProjectId || creds.boltProjectId !== toSelect.id) {
+              updateCreds({ boltProjectId: toSelect.id, boltSiteUrl: toSelect.icon || "" });
+            }
           }
         } else if (creds.boltProjectId) {
           try {
@@ -318,7 +324,7 @@ export default function PushPage() {
       } else if (platform === "floot") {
         result = await fetchFlootAppFiles({ data: { token: creds.flootToken!, appId: app.id, appName: app.name } });
       } else if (platform === "bolt") {
-        // bolt.new has no exportable source files — badge removal only
+        updateCreds({ boltProjectId: app.id, boltSiteUrl: app.icon || (app.id.startsWith("sb1-") ? `https://${app.id}.bolt.host` : "") });
         setFilesLoading(false);
         return;
       } else if (platform === "lovable") {

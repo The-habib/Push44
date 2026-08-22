@@ -153,8 +153,8 @@ export type BoltRemoveStep =
 // ── API functions ─────────────────────────────────────────────────────────────
 
 /**
- * List all projects belonging to the authenticated bolt.new user account.
- * Calls GET /api/projects?access=owned on bolt.new.
+ * List all projects/chats belonging to the authenticated bolt.new user account.
+ * Queries GET /api/chats (Bolt apps/workspaces) and GET /api/projects?access=owned (deployed projects).
  */
 export async function listBoltProjects({
   data,
@@ -164,32 +164,62 @@ export async function listBoltProjects({
   const token = cleanBoltToken(data.token);
   if (!token) throw new Error("Enter your bolt.new session token (__session cookie).");
 
-  let res: Response;
   try {
-    res = await boltFetch("/projects?access=owned", token);
+    const [chatsRes, projRes] = await Promise.all([
+      boltFetch("/chats", token).catch(() => null),
+      boltFetch("/projects?access=owned", token).catch(() => null),
+    ]);
+
+    const items: BoltProjectItem[] = [];
+    const seenIds = new Set<string>();
+
+    // 1. Process chats (Bolt.new primary workspace & app container)
+    if (chatsRes && chatsRes.ok) {
+      const chatsBody = (await chatsRes.json().catch(() => ({}))) as any;
+      const chats = Array.isArray(chatsBody?.chats) ? chatsBody.chats : [];
+      for (const c of chats) {
+        const rawId = String(c.projectId || c.id || "").trim();
+        if (!rawId) continue;
+        const id = rawId.startsWith("sb1-") ? rawId : `sb1-${rawId}`;
+        seenIds.add(id);
+        seenIds.add(rawId);
+        const name = String(c.description || `Bolt Project ${rawId}`).trim();
+        const updatedAt = c.updatedAt || c.createdAt || new Date().toISOString();
+        items.push({
+          id,
+          name,
+          updated_at: updatedAt,
+          siteUrl: `https://bolt.new/~/sb1-${rawId.replace(/^sb1-/, "")}`,
+        });
+      }
+    }
+
+    // 2. Process deployed projects (if any)
+    if (projRes && projRes.ok) {
+      const projBody = (await projRes.json().catch(() => ({}))) as any;
+      const projects = Array.isArray(projBody?.projects) ? projBody.projects : [];
+      for (const p of projects) {
+        const rawId = String(p.slug || p.id || p.projectId || "").trim();
+        if (!rawId) continue;
+        const id = rawId.startsWith("sb1-") ? rawId : `sb1-${rawId}`;
+        if (seenIds.has(id) || seenIds.has(rawId)) continue;
+        seenIds.add(id);
+        seenIds.add(rawId);
+        const name = String(p.title || p.name || p.publishedUrl || p.slug || id).trim();
+        const updatedAt = p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString();
+        items.push({
+          id,
+          name,
+          updated_at: updatedAt,
+          siteUrl: p.publishedUrl || p.siteUrl || `https://${rawId}.bolt.host`,
+        });
+      }
+    }
+
+    return items;
   } catch {
     return [];
   }
-
-  if (!res.ok) {
-    return [];
-  }
-
-  const body = (await res.json().catch(() => ({}))) as any;
-  const list = Array.isArray(body?.projects) ? body.projects : [];
-
-  return list.map((p: any) => {
-    const id = String(p.slug || p.id || p.projectId || "").trim();
-    const name = String(p.title || p.name || p.publishedUrl || p.slug || id || "Untitled Project").trim();
-    const updatedAt = p.updatedAt || p.updated_at || p.createdAt || new Date().toISOString();
-    const siteUrl = p.publishedUrl || p.siteUrl || (id.startsWith("sb1-") ? `https://${id}.bolt.host` : "");
-    return {
-      id,
-      name,
-      updated_at: updatedAt,
-      siteUrl,
-    };
-  }).filter((p: BoltProjectItem) => Boolean(p.id));
 }
 
 /**
