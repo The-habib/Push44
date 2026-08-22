@@ -4,7 +4,7 @@ import {
   UploadCloud, Search, Check, AlertCircle, Plus, Lock, Globe,
   ExternalLink, RefreshCw, GitBranch, ChevronDown, ChevronRight,
   FileText, CheckCircle, XCircle, FolderOpen, Smartphone, Download,
-  Terminal, Loader2,
+  Terminal, Loader2, Star,
 } from "lucide-react";
 import { FileExplorer } from "@/components/FileExplorer";
 import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker";
@@ -1323,6 +1323,7 @@ export default function PushPage() {
               >
                 <RefreshCw size={12} /> Run Again
               </button>
+              <GitHubStarPrompt subtitle="Removed the Zite badge for free? Support Push44 with a quick star on GitHub!" />
             </div>
           )}
 
@@ -1690,6 +1691,83 @@ function BookOpen14() {
   return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
 }
 
+// ── GitHubStarPrompt ──────────────────────────────────────────────────────────
+function GitHubStarPrompt({ subtitle }: { subtitle?: string }) {
+  const [starred, setStarred] = useState(false);
+
+  return (
+    <div
+      style={{
+        marginTop: 14,
+        padding: "12px 14px",
+        borderRadius: 10,
+        background: "linear-gradient(135deg, #0f172a, #1e293b)",
+        color: "#f8fafc",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        textAlign: "left",
+        flexWrap: "wrap",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 220, flex: 1 }}>
+        <div
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 8,
+            background: "linear-gradient(135deg, #f59e0b, #d97706)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(245, 158, 11, 0.4)",
+          }}
+        >
+          <Star size={18} color="#fff" fill="#fff" />
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 6 }}>
+            Saved you hours? Give Push44 a star! ⭐
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+            {subtitle || "Push44 is 100% free and open-source. Help more developers find it by starring the repo!"}
+          </div>
+        </div>
+      </div>
+      <a
+        href="https://github.com/The-habib/Push44"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => setStarred(true)}
+        className="btn"
+        style={{
+          background: starred ? "#22c55e" : "#fff",
+          color: starred ? "#fff" : "#0f172a",
+          fontWeight: 700,
+          fontSize: 12,
+          padding: "7px 14px",
+          borderRadius: 7,
+          whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          border: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+          textDecoration: "none",
+          transition: "all 0.2s ease",
+        }}
+      >
+        <Star size={13} color={starred ? "#fff" : "#f59e0b"} fill={starred ? "#fff" : "#f59e0b"} />
+        {starred ? "Starred! Thank you ❤️" : "Star on GitHub ↗"}
+      </a>
+    </div>
+  );
+}
+
 // ── Base44BadgePanel ──────────────────────────────────────────────────────────
 interface Base44BadgePanelProps {
   appName: string;
@@ -1781,6 +1859,7 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
               🛡️ Remove again
             </button>
           </div>
+          <GitHubStarPrompt subtitle="Removed the Base44 badge for free? Support Push44 with a quick star on GitHub!" />
         </div>
       )}
 
@@ -1909,6 +1988,7 @@ function BoltBadgePanel({ siteUrl, phase, step, error, resultUrl, onRemove, onRe
               ⚡ Remove again
             </button>
           </div>
+          <GitHubStarPrompt subtitle="Removed the Bolt.new badge for free? Support Push44 with a quick star on GitHub!" />
         </div>
       )}
 
@@ -2262,9 +2342,12 @@ function FlootPublishPanel({
               )}
 
               {badgePhase === "done" && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <CheckCircle size={13} color="#16a34a" />
-                  <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>Badge hidden — rebuilding app (~30s)</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <CheckCircle size={13} color="#16a34a" />
+                    <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>Badge hidden — rebuilding app (~30s)</span>
+                  </div>
+                  <GitHubStarPrompt subtitle="Removed the Floot badge for free? Support Push44 with a quick star on GitHub!" />
                 </div>
               )}
 
@@ -2430,6 +2513,7 @@ function LovableBadgePanel({ appName, appUrl, phase, msg, error, onRemove, onRes
               ♥ Remove again
             </button>
           </div>
+          <GitHubStarPrompt subtitle="Removed the Lovable badge for free? Support Push44 with a quick star on GitHub!" />
         </div>
       )}
 
