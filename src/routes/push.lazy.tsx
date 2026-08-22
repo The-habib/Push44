@@ -1090,6 +1090,7 @@ export default function PushPage() {
         {platform === "base44" && selectedApp && (
           <div style={{ marginTop: 14 }}>
             <Base44BadgePanel
+              appId={selectedApp.id}
               appName={selectedApp.name}
               publishedUrl={base44PublishedUrl || (selectedApp.name ? `https://${selectedApp.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}.base44.app` : "https://app.base44.com")}
               phase={base44BadgePhase}
@@ -1097,8 +1098,6 @@ export default function PushPage() {
               error={base44BadgeError}
               onRemove={handleBase44BadgeRemoval}
               onReset={() => { setBase44BadgePhase("idle"); setBase44BadgeError(""); setBase44BadgeStep(""); }}
-              onRedeploy={handleBase44Redeploy}
-              isRedeploying={isBase44Redeploying}
             />
           </div>
         )}
@@ -1818,6 +1817,7 @@ function GitHubStarPrompt({ subtitle }: { subtitle?: string }) {
 
 // ── Base44BadgePanel ──────────────────────────────────────────────────────────
 interface Base44BadgePanelProps {
+  appId?: string;
   appName: string;
   publishedUrl: string;
   phase: "idle" | "removing" | "done" | "failed";
@@ -1825,8 +1825,6 @@ interface Base44BadgePanelProps {
   error: string;
   onRemove: () => void;
   onReset: () => void;
-  onRedeploy?: () => void;
-  isRedeploying?: boolean;
 }
 
 function base44StepLabel(step: string): string {
@@ -1835,14 +1833,13 @@ function base44StepLabel(step: string): string {
     case "checking-css":        return "Checking sandbox stylesheet…";
     case "injecting-blocker":   return "Directly injecting CSS blocker into sandbox…";
     case "creating-checkpoint": return "Creating deployment checkpoint…";
-    case "deploying":            return "Rebuilding Vite bundle without watermark…";
-    case "polling-build":       return "Verifying live deployment…";
-    case "done":                 return "Live deployment updated!";
+    case "done":                 return "Badge blocker injected!";
     default:                     return "Working…";
   }
 }
 
 function Base44BadgePanel({
+  appId,
   appName,
   publishedUrl,
   phase,
@@ -1850,11 +1847,10 @@ function Base44BadgePanel({
   error,
   onRemove,
   onReset,
-  onRedeploy,
-  isRedeploying,
 }: Base44BadgePanelProps) {
   const liveUrl = publishedUrl.startsWith("http") ? publishedUrl : `https://${publishedUrl}`;
   const cacheBustUrl = liveUrl.includes("?") ? `${liveUrl}&v=${Date.now()}` : `${liveUrl}?v=${Date.now()}`;
+  const editorUrl = appId ? `https://app.base44.com/apps/${appId}` : "https://app.base44.com";
 
   return (
     <div className="card" style={{ padding: 18, border: "1px solid #fed7aa", background: "#fffaf5" }}>
@@ -1873,14 +1869,14 @@ function Base44BadgePanel({
       {phase === "idle" && (
         <>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>. Automatically creates a checkpoint and triggers live edge deployment.
+            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your project files with zero AI credits.
           </div>
           <button
             className="btn btn-primary"
             style={{ width: "100%", background: "linear-gradient(135deg, #f97316, #ea580c)", justifyContent: "center" }}
             onClick={onRemove}
           >
-            🛡️ Remove Badge & Redeploy Live
+            🛡️ Remove Base44 Badge
           </button>
         </>
       )}
@@ -1890,11 +1886,11 @@ function Base44BadgePanel({
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fff7ed", border: "1px solid #ffedd5" }}>
             <Loader2 size={15} color="#ea580c" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{step ? base44StepLabel(step) : "Starting live badge removal…"}</span>
+            <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{step ? base44StepLabel(step) : "Injecting badge blocker…"}</span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            {(["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint", "deploying", "polling-build"] as const).map((s) => {
-              const steps = ["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint", "deploying", "polling-build"] as const;
+            {(["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint"] as const).map((s) => {
+              const steps = ["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint"] as const;
               const isDone = step && steps.indexOf(step as any) > steps.indexOf(s);
               const isActive = step === s;
               return (
@@ -1912,31 +1908,38 @@ function Base44BadgePanel({
       {phase === "done" && (
         <div style={{ textAlign: "center", padding: "8px 0" }}>
           <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge Removed & Live Deployed!</div>
-          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.5 }}>
-            Your live Base44 site has been automatically rebuilt on Cloudflare edge. The badge is now completely hidden.
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6, color: "#166534" }}>Badge Blocker Injected Successfully!</div>
+          <div style={{ fontSize: 13, color: "#475569", marginBottom: 14, lineHeight: 1.5 }}>
+            The CSS blocker is now permanently written to your Base44 project files.
           </div>
+
+          {/* Action Step Box */}
+          <div style={{ background: "#fff", border: "1px solid #fed7aa", borderRadius: 10, padding: 14, marginBottom: 14, textAlign: "left" }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: "#c2410c", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+              <span>👉</span> Final Step: Publish Live in Base44
+            </div>
+            <ol style={{ margin: 0, paddingLeft: 20, fontSize: 12, color: "#475569", lineHeight: 1.6 }}>
+              <li>Click the orange <strong>Open in Base44 Builder</strong> button below.</li>
+              <li>In the top-right corner of the Base44 editor, click <strong>Publish</strong> to push the clean site live.</li>
+            </ol>
+          </div>
+
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 }}>
-            <a href={cacheBustUrl} target="_blank" rel="noopener" className="btn btn-secondary">
-              <ExternalLink size={13} /> View live site
+            <a
+              href={editorUrl}
+              target="_blank"
+              rel="noopener"
+              className="btn btn-primary"
+              style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+            >
+              <ExternalLink size={13} /> Open in Base44 Builder ↗
             </a>
-            {onRedeploy && (
-              <button
-                className="btn btn-secondary"
-                onClick={onRedeploy}
-                disabled={isRedeploying}
-                style={{ display: "flex", alignItems: "center", gap: 5 }}
-              >
-                {isRedeploying ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <RefreshCw size={13} />}
-                {isRedeploying ? "Rebuilding edge…" : "⚡ Force Edge Redeploy"}
-              </button>
-            )}
-            <button className="btn btn-primary" style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }} onClick={onReset}>
-              🛡️ Remove again
+            <a href={cacheBustUrl} target="_blank" rel="noopener" className="btn btn-secondary">
+              <Globe size={13} /> View live site
+            </a>
+            <button className="btn btn-secondary" onClick={onReset}>
+              Done
             </button>
-          </div>
-          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>
-            💡 If your browser displays a cached version in an existing tab, press <strong>Ctrl+Shift+R</strong> (or <strong>Cmd+Shift+R</strong>) to refresh.
           </div>
           <GitHubStarPrompt subtitle="Removed the Base44 badge for free? Support Push44 with a quick star on GitHub!" />
         </div>

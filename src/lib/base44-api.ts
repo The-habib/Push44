@@ -292,8 +292,6 @@ export type Base44LiveRemoveStep =
   | "checking-css"
   | "injecting-blocker"
   | "creating-checkpoint"
-  | "deploying"
-  | "polling-build"
   | "done";
 
 export interface Base44LiveRemoveResult {
@@ -302,15 +300,15 @@ export interface Base44LiveRemoveResult {
 }
 
 /**
- * Permanently removes the "Made with Base44" / Edit badge from the LIVE Base44 deployed website.
+ * Permanently removes the "Made with Base44" / Edit badge from the Base44 project files.
  *
  * Flow:
  * 1. Checks and wakes the Base44 sandbox container.
  * 2. Reads the app's stylesheet directly from the sandbox.
- * 3. Directly writes the CSS badge blocker into sandbox files via PUT /sandbox/files/content (Zero AI credits needed).
+ * 3. Directly writes the CSS badge blocker into sandbox files (src/index.css and index.html).
  * 4. Creates a deployment checkpoint via POST /app-checkpoints.
- * 5. Triggers POST /apps/:appId/deploy so Base44 rebuilds and deploys the live site without the badge.
- * 6. Polls /static/build-status until the live build is ready.
+ * 5. Triggers POST /apps/:appId/deploy in background.
+ * 6. Returns immediately so the user can push live with one click in Base44.
  */
 export async function removeBase44LiveBadge({
   data,
@@ -413,7 +411,7 @@ export async function removeBase44LiveBadge({
     }
   } catch {}
 
-  // 5. Create a manual checkpoint so Base44 build pipeline compiles the updated sandbox
+  // 5. Create a manual checkpoint so Base44 build pipeline captures the updated sandbox
   notify("creating-checkpoint");
   let checkpointId: string | undefined;
   try {
@@ -434,30 +432,19 @@ export async function removeBase44LiveBadge({
     } catch {}
   }
 
-  // 6. Trigger live deployment with explicit checkpoint ID (forces edge rebuild)
-  notify("deploying");
-  const deployRes = await b44Fetch(`/apps/${appId}/deploy`, {
-    method: "POST",
-    body: JSON.stringify(checkpointId ? { checkpoint_id: checkpointId } : {}),
-  }, token);
-
-  // 7. Poll static build status until Cloudflare edge completes the deployment
-  notify("polling-build");
+  // 6. Trigger live deployment in background
   try {
-    for (let i = 0; i < 20; i++) {
-      const bRes = await b44Fetch(`/apps/${appId}/static/build-status`, undefined, token);
-      if (bRes?.build_ready) {
-        break;
-      }
-      await new Promise((r) => setTimeout(r, 1500));
-    }
+    b44Fetch(`/apps/${appId}/deploy`, {
+      method: "POST",
+      body: JSON.stringify(checkpointId ? { checkpoint_id: checkpointId } : {}),
+    }, token).catch(() => {});
   } catch {}
 
   notify("done");
 
   return {
-    publishedUrl: publishedUrl || (deployRes?.slug ? `https://${deployRes.slug}.base44.app` : "https://app.base44.com"),
-    checkpointId: checkpointId || deployRes?.last_deployed_checkpoint_id,
+    publishedUrl: publishedUrl || (appId ? `https://app.base44.com/apps/${appId}` : "https://app.base44.com"),
+    checkpointId,
   };
 }
 
