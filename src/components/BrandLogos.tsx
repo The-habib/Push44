@@ -46,20 +46,61 @@ export function RocketLogo({ size = 20, className = "" }: { size?: number; class
 
 export function BoltLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
   return (
-    <img src={boltLogo} alt="bolt.new" width={size} height={size} style={{ objectFit: "contain", borderRadius: 4 }} className={className} />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{ flexShrink: 0 }}
+    >
+      <rect width="32" height="32" rx="7" fill="#09090b" />
+      <path
+        d="M18.2 4.5L7.5 17.5h8.2l-2.9 10 11.7-13h-8.2l1.9-10z"
+        fill="#FACC15"
+        stroke="#FACC15"
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
 export function LovableLogo({ size = 20, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
-      <rect width="32" height="32" rx="8" fill="#F43F5E" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{ flexShrink: 0 }}
+    >
+      <title>Lovable</title>
       <path
-        d="M16 24s-9-5.5-9-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 11-9 11z"
-        fill="white"
-        stroke="white"
-        strokeWidth="0.5"
+        clipRule="evenodd"
+        fillRule="evenodd"
+        d="M7.082 0c3.91 0 7.081 3.179 7.081 7.1v2.7h2.357c3.91 0 7.082 3.178 7.082 7.1 0 3.923-3.17 7.1-7.082 7.1H0V7.1C0 3.18 3.17 0 7.082 0z"
+        fill="url(#push44-lovable-gradient)"
       />
+      <defs>
+        <radialGradient
+          id="push44-lovable-gradient"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="matrix(-1 22.49999 -30.45394 -1.3535 14 3)"
+        >
+          <stop offset="0.25" stopColor="#FE7B02" />
+          <stop offset="0.433" stopColor="#FE4230" />
+          <stop offset="0.548" stopColor="#FE529A" />
+          <stop offset="0.654" stopColor="#DD67EE" />
+          <stop offset="0.95" stopColor="#4B73FF" />
+        </radialGradient>
+      </defs>
     </svg>
   );
 }
