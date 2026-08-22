@@ -421,25 +421,35 @@ export async function removeBase44LiveBadge({
       method: "POST",
       body: JSON.stringify({ name: "Push44 Badge Removed" }),
     }, token);
-    checkpointId = cpRes?.id || cpRes?.checkpoint_id || undefined;
+    checkpointId = cpRes?.checkpoint_id || cpRes?.id || undefined;
   } catch {}
 
-  // 6. Trigger live deployment with checkpoint ID
+  // Fallback: If checkpoint creation returned no_changes or missing ID, fetch the latest checkpoint
+  if (!checkpointId) {
+    try {
+      const cpListRes = await b44Fetch(`/apps/${appId}/app-checkpoints?limit=1`, undefined, token);
+      if (Array.isArray(cpListRes) && cpListRes.length > 0 && cpListRes[0]?.id) {
+        checkpointId = cpListRes[0].id;
+      }
+    } catch {}
+  }
+
+  // 6. Trigger live deployment with explicit checkpoint ID (forces edge rebuild)
   notify("deploying");
   const deployRes = await b44Fetch(`/apps/${appId}/deploy`, {
     method: "POST",
     body: JSON.stringify(checkpointId ? { checkpoint_id: checkpointId } : {}),
   }, token);
 
-  // 7. Poll static build status
+  // 7. Poll static build status until Cloudflare edge completes the deployment
   notify("polling-build");
   try {
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 20; i++) {
       const bRes = await b44Fetch(`/apps/${appId}/static/build-status`, undefined, token);
       if (bRes?.build_ready) {
         break;
       }
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 1500));
     }
   } catch {}
 
@@ -449,4 +459,44 @@ export async function removeBase44LiveBadge({
     publishedUrl: publishedUrl || (deployRes?.slug ? `https://${deployRes.slug}.base44.app` : "https://app.base44.com"),
     checkpointId: checkpointId || deployRes?.last_deployed_checkpoint_id,
   };
+}
+
+/**
+ * Manually redeploys a Base44 app to Cloudflare edge without modifying files.
+ */
+export async function redeployBase44App(data: {
+  token: string;
+  appId: string;
+}): Promise<{ success: boolean; publishedUrl: string }> {
+  const { token, appId } = data;
+
+  // 1. Get latest checkpoint
+  let checkpointId: string | undefined;
+  try {
+    const cpList = await b44Fetch(`/apps/${appId}/app-checkpoints?limit=1`, undefined, token);
+    if (Array.isArray(cpList) && cpList.length > 0 && cpList[0]?.id) {
+      checkpointId = cpList[0].id;
+    }
+  } catch {}
+
+  // 2. Trigger deployment
+  const deployRes = await b44Fetch(`/apps/${appId}/deploy`, {
+    method: "POST",
+    body: JSON.stringify(checkpointId ? { checkpoint_id: checkpointId } : {}),
+  }, token);
+
+  // 3. Poll static build status
+  try {
+    for (let i = 0; i < 15; i++) {
+      const bRes = await b44Fetch(`/apps/${appId}/static/build-status`, undefined, token);
+      if (bRes?.build_ready) break;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  } catch {}
+
+  const publishedUrl = deployRes?.slug
+    ? `https://${deployRes.slug}.base44.app`
+    : "https://app.base44.com";
+
+  return { success: true, publishedUrl };
 }

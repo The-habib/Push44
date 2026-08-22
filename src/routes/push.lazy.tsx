@@ -11,7 +11,7 @@ import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker
 import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo, FramerLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
-import { listBase44Apps, fetchBase44AppFiles, removeBase44Badge, removeBase44LiveBadge, type Base44LiveRemoveStep } from "@/lib/base44-api";
+import { listBase44Apps, fetchBase44AppFiles, removeBase44Badge, removeBase44LiveBadge, redeployBase44App, type Base44LiveRemoveStep } from "@/lib/base44-api";
 import {
   listRocketApps, fetchRocketAppFiles,
   generateRocketKeystore, triggerRocketApkBuild, checkRocketApkBuildStatus,
@@ -178,6 +178,7 @@ export default function PushPage() {
   const [base44BadgeError, setBase44BadgeError] = useState("");
   const [base44BadgeStep, setBase44BadgeStep]   = useState<Base44LiveRemoveStep | "">("");
   const [base44PublishedUrl, setBase44PublishedUrl] = useState("");
+  const [isBase44Redeploying, setIsBase44Redeploying] = useState(false);
 
   // ── Zite Badge Removal ────────────────────────────────────────────────────
   type ZiteBadgePhase = "idle" | "removing" | "done" | "failed";
@@ -746,6 +747,23 @@ export default function PushPage() {
     }
   };
 
+  const handleBase44Redeploy = async () => {
+    if (!selectedApp || !creds.base44Token) return;
+    setIsBase44Redeploying(true);
+    try {
+      const res = await redeployBase44App({
+        token: creds.base44Token,
+        appId: selectedApp.id,
+      });
+      setBase44PublishedUrl(res.publishedUrl);
+      toast.success("Live deployment rebuild triggered on Cloudflare edge!");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to redeploy Base44 app");
+    } finally {
+      setIsBase44Redeploying(false);
+    }
+  };
+
   // ── Zite badge removal handler ────────────────────────────────────────────
   const handleZiteBadgeRemoval = async () => {
     if (!selectedApp || !creds.ziteSession) return;
@@ -1079,6 +1097,8 @@ export default function PushPage() {
               error={base44BadgeError}
               onRemove={handleBase44BadgeRemoval}
               onReset={() => { setBase44BadgePhase("idle"); setBase44BadgeError(""); setBase44BadgeStep(""); }}
+              onRedeploy={handleBase44Redeploy}
+              isRedeploying={isBase44Redeploying}
             />
           </div>
         )}
@@ -1805,6 +1825,8 @@ interface Base44BadgePanelProps {
   error: string;
   onRemove: () => void;
   onReset: () => void;
+  onRedeploy?: () => void;
+  isRedeploying?: boolean;
 }
 
 function base44StepLabel(step: string): string {
@@ -1820,7 +1842,20 @@ function base44StepLabel(step: string): string {
   }
 }
 
-function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove, onReset }: Base44BadgePanelProps) {
+function Base44BadgePanel({
+  appName,
+  publishedUrl,
+  phase,
+  step,
+  error,
+  onRemove,
+  onReset,
+  onRedeploy,
+  isRedeploying,
+}: Base44BadgePanelProps) {
+  const liveUrl = publishedUrl.startsWith("http") ? publishedUrl : `https://${publishedUrl}`;
+  const cacheBustUrl = liveUrl.includes("?") ? `${liveUrl}&v=${Date.now()}` : `${liveUrl}?v=${Date.now()}`;
+
   return (
     <div className="card" style={{ padding: 18, border: "1px solid #fed7aa", background: "#fffaf5" }}>
       {/* Header */}
@@ -1838,14 +1873,14 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
       {phase === "idle" && (
         <>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>. Zero AI credits required.
+            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>. Automatically creates a checkpoint and triggers live edge deployment.
           </div>
           <button
             className="btn btn-primary"
             style={{ width: "100%", background: "linear-gradient(135deg, #f97316, #ea580c)", justifyContent: "center" }}
             onClick={onRemove}
           >
-            🛡️ Remove Badge from Live Base44 Site
+            🛡️ Remove Badge & Redeploy Live
           </button>
         </>
       )}
@@ -1877,17 +1912,31 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
       {phase === "done" && (
         <div style={{ textAlign: "center", padding: "8px 0" }}>
           <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge Permanently Removed!</div>
-          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
-            Your live Base44 site has been redeployed. The badge is now completely hidden in all browsers.
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge Removed & Live Deployed!</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.5 }}>
+            Your live Base44 site has been automatically rebuilt on Cloudflare edge. The badge is now completely hidden.
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href={publishedUrl.startsWith("http") ? publishedUrl : `https://${publishedUrl}`} target="_blank" rel="noopener" className="btn btn-secondary">
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 }}>
+            <a href={cacheBustUrl} target="_blank" rel="noopener" className="btn btn-secondary">
               <ExternalLink size={13} /> View live site
             </a>
+            {onRedeploy && (
+              <button
+                className="btn btn-secondary"
+                onClick={onRedeploy}
+                disabled={isRedeploying}
+                style={{ display: "flex", alignItems: "center", gap: 5 }}
+              >
+                {isRedeploying ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <RefreshCw size={13} />}
+                {isRedeploying ? "Rebuilding edge…" : "⚡ Force Edge Redeploy"}
+              </button>
+            )}
             <button className="btn btn-primary" style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }} onClick={onReset}>
               🛡️ Remove again
             </button>
+          </div>
+          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>
+            💡 If your browser displays a cached version in an existing tab, press <strong>Ctrl+Shift+R</strong> (or <strong>Cmd+Shift+R</strong>) to refresh.
           </div>
           <GitHubStarPrompt subtitle="Removed the Base44 badge for free? Support Push44 with a quick star on GitHub!" />
         </div>
