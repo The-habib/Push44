@@ -11,7 +11,7 @@ import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker
 import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo, FramerLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
-import { listBase44Apps, fetchBase44AppFiles, removeBase44Badge } from "@/lib/base44-api";
+import { listBase44Apps, fetchBase44AppFiles, removeBase44Badge, removeBase44LiveBadge, type Base44LiveRemoveStep } from "@/lib/base44-api";
 import {
   listRocketApps, fetchRocketAppFiles,
   generateRocketKeystore, triggerRocketApkBuild, checkRocketApkBuildStatus,
@@ -175,7 +175,8 @@ export default function PushPage() {
   type Base44BadgePhase = "idle" | "removing" | "done" | "failed";
   const [base44BadgePhase, setBase44BadgePhase] = useState<Base44BadgePhase>("idle");
   const [base44BadgeError, setBase44BadgeError] = useState("");
-  const [base44CleanedCount, setBase44CleanedCount] = useState(0);
+  const [base44BadgeStep, setBase44BadgeStep]   = useState<Base44LiveRemoveStep | "">("");
+  const [base44PublishedUrl, setBase44PublishedUrl] = useState("");
 
   // ── Zite Badge Removal ────────────────────────────────────────────────────
   type ZiteBadgePhase = "idle" | "removing" | "done" | "failed";
@@ -223,7 +224,8 @@ export default function PushPage() {
   const resetBase44BadgeState = useCallback(() => {
     setBase44BadgePhase("idle");
     setBase44BadgeError("");
-    setBase44CleanedCount(0);
+    setBase44BadgeStep("");
+    setBase44PublishedUrl("");
   }, []);
 
   const resetZiteBadgeState = useCallback(() => {
@@ -713,23 +715,22 @@ export default function PushPage() {
     }
   };
 
-  // ── Base44 badge removal handler ──────────────────────────────────────────
+  // ── Base44 live badge removal handler ────────────────────────────────────
   const handleBase44BadgeRemoval = async () => {
-    if (!selectedApp || files.length === 0) return;
+    if (!selectedApp || !creds.base44Token) return;
     setBase44BadgePhase("removing");
     setBase44BadgeError("");
+    setBase44BadgeStep("");
     try {
-      const res = await removeBase44Badge({ files });
-      setFiles(res.files);
-      setBase44CleanedCount(res.cleanedCount);
+      const res = await removeBase44LiveBadge({
+        data: { token: creds.base44Token, appId: selectedApp.id },
+        onStep: (step) => setBase44BadgeStep(step),
+      });
+      setBase44PublishedUrl(res.publishedUrl);
       setBase44BadgePhase("done");
-      toast.success(
-        res.cleanedCount > 0
-          ? `Removed Base44 badge & branding from ${res.cleanedCount} file${res.cleanedCount === 1 ? "" : "s"}!`
-          : "Project files are already 100% white-label and badge-free!"
-      );
+      toast.success("Made with Base44 badge permanently removed from your live deployed site!");
     } catch (e: any) {
-      setBase44BadgeError(e?.message ?? "Failed to remove badge");
+      setBase44BadgeError(e?.message ?? "Failed to remove badge from live deployment");
       setBase44BadgePhase("failed");
     }
   };
@@ -1040,16 +1041,16 @@ export default function PushPage() {
         )}
 
         {/* Base44 badge removal panel */}
-        {platform === "base44" && selectedApp && files.length > 0 && (
+        {platform === "base44" && selectedApp && (
           <div style={{ marginTop: 14 }}>
             <Base44BadgePanel
               appName={selectedApp.name}
-              filesCount={files.length}
+              publishedUrl={base44PublishedUrl || (selectedApp.name ? `https://${selectedApp.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}.base44.app` : "https://app.base44.com")}
               phase={base44BadgePhase}
+              step={base44BadgeStep}
               error={base44BadgeError}
-              cleanedCount={base44CleanedCount}
               onRemove={handleBase44BadgeRemoval}
-              onReset={() => { setBase44BadgePhase("idle"); setBase44BadgeError(""); }}
+              onReset={() => { setBase44BadgePhase("idle"); setBase44BadgeError(""); setBase44BadgeStep(""); }}
             />
           </div>
         )}
@@ -1692,15 +1693,26 @@ function BookOpen14() {
 // ── Base44BadgePanel ──────────────────────────────────────────────────────────
 interface Base44BadgePanelProps {
   appName: string;
-  filesCount: number;
+  publishedUrl: string;
   phase: "idle" | "removing" | "done" | "failed";
+  step: Base44LiveRemoveStep | "";
   error: string;
-  cleanedCount: number;
   onRemove: () => void;
   onReset: () => void;
 }
 
-function Base44BadgePanel({ appName, filesCount, phase, error, cleanedCount, onRemove, onReset }: Base44BadgePanelProps) {
+function base44StepLabel(step: string): string {
+  switch (step) {
+    case "checking-css":        return "Checking app CSS rules…";
+    case "sending-instruction": return "Sending blocker rule to Base44 AI…";
+    case "waiting-ai":           return "Base44 AI is updating source files…";
+    case "deploying":            return "Rebuilding and deploying live site…";
+    case "done":                 return "Live deployment updated!";
+    default:                     return "Working…";
+  }
+}
+
+function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove, onReset }: Base44BadgePanelProps) {
   return (
     <div className="card" style={{ padding: 18, border: "1px solid #fed7aa", background: "#fffaf5" }}>
       {/* Header */}
@@ -1710,7 +1722,7 @@ function Base44BadgePanel({ appName, filesCount, phase, error, cleanedCount, onR
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: 14 }}>Remove "Made with Base44" Badge</div>
-          <div style={{ fontSize: 12, color: "#64748b" }}>{appName} · {filesCount} files ready</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{appName} · {publishedUrl}</div>
         </div>
       </div>
 
@@ -1718,23 +1730,38 @@ function Base44BadgePanel({ appName, filesCount, phase, error, cleanedCount, onR
       {phase === "idle" && (
         <>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-            Clean and strip all Base44 watermarks, floating edit badges (<code>#base44-edit-badge</code>), and branding links from CSS, HTML, and React components before exporting or pushing to GitHub.
+            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>.
           </div>
           <button
             className="btn btn-primary"
             style={{ width: "100%", background: "linear-gradient(135deg, #f97316, #ea580c)", justifyContent: "center" }}
             onClick={onRemove}
           >
-            🛡️ Remove Base44 Badge & Watermark
+            🛡️ Remove Badge from Live Base44 Site
           </button>
         </>
       )}
 
       {/* Removing */}
       {phase === "removing" && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fff7ed", border: "1px solid #ffedd5" }}>
-          <Loader2 size={15} color="#ea580c" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>Scanning & cleaning project files…</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fff7ed", border: "1px solid #ffedd5" }}>
+            <Loader2 size={15} color="#ea580c" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{step ? base44StepLabel(step) : "Starting live badge removal…"}</span>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {(["checking-css", "sending-instruction", "waiting-ai", "deploying"] as const).map((s) => {
+              const steps = ["checking-css", "sending-instruction", "waiting-ai", "deploying"] as const;
+              const isDone = step && steps.indexOf(step as any) > steps.indexOf(s);
+              const isActive = step === s;
+              return (
+                <div
+                  key={s}
+                  style={{ flex: 1, height: 4, borderRadius: 2, background: isDone ? "#ea580c" : isActive ? "#fb923c" : "#ffedd5", transition: "background 0.3s" }}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -1742,13 +1769,18 @@ function Base44BadgePanel({ appName, filesCount, phase, error, cleanedCount, onR
       {phase === "done" && (
         <div style={{ textAlign: "center", padding: "8px 0" }}>
           <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge & Watermarks Removed!</div>
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge Permanently Removed!</div>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
-            Successfully cleaned {cleanedCount} file{cleanedCount === 1 ? "" : "s"}. Your project files are now 100% white-label and ready to push to GitHub.
+            Your live Base44 site has been redeployed. The badge is now completely hidden in all browsers.
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={onReset}>
-            Clean again
-          </button>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href={publishedUrl.startsWith("http") ? publishedUrl : `https://${publishedUrl}`} target="_blank" rel="noopener" className="btn btn-secondary">
+              <ExternalLink size={13} /> View live site
+            </a>
+            <button className="btn btn-primary" style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }} onClick={onReset}>
+              🛡️ Remove again
+            </button>
+          </div>
         </div>
       )}
 

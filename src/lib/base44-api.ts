@@ -267,3 +267,96 @@ export async function removeBase44Badge({
 }): Promise<Base44BadgeResult> {
   return cleanBase44Files(files);
 }
+
+export type Base44LiveRemoveStep =
+  | "checking-css"
+  | "sending-instruction"
+  | "waiting-ai"
+  | "deploying"
+  | "done";
+
+export interface Base44LiveRemoveResult {
+  publishedUrl: string;
+  checkpointId?: string;
+}
+
+/**
+ * Permanently removes the "Made with Base44" / Edit badge from the LIVE Base44 deployed website.
+ *
+ * Flow:
+ * 1. Checks current project files in sandbox for CSS badge hiding rules.
+ * 2. If needed, instructs Base44 AI to inject the badge blocker into index.css.
+ * 3. Triggers POST /api/apps/:appId/deploy so Base44 rebuilds and deploys the live site without the badge.
+ */
+export async function removeBase44LiveBadge({
+  data,
+  onStep,
+}: {
+  data: { token: string; appId: string };
+  onStep?: (step: Base44LiveRemoveStep) => void;
+}): Promise<Base44LiveRemoveResult> {
+  const { token, appId } = data;
+  const notify = (s: Base44LiveRemoveStep) => { try { onStep?.(s); } catch {} };
+
+  notify("checking-css");
+
+  // 1. Fetch published URL
+  let publishedUrl = "";
+  try {
+    const pubRes = await b44Fetch(`/apps/platform/${appId}/published-url`, undefined, token);
+    publishedUrl = pubRes?.url || "";
+  } catch {}
+
+  if (!publishedUrl) {
+    try {
+      const app = await b44Fetch(`/apps/${appId}`, undefined, token);
+      if (app?.slug) {
+        publishedUrl = `https://${app.slug}.base44.app`;
+      }
+    } catch {}
+  }
+
+  // 2. Check if CSS is already hiding the badge in sandbox files
+  let hasBlocker = false;
+  try {
+    const files = await fetchBase44AppFiles({ data: { token, appId } });
+    const css = files.find(f => f.path.endsWith(".css") || f.path === "src/index.css");
+    if (css?.content && css.content.includes("base44-edit-badge")) {
+      hasBlocker = true;
+    }
+  } catch {}
+
+  // 3. If not present, send prompt to Base44 AI to inject CSS blocker
+  if (!hasBlocker) {
+    notify("sending-instruction");
+    await b44Fetch(`/apps/${appId}/chat/message`, {
+      method: "POST",
+      body: JSON.stringify({
+        content: "Add CSS to src/index.css to permanently hide the Base44 branding badge: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }",
+        role: "user",
+        file_urls: [],
+        custom_context: [],
+        additional_message_params: {
+          from_mobile: false,
+        },
+      }),
+    }, token);
+
+    notify("waiting-ai");
+    await new Promise((r) => setTimeout(r, 8_000));
+  }
+
+  // 4. Trigger live deploy on Base44
+  notify("deploying");
+  const deployRes = await b44Fetch(`/apps/${appId}/deploy`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  }, token);
+
+  notify("done");
+
+  return {
+    publishedUrl: publishedUrl || (deployRes?.slug ? `https://${deployRes.slug}.base44.app` : "https://app.base44.com"),
+    checkpointId: deployRes?.last_deployed_checkpoint_id,
+  };
+}
