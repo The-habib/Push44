@@ -322,6 +322,18 @@
     <lastmod>2026-07-05</lastmod>
   </url>
   <url>
+    <loc>https://push44.vercel.app/blog/remove-made-with-base44-badge</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-08-22</lastmod>
+  </url>
+  <url>
+    <loc>https://push44.vercel.app/blog/base44-live-badge-removal-guide</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-08-22</lastmod>
+  </url>
+  <url>
     <loc>https://push44.vercel.app/compare/push44-vs-zip-download</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

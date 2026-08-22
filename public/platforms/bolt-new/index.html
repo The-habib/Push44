@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f97316" />
   <title>bolt.new GitHub Export Guide — Push44</title>
-  <meta name="description" content="bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
+  <meta name="description" content="bolt.new builds and deploys full-stack apps instantly. Push44 auto-fetches all your bolt.new projects and removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://push44.vercel.app/platforms/bolt-new" />
 
@@ -25,7 +25,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="bolt.new GitHub Export Guide — Push44" />
-  <meta property="og:description" content="bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
+  <meta property="og:description" content="bolt.new builds and deploys full-stack apps instantly. Push44 auto-fetches all your bolt.new projects and removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
   <meta property="og:url" content="https://push44.vercel.app/platforms/bolt-new" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Push44" />
@@ -40,7 +40,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@push44app" />
   <meta name="twitter:title" content="bolt.new GitHub Export Guide — Push44" />
-  <meta name="twitter:description" content="bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
+  <meta name="twitter:description" content="bolt.new builds and deploys full-stack apps instantly. Push44 auto-fetches all your bolt.new projects and removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required." />
   <meta name="twitter:image" content="https://push44.vercel.app/og-image.jpg" />
 
   <!-- Fonts (async) -->
@@ -283,8 +283,8 @@
       .footer-grid{grid-template-columns:1fr}
     }
   </style>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"bolt.new Export Guide — Push44","description":"bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.","url":"https://push44.vercel.app/platforms/bolt-new","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How does badge removal work?","acceptedAnswer":{"@type":"Answer","text":"Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL."}},{"@type":"Question","name":"Is the badge removal permanent?","acceptedAnswer":{"@type":"Answer","text":"It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge."}},{"@type":"Question","name":"Does this affect my app's functionality?","acceptedAnswer":{"@type":"Answer","text":"No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged."}},{"@type":"Question","name":"Where do I find my Project ID?","acceptedAnswer":{"@type":"Answer","text":"Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/."}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"bolt.new Export Guide — Push44","description":"bolt.new builds and deploys full-stack apps instantly. Push44 auto-fetches all your bolt.new projects and removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.","url":"https://push44.vercel.app/platforms/bolt-new","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need to copy project IDs manually?","acceptedAnswer":{"@type":"Answer","text":"No! Push44 queries bolt.new's /chats and /projects endpoints to automatically list all your workspaces."}},{"@type":"Question","name":"How does badge removal work?","acceptedAnswer":{"@type":"Answer","text":"Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL."}},{"@type":"Question","name":"Is the badge removal permanent?","acceptedAnswer":{"@type":"Answer","text":"It lasts until you make a new deployment from the bolt.new editor. After each new editor deploy, run Push44 again to re-remove the badge."}},{"@type":"Question","name":"Does this affect my app's functionality?","acceptedAnswer":{"@type":"Answer","text":"No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"bolt.new","item":"https://push44.vercel.app/platforms/bolt-new"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
@@ -320,11 +320,11 @@
       <div style="width:64px;height:64px;border-radius:16px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">b</div>
       <div>
         <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">bolt.new Export Hub</h1>
-        <p style="font-size:16px;color:var(--muted)">Remove the 'Made in Bolt' badge from your bolt.new app</p>
+        <p style="font-size:16px;color:var(--muted)">Automatic workspace discovery &amp; 1-click 'Made in Bolt' badge removal</p>
       </div>
     </div>
 
-    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">bolt.new builds and deploys full-stack apps instantly. Push44 removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.</p>
+    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">bolt.new builds and deploys full-stack apps instantly. Push44 auto-fetches all your bolt.new projects and removes the 'Made in Bolt' badge from your live deployment in one click — no code changes required.</p>
 
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <a href="/" class="btn-primary">Start Exporting bolt.new →</a>
@@ -341,23 +341,23 @@
       
         <div style="display:flex;align-items:flex-start;gap:12px">
           <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">One-click badge removal</span>
+          <span style="font-size:15px;color:#374151;line-height:1.5">Automatic account-wide workspace &amp; project discovery (no manual IDs required)</span>
         </div>
         <div style="display:flex;align-items:flex-start;gap:12px">
           <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Re-deploys to your existing bolt.new Netlify URL</span>
+          <span style="font-size:15px;color:#374151;line-height:1.5">One-click live badge removal on *.bolt.host</span>
         </div>
         <div style="display:flex;align-items:flex-start;gap:12px">
           <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">No code changes needed</span>
+          <span style="font-size:15px;color:#374151;line-height:1.5">Re-deploys to your existing bolt.new Netlify/Host URL</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
+          <span style="font-size:15px;color:#374151;line-height:1.5">CORS-safe asset fetching for Vercel production hosting</span>
         </div>
         <div style="display:flex;align-items:flex-start;gap:12px">
           <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
           <span style="font-size:15px;color:#374151;line-height:1.5">Injects a MutationObserver blocker into your bundle</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Works with any bolt.new project that has been deployed</span>
         </div>
     </div>
   </div>
@@ -373,19 +373,19 @@
         
           <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
             <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 1">1</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with your __session cookie and Project ID</span>
+            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with your __session cookie or auth token</span>
           </div>
           <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
             <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 2">2</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your bolt.new project</span>
+            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Push44 automatically discovers all your bolt.new chats and projects</span>
           </div>
           <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
             <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 3">3</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Click Remove Badge</span>
+            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your project from the interactive dropdown</span>
           </div>
           <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
             <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 4">4</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Badge is permanently removed from your live deployment</span>
+            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Click Remove Badge to redeploy clean, white-label version</span>
           </div>
         <a href="/blog/remove-made-in-bolt-badge" class="btn-primary" style="margin-top:8px">Full Step-by-Step Guide →</a>
       </div>
@@ -471,6 +471,10 @@
     <h2 id="faq-platform-heading" class="section-title">bolt.new FAQ</h2>
     
       <div class="faq-item">
+        <div class="faq-question">Do I need to copy project IDs manually?</div>
+        <div class="faq-answer">No! Push44 queries bolt.new's /chats and /projects endpoints to automatically list all your workspaces.</div>
+      </div>
+      <div class="faq-item">
         <div class="faq-question">How does badge removal work?</div>
         <div class="faq-answer">Push44 downloads your live JS bundle, prepends a tiny MutationObserver script that removes the badge element, then re-deploys the modified bundle to your existing bolt.new Netlify URL.</div>
       </div>
@@ -481,10 +485,6 @@
       <div class="faq-item">
         <div class="faq-question">Does this affect my app's functionality?</div>
         <div class="faq-answer">No. Push44 only prepends a small non-blocking script to your JS bundle. Your app's code is otherwise unchanged.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Where do I find my Project ID?</div>
-        <div class="faq-answer">Open your project in the bolt.new editor — the URL is bolt.new/~/PROJECT_ID. Copy the part after ~/.</div>
       </div>
   </div>
 </section>
@@ -498,7 +498,7 @@
         <a href="/platforms/base44" class="cat-card" style="background:#fff7ed" aria-label="Base44 export hub">
           <div style="width:40px;height:40px;border-radius:10px;background:#f97316;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">B</div>
           <div class="cat-name">Base44</div>
-          <div class="cat-desc">5 guides</div>
+          <div class="cat-desc">7 guides</div>
         </a>
         <a href="/platforms/rocket-new" class="cat-card" style="background:#f0fdf4" aria-label="Rocket.new export hub">
           <div style="width:40px;height:40px;border-radius:10px;background:#22c55e;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">R</div>

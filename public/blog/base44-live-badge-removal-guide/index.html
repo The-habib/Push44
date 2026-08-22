@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#f97316" />
-  <title>Base44 GitHub Export Guide — Push44</title>
-  <meta name="description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files, remove live deployment watermarks, and push full code trees to GitHub in one click." />
+  <title>Base44 Live Badge Removal: Step-by-Step Technical Guide | Push44</title>
+  <meta name="description" content="Complete technical guide to white-labeling live Base44 apps. How Base44 badge injection works, CSS override specificity, and automated redeployment via Push44." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="https://push44.vercel.app/platforms/base44" />
+  <link rel="canonical" href="https://push44.vercel.app/blog/base44-live-badge-removal-guide" />
 
   <!-- Site / Application identity -->
   <meta name="application-name" content="Push44" />
@@ -24,23 +24,23 @@
   <link rel="manifest" href="https://push44.vercel.app/manifest.json" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta property="og:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files, remove live deployment watermarks, and push full code trees to GitHub in one click." />
-  <meta property="og:url" content="https://push44.vercel.app/platforms/base44" />
-  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Base44 Live Badge Removal: Step-by-Step Technical Guide | Push44" />
+  <meta property="og:description" content="Complete technical guide to white-labeling live Base44 apps. How Base44 badge injection works, CSS override specificity, and automated redeployment via Push44." />
+  <meta property="og:url" content="https://push44.vercel.app/blog/base44-live-badge-removal-guide" />
+  <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Push44" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:image" content="https://push44.vercel.app/og-image.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Base44 GitHub Export Guide — Push44" />
+  <meta property="og:image:alt" content="Base44 Live Badge Removal: Step-by-Step Technical Guide | Push44" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@push44app" />
-  <meta name="twitter:title" content="Base44 GitHub Export Guide — Push44" />
-  <meta name="twitter:description" content="Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files, remove live deployment watermarks, and push full code trees to GitHub in one click." />
+  <meta name="twitter:title" content="Base44 Live Badge Removal: Step-by-Step Technical Guide | Push44" />
+  <meta name="twitter:description" content="Complete technical guide to white-labeling live Base44 apps. How Base44 badge injection works, CSS override specificity, and automated redeployment via Push44." />
   <meta name="twitter:image" content="https://push44.vercel.app/og-image.jpg" />
 
   <!-- Fonts (async) -->
@@ -283,9 +283,10 @@
       .footer-grid{grid-template-columns:1fr}
     }
   </style>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Base44 Export Guide — Push44","description":"Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files, remove live deployment watermarks, and push full code trees to GitHub in one click.","url":"https://push44.vercel.app/platforms/base44","publisher":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does Push44 remove the badge on live *.base44.app sites?","acceptedAnswer":{"@type":"Answer","text":"Yes! Push44 injects CSS blocker rules into your app's stylesheet and triggers a production deploy, removing the badge for all visitors."}},{"@type":"Question","name":"Does Push44 work with all Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Push44 uses the Base44 API to read and deploy any project associated with your account."}},{"@type":"Question","name":"Do I need a paid Base44 plan?","acceptedAnswer":{"@type":"Answer","text":"No. The Base44 API and deployment endpoints used by Push44 are available to all account tiers."}},{"@type":"Question","name":"How long does a Base44 export take?","acceptedAnswer":{"@type":"Answer","text":"Typically under 30 seconds for most projects."}},{"@type":"Question","name":"Can I export multiple Base44 projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. Run Push44 separately for each project, pointing to different GitHub repos."}},{"@type":"Question","name":"Is my Base44 API token safe in Push44?","acceptedAnswer":{"@type":"Answer","text":"Yes. It's stored in your browser's localStorage and never sent to any Push44 server."}}]}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Platforms","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44","item":"https://push44.vercel.app/platforms/base44"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Base44 Live Deployment Badge Removal \u0026 White-Labeling Guide","description":"Complete technical guide to white-labeling live Base44 apps. How Base44 badge injection works, CSS override specificity, and automated redeployment via Push44.","url":"https://push44.vercel.app/blog/base44-live-badge-removal-guide","datePublished":"2026-08-21","dateModified":"2026-08-22","author":{"@type":"Organization","name":"Push44","url":"https://push44.vercel.app"},"publisher":{"@type":"Organization","name":"Push44","logo":{"@type":"ImageObject","url":"https://push44.vercel.app/logo.png"}},"keywords":"base44 live badge removal, base44 white label guide, remove base44 edit badge, base44 branding removal, base44 deploy api, base44 watermark removal","articleSection":"tutorials"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Base44 Live Deployment Badge Removal \u0026 White-Labeling Guide","description":"Base44 apps deployed to *.base44.app are served by a Cloudflare-fronted reverse proxy. The server HTML template injects /static/js/badge.js, which creates a fixed container with id='base44-edit-badge' on DOMContentLoaded. Because the badge script is injected at runtime, static HTML edits alone are overwritten on new builds.","step":[{"@type":"HowToStep","position":1,"name":"Inspect the Base44 badge architecture","text":"Base44 injects \u003cscript src='/static/js/badge.js'\u003e\u003c/script\u003e into the document \u003chead\u003e. On DOMContentLoaded, it constructs a fixed container with ID #base44-edit-badge at zIndex 999999 containing branding links and editor redirects."},{"@type":"HowToStep","position":2,"name":"Formulate CSS specificity blocker rules","text":"To guarantee suppression across all browser engines, the blocker uses: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }."},{"@type":"HowToStep","position":3,"name":"Automate code injection via Base44 AI Chat API","text":"Push44 calls POST /api/apps/:appId/chat/message with instructions to update src/index.css. Base44's backend assistant processes the diff and updates the sandbox checkpoint."},{"@type":"HowToStep","position":4,"name":"Trigger production redeployment","text":"Push44 sends a POST request to /api/apps/:appId/deploy. Base44 initiates a fresh Vite production build and publishes the static artifacts to their CDN edge, delivering a 100% white-label live site."}],"tool":[{"@type":"HowToTool","name":"Push44","url":"https://push44.vercel.app"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why does the CSS injection approach work best?","acceptedAnswer":{"@type":"Answer","text":"Because CSS rules are evaluated synchronously by the browser's rendering engine before scripts execute. When badge.js creates #base44-edit-badge, the element is instantly hidden with zero layout shift."}},{"@type":"Question","name":"Does this violate Base44 terms?","acceptedAnswer":{"@type":"Answer","text":"Push44 simply adds standard CSS styling rules to your own project source code and triggers a regular deployment using your authorized credentials."}},{"@type":"Question","name":"Can I also export the full white-label code to GitHub?","acceptedAnswer":{"@type":"Answer","text":"Yes! Push44 also strips branding links from all exported JSX/TSX and index.html files before pushing commits to your GitHub repository."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Push44","item":"https://push44.vercel.app/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://push44.vercel.app/blog"},{"@type":"ListItem","position":3,"name":"Base44 Live Deployment Badge Removal \u0026 White-Labeling Guide","item":"https://push44.vercel.app/blog/base44-live-badge-removal-guide"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://push44.vercel.app/#organization","name":"Push44","url":"https://push44.vercel.app","logo":"https://push44.vercel.app/icon-512.png","description":"Export AI-Generated Code from Any Platform. Free. Forever.","sameAs":["https://github.com/The-habib/Push44"]},{"@type":"WebSite","@id":"https://push44.vercel.app/#website","url":"https://push44.vercel.app","name":"Push44","alternateName":"Push44","publisher":{"@id":"https://push44.vercel.app/#organization"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://push44.vercel.app/blog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
@@ -298,151 +299,173 @@
       Push44
     </a>
     <div class="nav-links" role="list">
-      <a href="/blog" class="nav-link" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link active" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
+      <a href="/blog" class="nav-link active" role="listitem">Blog</a><a href="/platforms/base44" class="nav-link" role="listitem">Platforms</a><a href="/blog#guides" class="nav-link" role="listitem">Guides</a><a href="/compare/push44-vs-zip-download" class="nav-link" role="listitem">Compare</a>
       <a href="https://github.com/The-habib/Push44" class="nav-link" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </div>
     <a href="/#" class="nav-cta" onclick="location.href='/'">Launch App →</a>
   </div>
 </nav>
 
-<!-- PLATFORM HERO -->
-<div style="background:linear-gradient(135deg,#f9731622,#fff7ed);border-bottom:1px solid #f9731633;padding:64px 24px">
-  <div style="max-width:1200px;margin:0 auto">
+<!-- ARTICLE HERO -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:48px 24px 64px;margin-bottom:0">
+  <div style="max-width:800px;margin:0 auto">
 
     <!-- Breadcrumbs -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href="/">Push44</a><span aria-hidden="true">›</span>
-      <a href="/blog">Blog</a><span aria-hidden="true">›</span>
-      <span aria-current="page">Base44</span>
+    <nav class="breadcrumbs" aria-label="Breadcrumb" style="color:rgba(148,163,184,0.8)">
+      <a href="/" style="color:rgba(148,163,184,0.7)">Push44</a>
+      <span aria-hidden="true">›</span>
+      <a href="/blog" style="color:rgba(148,163,184,0.7)">Blog</a>
+      <span aria-hidden="true">›</span>
+      <a href="/platforms/base44" style="color:rgba(148,163,184,0.7)">Base44</a><span aria-hidden="true">›</span>
+      <span style="color:#94a3b8" aria-current="page">Base44 Live Deployment Badge Removal &amp; W…</span>
     </nav>
 
-    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff" aria-hidden="true">B</div>
-      <div>
-        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--dark);letter-spacing:-0.04em;line-height:1.1;margin-bottom:6px">Base44 Export Hub</h1>
-        <p style="font-size:16px;color:var(--muted)">Export your complete Base44 source code &amp; remove live branding badges</p>
-      </div>
+    <!-- Meta -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:rgba(255,255,255,0.1);color:#f97316">Base44</span>
+      <span class="badge badge-difficulty-intermediate">intermediate</span>
+      <span style="font-size:13px;color:#64748b">⏱ 7 min read</span>
+      <span style="font-size:13px;color:#64748b">• 👁 2,900 views</span>
     </div>
 
-    <p style="font-size:16px;color:#52525b;line-height:1.7;max-width:640px;margin-bottom:28px">Base44 is a popular AI app builder. Push44 connects to the Base44 API to fetch all project files, remove live deployment watermarks, and push full code trees to GitHub in one click.</p>
+    <h1 style="font-size:clamp(28px,4.5vw,42px);font-weight:900;color:#f8fafc;letter-spacing:-0.04em;line-height:1.1;margin-bottom:18px">Base44 Live Deployment Badge Removal &amp; White-Labeling Guide</h1>
+    <p style="font-size:17px;color:#94a3b8;line-height:1.7;margin-bottom:24px;max-width:640px">Understanding how Base44 injects branding badges into production apps is key to creating clean, white-label client deliverables. In this technical deep-dive, we examine the Base44 server injection pipeline, DOM node lifecycle, and how Push44 automates live CSS overrides and production redeployments.</p>
 
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <a href="/" class="btn-primary">Start Exporting Base44 →</a>
-      <a href="/blog" class="btn-ghost">All Guides</a>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px" aria-hidden="true">P</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0">Push44 Team</div>
+          <div style="font-size:12px;color:#64748b">Updated August 22, 2026</div>
+        </div>
+      </div>
+      <!-- Share -->
+      <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="https://twitter.com/intent/tweet?text=Base44%20Live%20Deployment%20Badge%20Removal%20%26%20White-Labeling%20Guide&url=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fbase44-live-badge-removal-guide" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">Share on X</a>
+        <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fpush44.vercel.app%2Fblog%2Fbase44-live-badge-removal-guide&t=Base44%20Live%20Deployment%20Badge%20Removal%20%26%20White-Labeling%20Guide" target="_blank" rel="noopener noreferrer" style="font-size:12px;font-weight:600;color:#64748b;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:6px 14px;border-radius:20px;text-decoration:none">HN</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FEATURES -->
-<section style="padding:48px 24px;background:#fafafa;border-bottom:1px solid var(--border)" aria-labelledby="features-heading">
-  <div class="container">
-    <h2 id="features-heading" style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:24px">What Push44 Does with Base44</h2>
-    <div class="grid-3">
-      
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">1-Click live deployed badge removal (#base44-edit-badge)</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">AI CSS blocker injection and production redeployment</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Read all project files via Base44 API</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Push complete source tree to GitHub</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Version history for every session</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">ZIP download option</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:24px;height:24px;border-radius:6px;background:#f97316;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;margin-top:2px" aria-hidden="true">✓</div>
-          <span style="font-size:15px;color:#374151;line-height:1.5">Works with email/password and API token auth</span>
-        </div>
-    </div>
-  </div>
-</section>
+<!-- ARTICLE BODY -->
+<div class="article-layout" role="main">
+  <!-- Content -->
+  <article class="article-content" aria-label="Base44 Live Deployment Badge Removal &amp; White-Labeling Guide">
 
-<!-- HOW TO EXPORT -->
-<section style="padding:64px 24px" aria-labelledby="how-to-heading">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start" class="grid-platform">
-      <div>
-        <p class="section-badge" style="color:#f97316">Quick Start</p>
-        <h2 id="how-to-heading" class="section-title">How to Export Base44</h2>
-        
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 1">1</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Get Base44 API token or log in with credentials</span>
+    <!-- Quick Summary -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;margin-bottom:36px">
+      <h2 style="font-size:15px;font-weight:800;color:#15803d;margin-bottom:12px;margin-top:0;display:flex;align-items:center;gap:6px">
+        ✅ Quick Summary
+      </h2>
+      <p style="font-size:15px;color:#166534;line-height:1.6;margin:0">The most robust and permanent way to remove the badge is injecting CSS specificity overrides (#base44-edit-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }) directly into src/index.css via Base44's AI assistant, followed by calling POST /api/apps/:appId/deploy. When Vite compiles the production bundle, the CSS rules suppress the badge element instantaneously upon DOM insertion.</p>
+    </div>
+
+    <!-- Problem -->
+    <section id="the-problem" aria-labelledby="problem-heading">
+      <h2 id="problem-heading">The Problem</h2>
+      <p>Base44 apps deployed to *.base44.app are served by a Cloudflare-fronted reverse proxy. The server HTML template injects /static/js/badge.js, which creates a fixed container with id='base44-edit-badge' on DOMContentLoaded. Because the badge script is injected at runtime, static HTML edits alone are overwritten on new builds.</p>
+    </section>
+
+    <!-- Solution -->
+    <section id="the-solution" aria-labelledby="solution-heading">
+      <h2 id="solution-heading">How Push44 Solves It</h2>
+      <p>The most robust and permanent way to remove the badge is injecting CSS specificity overrides (#base44-edit-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }) directly into src/index.css via Base44's AI assistant, followed by calling POST /api/apps/:appId/deploy. When Vite compiles the production bundle, the CSS rules suppress the badge element instantaneously upon DOM insertion.</p>
+    </section>
+
+    <!-- Steps -->
+    <section id="step-by-step" aria-labelledby="steps-heading">
+      <h2 id="steps-heading">Step-by-Step Guide</h2>
+      
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 1">1</div>
+          <div class="step-content">
+            <h3>Inspect the Base44 badge architecture</h3>
+            <p>Base44 injects &lt;script src='/static/js/badge.js'&gt;&lt;/script&gt; into the document &lt;head&gt;. On DOMContentLoaded, it constructs a fixed container with ID #base44-edit-badge at zIndex 999999 containing branding links and editor redirects.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>The DOM node ID is always strictly #base44-edit-badge across all Base44 generated applications.</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 2">2</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Connect in Push44 with your token</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 2">2</div>
+          <div class="step-content">
+            <h3>Formulate CSS specificity blocker rules</h3>
+            <p>To guarantee suppression across all browser engines, the blocker uses: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>Appending these rules to src/index.css ensures Vite compiles them into dist/assets/index-*.css with maximum priority.</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 3">3</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Select your Base44 project</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 3">3</div>
+          <div class="step-content">
+            <h3>Automate code injection via Base44 AI Chat API</h3>
+            <p>Push44 calls POST /api/apps/:appId/chat/message with instructions to update src/index.css. Base44's backend assistant processes the diff and updates the sandbox checkpoint.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>Push44 waits for the sandbox checkpoint status to transition to ready before triggering deployment.</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 4">4</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Click 'Remove Badge' for live deployment or 'Push to GitHub' for full source code backup</span>
+        </div>
+        <div class="step-card" role="article">
+          <div class="step-num" aria-label="Step 4">4</div>
+          <div class="step-content">
+            <h3>Trigger production redeployment</h3>
+            <p>Push44 sends a POST request to /api/apps/:appId/deploy. Base44 initiates a fresh Vite production build and publishes the static artifacts to their CDN edge, delivering a 100% white-label live site.</p>
+            <div class="callout callout-tip"><div class="callout-title">💡 Pro Tip</div>The deployment response includes the latest commit hash and checkpoint ID.</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-            <div style="width:28px;height:28px;border-radius:50%;background:#f97316;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px" aria-label="Step 5">5</div>
-            <span style="font-size:15px;color:#374151;line-height:1.5;padding-top:4px">Live site is redeployed badge-free / GitHub repo is created</span>
-          </div>
-        <a href="/blog/remove-made-with-base44-badge" class="btn-primary" style="margin-top:8px">Full Step-by-Step Guide →</a>
+        </div>
+    </section>
+
+    <!-- Tips -->
+    
+    <section id="tips" aria-labelledby="tips-heading">
+      <h2 id="tips-heading">Pro Tips</h2>
+      <ul>
+        <li>The CSS blocker rule applies before React hydration, preventing any visual flickering or layout shifts</li><li>All live URLs (https://&lt;slug&gt;.base44.app) update immediately upon deploy completion</li><li>Push44's automated workflow takes under 20 seconds from click to live deployment</li>
+      </ul>
+    </section>
+
+    <!-- Mistakes -->
+    
+    <section aria-labelledby="mistakes-heading">
+      <h2 id="mistakes-heading">Common Mistakes to Avoid</h2>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ Watch Out For</div>
+        <ul style="margin:8px 0 0 20px;padding:0">
+          <li style="margin-bottom:6px">Trying to use DOM removal scripts that trigger paywall warning logs in the console</li><li style="margin-bottom:6px">Editing dist files locally without updating the upstream Base44 source checkpoint</li><li style="margin-bottom:6px">Failing to purge browser cache after redeployment</li>
+        </ul>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f9731633;border-radius:16px;padding:28px">
-        <h3 style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:20px">All Base44 Guides</h3>
-        
-          <a href="/blog/remove-made-with-base44-badge" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Remove the 'Made with Base44' Badge from Live Deployed Sites">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Remove the 'Made with Base44' Badge from Live Deployed Sites</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 4,100 views</span>
-          </a>
-          <a href="/blog/base44-live-badge-removal-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Live Deployment Badge Removal &amp; White-Labeling Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Live Deployment Badge Removal &amp; White-Labeling Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 7 min · 2,900 views</span>
-          </a>
-          <a href="/blog/how-to-export-code-from-base44" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Export Code from Base44">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Export Code from Base44</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 6 min · 18,400 views</span>
-          </a>
-          <a href="/blog/download-base44-source-code" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="How to Download Base44 Source Code">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">How to Download Base44 Source Code</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 12,300 views</span>
-          </a>
-          <a href="/blog/base44-github-integration" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 GitHub Integration — Complete Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 GitHub Integration — Complete Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 7 min · 22,100 views</span>
-          </a>
-          <a href="/blog/base44-version-control-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Version Control Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Version Control Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 8 min · 9,800 views</span>
-          </a>
-          <a href="/blog/base44-project-backup-guide" style="display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid #f9731622;text-decoration:none" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'" aria-label="Base44 Project Backup Guide">
-            <span style="font-size:14px;font-weight:600;color:var(--dark);line-height:1.3;transition:color 0.15s">Base44 Project Backup Guide</span>
-            <span style="font-size:12px;color:var(--muted)">⏱ 5 min · 8,200 views</span>
-          </a>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-section" style="margin:40px 0">
+      <h2>Ready to Export?</h2>
+      <p>Push44 is free, open source, and takes under 2 minutes to set up.</p>
+      <div class="cta-buttons">
+        <a href="/" class="btn-primary">Start Exporting Now →</a>
+        <a href="https://github.com/The-habib/Push44" class="btn-ghost" style="color:#94a3b8;border-color:rgba(255,255,255,0.15)" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ALL ARTICLES -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="all-guides-heading">
-  <div class="container">
-    <h2 id="all-guides-heading" class="section-title">Base44 Guides</h2>
-    <div class="grid-3" style="margin-top:32px">
+    <!-- FAQ -->
+    <section id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
       
+        <div class="faq-item">
+          <div class="faq-question">Why does the CSS injection approach work best?</div>
+          <div class="faq-answer">Because CSS rules are evaluated synchronously by the browser's rendering engine before scripts execute. When badge.js creates #base44-edit-badge, the element is instantly hidden with zero layout shift.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Does this violate Base44 terms?</div>
+          <div class="faq-answer">Push44 simply adds standard CSS styling rules to your own project source code and triggers a regular deployment using your authorized credentials.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Can I also export the full white-label code to GitHub?</div>
+          <div class="faq-answer">Yes! Push44 also strips branding links from all exported JSX/TSX and index.html files before pushing commits to your GitHub repository.</div>
+        </div>
+    </section>
+
+    <!-- Related -->
+    
+    <section id="related" aria-labelledby="related-heading" style="margin-top:48px">
+      <h2 id="related-heading">Related Guides</h2>
+      <div class="grid-2">
+        
 <a href="/blog/remove-made-with-base44-badge" class="article-card" data-category="export" data-platform="base44" aria-label="How to Remove the 'Made with Base44' Badge from Live Deployed Sites">
   <div class="article-card-meta">
     <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
@@ -454,21 +477,6 @@
     <span>⏱ 5 min read</span>
     <span>•</span>
     <span>4,100 views</span>
-    <span>•</span>
-    <span>Updated Aug 22, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-live-badge-removal-guide" class="article-card" data-category="tutorials" data-platform="base44" aria-label="Base44 Live Deployment Badge Removal &amp; White-Labeling Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-intermediate">intermediate</span>
-  </div>
-  <div class="article-card-title">Base44 Live Deployment Badge Removal &amp; White-Labeling Guide</div>
-  <div class="article-card-desc">Complete technical guide to white-labeling live Base44 apps. How Base44 badge injection works, CSS override sp...</div>
-  <div class="article-card-footer">
-    <span>⏱ 7 min read</span>
-    <span>•</span>
-    <span>2,900 views</span>
     <span>•</span>
     <span>Updated Aug 22, 2026</span>
   </div>
@@ -503,135 +511,65 @@
     <span>Updated Jul 2, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-github-integration" class="article-card" data-category="github" data-platform="base44" aria-label="Base44 GitHub Integration — Complete Guide">
+<a href="/blog/bolt-new-badge-removal-guide" class="article-card" data-category="tutorials" data-platform="bolt-new" aria-label="bolt.new Badge Removal: Complete Guide">
   <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
+    <span class="badge badge-platform" style="--platform-color:#7c3aed;--platform-bg:#ede9fe">bolt.new</span>
+    <span class="badge badge-difficulty-intermediate">intermediate</span>
   </div>
-  <div class="article-card-title">Base44 GitHub Integration — Complete Guide</div>
-  <div class="article-card-desc">Connect Base44 to GitHub with Push44. Push your complete Base44 source code to any GitHub repo in one click. F...</div>
+  <div class="article-card-title">bolt.new Badge Removal: Complete Guide</div>
+  <div class="article-card-desc">Complete technical guide to removing the bolt.new badge from deployed apps. Understand how the badge works, wh...</div>
   <div class="article-card-footer">
     <span>⏱ 7 min read</span>
     <span>•</span>
-    <span>22,100 views</span>
+    <span>1,800 views</span>
     <span>•</span>
-    <span>Updated Jul 2, 2026</span>
+    <span>Updated Jul 5, 2026</span>
   </div>
 </a>
-<a href="/blog/base44-version-control-guide" class="article-card" data-category="version-control" data-platform="base44" aria-label="Base44 Version Control Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-intermediate">intermediate</span>
-  </div>
-  <div class="article-card-title">Base44 Version Control Guide</div>
-  <div class="article-card-desc">Add Git version control to your Base44 projects with Push44. Track every change, roll back to any version, and...</div>
-  <div class="article-card-footer">
-    <span>⏱ 8 min read</span>
-    <span>•</span>
-    <span>9,800 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
-<a href="/blog/base44-project-backup-guide" class="article-card" data-category="backup" data-platform="base44" aria-label="Base44 Project Backup Guide">
-  <div class="article-card-meta">
-    <span class="badge badge-platform" style="--platform-color:#f97316;--platform-bg:#fff7ed">Base44</span>
-    <span class="badge badge-difficulty-beginner">beginner</span>
-  </div>
-  <div class="article-card-title">Base44 Project Backup Guide</div>
-  <div class="article-card-desc">Create automatic, reliable backups of your Base44 projects with Push44. Keep your AI-built apps safe from data...</div>
-  <div class="article-card-footer">
-    <span>⏱ 5 min read</span>
-    <span>•</span>
-    <span>8,200 views</span>
-    <span>•</span>
-    <span>Updated Jul 2, 2026</span>
-  </div>
-</a>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="complementary" aria-label="Article sidebar">
+
+    <!-- TOC -->
+    <div class="sidebar-card">
+      <h4>On This Page</h4>
+      <a href="#introduction" class="toc-link">Introduction</a><a href="#the-problem" class="toc-link">The Problem</a><a href="#the-solution" class="toc-link">The Solution</a><a href="#step-by-step" class="toc-link">Step-by-Step Guide</a><a href="#tips" class="toc-link">Pro Tips</a><a href="#faq" class="toc-link">FAQ</a><a href="#related" class="toc-link">Related Guides</a>
     </div>
-  </div>
-</section>
 
-<!-- FAQ -->
+    <!-- Start Exporting CTA -->
+    <div class="sidebar-card" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-color:rgba(255,255,255,0.08)">
+      <h4 style="color:#94a3b8">Free Tool</h4>
+      <div style="font-weight:800;font-size:15px;color:#f8fafc;margin-bottom:8px">Push44 — Export to GitHub</div>
+      <p style="font-size:13px;color:#64748b;line-height:1.5;margin-bottom:16px">Export your complete source code in one click. Free forever.</p>
+      <a href="/" class="btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:11px 0">Start Exporting →</a>
+    </div>
 
-<section style="padding:64px 24px" aria-labelledby="faq-platform-heading">
-  <div class="container" style="max-width:800px">
-    <h2 id="faq-platform-heading" class="section-title">Base44 FAQ</h2>
-    
-      <div class="faq-item">
-        <div class="faq-question">Does Push44 remove the badge on live *.base44.app sites?</div>
-        <div class="faq-answer">Yes! Push44 injects CSS blocker rules into your app's stylesheet and triggers a production deploy, removing the badge for all visitors.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Does Push44 work with all Base44 projects?</div>
-        <div class="faq-answer">Yes. Push44 uses the Base44 API to read and deploy any project associated with your account.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Do I need a paid Base44 plan?</div>
-        <div class="faq-answer">No. The Base44 API and deployment endpoints used by Push44 are available to all account tiers.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">How long does a Base44 export take?</div>
-        <div class="faq-answer">Typically under 30 seconds for most projects.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Can I export multiple Base44 projects?</div>
-        <div class="faq-answer">Yes. Run Push44 separately for each project, pointing to different GitHub repos.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">Is my Base44 API token safe in Push44?</div>
-        <div class="faq-answer">Yes. It's stored in your browser's localStorage and never sent to any Push44 server.</div>
-      </div>
-  </div>
-</section>
-
-<!-- RELATED PLATFORMS -->
-<section style="padding:64px 24px;background:#fafafa;border-top:1px solid var(--border)" aria-labelledby="other-platforms-heading">
-  <div class="container">
-    <h2 id="other-platforms-heading" class="section-title">Other Platforms</h2>
-    <div class="grid-4" style="margin-top:24px">
+    <!-- Popular Searches -->
+    <div class="sidebar-card">
+      <h4>People Also Search</h4>
       
-        <a href="/platforms/rocket-new" class="cat-card" style="background:#f0fdf4" aria-label="Rocket.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#22c55e;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">R</div>
-          <div class="cat-name">Rocket.new</div>
-          <div class="cat-desc">4 guides</div>
-        </a>
-        <a href="/platforms/floot" class="cat-card" style="background:#eff6ff" aria-label="Floot export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">F</div>
-          <div class="cat-name">Floot</div>
-          <div class="cat-desc">5 guides</div>
-        </a>
-        <a href="/platforms/zite" class="cat-card" style="background:#fdf4ff" aria-label="Zite export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">Z</div>
-          <div class="cat-name">Zite</div>
-          <div class="cat-desc">5 guides</div>
-        </a>
-        <a href="/platforms/bolt-new" class="cat-card" style="background:#ede9fe" aria-label="bolt.new export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">b</div>
-          <div class="cat-name">bolt.new</div>
-          <div class="cat-desc">3 guides</div>
-        </a>
-        <a href="/platforms/framer" class="cat-card" style="background:#eff6ff" aria-label="Framer export hub">
-          <div style="width:40px;height:40px;border-radius:10px;background:#0055ff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;margin:0 auto 12px" aria-hidden="true">F</div>
-          <div class="cat-name">Framer</div>
-          <div class="cat-desc">0 guides</div>
-        </a>
+        <a href="/blog/best-app-to-download-code-from-base44-rocket-floot-zite" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Best app to download code from Base44 &amp; Rocket.new</a>
+        <a href="/blog/how-to-download-source-code-from-base44-and-rocket-new" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to download source code from Base44 &amp; Rocket.new</a>
+        <a href="/blog/top-5-tools-to-export-ai-generated-apps-to-github" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Top 5 tools to export AI apps to GitHub</a>
+        <a href="/blog/download-rocket-new-flutter-source-code-and-apk" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Download Rocket.new Flutter code &amp; APK</a>
+        <a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to export code from Base44</a>
+        <a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Export Base44 project to GitHub</a>
     </div>
-  </div>
-</section>
 
-<!-- CTA -->
-<section style="padding:64px 24px">
-  <div class="container">
-    <div class="cta-section">
-      <h2>Export Your Base44 Code Now</h2>
-      <p>Free, open source, takes under 2 minutes. No subscription required.</p>
-      <div class="cta-buttons">
-        <a href="/" class="btn-primary">Start Exporting →</a>
-      </div>
+    <!-- Platform Hub -->
+    
+    <div class="sidebar-card">
+      <h4>Base44 Hub</h4>
+      <a href="/blog/remove-made-with-base44-badge" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Remove the 'Made with Base44' Badge from Live Deployed Sites</a><a href="/blog/how-to-export-code-from-base44" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Export Code from Base44</a><a href="/blog/download-base44-source-code" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">How to Download Base44 Source Code</a><a href="/blog/base44-github-integration" style="display:block;font-size:13px;color:#52525b;padding:6px 0;border-bottom:1px solid #fafafa;transition:color 0.15s;line-height:1.4" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#52525b'">Base44 GitHub Integration — Complete Guide</a>
+      <a href="/platforms/base44" style="display:block;margin-top:10px;font-size:13px;font-weight:600;color:var(--orange)">View all Base44 guides →</a>
     </div>
-  </div>
-</section>
+
+  </aside>
+</div>
 
 
 <footer class="footer" role="contentinfo">

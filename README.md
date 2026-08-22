@@ -142,9 +142,9 @@ Push44 is designed to fit your workflow whether you are on mobile, in a browser,
 <tr>
 <td align="center"><b>Base44</b><br/><sub>app.base44.com</sub></td>
 <td>Email + password<br/>or API token</td>
-<td>Auto sandbox wake</td>
-<td>✅ Export & Diff</td>
-<td><code>push44 clone &lt;id&gt; -p base44</code></td>
+<td>Auto sandbox wake &<br/>AI CSS injection</td>
+<td>✅ Export, Diff & Live Badge Removal</td>
+<td><code>push44 clone &lt;id&gt; -p base44</code><br/><code>push44 badge remove base44</code></td>
 <td>✅ Production</td>
 </tr>
 <tr>
@@ -159,23 +159,23 @@ Push44 is designed to fit your workflow whether you are on mobile, in a browser,
 <td align="center"><b>Floot</b><br/><sub>floot.com</sub></td>
 <td>NextAuth Magic Link</td>
 <td>Project Reference API</td>
-<td>✅ Export & Deploy</td>
-<td><code>push44 deploy floot</code></td>
+<td>✅ Export, Deploy & Badge Removal</td>
+<td><code>push44 deploy floot</code><br/><code>push44 badge remove floot</code></td>
 <td>✅ Production</td>
 </tr>
 <tr>
 <td align="center"><b>Zite</b><br/><sub>build.fillout.com</sub></td>
 <td>Google / MS / Email</td>
 <td>Snapshot API</td>
-<td>✅ Export & Diff</td>
-<td><code>push44 clone &lt;id&gt; -p zite</code></td>
+<td>✅ Export, Diff & Badge Removal</td>
+<td><code>push44 clone &lt;id&gt; -p zite</code><br/><code>push44 badge remove zite</code></td>
 <td>✅ Production</td>
 </tr>
 <tr>
 <td align="center"><b>bolt.new</b><br/><sub>bolt.new</sub></td>
 <td>Session token</td>
-<td>DOM Asset Injector</td>
-<td>✅ Badge Removal</td>
+<td>Auto /chats discovery &<br/>DOM Asset Injector</td>
+<td>✅ Auto-Discovery & Live Badge Removal</td>
 <td><code>push44 badge remove bolt</code></td>
 <td>✅ Production</td>
 </tr>
@@ -183,8 +183,8 @@ Push44 is designed to fit your workflow whether you are on mobile, in a browser,
 <td align="center"><b>Lovable.dev</b><br/><sub>lovable.dev</sub></td>
 <td>Session token</td>
 <td>Project Extractor</td>
-<td>✅ Export & Diff</td>
-<td><code>push44 clone &lt;id&gt; -p lovable</code></td>
+<td>✅ Export, Diff & Badge Removal</td>
+<td><code>push44 clone &lt;id&gt; -p lovable</code><br/><code>push44 badge remove lovable</code></td>
 <td>✅ Production</td>
 </tr>
 </table>
@@ -217,7 +217,7 @@ Push44 CLI includes 24 built-in subcommands:
 
 ### 📱 Platform Tools & Build Automation
 - `push44 apk build [--watch]` — Cloud Android APK compilation for Rocket.new Flutter projects.
-- `push44 badge remove <platform>` — Removes watermark branding badges (Bolt.new, Floot, Zite, Lovable).
+- `push44 badge remove <platform>` — Removes watermark branding badges (Base44, Bolt.new, Floot, Zite, Lovable).
 - `push44 deploy <platform>` — Triggers live web publishing to custom subdomains.
 - `push44 watch [--auto-sync]` — Monitors local files and synchronizes automatically on save.
 - `push44 release [v1.0.0]` — Full release pipeline: sync -> push -> GitHub release -> watch CI workflow.
