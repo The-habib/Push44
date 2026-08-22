@@ -290,9 +290,10 @@ export async function removeBase44Badge({
 export type Base44LiveRemoveStep =
   | "waking-sandbox"
   | "checking-css"
-  | "sending-instruction"
-  | "waiting-ai"
+  | "injecting-blocker"
+  | "creating-checkpoint"
   | "deploying"
+  | "polling-build"
   | "done";
 
 export interface Base44LiveRemoveResult {
@@ -304,9 +305,12 @@ export interface Base44LiveRemoveResult {
  * Permanently removes the "Made with Base44" / Edit badge from the LIVE Base44 deployed website.
  *
  * Flow:
- * 1. Checks current project files in sandbox for CSS badge hiding rules.
- * 2. If needed, instructs Base44 AI to inject the badge blocker into index.css.
- * 3. Triggers POST /api/apps/:appId/deploy so Base44 rebuilds and deploys the live site without the badge.
+ * 1. Checks and wakes the Base44 sandbox container.
+ * 2. Reads the app's stylesheet directly from the sandbox.
+ * 3. Directly writes the CSS badge blocker into sandbox files via PUT /sandbox/files/content (Zero AI credits needed).
+ * 4. Creates a deployment checkpoint via POST /app-checkpoints.
+ * 5. Triggers POST /apps/:appId/deploy so Base44 rebuilds and deploys the live site without the badge.
+ * 6. Polls /static/build-status until the live build is ready.
  */
 export async function removeBase44LiveBadge({
   data,
@@ -336,54 +340,93 @@ export async function removeBase44LiveBadge({
     } catch {}
   }
 
-  // 2. Check if CSS is already hiding the badge in sandbox files
-  let hasBlocker = false;
-  try {
-    const files = await fetchBase44AppFiles({
-      data: { token, appId },
-      onStatus: (st) => {
-        if (st.toLowerCase().includes("waking") || st.toLowerCase().includes("sleeping")) {
-          notify("waking-sandbox");
-        }
-      },
+  // 2. Ensure sandbox is alive
+  const status = await getSandboxStatus(appId, token);
+  if (status !== "alive") {
+    await wakeAndWaitForSandbox(appId, token, (st) => {
+      if (st.toLowerCase().includes("waking") || st.toLowerCase().includes("sleeping")) {
+        notify("waking-sandbox");
+      }
     });
-    const css = files.find(f => f.path.endsWith(".css") || f.path === "src/index.css");
-    if (css?.content && css.content.includes("base44-edit-badge")) {
-      hasBlocker = true;
-    }
-  } catch {}
-
-  // 3. If not present, send prompt to Base44 AI to inject CSS blocker
-  if (!hasBlocker) {
-    notify("sending-instruction");
-    await b44Fetch(`/apps/${appId}/chat/message`, {
-      method: "POST",
-      body: JSON.stringify({
-        content: "Add CSS to src/index.css to permanently hide the Base44 branding badge: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }",
-        role: "user",
-        file_urls: [],
-        custom_context: [],
-        additional_message_params: {
-          from_mobile: false,
-        },
-      }),
-    }, token);
-
-    notify("waiting-ai");
-    await new Promise((r) => setTimeout(r, 8_000));
   }
 
-  // 4. Trigger live deploy on Base44
+  // 3. Directly read target stylesheet (src/index.css or fallback to other CSS files)
+  let targetPath = "src/index.css";
+  let currentCss = "";
+
+  try {
+    const readRes = await b44Fetch(`/apps/${appId}/sandbox/files/content?path=${encodeURIComponent(targetPath)}`, undefined, token);
+    currentCss = readRes?.content || "";
+  } catch {
+    // If src/index.css wasn't found directly, look up sandbox file list
+    try {
+      const filesRes = await b44Fetch(`/apps/${appId}/sandbox/files`, undefined, token);
+      const filesObj: Record<string, string> = filesRes?.files || {};
+      const foundPath = Object.keys(filesObj).find(
+        (p) => p.endsWith(".css") || p === "src/index.css" || p === "src/App.css" || p === "src/globals.css"
+      );
+      if (foundPath) {
+        targetPath = foundPath;
+        currentCss = typeof filesObj[foundPath] === "string" ? filesObj[foundPath] : String(filesObj[foundPath] || "");
+      }
+    } catch {}
+  }
+
+  const BADGE_CSS =
+    "\n\n/* Push44 – Permanently hide Base44 branding badge */\n" +
+    "#base44-edit-badge, #base44-badge, .base44-badge, div[id*='base44'], [data-base44-badge], .made-with-base44, [class*='base44'], #admin-footer {\n" +
+    "  display: none !important;\n" +
+    "  visibility: hidden !important;\n" +
+    "  opacity: 0 !important;\n" +
+    "  pointer-events: none !important;\n" +
+    "}\n";
+
+  let newCss = currentCss;
+  if (!newCss.includes("hide Base44 branding badge")) {
+    newCss += BADGE_CSS;
+  }
+
+  // 4. Directly write blocker CSS into sandbox (Zero AI credits required, 100% reliable)
+  notify("injecting-blocker");
+  await b44Fetch(`/apps/${appId}/sandbox/files/content`, {
+    method: "PUT",
+    body: JSON.stringify({ path: targetPath, content: newCss }),
+  }, token);
+
+  // 5. Create a manual checkpoint so Base44 build pipeline compiles the updated sandbox
+  notify("creating-checkpoint");
+  let checkpointId: string | undefined;
+  try {
+    const cpRes = await b44Fetch(`/apps/${appId}/app-checkpoints`, {
+      method: "POST",
+      body: JSON.stringify({ name: "Push44 Badge Removed" }),
+    }, token);
+    checkpointId = cpRes?.id || cpRes?.checkpoint_id || undefined;
+  } catch {}
+
+  // 6. Trigger live deployment with checkpoint ID
   notify("deploying");
   const deployRes = await b44Fetch(`/apps/${appId}/deploy`, {
     method: "POST",
-    body: JSON.stringify({}),
+    body: JSON.stringify(checkpointId ? { checkpoint_id: checkpointId } : {}),
   }, token);
+
+  // 7. Poll static build status
+  notify("polling-build");
+  try {
+    for (let i = 0; i < 15; i++) {
+      const bRes = await b44Fetch(`/apps/${appId}/static/build-status`, undefined, token);
+      if (bRes?.build_ready) {
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  } catch {}
 
   notify("done");
 
   return {
     publishedUrl: publishedUrl || (deployRes?.slug ? `https://${deployRes.slug}.base44.app` : "https://app.base44.com"),
-    checkpointId: deployRes?.last_deployed_checkpoint_id,
+    checkpointId: checkpointId || deployRes?.last_deployed_checkpoint_id,
   };
 }

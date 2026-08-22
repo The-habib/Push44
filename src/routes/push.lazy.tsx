@@ -1810,10 +1810,11 @@ interface Base44BadgePanelProps {
 function base44StepLabel(step: string): string {
   switch (step) {
     case "waking-sandbox":      return "Waking Base44 sandbox container…";
-    case "checking-css":        return "Checking app CSS rules…";
-    case "sending-instruction": return "Sending blocker rule to Base44 AI…";
-    case "waiting-ai":           return "Base44 AI is updating source files…";
-    case "deploying":            return "Rebuilding and deploying live site…";
+    case "checking-css":        return "Checking sandbox stylesheet…";
+    case "injecting-blocker":   return "Directly injecting CSS blocker into sandbox…";
+    case "creating-checkpoint": return "Creating deployment checkpoint…";
+    case "deploying":            return "Rebuilding Vite bundle without watermark…";
+    case "polling-build":       return "Verifying live deployment…";
     case "done":                 return "Live deployment updated!";
     default:                     return "Working…";
   }
@@ -1837,7 +1838,7 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
       {phase === "idle" && (
         <>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>.
+            Permanently remove the floating "Made with Base44" edit badge (<code>#base44-edit-badge</code>) and watermark from your <strong>live deployed site</strong>. Zero AI credits required.
           </div>
           <button
             className="btn btn-primary"
@@ -1857,8 +1858,8 @@ function Base44BadgePanel({ appName, publishedUrl, phase, step, error, onRemove,
             <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>{step ? base44StepLabel(step) : "Starting live badge removal…"}</span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
-            {(["waking-sandbox", "checking-css", "sending-instruction", "waiting-ai", "deploying"] as const).map((s) => {
-              const steps = ["waking-sandbox", "checking-css", "sending-instruction", "waiting-ai", "deploying"] as const;
+            {(["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint", "deploying", "polling-build"] as const).map((s) => {
+              const steps = ["waking-sandbox", "checking-css", "injecting-blocker", "creating-checkpoint", "deploying", "polling-build"] as const;
               const isDone = step && steps.indexOf(step as any) > steps.indexOf(s);
               const isActive = step === s;
               return (

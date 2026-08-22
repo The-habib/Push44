@@ -78,20 +78,15 @@ All endpoints below were reverse-engineered from production JS bundles and verif
 - **Auth Check**: `GET /auth/me` (Bearer auth -> returns `{ email, full_name, id }`)
 - **List Apps**: `GET /apps` (Bearer auth -> returns `Base44App[]` with `id`, `name`, `slug`, `last_deployed_at`)
 - **App Published URL**: `GET /apps/platform/:appId/published-url` (Returns `{ url: "https://<slug>.base44.app" }`)
-- **Sandbox Files**: `GET /apps/:appId/sandbox/files` (Returns full source tree `{ files: [{ path, content }] }`)
+- **Sandbox Files Tree**: `GET /apps/:appId/sandbox/files` (Returns full source tree `{ files: [{ path, content }] }`)
 - **Sandbox Status**: `GET /apps/:appId/sandbox/status` (Returns `{ status: "alive" }`)
-- **AI Chat Code Injection**: `POST /apps/:appId/chat/message`
-  ```json
-  {
-    "content": "Add CSS to src/index.css to permanently hide the Base44 branding badge: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }",
-    "role": "user",
-    "file_urls": [],
-    "custom_context": [],
-    "additional_message_params": { "from_mobile": false }
-  }
-  ```
+- **Sandbox File Read**: `GET /apps/:appId/sandbox/files/content?path=<path>` (Returns file content `{ content: string }`)
+- **Sandbox Direct File Write**: `PUT /apps/:appId/sandbox/files/content` (Payload: `{ path, content }` -> writes directly to sandbox with zero AI credits needed)
+- **Create Checkpoint**: `POST /apps/:appId/app-checkpoints` (Payload: `{ name }` -> creates version checkpoint from sandbox `{ id, created: true }`)
+- **Static Build Status**: `GET /apps/:appId/static/build-status` (Returns `{ build_ready: boolean, commit_hash: string }`)
 - **Live Deployment Trigger**: `POST /apps/:appId/deploy`
-  - Rebuilds production Vite bundle with the injected stylesheet and deploys live to Cloudflare edge edge (`https://<slug>.base44.app`).
+  - Rebuilds production Vite bundle with the injected stylesheet and deploys live to Cloudflare edge (`https://<slug>.base44.app`).
+  - Payload: `{ checkpoint_id?: string }`
   - Response: `{ id, slug, last_deployed_at, last_deployed_checkpoint_id, status: { state: "ready" } }`
 
 ### 2. Bolt.new (`bolt.new/api`)
