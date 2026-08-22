@@ -27,7 +27,7 @@ import {
   type FlootDeployStatus, type FlootMobileBuildStatus,
 } from "@/lib/floot-api";
 import { listZiteApps, fetchZiteAppFiles, removeZiteBadge } from "@/lib/zite-api";
-import { validateBoltProject, removeBoltBadge, type BoltRemoveStep } from "@/lib/bolt-api";
+import { validateBoltProject, removeBoltBadge, cleanBoltProjectId, type BoltRemoveStep } from "@/lib/bolt-api";
 import { listLovableProjects, fetchLovableAppFiles, removeLovableBadge, type LovableBadgeStatus } from "@/lib/lovable-api";
 import { listFramerProjects, fetchFramerAppFiles, remixFramerTemplate, removeFramerBadge } from "@/lib/framer-api";
 import { listGitHubRepos, createGitHubRepo, pushFilesToGitHub } from "@/lib/github-api";
@@ -183,6 +183,9 @@ export default function PushPage() {
   const [boltBadgeError, setBoltBadgeError] = useState("");
   const [boltBadgeStep, setBoltBadgeStep]   = useState<BoltRemoveStep | "">("");
   const [boltResultUrl, setBoltResultUrl]   = useState("");
+  const [inlineBoltId, setInlineBoltId]     = useState("");
+  const [inlineBoltLoading, setInlineBoltLoading] = useState(false);
+  const [showBoltChangeInput, setShowBoltChangeInput] = useState(false);
 
   // ── Lovable Badge Removal ─────────────────────────────────────────────────
   type LovableBadgePhase = "idle" | "removing" | "done" | "failed";
@@ -205,7 +208,7 @@ export default function PushPage() {
     if (id === "rocket") return !!creds.rocketToken;
     if (id === "zite")   return !!creds.ziteSession;
     if (id === "floot")  return !!creds.flootToken;
-    if (id === "bolt")    return !!creds.boltToken && !!creds.boltProjectId;
+    if (id === "bolt")   return !!creds.boltToken;
     if (id === "lovable") return !!creds.lovableToken;
     if (id === "framer")  return !!(creds.framerSession || creds.framerApiKey);
     return false;
@@ -228,6 +231,7 @@ export default function PushPage() {
     setContainerSleeping(false);
     resetZiteBadgeState();
     resetLovableBadgeState();
+    setShowBoltChangeInput(false);
     try {
       let result: AppItem[] = [];
       if (pid === "base44") {
@@ -243,9 +247,15 @@ export default function PushPage() {
         if (!creds.flootToken) throw new Error("Connect Floot in Settings first.");
         result = await listFlootApps({ data: { token: creds.flootToken } });
       } else if (pid === "bolt") {
-        if (!creds.boltToken || !creds.boltProjectId) throw new Error("Connect bolt.new in Settings first (cookie + Project ID required).");
-        const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
-        result = [{ id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt }];
+        if (!creds.boltToken) throw new Error("Connect bolt.new in Settings first.");
+        if (creds.boltProjectId) {
+          const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
+          const boltApp: AppItem = { id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt };
+          result = [boltApp];
+          setSelectedApp(boltApp);
+        } else {
+          result = [];
+        }
       } else if (pid === "lovable") {
         if (!creds.lovableToken) throw new Error("Connect Lovable in Settings first.");
         const projs = await listLovableProjects({ data: { token: creds.lovableToken } });
@@ -728,6 +738,33 @@ export default function PushPage() {
     }
   };
 
+  // ── bolt.new project linking handler ───────────────────────────────────────
+  const handleInlineBoltSubmit = async (overrideId?: string) => {
+    const rawId = overrideId || inlineBoltId;
+    const cleanPid = cleanBoltProjectId(rawId);
+    if (!cleanPid || !creds.boltToken) {
+      toast.error("Please enter a bolt.new Project ID (e.g. sb1-...)");
+      return;
+    }
+    setInlineBoltLoading(true);
+    setAppsError("");
+    try {
+      const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: cleanPid } });
+      updateCreds({ boltProjectId: cleanPid, boltSiteUrl: info.siteUrl });
+      const boltApp: AppItem = { id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt };
+      setApps([boltApp]);
+      setSelectedApp(boltApp);
+      setShowBoltChangeInput(false);
+      setInlineBoltId("");
+      toast.success(info.siteUrl ? `bolt.new project connected: ${info.siteUrl}` : `bolt.new project connected!`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not validate bolt.new project ID");
+      setAppsError(e?.message ?? "Could not validate bolt.new project ID");
+    } finally {
+      setInlineBoltLoading(false);
+    }
+  };
+
   // ── Filtered apps ──────────────────────────────────────────────────────────
   const filteredApps = apps.filter((a) =>
     !appSearch || a.name.toLowerCase().includes(appSearch.toLowerCase())
@@ -777,30 +814,62 @@ export default function PushPage() {
         {/* App list */}
         {platformConnected(platform) && (
           <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              <div style={{ position: "relative", flex: 1 }}>
-                <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
-                <input className="input" placeholder="Search apps…" value={appSearch} onChange={(e) => setAppSearch(e.target.value)} style={{ paddingLeft: 30 }} />
+            {platform !== "bolt" && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+                  <input className="input" placeholder="Search apps…" value={appSearch} onChange={(e) => setAppSearch(e.target.value)} style={{ paddingLeft: 30 }} />
+                </div>
+                <button className="btn btn-secondary btn-sm btn-icon" onClick={() => loadApps(platform)} disabled={appsLoading} title="Refresh">
+                  <RefreshCw size={13} style={{ animation: appsLoading ? "spin 0.6s linear infinite" : "none" }} />
+                </button>
               </div>
-              <button className="btn btn-secondary btn-sm btn-icon" onClick={() => loadApps(platform)} disabled={appsLoading} title="Refresh">
-                <RefreshCw size={13} style={{ animation: appsLoading ? "spin 0.6s linear infinite" : "none" }} />
-              </button>
-            </div>
+            )}
 
             {appsLoading ? (
               <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <span className="spinner" />Loading apps…
               </div>
             ) : appsError ? (
-              <div style={{ padding: "12px 14px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ padding: "12px 14px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca", display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <AlertCircle size={14} color="#dc2626" />
                 <span style={{ fontSize: 13, color: "#b91c1c" }}>{appsError}</span>
               </div>
-            ) : filteredApps.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 24, color: "#94a3b8", fontSize: 13 }}>
-                {apps.length === 0 ? "No apps found." : "No apps match your search."}
+            ) : null}
+
+            {/* bolt.new inline Project ID input when no project is loaded yet */}
+            {platform === "bolt" && apps.length === 0 && !appsLoading && (
+              <div style={{ padding: "16px 14px", borderRadius: 8, background: "#f5f3ff", border: "1px solid #ddd6fe", marginBottom: 10 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: "#5b21b6", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                  <BoltLogo size={16} /> bolt.new Account Connected ✓
+                </div>
+                <p style={{ fontSize: 12, color: "#6d28d9", margin: "0 0 10px" }}>
+                  Enter your Project ID from your bolt.new editor URL (e.g. <code style={{ background: "#ede9fe", padding: "1px 4px", borderRadius: 3 }}>bolt.new/~/sb1-...</code>):
+                </p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    className="input"
+                    placeholder="e.g. sb1-abc123 or paste bolt URL"
+                    value={inlineBoltId}
+                    onChange={(e) => setInlineBoltId(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleInlineBoltSubmit()}
+                    style={{ background: "#fff", flex: 1 }}
+                  />
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleInlineBoltSubmit()}
+                    disabled={inlineBoltLoading || !inlineBoltId.trim()}
+                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                  >
+                    {inlineBoltLoading && <span className="spinner" />}
+                    Load Project
+                  </button>
+                </div>
               </div>
-            ) : (
+            )}
+
+            {/* Standard app list */}
+            {filteredApps.length > 0 && (
               <div style={{ maxHeight: 280, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 7 }}>
                 {filteredApps.map((app, i) => {
                   const isSelected = selectedApp?.id === app.id;
@@ -821,7 +890,7 @@ export default function PushPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: 13, color: "#0f172a" }}>{app.name}</div>
                         <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
-                          {app.updated_at ? new Date(app.updated_at).toLocaleDateString() : ""}
+                          {platform === "bolt" ? `Project ID: ${app.id}` : (app.updated_at ? new Date(app.updated_at).toLocaleDateString() : "")}
                         </div>
                       </div>
                       {isLoading && <span className="spinner" />}
@@ -832,6 +901,54 @@ export default function PushPage() {
                     </button>
                   );
                 })}
+              </div>
+            )}
+
+            {/* bolt.new change project switcher */}
+            {platform === "bolt" && apps.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                {showBoltChangeInput ? (
+                  <div style={{ padding: "12px 14px", borderRadius: 8, background: "#f5f3ff", border: "1px solid #ddd6fe", marginTop: 6 }}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        className="input"
+                        placeholder="Enter another bolt Project ID (e.g. sb1-...)"
+                        value={inlineBoltId}
+                        onChange={(e) => setInlineBoltId(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleInlineBoltSubmit()}
+                        style={{ background: "#fff", flex: 1 }}
+                      />
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleInlineBoltSubmit()}
+                        disabled={inlineBoltLoading || !inlineBoltId.trim()}
+                      >
+                        {inlineBoltLoading && <span className="spinner" />}
+                        Switch
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setShowBoltChangeInput(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setShowBoltChangeInput(true)}
+                    style={{ fontSize: 12, marginTop: 4 }}
+                  >
+                    Switch Bolt Project ID…
+                  </button>
+                )}
+              </div>
+            )}
+
+            {platform !== "bolt" && !appsLoading && !appsError && filteredApps.length === 0 && (
+              <div style={{ textAlign: "center", padding: 24, color: "#94a3b8", fontSize: 13 }}>
+                {apps.length === 0 ? "No apps found." : "No apps match your search."}
               </div>
             )}
           </>
