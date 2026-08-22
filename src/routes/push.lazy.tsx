@@ -245,7 +245,7 @@ export default function PushPage() {
       } else if (pid === "bolt") {
         if (!creds.boltToken || !creds.boltProjectId) throw new Error("Connect bolt.new in Settings first (cookie + Project ID required).");
         const info = await validateBoltProject({ data: { token: creds.boltToken, projectId: creds.boltProjectId } });
-        result = [{ id: info.projectId, name: info.siteUrl, updated_at: info.updatedAt }];
+        result = [{ id: info.projectId, name: info.siteUrl || info.projectId, updated_at: info.updatedAt }];
       } else if (pid === "lovable") {
         if (!creds.lovableToken) throw new Error("Connect Lovable in Settings first.");
         const projs = await listLovableProjects({ data: { token: creds.lovableToken } });

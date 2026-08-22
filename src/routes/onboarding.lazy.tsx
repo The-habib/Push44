@@ -9,7 +9,7 @@ import { getGitHubUser } from "@/lib/github-api";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { validateFlootToken } from "@/lib/floot-api";
 import { loginToZite } from "@/lib/zite-api";
-import { boltLogin } from "@/lib/bolt-api";
+import { boltLogin, cleanBoltToken } from "@/lib/bolt-api";
 import { lovableLogin } from "@/lib/lovable-api";
 import { markOnboardingDone } from "@/lib/storage";
 import { toast } from "sonner";
@@ -65,9 +65,12 @@ export default function OnboardingPage() {
   const [ziteError, setZiteError]   = useState("");
 
   // ── bolt.new ─────────────────────────────────────────────────────────────────
+  const [boltTab, setBoltTab]       = useState<"login" | "cookie">("login");
   const [boltEmail, setBoltEmail]   = useState("");
   const [boltPass, setBoltPass]     = useState("");
   const [showBoltPass, setShowBoltPass] = useState(false);
+  const [boltToken, setBoltToken]   = useState("");
+  const [showBoltTok, setShowBoltTok]   = useState(false);
   const [boltLoading, setBoltLoading] = useState(false);
   const [boltError, setBoltError]   = useState("");
 
@@ -162,14 +165,25 @@ export default function OnboardingPage() {
   };
 
   const connectBolt = async () => {
-    if (!boltEmail.trim() || !boltPass) { setBoltError("Enter email and password"); return; }
     setBoltLoading(true); setBoltError("");
     try {
-      const r = await boltLogin({ data: { email: boltEmail.trim(), password: boltPass } });
-      updateCreds({ boltToken: r.token, boltEmail: r.email });
-      toast.success("bolt.new connected!");
+      if (boltTab === "login") {
+        if (!boltEmail.trim() || !boltPass) { setBoltError("Enter email and password"); return; }
+        const r = await boltLogin({ data: { email: boltEmail.trim(), password: boltPass } });
+        const cleanTok = cleanBoltToken(r.token);
+        updateCreds({ boltToken: cleanTok, boltEmail: r.email });
+        toast.success("bolt.new connected!");
+      } else {
+        const cleanTok = cleanBoltToken(boltToken);
+        if (!cleanTok) { setBoltError("Paste your __session cookie"); return; }
+        updateCreds({ boltToken: cleanTok });
+        toast.success("bolt.new connected!");
+      }
     } catch (e: any) {
       setBoltError(e?.message ?? "Login failed");
+      if (e?.message?.toLowerCase().includes("session cookie") || e?.message?.toLowerCase().includes("google") || e?.message?.toLowerCase().includes("github")) {
+        setBoltTab("cookie");
+      }
     } finally { setBoltLoading(false); }
   };
 
@@ -375,15 +389,47 @@ export default function OnboardingPage() {
               {/* ── bolt.new ── */}
               {selectedPlatform === "bolt" && !platformConnected("bolt") && (
                 <PlatformForm title="Connect bolt.new">
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <input className="input" type="email" placeholder="bolt.new email" value={boltEmail} onChange={e => setBoltEmail(e.target.value)} />
-                    <div style={{ position: "relative" }}>
-                      <input className="input" type={showBoltPass ? "text" : "password"} placeholder="Password" value={boltPass} onChange={e => setBoltPass(e.target.value)} onKeyDown={e => e.key === "Enter" && connectBolt()} style={{ paddingRight: 40 }} />
-                      <button onClick={() => setShowBoltPass(!showBoltPass)} aria-label="Toggle" style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#939084", padding: 0 }}>
-                        {showBoltPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
+                  <div className="tabs" style={{ marginBottom: 12 }}>
+                    <button className={`tab${boltTab === "login" ? " active" : ""}`} onClick={() => setBoltTab("login")}>Email / Password</button>
+                    <button className={`tab${boltTab === "cookie" ? " active" : ""}`} onClick={() => setBoltTab("cookie")}>Session Cookie</button>
                   </div>
+                  {boltTab === "login" ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <input className="input" type="email" placeholder="bolt.new email" value={boltEmail} onChange={e => setBoltEmail(e.target.value)} />
+                      <div style={{ position: "relative" }}>
+                        <input className="input" type={showBoltPass ? "text" : "password"} placeholder="Password" value={boltPass} onChange={e => setBoltPass(e.target.value)} onKeyDown={e => e.key === "Enter" && connectBolt()} style={{ paddingRight: 40 }} />
+                        <button onClick={() => setShowBoltPass(!showBoltPass)} aria-label="Toggle" style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#939084", padding: 0 }}>
+                          {showBoltPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 11, color: "#939084" }}>
+                        Signed up with Google or GitHub?{" "}
+                        <button onClick={() => setBoltTab("cookie")} style={{ border: "none", background: "none", color: "#f97316", cursor: "pointer", padding: 0, fontSize: 11, fontWeight: 600 }}>
+                          Use Session Cookie
+                        </button>
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <p style={{ fontSize: 12, color: "#605d52", margin: "0 0 4px" }}>
+                        From <a href="https://bolt.new" target="_blank" rel="noopener" style={{ color: "#f97316" }}>bolt.new</a> → DevTools (F12) → Application → Cookies → copy <code style={{ fontSize: 11 }}>__session</code>
+                      </p>
+                      <div style={{ position: "relative" }}>
+                        <input
+                          className="input"
+                          type={showBoltTok ? "text" : "password"}
+                          placeholder="Paste __session cookie…"
+                          value={boltToken}
+                          onChange={e => setBoltToken(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && connectBolt()}
+                          style={{ paddingRight: 40 }}
+                        />
+                        <button onClick={() => setShowBoltTok(!showBoltTok)} aria-label="Toggle" style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#939084", padding: 0 }}>
+                          {showBoltTok ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   {boltError && <ErrorMsg>{boltError}</ErrorMsg>}
                   <button className="btn btn-primary" style={{ width: "100%", marginTop: 10, justifyContent: "center" }} disabled={boltLoading} onClick={connectBolt}>
                     {boltLoading ? <><span className="spinner spinner-sm" />Connecting…</> : "Connect bolt.new →"}

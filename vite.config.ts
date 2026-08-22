@@ -334,16 +334,32 @@ function lovableProxyPlugin(): Plugin {
 
 function boltProxyPlugin(): Plugin {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-    if (!req.url?.startsWith("/api/bolt/")) return next();
+    if (!req.url?.startsWith("/api/bolt/") && req.url !== "/api/bolt" && !req.url?.startsWith("/api/bolt?")) return next();
 
     // token is stored URL-encoded; bolt.new expects the decoded form as the cookie value
-    const rawToken = (req.headers["x-bolt-token"] as string) ?? "";
-    const token = decodeURIComponent(rawToken);
-    const targetPath = req.url.replace("/api/bolt", "") || "/";
+    const rawToken = (req.headers["x-bolt-token"] ?? "") as string;
+    let token = decodeURIComponent(rawToken).trim();
+    token = token.replace(/^cookie:\s*/i, "");
+    if (token.includes("__session=")) {
+      const match = token.match(/(?:^|;\s*)__session=([^;]+)/);
+      if (match) {
+        token = match[1].trim();
+      } else {
+        token = token.replace(/^__session=\s*/i, "").trim();
+      }
+    }
+    token = token.replace(/^["']|["']$/g, "").trim();
+    if (token.includes(";") && !token.includes("eyJ")) {
+      const first = token.split(";")[0].trim();
+      const eq = first.indexOf("=");
+      if (eq !== -1) token = first.slice(eq + 1).trim();
+    }
+
+    const targetPath = req.url.replace(/^\/api\/bolt/, "") || "/";
     const contentType = (req.headers["content-type"] as string) ?? "application/json";
 
     const forwardHeaders: Record<string, string> = {
-      "Cookie":     `__session=${token}`,
+      ...(token ? { "Cookie": `__session=${token}` } : {}),
       "Accept":     (req.headers["accept"] as string) ?? "application/json",
       "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
       "Origin":     "https://bolt.new",

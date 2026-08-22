@@ -7,7 +7,7 @@ import { useApp } from "@/contexts/AppContext";
 import { getGitHubUser } from "@/lib/github-api";
 import { base44Login, validateBase44Token } from "@/lib/base44-api";
 import { validateFlootToken } from "@/lib/floot-api";
-import { boltLogin, validateBoltProject } from "@/lib/bolt-api";
+import { boltLogin, validateBoltProject, cleanBoltToken, cleanBoltProjectId } from "@/lib/bolt-api";
 import { loginToZite, validateZiteSession } from "@/lib/zite-api";
 import { lovableLogin, validateLovableToken } from "@/lib/lovable-api";
 import { validateFramerAuth } from "@/lib/framer-api";
@@ -246,27 +246,34 @@ export default function SettingsPage() {
     setBoltLoginLoading(true);
     try {
       const r = await boltLogin({ data: { email: boltEmail.trim(), password: boltPass } });
-      updateCreds({ boltToken: r.token, boltEmail: r.email, boltProjectId: "", boltSiteUrl: "" });
-      setBoltToken(r.token);
+      const cleanTok = cleanBoltToken(r.token);
+      updateCreds({ boltToken: cleanTok, boltEmail: r.email, boltProjectId: "", boltSiteUrl: "" });
+      setBoltToken(cleanTok);
       setBoltTest("ok");
       toast.success("bolt.new connected — now enter your Project ID below");
     } catch (e: any) {
       toast.error(e?.message ?? "Login failed");
       setBoltTest("fail");
-      // If the error mentions SSO, switch to cookie tab
-      if (e?.message?.toLowerCase().includes("session cookie")) setBoltTab("cookie");
+      // If the error mentions SSO or fails, switch to cookie tab
+      if (e?.message?.toLowerCase().includes("session cookie") || e?.message?.toLowerCase().includes("google") || e?.message?.toLowerCase().includes("github")) {
+        setBoltTab("cookie");
+      }
     } finally { setBoltLoginLoading(false); }
   };
 
   const saveBolt = async () => {
-    if (!boltToken.trim() || !boltProjectId.trim()) {
+    const cleanTok = cleanBoltToken(boltToken);
+    const cleanPid = cleanBoltProjectId(boltProjectId);
+    if (!cleanTok || !cleanPid) {
       toast.error("Paste your __session cookie and Project ID");
       return;
     }
     setBoltSaving(true);
     try {
-      const info = await validateBoltProject({ data: { token: boltToken.trim(), projectId: boltProjectId.trim() } });
-      updateCreds({ boltToken: boltToken.trim(), boltProjectId: boltProjectId.trim(), boltSiteUrl: info.siteUrl });
+      const info = await validateBoltProject({ data: { token: cleanTok, projectId: cleanPid } });
+      updateCreds({ boltToken: cleanTok, boltProjectId: cleanPid, boltSiteUrl: info.siteUrl });
+      setBoltToken(cleanTok);
+      setBoltProjectId(cleanPid);
       setBoltTest("ok");
       toast.success(
         info.siteUrl
@@ -280,15 +287,17 @@ export default function SettingsPage() {
   };
 
   const saveProject = async () => {
-    const tok = creds.boltToken || boltToken.trim();
-    if (!tok || !boltProjectId.trim()) {
+    const tok = cleanBoltToken(creds.boltToken || boltToken);
+    const cleanPid = cleanBoltProjectId(boltProjectId);
+    if (!tok || !cleanPid) {
       toast.error("Enter your Project ID");
       return;
     }
     setBoltSaving(true);
     try {
-      const info = await validateBoltProject({ data: { token: tok, projectId: boltProjectId.trim() } });
-      updateCreds({ boltProjectId: boltProjectId.trim(), boltSiteUrl: info.siteUrl });
+      const info = await validateBoltProject({ data: { token: tok, projectId: cleanPid } });
+      updateCreds({ boltProjectId: cleanPid, boltSiteUrl: info.siteUrl });
+      setBoltProjectId(cleanPid);
       setBoltTest("ok");
       toast.success(
         info.siteUrl
@@ -302,12 +311,21 @@ export default function SettingsPage() {
   };
 
   const testBolt = async () => {
-    const tok = boltToken.trim() || creds.boltToken;
-    const pid = boltProjectId.trim() || creds.boltProjectId;
-    if (!tok || !pid) return;
+    const tok = cleanBoltToken(boltToken || creds.boltToken || "");
+    const pid = cleanBoltProjectId(boltProjectId || creds.boltProjectId || "");
+    if (!tok || !pid) {
+      toast.error("Session token and Project ID are required to test");
+      return;
+    }
     setBoltTest("loading");
-    try { await validateBoltProject({ data: { token: tok, projectId: pid } }); setBoltTest("ok"); }
-    catch { setBoltTest("fail"); }
+    try {
+      await validateBoltProject({ data: { token: tok, projectId: pid } });
+      setBoltTest("ok");
+      toast.success("bolt.new connection verified!");
+    } catch (e: any) {
+      setBoltTest("fail");
+      toast.error(e?.message ?? "bolt.new validation failed");
+    }
   };
 
   // ── Lovable actions ────────────────────────────────────────────────────────

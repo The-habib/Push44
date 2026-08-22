@@ -69,6 +69,64 @@ async function boltFetch(
   return fetch(`${PROXY}${path}`, { ...opts, headers });
 }
 
+/**
+ * Sanitize and extract the pure session cookie value for bolt.new.
+ * Handles:
+ * - Cookie header format: "Cookie: __session=...; other=..."
+ * - Key-value format: "__session=..."
+ * - Quotes: '"..."' or "'...'"
+ * - Extra whitespace and newlines
+ */
+export function cleanBoltToken(token: string): string {
+  if (!token) return "";
+  let clean = token.trim();
+
+  // Strip leading "Cookie:" or "cookie:"
+  clean = clean.replace(/^cookie:\s*/i, "");
+
+  // If user pasted a cookie string containing __session=...
+  if (clean.includes("__session=")) {
+    const match = clean.match(/(?:^|;\s*)__session=([^;]+)/);
+    if (match) {
+      clean = match[1].trim();
+    } else {
+      clean = clean.replace(/^__session=\s*/i, "").trim();
+    }
+  }
+
+  // Remove surrounding quotes
+  clean = clean.replace(/^["']|["']$/g, "").trim();
+
+  // If multiple cookies exist without explicit __session key, take first part
+  if (clean.includes(";") && !clean.includes("eyJ")) {
+    const first = clean.split(";")[0].trim();
+    const eq = first.indexOf("=");
+    if (eq !== -1) clean = first.slice(eq + 1).trim();
+  }
+
+  return clean;
+}
+
+/**
+ * Sanitize bolt.new Project ID from various URL patterns:
+ * - https://bolt.new/~/sb1-abc123
+ * - bolt.new/~/sb1-abc123
+ * - https://sb1-abc123.bolt.host
+ * - sb1-abc123.bolt.host
+ * - ~/sb1-abc123
+ * - sb1-abc123
+ */
+export function cleanBoltProjectId(projectId: string): string {
+  if (!projectId) return "";
+  let id = projectId.trim();
+  id = id.replace(/^https?:\/\//i, "");
+  id = id.replace(/^bolt\.new\/(?:~\/|project\/)?/i, "");
+  id = id.replace(/^~\//, "");
+  id = id.replace(/\.bolt\.host\/?$/i, "");
+  id = id.replace(/\/.*$/, "");
+  return id.trim();
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface BoltProject {
@@ -96,18 +154,18 @@ export async function validateBoltProject({
 }: {
   data: { token: string; projectId: string };
 }): Promise<BoltProject> {
-  const { token } = data;
-
-  // Normalize: strip full URL prefix if the user pasted the editor URL
-  // e.g. "https://bolt.new/~/sb1-abc" or "~/sb1-abc" → "sb1-abc"
-  const projectId = data.projectId
-    .replace(/^https?:\/\/bolt\.new\/~\//, "")
-    .replace(/^~\//, "")
-    .trim();
+  const token = cleanBoltToken(data.token);
+  const projectId = cleanBoltProjectId(data.projectId);
 
   if (!projectId) {
     throw new Error(
       "Enter your Project ID from the bolt.new editor URL: bolt.new/~/PROJECT_ID"
+    );
+  }
+
+  if (!token) {
+    throw new Error(
+      "Enter your bolt.new session token (__session cookie)."
     );
   }
 
@@ -122,12 +180,12 @@ export async function validateBoltProject({
 
   if (res.status === 401) {
     throw new Error(
-      "Your bolt.new session has expired.\n\n" +
-        "To get a fresh token:\n" +
+      "Your bolt.new session has expired or is invalid.\n\n" +
+        "To get a fresh session token:\n" +
         "1. Go to bolt.new and log in\n" +
         "2. Open DevTools (F12) → Application → Cookies → bolt.new\n" +
         "3. Copy the Value of the cookie named: __session\n" +
-        "4. Paste it here"
+        "4. Paste it in the Session Cookie field"
     );
   }
 
@@ -212,7 +270,9 @@ export async function removeBoltBadge({
   data: { token: string; projectId: string; siteUrl: string };
   onStep?: (step: BoltRemoveStep, detail?: string) => void;
 }): Promise<{ siteUrl: string }> {
-  const { token, projectId, siteUrl } = data;
+  const token = cleanBoltToken(data.token);
+  const projectId = cleanBoltProjectId(data.projectId);
+  const siteUrl = data.siteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "");
   const notify = (s: BoltRemoveStep, d?: string) => onStep?.(s, d);
 
   // Newer "sb1-" format projects publish to *.bolt.host but their deploy

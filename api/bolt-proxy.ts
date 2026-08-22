@@ -35,12 +35,27 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
   // Token arrives URL-encoded; bolt.new expects the decoded value as the cookie.
   const rawToken = (headers["x-bolt-token"] ?? "") as string;
-  const token    = decodeURIComponent(rawToken);
+  let token = decodeURIComponent(rawToken).trim();
+  token = token.replace(/^cookie:\s*/i, "");
+  if (token.includes("__session=")) {
+    const match = token.match(/(?:^|;\s*)__session=([^;]+)/);
+    if (match) {
+      token = match[1].trim();
+    } else {
+      token = token.replace(/^__session=\s*/i, "").trim();
+    }
+  }
+  token = token.replace(/^["']|["']$/g, "").trim();
+  if (token.includes(";") && !token.includes("eyJ")) {
+    const first = token.split(";")[0].trim();
+    const eq = first.indexOf("=");
+    if (eq !== -1) token = first.slice(eq + 1).trim();
+  }
 
   const contentType = (headers["content-type"] as string) ?? "application/json";
 
   const forwardHeaders: Record<string, string> = {
-    "Cookie":     `__session=${token}`,
+    ...(token ? { "Cookie": `__session=${token}` } : {}),
     "Accept":     (headers["accept"] as string) ?? "application/json",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     "Origin":     "https://bolt.new",
