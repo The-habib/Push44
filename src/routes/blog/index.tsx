@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Clock, ArrowRight, ChevronRight } from "lucide-react";
+import { Search, X, Clock, ArrowRight, ArrowUpRight, Sparkles, BookOpen, Layers, GitCompare, Compass } from "lucide-react";
 import {
   ARTICLES, CATEGORIES, POPULAR_SEARCHES, PLATFORMS,
   COMPARISONS, getArticlesByTopic,
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
       { title: "Push44 Blog — Guides to Export AI-Generated Code" },
-      { name: "description", content: "Step-by-step guides, tutorials and comparisons for exporting, backing up and owning AI-generated source code from Base44, Rocket.new, Floot and Zite." },
+      { name: "description", content: "Step-by-step guides, tutorials and comparisons for exporting, backing up and owning AI-generated source code from Base44, Rocket.new, Floot, Zite, Bolt and Lovable." },
       { name: "robots", content: "index, follow" },
       { property: "og:title", content: "Push44 Blog — Guides to Export AI-Generated Code" },
       { property: "og:type", content: "website" },
@@ -34,7 +34,8 @@ const PLACEHOLDERS = [
   "How to export code from Base44",
   "Download Rocket.new source code",
   "Export Floot to GitHub",
-  "Backup AI-generated apps",
+  "Backup Lovable.dev projects",
+  "Export Bolt.new full repository",
 ];
 
 function useTypingPlaceholder() {
@@ -82,83 +83,98 @@ export default function BlogHome() {
   const featured = ARTICLES.slice(0, 6);
 
   useEffect(() => {
-    if (category) document.getElementById("all-guides")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (category) {
+      document.getElementById("all-guides")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, [category]);
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#fff", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#09090b" }}>
+    <div className="min-h-[100dvh] bg-[#faf8f5] text-[#191411] font-sans selection:bg-[#f50]/20">
       <Navbar />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", padding: "80px 20px 72px", borderBottom: "1px solid #e4e4e7", background: "radial-gradient(ellipse at 50% 0%, #fff7ed 0%, #fafafa 70%)", overflow: "hidden" }}>
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden border-b border-[#e7e2db] bg-gradient-to-b from-[#fff8f3] via-[#faf8f5] to-[#faf8f5]">
         {/* Subtle Ambient Radial Glow */}
-        <div style={{ position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 600, height: 240, background: "radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(255, 255, 255, 0) 70%)", pointerEvents: "none" }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[720px] h-[340px] bg-gradient-to-b from-[#f50]/12 via-[#f50]/4 to-transparent blur-3xl pointer-events-none rounded-full" />
 
-        <div style={{ position: "relative", maxWidth: 760, margin: "0 auto", textAlign: "center", zIndex: 1 }}>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#f97316", textTransform: "uppercase", letterSpacing: "0.12em", display: "inline-block", padding: "4px 12px", background: "rgba(249, 115, 22, 0.1)", borderRadius: 99, border: "1px solid rgba(249, 115, 22, 0.25)", marginBottom: 20 }}>
-              Knowledge Base & Guides
-            </span>
-            <h1 style={{ fontSize: "clamp(30px,5.2vw,54px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.045em", lineHeight: 1.08, margin: "0 0 16px" }}>
-              Export Code from Every AI Builder
+        <div className="relative max-w-4xl mx-auto text-center z-10">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f50]/10 border border-[#f50]/20 text-[#f50] text-[12px] font-bold uppercase tracking-wider mb-6">
+              <Sparkles size={13} className="text-[#f50]" />
+              Official Knowledge Base & Tutorials
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#191411] tracking-tight leading-[1.1] mb-5">
+              Export & Own Code from Every AI Builder
             </h1>
-            <p style={{ fontSize: 16, color: "#71717a", lineHeight: 1.7, margin: "0 0 36px", maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
-              Step-by-step guides, tutorials, and comparisons to export, backup, and own your AI-generated source code.
+            <p className="text-lg sm:text-xl text-[#544e47] leading-relaxed max-w-2xl mx-auto mb-10">
+              Step-by-step guides, architectural tutorials, and head-to-head comparisons to take your AI projects into real source control.
             </p>
           </motion.div>
 
-          {/* Search */}
+          {/* Search Box */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            style={{ position: "relative", maxWidth: 520, margin: "0 auto 24px" }}
+            transition={{ duration: 0.45, delay: 0.1 }}
+            className="relative max-w-xl mx-auto mb-8"
           >
-            <div
-              style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid #e4e4e7", borderRadius: 12, padding: "0 16px", background: "#fff", boxShadow: "0 4px 14px rgba(0,0,0,0.03)", transition: "all 0.18s ease" }}
-              onFocusCapture={e => { e.currentTarget.style.borderColor = "#f97316"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(249,115,22,0.12)"; }}
-              onBlurCapture={e => { e.currentTarget.style.borderColor = "#e4e4e7"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.03)"; }}
-            >
-              <Search size={16} color="#a1a1aa" style={{ flexShrink: 0 }} />
+            <div className="flex items-center gap-3 bg-white border border-[#e7e2db] focus-within:border-[#f50] focus-within:ring-4 focus-within:ring-[#f50]/10 rounded-2xl px-4 py-1.5 shadow-sm transition-all duration-200">
+              <Search size={18} className="text-[#8c857b] shrink-0" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={e => handleSearch(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && searchResults[0]) navigate({ to: "/blog/$slug", params: { slug: searchResults[0].slug } }); }}
-                placeholder={placeholder || "Search guides..."}
-                style={{ background: "transparent", border: "none", outline: "none", color: "#09090b", fontSize: 14, flex: 1, padding: "14px 0", fontFamily: "inherit" }}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && searchResults[0]) {
+                    navigate({ to: "/blog/$slug", params: { slug: searchResults[0].slug } });
+                  }
+                }}
+                placeholder={placeholder || "Search guides & tutorials..."}
+                className="w-full bg-transparent border-none outline-none text-[#191411] text-[15px] py-2.5 placeholder:text-[#8c857b]"
                 aria-label="Search guides"
                 autoComplete="off"
               />
               {query && (
-                <button onClick={() => { setQuery(""); setSearchResults([]); inputRef.current?.focus(); }} aria-label="Clear search" style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#a1a1aa", display: "flex", alignItems: "center" }}>
-                  <X size={14} />
+                <button
+                  onClick={() => { setQuery(""); setSearchResults([]); inputRef.current?.focus(); }}
+                  aria-label="Clear search"
+                  className="p-1 text-[#8c857b] hover:text-[#191411] rounded-lg transition-colors cursor-pointer"
+                >
+                  <X size={16} />
                 </button>
               )}
             </div>
 
-            {/* Search results dropdown */}
+            {/* Search Dropdown */}
             <AnimatePresence>
               {searchResults.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.15 }}
-                  style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #e4e4e7", borderRadius: 12, boxShadow: "0 12px 32px -4px rgba(0,0,0,0.14)", zIndex: 20, overflow: "hidden" }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#e7e2db] rounded-2xl shadow-xl z-30 overflow-hidden divide-y divide-[#f3efe9]"
                 >
-                  {searchResults.map((a, i) => (
-                    <Link key={a.slug} to="/blog/$slug" params={{ slug: a.slug }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", textDecoration: "none", borderTop: i > 0 ? "1px solid #f4f4f5" : "none" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = "#fafafa"}
-                      onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = "transparent"}
+                  {searchResults.map((a) => (
+                    <Link
+                      key={a.slug}
+                      to="/blog/$slug"
+                      params={{ slug: a.slug }}
+                      className="flex items-center justify-between p-4 hover:bg-[#faf8f5] transition-colors text-left group"
                     >
-                      <ChevronRight size={14} color="#f97316" style={{ flexShrink: 0 }} />
-                      <div style={{ textAlign: "left" }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#09090b", lineHeight: 1.35 }}>{a.h1}</div>
-                        <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                          <Clock size={10} /> {a.readTime} min read
+                      <div className="pr-4">
+                        <div className="text-[14px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors leading-snug">
+                          {a.h1}
+                        </div>
+                        <div className="text-[12px] text-[#8c857b] mt-1 flex items-center gap-3">
+                          <span className="uppercase font-semibold tracking-wider">{a.category}</span>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock size={11} /> {a.readTime} min read
+                          </span>
                         </div>
                       </div>
+                      <ArrowRight size={15} className="text-[#8c857b] group-hover:text-[#f50] group-hover:translate-x-1 transition-all shrink-0" />
                     </Link>
                   ))}
                 </motion.div>
@@ -166,15 +182,20 @@ export default function BlogHome() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Popular searches */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}
+          {/* Popular Searches */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-wrap gap-2 justify-center items-center"
           >
+            <span className="text-[12px] font-semibold text-[#8c857b] mr-1">Trending:</span>
             {POPULAR_SEARCHES.slice(0, 5).map(s => (
-              <Link key={s.slug} to="/blog/$slug" params={{ slug: s.slug }}
-                style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: "#fff", border: "1px solid #e4e4e7", borderRadius: 99, fontSize: 12, fontWeight: 500, color: "#52525b", textDecoration: "none", transition: "all 0.12s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#f97316"; (e.currentTarget as HTMLAnchorElement).style.color = "#f97316"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLAnchorElement).style.color = "#52525b"; }}
+              <Link
+                key={s.slug}
+                to="/blog/$slug"
+                params={{ slug: s.slug }}
+                className="inline-flex items-center px-3 py-1 bg-white hover:bg-[#f3efe9] border border-[#e7e2db] hover:border-[#f50]/40 rounded-full text-[12px] font-medium text-[#544e47] hover:text-[#f50] transition-all shadow-2xs"
               >
                 {s.label}
               </Link>
@@ -183,99 +204,169 @@ export default function BlogHome() {
         </div>
       </section>
 
-      {/* ── CATEGORIES ────────────────────────────────────────────────────── */}
-      <section style={{ padding: "36px 20px", borderBottom: "1px solid #e4e4e7", background: "#ffffff" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 16, display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#09090b", letterSpacing: "-0.01em", margin: 0 }}>Browse by Topic</h2>
-            {category && (
-              <Link to="/blog" search={{}} style={{ fontSize: 12, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
-                Clear filter
-              </Link>
-            )}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      {/* ── TOPIC PILLS ────────────────────────────────────────────────────── */}
+      <section className="py-6 px-6 border-b border-[#e7e2db] bg-white sticky top-[58px] z-20 shadow-2xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto">
+            <Link
+              to="/blog"
+              search={{}}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold transition-all shrink-0 ${
+                !category
+                  ? "bg-[#191411] text-white shadow-xs"
+                  : "bg-[#f3efe9] text-[#544e47] hover:bg-[#eae4dc] hover:text-[#191411]"
+              }`}
+            >
+              <Layers size={13} />
+              All Topics
+            </Link>
             {CATEGORIES.map(c => {
               const isActive = category === c.slug;
+              const count = getArticlesByTopic(c.slug).length;
               return (
-                <Link key={c.slug} to="/blog" search={{ category: c.slug }}
-                  style={{ display: "inline-flex", alignItems: "center", padding: "6px 14px", background: isActive ? "#fff7ed" : "#fafafa", border: `1px solid ${isActive ? "#f97316" : "#e4e4e7"}`, borderRadius: 99, textDecoration: "none", transition: "all 0.15s ease", boxShadow: isActive ? "0 2px 8px rgba(249, 115, 22, 0.15)" : "none" }}
-                  onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#f97316"; (e.currentTarget as HTMLAnchorElement).style.background = "#fff"; } }}
-                  onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLAnchorElement).style.background = "#fafafa"; } }}
+                <Link
+                  key={c.slug}
+                  to="/blog"
+                  search={{ category: c.slug }}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all shrink-0 ${
+                    isActive
+                      ? "bg-[#f50] text-white shadow-xs"
+                      : "bg-[#f3efe9] text-[#544e47] hover:bg-[#eae4dc] hover:text-[#191411]"
+                  }`}
                 >
-                  <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? "#f97316" : "#3f3f46" }}>{c.name}</span>
+                  {c.name}
+                  <span className={`text-[10.5px] px-1.5 py-0.2 rounded-full font-semibold ${
+                    isActive ? "bg-white/20 text-white" : "bg-[#e7e2db] text-[#544e47]"
+                  }`}>
+                    {count}
+                  </span>
                 </Link>
               );
             })}
           </div>
+
+          {category && (
+            <Link
+              to="/blog"
+              search={{}}
+              className="text-[12.5px] font-bold text-[#f50] hover:underline"
+            >
+              Reset filter
+            </Link>
+          )}
         </div>
       </section>
 
-      {/* ── FEATURED GUIDES ───────────────────────────────────────────────── */}
+      {/* ── FEATURED GUIDES (when no category selected) ───────────────────── */}
       {!category && (
-        <section style={{ padding: "64px 20px", borderBottom: "1px solid #e4e4e7" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+        <section className="py-16 px-6 border-b border-[#e7e2db]">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-8 gap-4">
               <div>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#f97316", display: "block", marginBottom: 4 }}>Trending</span>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: 0 }}>Featured Guides</h2>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#f50] flex items-center gap-1.5 mb-1.5">
+                  <Sparkles size={13} /> Recommended Reading
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#191411] tracking-tight">
+                  Featured Masterclasses
+                </h2>
               </div>
-              <Link to="/blog" search={{}} hash="all-guides" style={{ fontSize: 13, fontWeight: 600, color: "#71717a", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-                View all <ArrowRight size={13} />
-              </Link>
+              <a
+                href="#all-guides"
+                className="hidden sm:inline-flex items-center gap-1.5 text-[13.5px] font-bold text-[#544e47] hover:text-[#f50] transition-colors"
+              >
+                Browse all {ARTICLES.length} guides <ArrowRight size={14} />
+              </a>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
-              {featured.map((a, i) => <ArticleCard key={a.slug} article={a} index={i} />)}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.map((a, i) => (
+                <ArticleCard key={a.slug} article={a} index={i} />
+              ))}
             </div>
           </div>
         </section>
       )}
 
       {/* ── ALL GUIDES ────────────────────────────────────────────────────── */}
-      <section id="all-guides" style={{ padding: "64px 20px", borderBottom: "1px solid #e4e4e7" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+      <section id="all-guides" className="py-16 px-6 border-b border-[#e7e2db]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-baseline justify-between mb-8 gap-4">
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: 0 }}>
-                {activeCategory ? `${activeCategory.name} Guides` : "All Guides"}
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#8c857b] block mb-1">
+                {activeCategory ? "Filtered Collection" : "Complete Library"}
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#191411] tracking-tight">
+                {activeCategory ? `${activeCategory.name} Guides` : "All Export & Backup Guides"}
               </h2>
-              <span style={{ fontSize: 13, color: "#a1a1aa", marginTop: 4, display: "block" }}>{allGuides.length} articles</span>
             </div>
+            <span className="text-[13px] font-semibold text-[#8c857b] bg-white border border-[#e7e2db] px-3 py-1 rounded-full">
+              {allGuides.length} articles
+            </span>
           </div>
+
           {allGuides.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
-              {allGuides.map((a, i) => <ArticleCard key={a.slug} article={a} index={i} />)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allGuides.map((a, i) => (
+                <ArticleCard key={a.slug} article={a} index={i} />
+              ))}
             </div>
           ) : (
-            <div style={{ padding: "64px 0", textAlign: "center", color: "#a1a1aa" }}>
-              <p style={{ fontSize: 15, margin: "0 0 16px" }}>No guides found for this category yet.</p>
-              <Link to="/blog" search={{}} style={{ fontSize: 13, fontWeight: 600, color: "#f97316", textDecoration: "none" }}>Browse all guides</Link>
+            <div className="bg-white rounded-3xl border border-[#e7e2db] p-12 text-center max-w-lg mx-auto">
+              <BookOpen size={36} className="mx-auto text-[#8c857b] mb-4" />
+              <h3 className="text-lg font-bold text-[#191411] mb-2">No guides found</h3>
+              <p className="text-[14px] text-[#544e47] mb-6">We couldn't find any articles in this topic category yet.</p>
+              <Link to="/blog" search={{}} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f50] hover:bg-[#e64d00] text-white text-[13px] font-bold rounded-xl shadow-xs transition-colors">
+                Browse all guides
+              </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* ── PLATFORMS ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: "64px 20px", borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 32 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#f97316", display: "block", marginBottom: 8 }}>Platforms</span>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: 0 }}>Platform Export Hubs</h2>
+      {/* ── PLATFORM HUBS ─────────────────────────────────────────────────── */}
+      <section className="py-16 px-6 border-b border-[#e7e2db] bg-[#f3efe9]/60">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#f50] block mb-1">
+                Platform Centers
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#191411] tracking-tight">
+                Dedicated Platform Hubs
+              </h2>
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PLATFORMS.map(p => (
               <Link
-                key={p.slug} to="/platforms/$platform" params={{ platform: p.slug }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", border: "1px solid #e4e4e7", borderRadius: 10, background: "#fff", textDecoration: "none", transition: "all 0.12s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none"; }}
+                key={p.slug}
+                to="/platforms/$platform"
+                params={{ platform: p.slug }}
+                className="group flex flex-col justify-between bg-white hover:bg-[#faf8f5] border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-5 transition-all duration-200 shadow-2xs hover:shadow-md"
               >
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: p.bgColor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14, fontWeight: 800, color: p.color, fontFamily: "monospace" }}>
-                  {p.name[0]}
-                </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#09090b", letterSpacing: "-0.01em" }}>{p.name}</div>
-                  <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 1 }}>{p.articles.length} guides</div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white shadow-xs"
+                      style={{ backgroundColor: p.color }}
+                    >
+                      {p.name[0]}
+                    </div>
+                    <span className="text-[11px] font-bold text-[#8c857b] bg-[#f3efe9] px-2.5 py-0.5 rounded-full">
+                      {p.articles.length} guides
+                    </span>
+                  </div>
+                  <h3 className="text-[16px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors mb-1">
+                    {p.name}
+                  </h3>
+                  <p className="text-[12.5px] text-[#544e47] line-clamp-2 leading-relaxed mb-4">
+                    {p.tagline}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-[12px] font-bold text-[#191411] group-hover:text-[#f50] pt-3 border-t border-[#f3efe9]">
+                  <span>Explore Hub</span>
+                  <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
               </Link>
             ))}
@@ -283,26 +374,43 @@ export default function BlogHome() {
         </div>
       </section>
 
-      {/* ── COMPARISONS ───────────────────────────────────────────────────── */}
-      <section style={{ padding: "64px 20px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: 32 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#f97316", display: "block", marginBottom: 8 }}>Comparisons</span>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: 0 }}>Head-to-Head Guides</h2>
+      {/* ── HEAD-TO-HEAD COMPARISONS ─────────────────────────────────────── */}
+      <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#8c857b] flex items-center gap-1.5 mb-1">
+                <GitCompare size={13} className="text-[#f50]" /> Head-to-Head
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#191411] tracking-tight">
+                Architectural Platform Comparisons
+              </h2>
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {COMPARISONS.map(c => (
               <Link
-                key={c.slug} to="/compare/$slug" params={{ slug: c.slug }}
-                style={{ display: "flex", flexDirection: "column", gap: 10, border: "1px solid #e4e4e7", borderRadius: 10, padding: "18px", textDecoration: "none", background: "#fff", transition: "all 0.12s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none"; }}
+                key={c.slug}
+                to="/compare/$slug"
+                params={{ slug: c.slug }}
+                className="group flex flex-col justify-between bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 transition-all duration-200 shadow-2xs hover:shadow-md"
               >
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.08em" }}>Compare</span>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#09090b", lineHeight: 1.4, letterSpacing: "-0.01em" }}>{c.h1}</div>
-                <p style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.summary}</p>
-                <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#f97316" }}>
-                  Read comparison <ArrowRight size={11} />
+                <div>
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#8c857b] bg-[#f3efe9] px-2.5 py-0.5 rounded-full mb-3.5">
+                    <GitCompare size={11} className="text-[#f50]" />
+                    Versus Breakdown
+                  </div>
+                  <h3 className="text-[17px] font-bold text-[#191411] group-hover:text-[#f50] transition-colors leading-snug mb-2.5">
+                    {c.h1}
+                  </h3>
+                  <p className="text-[13.5px] text-[#544e47] line-clamp-2 leading-relaxed mb-6">
+                    {c.summary}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-[12.5px] font-bold text-[#191411] group-hover:text-[#f50] pt-4 border-t border-[#f3efe9]">
+                  <span>Read Full Comparison</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </Link>
             ))}

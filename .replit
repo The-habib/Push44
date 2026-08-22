@@ -5,7 +5,7 @@ stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
-packages = ["haskellPackages.wai-app-static", "python313Full", "opencode"]
+packages = ["haskellPackages.wai-app-static", "python313Full", "opencode", "chromium"]
 
 [workflows]
 runButton = "Project"

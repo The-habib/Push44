@@ -1,7 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { Clock, ChevronRight, CheckCircle2, AlertTriangle, Share2 } from "lucide-react";
+import {
+  Clock, ChevronRight, CheckCircle2, AlertTriangle, Share2,
+  Copy, Check, ArrowRight, Sparkles, BookOpen, Layers, Terminal
+} from "lucide-react";
+import { toast } from "sonner";
 import {
   getArticle, getRelatedArticles, PLATFORMS, PLATFORM_META, type Article,
 } from "@/seo/data";
@@ -15,7 +19,7 @@ export const Route = createFileRoute("/blog/$slug")({
     if (!article) return { meta: [{ title: "Not Found — Push44" }] };
     return {
       meta: [
-        { title: article.title },
+        { title: `${article.title} — Push44` },
         { name: "description", content: article.description },
         { name: "keywords", content: article.keywords.join(", ") },
         { name: "robots", content: "index, follow" },
@@ -33,23 +37,26 @@ export const Route = createFileRoute("/blog/$slug")({
   },
   component: ArticlePage,
   notFoundComponent: () => (
-    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
-      <h1 style={{ fontSize: 64, fontWeight: 900, color: "#09090b", margin: "0 0 12px", letterSpacing: "-0.04em" }}>404</h1>
-      <p style={{ fontSize: 18, color: "#71717a", margin: "0 0 28px" }}>Article not found</p>
-      <Link to="/blog" style={{ color: "#f97316", fontWeight: 700, textDecoration: "none" }}>Back to Blog</Link>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 bg-[#faf8f5]">
+      <h1 className="text-6xl font-extrabold text-[#191411] mb-3 tracking-tight">404</h1>
+      <p className="text-lg text-[#544e47] mb-6">Article not found in the Push44 library.</p>
+      <Link to="/blog" className="px-5 py-2.5 bg-[#f50] hover:bg-[#e64d00] text-white font-bold rounded-xl shadow-xs transition-colors">
+        &larr; Back to Guides
+      </Link>
     </div>
   ),
 });
 
-const DIFFICULTY_STYLE: Record<string, React.CSSProperties> = {
-  beginner:     { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" },
-  intermediate: { background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" },
-  advanced:     { background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca" },
+const DIFFICULTY_STYLE: Record<string, string> = {
+  beginner:     "bg-emerald-50 text-emerald-800 border-emerald-200",
+  intermediate: "bg-amber-50 text-amber-800 border-amber-200",
+  advanced:     "bg-rose-50 text-rose-800 border-rose-200",
 };
 
 export default function ArticlePage() {
   const { article } = Route.useLoaderData();
   const [activeSection, setActiveSection] = useState("introduction");
+  const [copied, setCopied] = useState(false);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -65,7 +72,7 @@ export default function ArticlePage() {
     { id: "step-by-step", label: "Step-by-Step Guide" },
     article.tips.length > 0 && { id: "tips", label: "Pro Tips" },
     article.mistakes.length > 0 && { id: "mistakes", label: "Common Mistakes" },
-    { id: "faq", label: "FAQ" },
+    { id: "faq", label: "Frequently Asked Questions" },
     relatedArticles.length > 0 && { id: "related", label: "Related Guides" },
   ].filter(Boolean) as Array<{ id: string; label: string }>;
 
@@ -79,140 +86,215 @@ export default function ArticlePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article.slug]);
 
-  const prose: React.CSSProperties = { fontSize: 15, color: "#3f3f46", lineHeight: 1.75, margin: 0 };
+  const copyPageUrl = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    toast.success("Guide link copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#fff", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif", color: "#09090b" }}>
-      {/* Reading progress */}
-      <motion.div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2, background: "#f97316", transformOrigin: "left", scaleX, zIndex: 100 }} />
+    <div className="min-h-[100dvh] bg-[#faf8f5] text-[#191411] font-sans selection:bg-[#f50]/20">
+      {/* Reading Progress Indicator */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[3px] bg-[#f50] origin-left z-50 shadow-xs"
+        style={{ scaleX }}
+      />
 
       <Navbar />
 
       {/* ── ARTICLE HEADER ──────────────────────────────────────────────── */}
-      <header style={{ padding: "48px 20px 40px", borderBottom: "1px solid #e4e4e7", background: "#fafafa" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+      <header className="relative pt-32 pb-16 px-6 border-b border-[#e7e2db] bg-gradient-to-b from-[#fff8f3] via-[#faf8f5] to-[#faf8f5] overflow-hidden">
+        {/* Subtle Ambient Radial Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[260px] bg-gradient-to-b from-[#f50]/10 to-transparent blur-3xl pointer-events-none rounded-full" />
+
+        <div className="relative max-w-4xl mx-auto z-10">
           {/* Breadcrumb */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#a1a1aa", marginBottom: 24, flexWrap: "wrap" }}>
-            <Link to="/" style={{ color: "#71717a", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"}
-            >Push44</Link>
-            <ChevronRight size={13} color="#d4d4d8" />
-            <Link to="/blog/" style={{ color: "#71717a", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"}
-            >Blog</Link>
+          <nav className="flex items-center gap-2 text-[13px] font-medium text-[#8c857b] mb-8 flex-wrap">
+            <Link to="/" className="hover:text-[#191411] transition-colors">Push44</Link>
+            <ChevronRight size={12} className="text-[#cfc8bd]" />
+            <Link to="/blog/" className="hover:text-[#191411] transition-colors">Blog</Link>
             {article.platform !== "general" && platformData && (
               <>
-                <ChevronRight size={13} color="#d4d4d8" />
-                <Link to="/platforms/$platform" params={{ platform: article.platform }} style={{ color: "#71717a", textDecoration: "none", fontWeight: 500 }}>{platformData.name}</Link>
+                <ChevronRight size={12} className="text-[#cfc8bd]" />
+                <Link to="/platforms/$platform" params={{ platform: article.platform }} className="hover:text-[#191411] transition-colors">
+                  {platformData.name}
+                </Link>
               </>
             )}
-            <ChevronRight size={13} color="#d4d4d8" />
-            <span style={{ color: "#09090b", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 260 }}>{article.h1}</span>
+            <ChevronRight size={12} className="text-[#cfc8bd]" />
+            <span className="text-[#191411] font-semibold truncate max-w-[280px]">{article.h1}</span>
           </nav>
 
           {/* Tags */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+          <div className="flex items-center gap-2 flex-wrap mb-5">
             {article.platform !== "general" && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 5, color: pm.color, background: pm.bgColor, border: `1px solid ${pm.color}33` }}>
+              <span
+                className="inline-flex items-center gap-1.5 text-[11.5px] font-bold px-3 py-1 rounded-full"
+                style={{ color: pm.color, backgroundColor: pm.bgColor, border: `1px solid ${pm.color}30` }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pm.color }} />
                 {pm.name}
               </span>
             )}
-            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 5, ...(DIFFICULTY_STYLE[article.difficulty] || DIFFICULTY_STYLE.beginner) }}>
-              {article.difficulty.charAt(0).toUpperCase() + article.difficulty.slice(1)}
+            <span className={`text-[11.5px] font-semibold px-3 py-1 rounded-full border capitalize ${DIFFICULTY_STYLE[article.difficulty] || DIFFICULTY_STYLE.beginner}`}>
+              {article.difficulty}
+            </span>
+            <span className="text-[11.5px] font-semibold text-[#8c857b] uppercase tracking-wider bg-[#f3efe9] px-3 py-1 rounded-full">
+              {article.category}
             </span>
           </div>
 
           {/* Title */}
-          <h1 style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 900, color: "#09090b", letterSpacing: "-0.04em", lineHeight: 1.15, margin: "0 0 14px" }}>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#191411] tracking-tight leading-[1.15] mb-5">
             {article.h1}
           </h1>
-          <p style={{ fontSize: 16, color: "#71717a", lineHeight: 1.65, margin: "0 0 24px" }}>{article.intro}</p>
 
-          {/* Meta */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "#a1a1aa", alignItems: "center" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <Clock size={13} /> {article.readTime} min read
-            </span>
-            <span>Updated {article.updatedAt}</span>
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
-              target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#a1a1aa", textDecoration: "none", fontWeight: 500, transition: "color 0.12s" }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.color = "#a1a1aa"}
-            >
-              <Share2 size={13} /> Share
-            </a>
+          <p className="text-lg sm:text-xl text-[#544e47] leading-relaxed mb-8 max-w-3xl">
+            {article.intro}
+          </p>
+
+          {/* Metadata & Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-[#e7e2db] text-[13px] text-[#8c857b]">
+            <div className="flex items-center gap-5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 font-medium">
+                <Clock size={14} className="text-[#8c857b]" /> {article.readTime} min read
+              </span>
+              <span>Updated {article.updatedAt}</span>
+              <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-medium border border-emerald-200">
+                Verified Working
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={copyPageUrl}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                {copied ? "Copied" : "Copy Link"}
+              </button>
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f3efe9] border border-[#e7e2db] text-[#191411] text-[12.5px] font-bold transition-all shadow-2xs"
+              >
+                <Share2 size={13} />
+                Share on X
+              </a>
+            </div>
           </div>
         </div>
       </header>
 
       {/* ── CONTENT AREA ────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 20px", display: "flex", gap: 48, alignItems: "flex-start" }}>
-        {/* Main content */}
-        <main style={{ flex: 1, minWidth: 0 }}>
-          {/* Quick answer */}
-          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: 20, marginBottom: 40 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <CheckCircle2 size={16} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
-              <p style={{ margin: 0, fontSize: 14, color: "#14532d", lineHeight: 1.65, fontWeight: 500 }}>{article.solution}</p>
+      <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12 items-start">
+        {/* Main Article Body */}
+        <main className="w-full lg:flex-1 min-w-0 space-y-12">
+          
+          {/* Quick Answer Banner */}
+          <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-6 shadow-2xs">
+            <div className="flex items-start gap-3.5">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <CheckCircle2 size={16} />
+              </div>
+              <div>
+                <div className="text-[13px] font-bold uppercase tracking-wider text-emerald-800 mb-1">
+                  TL;DR / Quick Solution
+                </div>
+                <p className="text-[15px] text-emerald-950 font-medium leading-relaxed m-0">
+                  {article.solution}
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Introduction */}
-          <section id="introduction" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>Introduction</h2>
-            <p style={prose}>{article.intro}</p>
+          <section id="introduction" className="scroll-mt-24 space-y-4">
+            <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight flex items-center gap-2">
+              <BookOpen size={20} className="text-[#f50]" />
+              Introduction
+            </h2>
+            <p className="text-[16px] text-[#544e47] leading-relaxed">
+              {article.intro}
+            </p>
           </section>
 
           {/* Problem */}
-          <section id="the-problem" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>The Problem</h2>
-            <p style={prose}>{article.problem}</p>
+          <section id="the-problem" className="scroll-mt-24 space-y-4">
+            <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+              The Problem with Walled Gardens
+            </h2>
+            <p className="text-[16px] text-[#544e47] leading-relaxed">
+              {article.problem}
+            </p>
           </section>
 
           {/* Solution */}
-          <section id="the-solution" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 14px" }}>The Solution</h2>
-            <p style={prose}>{article.solution}</p>
+          <section id="the-solution" className="scroll-mt-24 space-y-4">
+            <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+              The Push44 Solution
+            </h2>
+            <p className="text-[16px] text-[#544e47] leading-relaxed">
+              {article.solution}
+            </p>
           </section>
 
-          {/* Steps */}
-          <section id="step-by-step" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>Step-by-Step Guide</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          {/* Step by step */}
+          <section id="step-by-step" className="scroll-mt-24 space-y-6">
+            <div className="flex items-center justify-between border-b border-[#e7e2db] pb-4">
+              <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+                Step-by-Step Walkthrough
+              </h2>
+              <span className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider bg-[#f3efe9] px-3 py-1 rounded-full">
+                {article.steps.length} Steps
+              </span>
+            </div>
+
+            <div className="space-y-6">
               {article.steps.map((step: { title: string; content: string; tip?: string }, i: number) => (
-                <div key={i} style={{ display: "flex", gap: 16 }}>
-                  <div style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", background: "#f97316", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, marginTop: 2 }}>
-                    {i + 1}
+                <div key={i} className="bg-white border border-[#e7e2db] rounded-2xl p-6 shadow-2xs space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-xl bg-[#f50] text-white flex items-center justify-center font-extrabold text-sm shrink-0 shadow-xs mt-0.5">
+                      {i + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-[17px] font-bold text-[#191411] tracking-tight mb-2">
+                        {step.title}
+                      </h3>
+                      <p className="text-[15px] text-[#544e47] leading-relaxed">
+                        {step.content}
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ flex: 1, paddingTop: 3 }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "#09090b", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{step.title}</h3>
-                    <p style={{ ...prose, fontSize: 14 }}>{step.content}</p>
-                    {step.tip && (
-                      <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 7, padding: "10px 14px", marginTop: 12 }}>
-                        <p style={{ margin: 0, fontSize: 13, color: "#9a3412", lineHeight: 1.65 }}>
-                          <span style={{ fontWeight: 700, color: "#f97316" }}>Tip: </span>{step.tip}
-                        </p>
+
+                  {step.tip && (
+                    <div className="bg-[#fff8f3] border border-[#fed7aa] rounded-xl p-4 ml-12">
+                      <div className="text-[12px] font-bold text-[#f50] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <Sparkles size={12} /> Expert Tip
                       </div>
-                    )}
-                  </div>
+                      <p className="text-[13.5px] text-[#9a3412] leading-relaxed m-0">
+                        {step.tip}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Tips */}
+          {/* Pro Tips */}
           {article.tips.length > 0 && (
-            <section id="tips" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 20px" }}>Pro Tips</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <section id="tips" className="scroll-mt-24 space-y-4">
+              <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+                Pro Recommendations
+              </h2>
+              <div className="grid gap-3">
                 {article.tips.map((tip: string, i: number) => (
-                  <div key={i} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "#fafafa", border: "1px solid #e4e4e7", borderRadius: 8 }}>
-                    <CheckCircle2 size={15} color="#f97316" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ ...prose, fontSize: 14, margin: 0 }}>{tip}</p>
+                  <div key={i} className="flex items-start gap-3.5 bg-white border border-[#e7e2db] rounded-xl p-4 shadow-2xs">
+                    <CheckCircle2 size={16} className="text-[#f50] shrink-0 mt-0.5" />
+                    <p className="text-[14.5px] text-[#544e47] leading-relaxed m-0">{tip}</p>
                   </div>
                 ))}
               </div>
@@ -221,13 +303,15 @@ export default function ArticlePage() {
 
           {/* Mistakes */}
           {article.mistakes.length > 0 && (
-            <section id="mistakes" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 20px" }}>Common Mistakes</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <section id="mistakes" className="scroll-mt-24 space-y-4">
+              <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+                Common Pitfalls to Avoid
+              </h2>
+              <div className="grid gap-3">
                 {article.mistakes.map((m: string, i: number) => (
-                  <div key={i} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>
-                    <AlertTriangle size={15} color="#ef4444" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ ...prose, fontSize: 14, margin: 0, color: "#7f1d1d" }}>{m}</p>
+                  <div key={i} className="flex items-start gap-3.5 bg-rose-50/70 border border-rose-200 rounded-xl p-4">
+                    <AlertTriangle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                    <p className="text-[14.5px] text-rose-950 leading-relaxed m-0 font-medium">{m}</p>
                   </div>
                 ))}
               </div>
@@ -235,78 +319,122 @@ export default function ArticlePage() {
           )}
 
           {/* FAQ */}
-          <section id="faq" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>FAQ</h2>
-            <div style={{ border: "1px solid #e4e4e7", borderRadius: 10, overflow: "hidden" }}>
+          <section id="faq" className="scroll-mt-24 space-y-4">
+            <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <div className="bg-white border border-[#e7e2db] rounded-2xl divide-y divide-[#f3efe9] shadow-2xs overflow-hidden">
               {article.faqs.map((faq: { question: string; answer: string }, i: number) => (
-                <div key={i} style={{ padding: "20px 20px", borderTop: i > 0 ? "1px solid #e4e4e7" : "none" }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#09090b", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{faq.question}</h3>
-                  <p style={{ ...prose, fontSize: 14, margin: 0 }}>{faq.answer}</p>
+                <div key={i} className="p-6 space-y-2">
+                  <h3 className="text-[16px] font-bold text-[#191411] tracking-tight">
+                    {faq.question}
+                  </h3>
+                  <p className="text-[14.5px] text-[#544e47] leading-relaxed m-0">
+                    {faq.answer}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Related */}
+          {/* CTA Box */}
+          <div className="bg-[#191411] rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#f50]/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 space-y-4 max-w-xl">
+              <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-stone-300 text-[11px] font-bold uppercase tracking-wider">
+                100% Free · Zero Backend · Client-Side
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                Export and push your code in seconds.
+              </h3>
+              <p className="text-[15px] text-stone-400 leading-relaxed">
+                Connect your platform, preview changes in a visual diff inspector, and create atomic commits on GitHub without server intermediate copies.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-3">
+                <Link
+                  to="/onboarding"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#f50] hover:bg-[#e64d00] text-white font-bold text-[14px] rounded-xl shadow-md transition-colors"
+                >
+                  Start Exporting Now <ArrowRight size={15} />
+                </Link>
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/15 text-white font-bold text-[14px] rounded-xl transition-colors"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Related Articles */}
           {relatedArticles.length > 0 && (
-            <section id="related" style={{ marginBottom: 48, scrollMarginTop: 80 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#09090b", letterSpacing: "-0.03em", margin: "0 0 24px" }}>Related Guides</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-                {relatedArticles.map((a, i) => <ArticleCard key={a.slug} article={a} index={i} />)}
+            <section id="related" className="scroll-mt-24 space-y-6 pt-6 border-t border-[#e7e2db]">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-extrabold text-[#191411] tracking-tight">
+                  Related Guides & Tutorials
+                </h2>
+                <Link to="/blog" className="text-[13px] font-bold text-[#f50] hover:underline">
+                  View all &rarr;
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {relatedArticles.map((a, i) => (
+                  <ArticleCard key={a.slug} article={a} index={i} />
+                ))}
               </div>
             </section>
           )}
-
-          {/* CTA */}
-          <div style={{ background: "#09090b", borderRadius: 12, padding: "32px", textAlign: "center" }}>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: "#f4f4f5", margin: "0 0 10px", letterSpacing: "-0.03em" }}>Ready to export your code?</h3>
-            <p style={{ fontSize: 14, color: "#71717a", margin: "0 0 24px", lineHeight: 1.65 }}>Push44 is free and takes 30 seconds to set up.</p>
-            <Link to="/onboarding" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 14, borderRadius: 8, textDecoration: "none" }}>
-              Start Exporting Free
-            </Link>
-          </div>
         </main>
 
-        {/* Sidebar TOC */}
-        <aside style={{ width: 220, flexShrink: 0, position: "sticky", top: 80 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>On this page</div>
-          <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {toc.map(({ id, label }) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                style={{ display: "block", fontSize: 13, fontWeight: activeSection === id ? 600 : 400, color: activeSection === id ? "#09090b" : "#71717a", textDecoration: "none", padding: "5px 10px", borderRadius: 5, borderLeft: `2px solid ${activeSection === id ? "#f97316" : "transparent"}`, transition: "all 0.12s" }}
-                onMouseEnter={e => { if (activeSection !== id) (e.currentTarget as HTMLAnchorElement).style.color = "#09090b"; }}
-                onMouseLeave={e => { if (activeSection !== id) (e.currentTarget as HTMLAnchorElement).style.color = "#71717a"; }}
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
+        {/* Sidebar Table of Contents */}
+        <aside className="hidden lg:block w-72 shrink-0 sticky top-24 space-y-6">
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-2xs">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#8c857b] mb-3 pb-2 border-b border-[#f3efe9]">
+              Table of Contents
+            </div>
+            <nav className="space-y-1">
+              {toc.map(({ id, label }) => {
+                const isActive = activeSection === id;
+                return (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    className={`block text-[13px] py-1.5 px-3 rounded-lg transition-all ${
+                      isActive
+                        ? "font-bold text-[#f50] bg-[#fff8f3] border-l-2 border-[#f50]"
+                        : "font-medium text-[#544e47] hover:text-[#191411] hover:bg-[#faf8f5]"
+                    }`}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
 
-          {/* Share box */}
-          <div style={{ marginTop: 32, padding: "14px", border: "1px solid #e4e4e7", borderRadius: 9, background: "#fafafa" }}>
-            <p style={{ fontSize: 12, color: "#71717a", margin: "0 0 10px", lineHeight: 1.5 }}>Found this guide helpful?</p>
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.h1)}&url=${encodeURIComponent(`https://push44.vercel.app/blog/${article.slug}`)}`}
-              target="_blank" rel="noopener noreferrer"
-              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#09090b", textDecoration: "none", padding: "7px 10px", border: "1px solid #e4e4e7", borderRadius: 7, background: "#fff", transition: "border-color 0.12s" }}
-              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d4d4d8"}
-              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e4e4e7"}
-            >
-              <Share2 size={12} /> Share on X
-            </a>
+          {/* Quick share card */}
+          <div className="bg-[#f3efe9]/70 border border-[#e7e2db] rounded-2xl p-5 space-y-3">
+            <div className="text-[13px] font-bold text-[#191411]">
+              Share this knowledge
+            </div>
+            <p className="text-[12px] text-[#544e47] leading-relaxed">
+              Help other AI builders get their code out of walled gardens.
+            </p>
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                onClick={copyPageUrl}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-white hover:bg-[#faf8f5] border border-[#e7e2db] rounded-xl text-[12.5px] font-bold text-[#191411] shadow-2xs transition-colors cursor-pointer"
+              >
+                {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                {copied ? "Link Copied!" : "Copy Guide Link"}
+              </button>
+            </div>
           </div>
         </aside>
       </div>
 
       <Footer />
-
-      <style>{`
-        @media (max-width: 900px) {
-          aside { display: none !important; }
-        }
-      `}</style>
     </div>
   );
 }

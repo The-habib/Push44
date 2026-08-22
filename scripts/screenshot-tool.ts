@@ -2,8 +2,6 @@
 import { chromium } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
-import { PNG } from 'pngjs';
-import pixelmatch from 'pixelmatch';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -76,8 +74,11 @@ async function takeScreenshot(url: string, outPath?: string) {
   if (elementSelector) console.log(`   Target Element: ${elementSelector}`);
   if (isDark) console.log(`   Theme: Dark Mode`);
 
+  const chromiumPath = process.env.CHROMIUM_PATH || Bun.which('chromium') || undefined;
+
   const browser = await chromium.launch({
-    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+    ...(chromiumPath ? { executablePath: chromiumPath } : {}),
+    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-setuid-sandbox'],
   });
 
   const context = await browser.newContext({
@@ -87,7 +88,8 @@ async function takeScreenshot(url: string, outPath?: string) {
   });
 
   const page = await context.newPage();
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+  await page.waitForTimeout(500);
 
   if (delay > 0) {
     await page.waitForTimeout(delay);

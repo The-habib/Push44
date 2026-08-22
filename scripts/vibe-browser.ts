@@ -44,8 +44,10 @@ async function runCapture(url: string, outDir = './screenshots') {
   console.log(`📸 Capturing multi-device snapshots for: ${url}`);
   fs.mkdirSync(outDir, { recursive: true });
 
+  const chromiumPath = process.env.CHROMIUM_PATH || Bun.which('chromium') || undefined;
   const browser = await chromium.launch({
-    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+    ...(chromiumPath ? { executablePath: chromiumPath } : {}),
+    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-setuid-sandbox'],
   });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -58,7 +60,8 @@ async function runCapture(url: string, outDir = './screenshots') {
     });
     const page = await context.newPage();
     try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForTimeout(600);
       const filename = `${vp.name}_${timestamp}.png`;
       const filepath = path.join(outDir, filename);
       await page.screenshot({ path: filepath, fullPage: true });
