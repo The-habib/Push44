@@ -11,7 +11,7 @@ import { PlatformPicker, type PlatformOption } from "@/components/PlatformPicker
 import { Base44Logo, RocketLogo, FlootLogo, ZiteLogo, GitHubLogo, BoltLogo, LovableLogo, FramerLogo } from "@/components/BrandLogos";
 import { RocketModal } from "@/components/RocketModal";
 import { useApp } from "@/contexts/AppContext";
-import { listBase44Apps, fetchBase44AppFiles } from "@/lib/base44-api";
+import { listBase44Apps, fetchBase44AppFiles, removeBase44Badge } from "@/lib/base44-api";
 import {
   listRocketApps, fetchRocketAppFiles,
   generateRocketKeystore, triggerRocketApkBuild, checkRocketApkBuildStatus,
@@ -171,6 +171,12 @@ export default function PushPage() {
   const [badgePhase, setBadgePhase]   = useState<BadgePhase>("idle");
   const [badgeError, setBadgeError]   = useState("");
 
+  // ── Base44 Badge Removal ──────────────────────────────────────────────────
+  type Base44BadgePhase = "idle" | "removing" | "done" | "failed";
+  const [base44BadgePhase, setBase44BadgePhase] = useState<Base44BadgePhase>("idle");
+  const [base44BadgeError, setBase44BadgeError] = useState("");
+  const [base44CleanedCount, setBase44CleanedCount] = useState(0);
+
   // ── Zite Badge Removal ────────────────────────────────────────────────────
   type ZiteBadgePhase = "idle" | "removing" | "done" | "failed";
   const [ziteBadgePhase, setZiteBadgePhase] = useState<ZiteBadgePhase>("idle");
@@ -214,6 +220,12 @@ export default function PushPage() {
     return false;
   }, [creds]);
 
+  const resetBase44BadgeState = useCallback(() => {
+    setBase44BadgePhase("idle");
+    setBase44BadgeError("");
+    setBase44CleanedCount(0);
+  }, []);
+
   const resetZiteBadgeState = useCallback(() => {
     setShowZiteBadgePanel(false);
     setZiteBadgePhase("idle");
@@ -229,6 +241,7 @@ export default function PushPage() {
   const loadApps = useCallback(async (pid: PlatformId) => {
     setAppsLoading(true); setAppsError(""); setApps([]); setSelectedApp(null); setFiles([]);
     setContainerSleeping(false);
+    resetBase44BadgeState();
     resetZiteBadgeState();
     resetLovableBadgeState();
     setShowBoltChangeInput(false);
@@ -311,6 +324,7 @@ export default function PushPage() {
     setSelectedApp(app);
     setFilesLoading(true); setFilesError(""); setFiles([]);
     setContainerSleeping(false);
+    resetBase44BadgeState();
     resetZiteBadgeState();
     resetLovableBadgeState();
     try {
@@ -699,6 +713,27 @@ export default function PushPage() {
     }
   };
 
+  // ── Base44 badge removal handler ──────────────────────────────────────────
+  const handleBase44BadgeRemoval = async () => {
+    if (!selectedApp || files.length === 0) return;
+    setBase44BadgePhase("removing");
+    setBase44BadgeError("");
+    try {
+      const res = await removeBase44Badge({ files });
+      setFiles(res.files);
+      setBase44CleanedCount(res.cleanedCount);
+      setBase44BadgePhase("done");
+      toast.success(
+        res.cleanedCount > 0
+          ? `Removed Base44 badge & branding from ${res.cleanedCount} file${res.cleanedCount === 1 ? "" : "s"}!`
+          : "Project files are already 100% white-label and badge-free!"
+      );
+    } catch (e: any) {
+      setBase44BadgeError(e?.message ?? "Failed to remove badge");
+      setBase44BadgePhase("failed");
+    }
+  };
+
   // ── Zite badge removal handler ────────────────────────────────────────────
   const handleZiteBadgeRemoval = async () => {
     if (!selectedApp || !creds.ziteSession) return;
@@ -1001,6 +1036,21 @@ export default function PushPage() {
                 Try again
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Base44 badge removal panel */}
+        {platform === "base44" && selectedApp && files.length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <Base44BadgePanel
+              appName={selectedApp.name}
+              filesCount={files.length}
+              phase={base44BadgePhase}
+              error={base44BadgeError}
+              cleanedCount={base44CleanedCount}
+              onRemove={handleBase44BadgeRemoval}
+              onReset={() => { setBase44BadgePhase("idle"); setBase44BadgeError(""); }}
+            />
           </div>
         )}
 
@@ -1637,6 +1687,89 @@ export default function PushPage() {
 
 function BookOpen14() {
   return <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+}
+
+// ── Base44BadgePanel ──────────────────────────────────────────────────────────
+interface Base44BadgePanelProps {
+  appName: string;
+  filesCount: number;
+  phase: "idle" | "removing" | "done" | "failed";
+  error: string;
+  cleanedCount: number;
+  onRemove: () => void;
+  onReset: () => void;
+}
+
+function Base44BadgePanel({ appName, filesCount, phase, error, cleanedCount, onRemove, onReset }: Base44BadgePanelProps) {
+  return (
+    <div className="card" style={{ padding: 18, border: "1px solid #fed7aa", background: "#fffaf5" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #f97316, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Base44Logo size={20} />
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Remove "Made with Base44" Badge</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{appName} · {filesCount} files ready</div>
+        </div>
+      </div>
+
+      {/* Idle */}
+      {phase === "idle" && (
+        <>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
+            Clean and strip all Base44 watermarks, floating edit badges (<code>#base44-edit-badge</code>), and branding links from CSS, HTML, and React components before exporting or pushing to GitHub.
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: "linear-gradient(135deg, #f97316, #ea580c)", justifyContent: "center" }}
+            onClick={onRemove}
+          >
+            🛡️ Remove Base44 Badge & Watermark
+          </button>
+        </>
+      )}
+
+      {/* Removing */}
+      {phase === "removing" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fff7ed", border: "1px solid #ffedd5" }}>
+          <Loader2 size={15} color="#ea580c" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "#c2410c", fontWeight: 600 }}>Scanning & cleaning project files…</span>
+        </div>
+      )}
+
+      {/* Done */}
+      {phase === "done" && (
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <CheckCircle size={36} color="#22c55e" style={{ margin: "0 auto 10px", display: "block" }} />
+          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#166534" }}>Badge & Watermarks Removed!</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
+            Successfully cleaned {cleanedCount} file{cleanedCount === 1 ? "" : "s"}. Your project files are now 100% white-label and ready to push to GitHub.
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={onReset}>
+            Clean again
+          </button>
+        </div>
+      )}
+
+      {/* Failed */}
+      {phase === "failed" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fee2e2", marginBottom: 12 }}>
+            <XCircle size={15} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#991b1b", flex: 1, lineHeight: 1.4 }}>{error}</span>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%", background: "linear-gradient(135deg, #f97316, #ea580c)", justifyContent: "center" }}
+            onClick={onReset}
+          >
+            Try again
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── BoltBadgePanel ────────────────────────────────────────────────────────────

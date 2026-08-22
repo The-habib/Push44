@@ -166,3 +166,104 @@ export async function fetchBase44AppFiles({ data }: { data: { token: string; app
       })
     );
 }
+
+export interface Base44BadgeResult {
+  cleanedCount: number;
+  files: Base44File[];
+  modifiedFiles: string[];
+}
+
+/**
+ * Removes "Made with Base44" / Base44 watermarks and badges from project files.
+ * Injects CSS hiding rules and cleans badge JSX/HTML from all components and layouts.
+ */
+export function cleanBase44Files(files: Base44File[]): Base44BadgeResult {
+  const BADGE_CSS =
+    "\n\n/* Push44 – Hide Base44 branding badge */\n" +
+    "#base44-edit-badge, #base44-badge, .base44-badge, a[href*='base44.com'], [data-base44-badge], .made-with-base44 {\n" +
+    "  display: none !important;\n" +
+    "  visibility: hidden !important;\n" +
+    "  opacity: 0 !important;\n" +
+    "  pointer-events: none !important;\n" +
+    "}\n";
+
+  const BADGE_HTML_BLOCKER =
+    `\n    <!-- Push44 – Base44 Badge Blocker -->\n` +
+    `    <style>#base44-edit-badge,#base44-badge,.base44-badge,a[href*='base44.com'],[data-base44-badge],.made-with-base44{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>\n`;
+
+  let cleanedCount = 0;
+  const modifiedFiles: string[] = [];
+
+  const updatedFiles = files.map((file) => {
+    let content = file.content;
+    let modified = false;
+
+    // 1. Clean CSS files
+    if (
+      file.path.endsWith(".css") ||
+      file.path === "src/index.css" ||
+      file.path === "src/App.css" ||
+      file.path === "src/styles.css" ||
+      file.path === "src/globals.css"
+    ) {
+      if (!content.includes("Hide Base44 branding badge")) {
+        content = content + BADGE_CSS;
+        modified = true;
+      }
+    }
+
+    // 2. Clean index.html
+    if (file.path.endsWith("index.html")) {
+      const stripped = content
+        .replace(/<script[^>]*base44[^>]*><\/script>/gi, "")
+        .replace(/<a[^>]*href=["'][^"']*base44\.com[^"']*["'][^>]*>.*?<\/a>/gi, "");
+
+      if (stripped !== content) {
+        content = stripped;
+        modified = true;
+      }
+
+      if (!content.includes("Base44 Badge Blocker")) {
+        if (content.includes("</head>")) {
+          content = content.replace("</head>", `${BADGE_HTML_BLOCKER}</head>`);
+          modified = true;
+        } else if (content.includes("<body")) {
+          content = content.replace("<body", `${BADGE_HTML_BLOCKER}<body`);
+          modified = true;
+        }
+      }
+    }
+
+    // 3. Clean JSX / TSX components
+    if (file.path.endsWith(".jsx") || file.path.endsWith(".tsx") || file.path.endsWith(".js") || file.path.endsWith(".ts")) {
+      const cleaned = content
+        .replace(/<a[^>]*href=["'][^"']*base44\.com[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, "")
+        .replace(/<div[^>]*className=["'][^"']*(?:base44-badge|made-with-base44)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, "");
+
+      if (cleaned !== content) {
+        content = cleaned;
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      cleanedCount++;
+      modifiedFiles.push(file.path);
+    }
+
+    return { path: file.path, content };
+  });
+
+  return { cleanedCount, files: updatedFiles, modifiedFiles };
+}
+
+/**
+ * Remove Base44 badge / watermark from an app's files.
+ */
+export async function removeBase44Badge({
+  files,
+}: {
+  files: Base44File[];
+}): Promise<Base44BadgeResult> {
+  return cleanBase44Files(files);
+}

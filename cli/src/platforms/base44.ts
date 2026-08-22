@@ -217,18 +217,61 @@ export class Base44Adapter implements UniversalPlatformAdapter {
         sizeBytes: typeof content === "string" ? Buffer.byteLength(content, "utf-8") : undefined,
       }));
 
-    if (projectFiles.length === 0) {
-      throw new Push44Error({
-        message: "No files were found in this Base44 sandbox.",
-        suggestion: "Ensure the project has finished generating on Base44.",
-      });
-    }
+    const BADGE_CSS =
+      "\n\n/* Push44 – Hide Base44 branding badge */\n" +
+      "#base44-edit-badge, #base44-badge, .base44-badge, a[href*='base44.com'], [data-base44-badge], .made-with-base44 {\n" +
+      "  display: none !important;\n" +
+      "  visibility: hidden !important;\n" +
+      "  opacity: 0 !important;\n" +
+      "  pointer-events: none !important;\n" +
+      "}\n";
+
+    const BADGE_HTML_BLOCKER =
+      `\n    <!-- Push44 – Base44 Badge Blocker -->\n` +
+      `    <style>#base44-edit-badge,#base44-badge,.base44-badge,a[href*='base44.com'],[data-base44-badge],.made-with-base44{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>\n`;
+
+    const cleanedFiles = projectFiles.map((file) => {
+      let content = file.content;
+      if (
+        file.path.endsWith(".css") ||
+        file.path === "src/index.css" ||
+        file.path === "src/App.css" ||
+        file.path === "src/styles.css" ||
+        file.path === "src/globals.css"
+      ) {
+        if (!content.includes("Hide Base44 branding badge")) {
+          content = content + BADGE_CSS;
+        }
+      }
+      if (file.path.endsWith("index.html")) {
+        content = content
+          .replace(/<script[^>]*base44[^>]*><\/script>/gi, "")
+          .replace(/<a[^>]*href=["'][^"']*base44\.com[^"']*["'][^>]*>.*?<\/a>/gi, "");
+        if (!content.includes("Base44 Badge Blocker")) {
+          if (content.includes("</head>")) {
+            content = content.replace("</head>", `${BADGE_HTML_BLOCKER}</head>`);
+          } else if (content.includes("<body")) {
+            content = content.replace("<body", `${BADGE_HTML_BLOCKER}<body`);
+          }
+        }
+      }
+      if (file.path.endsWith(".jsx") || file.path.endsWith(".tsx") || file.path.endsWith(".js") || file.path.endsWith(".ts")) {
+        content = content
+          .replace(/<a[^>]*href=["'][^"']*base44\.com[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, "")
+          .replace(/<div[^>]*className=["'][^"']*(?:base44-badge|made-with-base44)[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, "");
+      }
+      return {
+        ...file,
+        content,
+        sizeBytes: typeof content === "string" ? Buffer.byteLength(content, "utf-8") : undefined,
+      };
+    });
 
     return {
       appId: resolvedAppId,
       appName,
       platform: "base44",
-      files: projectFiles,
+      files: cleanedFiles,
       exportedAt: Date.now(),
     };
   }
