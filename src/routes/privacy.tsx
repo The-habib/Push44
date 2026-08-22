@@ -83,17 +83,35 @@ function PrivacyPage() {
           </h1>
 
           <p className="text-base sm:text-lg text-[#544e47] max-w-2xl mx-auto leading-relaxed">
-            Push44 is designed with a radical zero-backend architecture: we have nothing to collect, store, or sell because there are no intermediary servers.
+            Push44 is engineered with a radical zero-backend architecture: we have nothing to collect, store, or sell because there are no intermediary servers.
           </p>
 
-          <div className="mt-6 text-[12.5px] font-semibold text-[#8c857b]">
+          <div className="mt-4 text-[12.5px] font-semibold text-[#8c857b]">
             Effective Date: August 2026
           </div>
         </div>
       </header>
 
+      {/* ── HIGHLIGHTS BENTO SUMMARY ─────────────────────────────────────── */}
+      <section className="max-w-4xl mx-auto px-6 -mt-8 relative z-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-[#191411]">0 Servers</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">Zero intermediary backend</div>
+          </div>
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-emerald-600">100% Direct</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">Browser to GitHub direct API</div>
+          </div>
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-[#f50]">Local-Only</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">Keys stay in your browser</div>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTIONS ─────────────────────────────────────────────────────── */}
-      <main className="max-w-4xl mx-auto px-6 py-16 space-y-6">
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
         {SECTIONS.map((section, idx) => {
           const Icon = section.icon;
           return (

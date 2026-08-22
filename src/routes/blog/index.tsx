@@ -204,19 +204,24 @@ export default function BlogHome() {
         </div>
       </section>
 
-      {/* ── TOPIC PILLS ────────────────────────────────────────────────────── */}
-      <section className="py-6 px-6 border-b border-[#e7e2db] bg-white sticky top-[58px] z-20 shadow-2xs">
+      {/* ── TOPIC PILLS WITH SLIDING SPRING INDICATOR ───────────────────── */}
+      <section className="py-5 px-6 border-b border-[#e7e2db] bg-white sticky top-[58px] z-20 shadow-2xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto relative">
             <Link
               to="/blog"
               search={{}}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold transition-all shrink-0 ${
-                !category
-                  ? "bg-[#191411] text-white shadow-xs"
-                  : "bg-[#f3efe9] text-[#544e47] hover:bg-[#eae4dc] hover:text-[#191411]"
+              className={`relative z-10 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold transition-colors shrink-0 ${
+                !category ? "text-white" : "text-[#544e47] hover:text-[#191411]"
               }`}
             >
+              {!category && (
+                <motion.div
+                  layoutId="activeCategoryIndicator"
+                  className="absolute inset-0 bg-[#191411] rounded-xl shadow-xs -z-10"
+                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                />
+              )}
               <Layers size={13} />
               All Topics
             </Link>
@@ -228,15 +233,20 @@ export default function BlogHome() {
                   key={c.slug}
                   to="/blog"
                   search={{ category: c.slug }}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all shrink-0 ${
-                    isActive
-                      ? "bg-[#f50] text-white shadow-xs"
-                      : "bg-[#f3efe9] text-[#544e47] hover:bg-[#eae4dc] hover:text-[#191411]"
+                  className={`relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-colors shrink-0 ${
+                    isActive ? "text-white" : "text-[#544e47] hover:text-[#191411]"
                   }`}
                 >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeCategoryIndicator"
+                      className="absolute inset-0 bg-[#f50] rounded-xl shadow-xs -z-10"
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                    />
+                  )}
                   {c.name}
                   <span className={`text-[10.5px] px-1.5 py-0.2 rounded-full font-semibold ${
-                    isActive ? "bg-white/20 text-white" : "bg-[#e7e2db] text-[#544e47]"
+                    isActive ? "bg-white/20 text-white" : "bg-[#f3efe9] text-[#8c857b]"
                   }`}>
                     {count}
                   </span>
@@ -257,17 +267,17 @@ export default function BlogHome() {
         </div>
       </section>
 
-      {/* ── FEATURED GUIDES (when no category selected) ───────────────────── */}
+      {/* ── BENTO MASTERCLASS SECTION (when no category selected) ─────────── */}
       {!category && (
         <section className="py-16 px-6 border-b border-[#e7e2db]">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-end justify-between mb-8 gap-4">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="flex items-end justify-between gap-4">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#f50] flex items-center gap-1.5 mb-1.5">
-                  <Sparkles size={13} /> Recommended Reading
+                  <Sparkles size={13} /> Curated Masterclass
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[#191411] tracking-tight">
-                  Featured Masterclasses
+                  Featured Knowledge Spotlight
                 </h2>
               </div>
               <a
@@ -278,9 +288,68 @@ export default function BlogHome() {
               </a>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((a, i) => (
-                <ArticleCard key={a.slug} article={a} index={i} />
+            {/* Bento Grid: 1 Large Hero Card + 2 Side Highlight Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Feature Card (Spans 2 columns) */}
+              {featured[0] && (
+                <div className="lg:col-span-2 group relative flex flex-col justify-between bg-white rounded-3xl border border-[#e7e2db] p-8 sm:p-10 shadow-xs hover:shadow-xl hover:border-[#f50]/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#f50]/10 via-[#f50]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#f50] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <Link to="/blog/$slug" params={{ slug: featured[0].slug }} className="absolute inset-0 z-20">
+                    <span className="sr-only">Read {featured[0].h1}</span>
+                  </Link>
+
+                  <div className="relative z-10 space-y-5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold px-3 py-1 rounded-full bg-[#fff4ed] text-[#f50] border border-[#f50]/30 shadow-2xs">
+                        <Sparkles size={12} className="text-[#f50]" />
+                        Featured Guide
+                      </span>
+                      <span className="text-[11.5px] font-bold text-[#8c857b] uppercase tracking-wider bg-[#f3efe9] px-3 py-1 rounded-full border border-[#eae4dc]">
+                        {featured[0].category}
+                      </span>
+                      <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                        Step-by-Step
+                      </span>
+                    </div>
+
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-[#191411] leading-tight tracking-tight group-hover:text-[#f50] transition-colors">
+                      {featured[0].h1}
+                    </h3>
+
+                    <p className="text-[15px] sm:text-[16px] text-[#544e47] leading-relaxed max-w-2xl">
+                      {featured[0].description}
+                    </p>
+                  </div>
+
+                  <div className="relative z-10 flex items-center justify-between pt-6 border-t border-[#f3efe9] mt-8 text-[13px]">
+                    <div className="flex items-center gap-4 text-[#8c857b] font-medium">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock size={14} /> {featured[0].readTime} min read
+                      </span>
+                      <span>•</span>
+                      <span>Updated {featured[0].updatedAt}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 font-bold text-[#191411] group-hover:text-[#f50] transition-colors">
+                      Read Masterclass <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Side Highlight Column */}
+              <div className="flex flex-col gap-6">
+                {featured.slice(1, 3).map((a, idx) => (
+                  <ArticleCard key={a.slug} article={a} index={idx} />
+                ))}
+              </div>
+            </div>
+
+            {/* Next 3 Featured Guides */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+              {featured.slice(3, 6).map((a, idx) => (
+                <ArticleCard key={a.slug} article={a} index={idx + 3} />
               ))}
             </div>
           </div>

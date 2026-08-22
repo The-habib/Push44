@@ -86,14 +86,32 @@ function TermsPage() {
             These terms govern your use of the Push44 web app, CLI, and mobile utilities. Because Push44 is a free client tool with no user accounts, our terms are concise and transparent.
           </p>
 
-          <div className="mt-6 text-[12.5px] font-semibold text-[#8c857b]">
+          <div className="mt-4 text-[12.5px] font-semibold text-[#8c857b]">
             Effective Date: August 2026
           </div>
         </div>
       </header>
 
+      {/* ── HIGHLIGHTS BENTO SUMMARY ─────────────────────────────────────── */}
+      <section className="max-w-4xl mx-auto px-6 -mt-8 relative z-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-[#191411]">Open Source</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">MIT licensed & community built</div>
+          </div>
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-emerald-600">No Paywalls</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">100% free export utility</div>
+          </div>
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-sm text-center space-y-1">
+            <div className="text-2xl font-black text-[#f50]">You Own Code</div>
+            <div className="text-[12.5px] font-medium text-[#8c857b]">Direct commits to your repos</div>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTIONS ─────────────────────────────────────────────────────── */}
-      <main className="max-w-4xl mx-auto px-6 py-16 space-y-6">
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
         {SECTIONS.map((section, idx) => {
           const Icon = section.icon;
           return (

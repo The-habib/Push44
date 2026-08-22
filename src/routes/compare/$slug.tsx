@@ -79,35 +79,32 @@ export default function ComparisonPage() {
             {comparison.description}
           </p>
 
-          {/* Scoreboard Cards */}
-          <div className="flex flex-wrap justify-center gap-4">
+          {/* SCORE COUNTER BENTO CARDS */}
+          <div className="flex items-center justify-center gap-4 flex-wrap pt-2">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white border border-[#e7e2db] rounded-2xl p-6 w-44 shadow-2xs text-center"
+              whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+              className="group relative bg-white border border-[#e7e2db] hover:border-[#f50]/40 rounded-2xl p-6 w-44 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
             >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#f50]" />
               <div className="text-4xl font-extrabold text-[#f50] mb-1">{aWins}</div>
               <div className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider">{aLabel} Wins</div>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.05 }}
-              className="bg-white border border-[#e7e2db] rounded-2xl p-6 w-44 shadow-2xs text-center"
+              whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+              className="group relative bg-white border border-[#e7e2db] hover:border-emerald-500/40 rounded-2xl p-6 w-44 shadow-2xs hover:shadow-md text-center transition-all overflow-hidden"
             >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600" />
               <div className="text-4xl font-extrabold text-emerald-600 mb-1">{bWins}</div>
               <div className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider">{bLabel} Wins</div>
             </motion.div>
 
             {ties > 0 && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                className="bg-white border border-[#e7e2db] rounded-2xl p-6 w-40 shadow-2xs text-center"
+                whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+                className="group relative bg-white border border-[#e7e2db] rounded-2xl p-6 w-40 shadow-2xs text-center transition-all overflow-hidden"
               >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-[#8c857b]" />
                 <div className="text-4xl font-extrabold text-[#8c857b] mb-1">{ties}</div>
                 <div className="text-[12px] font-bold text-[#8c857b] uppercase tracking-wider">Ties</div>
               </motion.div>

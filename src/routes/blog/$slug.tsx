@@ -326,8 +326,8 @@ export default function ArticlePage() {
             <div className="bg-white border border-[#e7e2db] rounded-2xl divide-y divide-[#f3efe9] shadow-2xs overflow-hidden">
               {article.faqs.map((faq: { question: string; answer: string }, i: number) => (
                 <div key={i} className="p-6 space-y-2">
-                  <h3 className="text-[16px] font-bold text-[#191411] tracking-tight">
-                    {faq.question}
+                  <h3 className="text-[16px] font-bold text-[#191411] tracking-tight flex items-center justify-between">
+                    <span>{faq.question}</span>
                   </h3>
                   <p className="text-[14.5px] text-[#544e47] leading-relaxed m-0">
                     {faq.answer}
@@ -336,6 +336,30 @@ export default function ArticlePage() {
               ))}
             </div>
           </section>
+
+          {/* Interactive Was This Helpful Feedback Widget */}
+          <div className="bg-white border border-[#e7e2db] rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-2xs">
+            <div className="text-[16px] font-extrabold text-[#191411] tracking-tight">
+              Was this guide helpful for your project?
+            </div>
+            <p className="text-[13.5px] text-[#544e47] max-w-md mx-auto">
+              Your feedback helps us continuously update our reverse-engineered guides as platforms evolve.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => toast.success("Thank you! Glad this guide helped your workflow.")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f3efe9] hover:bg-[#eae4dc] text-[#191411] font-bold text-[13.5px] rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                👍 Yes, exactly what I needed
+              </button>
+              <button
+                onClick={() => toast.info("Feedback noted! Feel free to open an issue on GitHub if steps need updating.")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#faf8f5] hover:bg-[#f3efe9] border border-[#e7e2db] text-[#544e47] font-medium text-[13.5px] rounded-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                👎 Needs improvement
+              </button>
+            </div>
+          </div>
 
           {/* CTA Box */}
           <div className="bg-[#191411] rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden">
@@ -390,8 +414,9 @@ export default function ArticlePage() {
         {/* Sidebar Table of Contents */}
         <aside className="hidden lg:block w-72 shrink-0 sticky top-24 space-y-6">
           <div className="bg-white border border-[#e7e2db] rounded-2xl p-5 shadow-2xs">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#8c857b] mb-3 pb-2 border-b border-[#f3efe9]">
-              Table of Contents
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#8c857b] mb-3 pb-2 border-b border-[#f3efe9] flex items-center justify-between">
+              <span>Table of Contents</span>
+              <span className="text-[10px] text-[#f50] font-bold">{Math.round(readProgress)}% Read</span>
             </div>
             <nav className="space-y-1">
               {toc.map(({ id, label }) => {
