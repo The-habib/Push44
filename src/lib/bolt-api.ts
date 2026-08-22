@@ -43,18 +43,38 @@ export async function boltLogin({
 }
 
 // Injected into the user's JS bundle — removes the "Made in Bolt" badge.
-// badge.js creates a <div> with zIndex 2147483647 in a Shadow DOM.
-// We fingerprint by zIndex (not innerHTML, which doesn't penetrate Shadow DOM).
-// The `f` guard flag in badge.js ensures once we remove it, it stays gone.
 const BADGE_BLOCKER_JS =
   `/* Push44 – removes the "Made in Bolt" badge */\n` +
-  `;(function removeBoltBadge(){` +
-  `function isBadge(n){return n&&n.nodeType===1&&n.tagName==="DIV"&&n.style&&n.style.zIndex==="2147483647"&&n.style.position==="fixed";}` +
-  `function sweep(){try{document.querySelectorAll("div").forEach(function(el){if(isBadge(el))el.remove();});}catch(e){}}` +
-  `var obs=new MutationObserver(function(muts){muts.forEach(function(m){m.addedNodes.forEach(function(n){if(isBadge(n))n.remove();});});});` +
-  `obs.observe(document.documentElement,{childList:true,subtree:true});` +
-  `sweep();setTimeout(sweep,500);setTimeout(sweep,1700);setTimeout(sweep,3000);` +
-  `document.addEventListener("DOMContentLoaded",sweep);` +
+  `;(function removeBoltBadge(){\n` +
+  `function isBadge(n){\n` +
+  `  if (!n || n.nodeType !== 1) return false;\n` +
+  `  if (n.tagName === "DIV" && n.style && (n.style.zIndex === "2147483647" || n.style.position === "fixed") && (n.shadowRoot || n.querySelector(".badge") || (n.innerHTML && (n.innerHTML.includes("bolt.new") || n.innerHTML.includes("Made in Bolt"))))) return true;\n` +
+  `  if (n.tagName === "SCRIPT" && n.src && n.src.includes("bolt.new/badge.js")) return true;\n` +
+  `  return false;\n` +
+  `}\n` +
+  `function sweep(){\n` +
+  `  try {\n` +
+  `    document.querySelectorAll("script[src*='bolt.new/badge.js']").forEach(function(s){ s.remove(); });\n` +
+  `    document.querySelectorAll("div").forEach(function(el){\n` +
+  `      if (isBadge(el)) el.remove();\n` +
+  `      if (el.shadowRoot) {\n` +
+  `        var b = el.shadowRoot.querySelector(".badge") || el.shadowRoot.querySelector(".dialog");\n` +
+  `        if (b) el.remove();\n` +
+  `      }\n` +
+  `    });\n` +
+  `  } catch(e){}\n` +
+  `}\n` +
+  `var obs = new MutationObserver(function(muts){\n` +
+  `  muts.forEach(function(m){\n` +
+  `    m.addedNodes.forEach(function(n){\n` +
+  `      if (isBadge(n)) n.remove();\n` +
+  `    });\n` +
+  `  });\n` +
+  `  sweep();\n` +
+  `});\n` +
+  `try { obs.observe(document.documentElement, { childList: true, subtree: true }); } catch(e){}\n` +
+  `sweep(); setTimeout(sweep, 300); setTimeout(sweep, 1000); setTimeout(sweep, 2500);\n` +
+  `if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", sweep); }\n` +
   `})();\n`;
 
 async function boltFetch(
@@ -62,11 +82,16 @@ async function boltFetch(
   token: string,
   opts?: RequestInit
 ): Promise<Response> {
+  const isBrowser = typeof window !== "undefined";
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const url = isBrowser
+    ? `${PROXY}${cleanPath}`
+    : `https://bolt.new/api${cleanPath}`;
   const headers: Record<string, string> = {
-    "X-Bolt-Token": token,
+    ...(isBrowser ? { "X-Bolt-Token": token } : { Cookie: `__session=${token}`, "User-Agent": "Mozilla/5.0" }),
     ...((opts?.headers ?? {}) as Record<string, string>),
   };
-  return fetch(`${PROXY}${path}`, { ...opts, headers });
+  return fetch(url, { ...opts, headers });
 }
 
 /**
@@ -233,6 +258,7 @@ export async function validateBoltProject({
 }): Promise<BoltProject> {
   const token = cleanBoltToken(data.token);
   const projectId = cleanBoltProjectId(data.projectId);
+  const deployId = projectId.replace(/^sb\d+-/i, "");
 
   if (!projectId) {
     throw new Error(
@@ -248,7 +274,7 @@ export async function validateBoltProject({
 
   let res: Response;
   try {
-    res = await boltFetch(`/api/deploy/${projectId}`, token);
+    res = await boltFetch(`/deploy/${deployId}`, token);
   } catch {
     throw new Error(
       "Could not reach bolt.new. Check your internet connection."
@@ -266,11 +292,17 @@ export async function validateBoltProject({
     );
   }
 
+  if (res.ok) {
+    const d = await res.json().catch(() => ({}));
+    const rawSiteUrl: string = d.site_url ?? "";
+    const siteUrl = rawSiteUrl
+      ? rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
+      : (projectId.startsWith("sb1-") ? `${projectId}.bolt.host` : `sb1-${deployId}.bolt.host`);
+    return { projectId, siteUrl, updatedAt: d.updated_at ?? "" };
+  }
+
   if (res.status === 404) {
-    // Newer "sb1-" format projects don't go through /api/deploy — their
-    // published site lives at {projectId}.bolt.host instead.  Check that URL
-    // directly (a HEAD request is enough).
-    const candidateHost = `${projectId}.bolt.host`;
+    const candidateHost = projectId.startsWith("sb1-") ? `${projectId}.bolt.host` : `sb1-${deployId}.bolt.host`;
     try {
       const liveCheck = await fetch(`https://${candidateHost}/`, {
         method: "HEAD",
@@ -282,27 +314,13 @@ export async function validateBoltProject({
     } catch {
       // live check failed — project may not be published yet
     }
-    // Project authenticated but no live URL detected
-    return { projectId, siteUrl: "", updatedAt: "" };
+    return { projectId, siteUrl: candidateHost, updatedAt: "" };
   }
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(
-      `bolt.new returned ${res.status}${body ? `: ${body.slice(0, 200)}` : ""}`
-    );
-  }
-
-  const d = await res.json().catch(() => ({}));
-  const rawSiteUrl: string = d.site_url ?? "";
-
-  // Normalize to bare host (strip https:// / http://) so URL construction
-  // in removeBoltBadge (`https://${siteUrl}/...`) is always well-formed.
-  const siteUrl = rawSiteUrl
-    ? rawSiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
-    : "";
-
-  return { projectId, siteUrl, updatedAt: d.updated_at ?? "" };
+  const body = await res.text().catch(() => "");
+  throw new Error(
+    `bolt.new returned ${res.status}${body ? `: ${body.slice(0, 200)}` : ""}`
+  );
 }
 
 /**
@@ -315,7 +333,8 @@ export async function getBoltBadgeState({
   data: { token: string; projectId: string };
 }): Promise<boolean> {
   try {
-    const res = await boltFetch(`/api/projects/${data.projectId}/badge`, data.token);
+    const deployId = cleanBoltProjectId(data.projectId).replace(/^sb\d+-/i, "");
+    const res = await boltFetch(`/projects/${deployId}/badge`, data.token);
     if (!res.ok) return true;
     const text = await res.text();
     return text.trim() !== "false";
@@ -327,40 +346,38 @@ export async function getBoltBadgeState({
 /**
  * Remove the "Made in Bolt" badge from a bolt.new project.
  *
- * Full workflow (see docs/research/bolt-new-api.md for background):
+ * Full workflow:
  *  1. Fetch live HTML → parse JS/CSS filenames
  *  2. Download assets (JS bundle, CSS, favicon)
  *  3. Prepend BADGE_BLOCKER_JS to the JS bundle
- *  4. Fire-and-forget: DELETE /api/deploy/{pid}/badge (server-side flag)
+ *  4. Fire-and-forget: DELETE /api/deploy/{deployId}/badge (server-side flag)
  *  5. Build ZIP (JSZip)
- *  6. PUT /api/deploy/{pid} → staging
- *  7. POST /api/deploy/{pid}/promote → live
- *
- * The badge removal is permanent until the user makes a new deploy from
- * the bolt.new editor (which generates a new content-hashed JS bundle).
- * Users should re-run Push44 after each new editor deployment.
+ *  6. PUT /api/deploy/{deployId} → staging
+ *  7. POST /api/deploy/{deployId}/promote → live
  */
 export async function removeBoltBadge({
   data,
   onStep,
 }: {
-  data: { token: string; projectId: string; siteUrl: string };
+  data: { token: string; projectId: string; siteUrl?: string };
   onStep?: (step: BoltRemoveStep, detail?: string) => void;
 }): Promise<{ siteUrl: string }> {
   const token = cleanBoltToken(data.token);
   const projectId = cleanBoltProjectId(data.projectId);
-  const siteUrl = data.siteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  const deployId = projectId.replace(/^sb\d+-/i, "");
   const notify = (s: BoltRemoveStep, d?: string) => onStep?.(s, d);
 
-  // Newer "sb1-" format projects publish to *.bolt.host but their deploy
-  // API does not accept PUT requests — badge removal isn't supported yet.
-  if (/^sb\d+-/i.test(projectId)) {
-    throw new Error(
-      "Badge removal isn't available for this project yet.\n\n" +
-        "bolt.new recently changed its hosting format for newer projects (sb1-… IDs) " +
-        "and the upload API for these projects works differently. " +
-        "We're researching support — check back soon."
-    );
+  if (!token) throw new Error("Bolt session token is required.");
+  if (!projectId) throw new Error("Bolt project ID is required.");
+
+  let siteUrl = (data.siteUrl || "").replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  if (!siteUrl) {
+    try {
+      const info = await validateBoltProject({ data: { token, projectId } });
+      siteUrl = info.siteUrl;
+    } catch {
+      siteUrl = projectId.startsWith("sb1-") ? `${projectId}.bolt.host` : `sb1-${deployId}.bolt.host`;
+    }
   }
 
   // ── Step 1: Fetch live HTML ──────────────────────────────────────────────
@@ -421,15 +438,13 @@ export async function removeBoltBadge({
   jsWithBlocker.set(new Uint8Array(jsBuf), blockerBytes.length);
 
   // ── Step 3: Disable server-side badge flag (fire-and-forget) ────────────
-  boltFetch(`/api/deploy/${projectId}/badge`, token, { method: "DELETE" }).catch(() => {});
+  boltFetch(`/deploy/${deployId}/badge`, token, { method: "DELETE" }).catch(() => {});
 
   // ── Step 4: Build ZIP ────────────────────────────────────────────────────
   notify("building-zip");
 
   const zip = new JSZip();
 
-  // index.html is ignored by bolt.new's CDN (they serve their own HTML),
-  // but we include it so the ZIP is structurally valid.
   const indexHtml =
     `<!doctype html><html lang="en"><head>` +
     `<meta charset="UTF-8" />` +
@@ -437,7 +452,7 @@ export async function removeBoltBadge({
     `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` +
     `<script type="module" crossorigin src="/assets/${jsFile}"></script>` +
     (cssFile ? `<link rel="stylesheet" crossorigin href="/assets/${cssFile}">` : "") +
-    `</head><body></body></html>`;
+    `</head><body><div id="root"></div></body></html>`;
 
   zip.file("index.html", indexHtml);
   zip.file(`assets/${jsFile}`, jsWithBlocker);
@@ -453,7 +468,7 @@ export async function removeBoltBadge({
   // ── Step 5: Upload to staging ─────────────────────────────────────────────
   notify("uploading");
 
-  const putRes = await boltFetch(`/api/deploy/${projectId}`, token, {
+  const putRes = await boltFetch(`/deploy/${deployId}`, token, {
     method: "PUT",
     headers: { "Content-Type": "application/zip" } as any,
     body: zipBlob,
@@ -470,7 +485,7 @@ export async function removeBoltBadge({
   // ── Step 6: Promote to live ───────────────────────────────────────────────
   notify("promoting");
 
-  const promoteRes = await boltFetch(`/api/deploy/${projectId}/promote`, token, {
+  const promoteRes = await boltFetch(`/deploy/${deployId}/promote`, token, {
     method: "POST",
     headers: { "Content-Type": "application/json" } as any,
     body: "{}",

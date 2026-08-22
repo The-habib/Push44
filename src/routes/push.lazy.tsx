@@ -749,7 +749,11 @@ export default function PushPage() {
     setBoltBadgeStep("");
     try {
       const result = await removeBoltBadge({
-        data: { token: creds.boltToken, projectId: creds.boltProjectId, siteUrl: selectedApp.name },
+        data: {
+          token: creds.boltToken,
+          projectId: creds.boltProjectId || selectedApp.id,
+          siteUrl: selectedApp.icon || creds.boltSiteUrl || "",
+        },
         onStep: (step) => setBoltBadgeStep(step),
       });
       setBoltResultUrl(result.siteUrl);
