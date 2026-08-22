@@ -56,16 +56,51 @@ Never add: Express/Fastify servers, database connections, `.env` secrets, server
 
 ## Supported Platforms
 
-Push44 currently supports 4 platforms. Each has its own API file in `src/lib/`:
+Push44 currently supports 6 AI vibe-coding platforms:
 
-| Platform | File | Auth method |
-|---|---|---|
-| Base44 | `base44-api.ts` | Email/password or API token |
-| Rocket.new | `rocket-api.ts` | OTP email |
-| Floot | `floot-api.ts` | Magic link (NextAuth) |
-| Zite | `zite-api.ts` | Google / Microsoft / Email |
+| Platform | File | Auth method | Key Features |
+|---|---|---|---|
+| Base44 | `base44-api.ts` | Email/password or API token | File extraction, AI CSS injection, Live badge removal, Deploy trigger |
+| Bolt.new | `bolt-api.ts` | Session cookie or PKCE login | Auto /chats discovery, Live HTML/bundle extraction, Staging & Promote |
+| Rocket.new | `rocket-api.ts` | OTP email | Container files, Android APK build compilation & polling |
+| Floot | `floot-api.ts` | Magic link (NextAuth) | Project extraction, Custom subdomain deploy, Mobile build |
+| Zite | `zite-api.ts` | Google / Microsoft / Email | Snapshot templates, Cloudflare Worker CSS blocker injection |
+| Lovable.dev | `lovable-api.ts` | Session token | Project extraction, AI code editing for badge removal |
 
-All reverse-engineered from live JS bundles — no public API docs exist for any of these platforms. See README.md for the confirmed working endpoints.
+---
+
+## Confirmed Working Endpoints
+
+All endpoints below were reverse-engineered from production JS bundles and verified in live sessions:
+
+### 1. Base44 (`app.base44.com/api`)
+- **Auth Login**: `POST /auth/login` (Payload: `{ email, password }` -> returns `{ access_token, user }`)
+- **Auth Check**: `GET /auth/me` (Bearer auth -> returns `{ email, full_name, id }`)
+- **List Apps**: `GET /apps` (Bearer auth -> returns `Base44App[]` with `id`, `name`, `slug`, `last_deployed_at`)
+- **App Published URL**: `GET /apps/platform/:appId/published-url` (Returns `{ url: "https://<slug>.base44.app" }`)
+- **Sandbox Files**: `GET /apps/:appId/sandbox/files` (Returns full source tree `{ files: [{ path, content }] }`)
+- **Sandbox Status**: `GET /apps/:appId/sandbox/status` (Returns `{ status: "alive" }`)
+- **AI Chat Code Injection**: `POST /apps/:appId/chat/message`
+  ```json
+  {
+    "content": "Add CSS to src/index.css to permanently hide the Base44 branding badge: #base44-edit-badge, #base44-badge, div[id*='base44'], .base44-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }",
+    "role": "user",
+    "file_urls": [],
+    "custom_context": [],
+    "additional_message_params": { "from_mobile": false }
+  }
+  ```
+- **Live Deployment Trigger**: `POST /apps/:appId/deploy`
+  - Rebuilds production Vite bundle with the injected stylesheet and deploys live to Cloudflare edge edge (`https://<slug>.base44.app`).
+  - Response: `{ id, slug, last_deployed_at, last_deployed_checkpoint_id, status: { state: "ready" } }`
+
+### 2. Bolt.new (`bolt.new/api`)
+- **PKCE OAuth2 Login**: `POST /api/bolt-login` (Proxied login -> StackBlitz OAuth -> returns `__session` token)
+- **Auto Workspace Discovery**: `GET /chats` (Headers: `X-Bolt-Token: <token>` -> returns list of all user workspaces and project chats without requiring manual project IDs)
+- **Project Details**: `GET /projects/:projectId` (Returns project metadata, deployment info, and live URL `https://<slug>.bolt.host`)
+- **Live Asset Extraction**: `GET https://<slug>.bolt.host/` (Fetches HTML to resolve `/assets/index-*.js` bundle)
+- **Staging Deploy**: `POST /projects/:projectId/deploys` (Uploads modified ZIP with prepended MutationObserver blocker)
+- **Promote to Production**: `POST /projects/:projectId/deploys/:deployId/promote` (Promotes staging build to production URL)
 
 ---
 

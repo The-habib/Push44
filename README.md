@@ -195,6 +195,37 @@ Push44 is designed to fit your workflow whether you are on mobile, in a browser,
 
 <br/>
 
+## ✦ Confirmed Working Platform Endpoints (Reverse-Engineered)
+
+Push44 communicates directly with proprietary AI platforms via reverse-engineered REST and RPC endpoints:
+
+### 🟠 Base44 (`app.base44.com/api`)
+| Endpoint | Method | Purpose | Payload / Notes |
+|---|---|---|---|
+| `/auth/login` | `POST` | Authenticate user | `{ "email": "...", "password": "..." }` → `{ access_token, user }` |
+| `/auth/me` | `GET` | Validate bearer token | Bearer auth → `{ email, full_name, id }` |
+| `/apps` | `GET` | List all user applications | Returns apps array with IDs, names, slugs, and timestamps |
+| `/apps/platform/:id/published-url` | `GET` | Fetch live deployed URL | Returns `{ "url": "https://<slug>.base44.app" }` |
+| `/apps/:id/sandbox/files` | `GET` | Full source tree export | Extracts all React/Vite source files directly from sandbox |
+| `/apps/:id/chat/message` | `POST` | AI CSS blocker injection | Injects `#base44-edit-badge { display: none !important; }` into `src/index.css` |
+| `/apps/:id/deploy` | `POST` | Trigger production build | Rebuilds Vite bundle and publishes clean site live to Cloudflare edge |
+
+### ⚡ Bolt.new (`bolt.new/api`)
+| Endpoint | Method | Purpose | Payload / Notes |
+|---|---|---|---|
+| `/api/bolt-login` | `POST` | PKCE OAuth2 login | Proxied StackBlitz OAuth flow → returns `__session` token |
+| `/chats` | `GET` | Auto workspace discovery | Automatically queries and lists all user project chats & workspaces |
+| `/projects/:id` | `GET` | Project details & host URL | Returns project metadata, deployment ID, and `*.bolt.host` live URL |
+| `https://<slug>.bolt.host/` | `GET` | Live bundle extraction | Scrapes live HTML to locate `/assets/index-*.js` bundle |
+| `/projects/:id/deploys` | `POST` | Upload staging bundle | Uploads modified ZIP with MutationObserver `#bolt-badge` blocker |
+| `/projects/:id/deploys/:depId/promote` | `POST` | Promote build to live | Promotes staging build to production `*.bolt.host` URL |
+
+<br/>
+
+---
+
+<br/>
+
 ## ✦ CLI Command Reference
 
 Push44 CLI includes 24 built-in subcommands:
